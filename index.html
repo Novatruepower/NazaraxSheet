@@ -2,7 +2,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Character Sheet</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -51,10 +53,60 @@
         .defaultOption {
             display: none;
         }
+        /* Specific styling for table inputs to make them compact */
+        .stat-input {
+            width: 100%;
+            padding: 0.25rem 0.2rem; /* Adjusted padding to ensure visibility */
+            font-size: 0.875rem; /* text-sm */
+            text-align: center;
+            background-color: #f9fafb; /* bg-gray-50 */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        .dark .stat-input {
+            background-color: #374151; /* bg-gray-700 */
+            border-color: #4b5563; /* border-gray-600 */
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        .stat-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); /* focus:ring-indigo-500 */
+            border-color: #6366f1; /* focus:border-indigo-500 */
+        }
+        .stat-input[readonly] {
+            background-color: #e5e7eb; /* bg-gray-200 */
+            cursor: not-allowed;
+            color: #4b5563; /* text-gray-600 */
+        }
+        .dark .stat-input[readonly] {
+            background-color: #4b5563; /* bg-gray-600 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        /* Adjust column widths for better display */
+        #player-stats-container table th,
+        #player-stats-container table td {
+            min-width: 60px; /* Minimum width for input columns */
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+        #player-stats-container table th:first-child,
+        #player-stats-container table td:first-child {
+            min-width: 100px; /* Wider for stat name */
+        }
+        /* Make Experience column narrower */
+        #player-stats-container table th:nth-child(6), /* Targets the new Experience header */
+        #player-stats-container table td:nth-child(6) { /* Targets the new Experience cell */
+            min-width: 90px; /* Adjusted to be smaller for combined Exp/Max Exp */
+        }
+        /* Ensure inputs within the combined Exp/Max Exp cell are compact */
+        .exp-inputs-wrapper input {
+            width: calc(50% - 8px); /* Adjust width for two inputs and a separator */
+            padding: 0.25rem 0.2rem;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center">
 
+    <!-- Sticky Header -->
     <header class="sticky top-0 z-20 w-full bg-indigo-800 dark:bg-indigo-950 shadow-lg py-3 px-4 md:px-8 flex justify-center">
         <div class="flex space-x-4">
             <button id="save-json-btn"
@@ -100,7 +152,25 @@
                                 placeholder="Select classes..."
                             />
                             <div id="class-dropdown-options" class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
-                                </div>
+                                <!-- Options will be dynamically populated here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Specialization Section -->
+                    <div>
+                        <label for="specialization-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Specialization</label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="specialization-display"
+                                name="specialization-display"
+                                readonly
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 cursor-pointer"
+                                placeholder="Select specializations..."
+                            />
+                            <div id="specialization-dropdown-options" class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
+                                <!-- Options will be dynamically populated here by JavaScript -->
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -166,8 +236,24 @@
                         Quick Roll Stats
                     </button>
                 </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <div id="player-stats-container"></div>
+                <div id="player-stats-container" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stat Name</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Value</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Racial</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equip</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Temp</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Exp</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Max Exp</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <!-- Player stats rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -175,18 +261,40 @@
         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
             <h2 class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">Health & Combat</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Health / Max Health Input -->
                 <div>
-                    <label for="hp" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Hit Points (HP)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Health</label>
+                    <div class="flex items-center mt-1">
+                        <input
+                            type="number"
+                            id="hp"
+                            name="hp"
+                            min="0"
+                            class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-center"
+                        />
+                        <span class="px-2 py-2 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">/</span>
+                        <input
+                            type="number"
+                            id="maxHp"
+                            name="maxHp"
+                            min="0"
+                            class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
+                            readonly
+                        />
+                    </div>
+                </div>
+                <!-- Max Health Bonus Input -->
+                <div>
+                    <label for="healthBonus" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Health Bonus</label>
                     <input
                         type="number"
-                        id="hp"
-                        name="hp"
-                        min="0"
+                        id="healthBonus"
+                        name="healthBonus"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                     />
                 </div>
                 <div>
-                    <label for="ac" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Armor Class (AC)</label>
+                    <label for="ac" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Total armor</label>
                     <input
                         type="number"
                         id="ac"
@@ -228,10 +336,40 @@
             return 100;
         }
 
+        // Race health multipliers
+        const raceHealthMultipliers = {
+            "Architect": 0.70,
+            "Demi-humans": 1.00,
+            "Dimensional": 1.50,
+            "Dragonkin": 0.75,
+            "Dwarf": 1.20,
+            "Elf": 0.80,
+            "Gnome": 0.80,
+            "Human": 1.00,
+            "Mutant": 0.75,
+            "Noki": 0.90,
+            "Succubus": 0.75,
+            "": 1.00 // Default for no race selected
+        };
+
+        // Function to calculate max health based on race, level, and bonus
+        function calculateMaxHealth(race, level, healthBonus) {
+            const multiplier = raceHealthMultipliers[race] || 1.00; // Default to 1 if race not found
+            return Math.floor(100 * multiplier * level) + (healthBonus || 0); // Add healthBonus
+        }
+
+        // Define class specializations
+        const classSpecializationsMap = {
+            "Mage": ["Chaos", "Dark", "Thunder"],
+            "Knight": ["Order"],
+            "Martial artist": ["Apprentice", "Warrior", "Master", "Grand Master", "Lord", "King"],
+        };
+
         // Initial character data structure with nested objects for player stats
         let character = {
             name: '',
             class: [], // Changed class to an array for multiple selections
+            specialization: [], // New property for specializations
             race: '',
             level: 1,
             levelExperience: 0, // Current experience for the character's overall level
@@ -246,8 +384,10 @@
             intimidation: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             charisma: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             negotiation: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-            hp: 10,
-            ac: 10,
+            hp: 100, // Current health
+            maxHp: 100, // Calculated max health
+            healthBonus: 0, // New property for additional max health
+            ac: 0,
             skills: '',
             inventory: '',
         };
@@ -288,7 +428,10 @@
                 }
             });
 
-            const dataStr = JSON.stringify(characterToSave, null, 2); // Pretty print JSON
+            // Exclude maxHp from the saved data (healthBonus will be saved)
+            const { maxHp, ...finalCharacterToSave } = characterToSave;
+
+            const dataStr = JSON.stringify(finalCharacterToSave, null, 2); // Pretty print JSON
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -317,7 +460,10 @@
                         if (loadedData.hasOwnProperty(key)) {
                             if (key === 'class') {
                                 character.class = Array.isArray(loadedData.class) ? loadedData.class : [];
-                            } else if (typeof character[key] === 'object' && character[key] !== null) {
+                            } else if (key === 'specialization') { // Handle specialization separately
+                                character.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
+                            }
+                            else if (typeof character[key] === 'object' && character[key] !== null) {
                                 if (typeof loadedData[key] === 'object' && loadedData[key] !== null) {
                                     // Merge loaded stat properties, but ensure maxExperience and total are re-calculated or default
                                     character[key] = {
@@ -348,9 +494,17 @@
                     character.levelExperience = loadedData.levelExperience !== undefined ? loadedData.levelExperience : 0;
                     character.levelMaxExperience = loadedData.levelMaxExperience !== undefined ? loadedData.levelMaxExperience : calculateLevelMaxExperience(character.level);
 
+                    // Handle healthBonus, providing default if missing
+                    character.healthBonus = loadedData.healthBonus !== undefined ? loadedData.healthBonus : 0;
+
+                    // Recalculate maxHp after level, race, and healthBonus are potentially loaded
+                    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+                    // Ensure current HP doesn't exceed new max HP
+                    character.hp = Math.min(character.hp, character.maxHp);
+
 
                     updateDOM(); // Update the UI with loaded data
-                    console.log("Character loaded from JSON file!");
+                    console.log(`Character "${character.name}" loaded from JSON file!`); // Added console log
                 } catch (e) {
                     console.error("Error parsing JSON file:", e);
                     // In a real app, you might show a user-friendly error message here
@@ -367,15 +521,18 @@
             document.getElementById('levelExperience').value = character.levelExperience;
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience; // This is readonly
 
-            // Handle race selector placeholder color
+            // Handle race selector placeholder color and update max HP
             const raceSelect = document.getElementById('race');
             raceSelect.value = character.race; // Set the selected race
-            // Apply or remove the placeholder class based on whether a race is selected
             if (character.race === '') {
                 raceSelect.classList.add('select-placeholder-text');
             } else {
                 raceSelect.classList.remove('select-placeholder-text');
             }
+            // Recalculate maxHp when race is updated in DOM
+            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+            // Ensure current HP doesn't exceed new max HP when race changes
+            character.hp = Math.min(character.hp, character.maxHp);
 
 
             // Handle custom multi-select for class
@@ -404,101 +561,51 @@
                 classDropdownOptions.appendChild(checkboxDiv);
             });
 
+            // Update Specialization dropdown
+            updateSpecializationDropdownAndData();
+
 
             // Player Stats
-            const playerStatsContainer = document.getElementById('player-stats-container');
-            playerStatsContainer.innerHTML = ''; // Clear existing attributes to prevent duplicates
+            const playerStatsContainer = document.getElementById('player-stats-container').querySelector('tbody');
+            playerStatsContainer.innerHTML = ''; // Clear existing rows
 
             playerStatsList.forEach(statName => {
                 const statData = character[statName];
-                const statBlock = document.createElement('div');
-                statBlock.className = 'bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700';
-                statBlock.innerHTML = `
-                    <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200 capitalize">${statName}</h3>
-                    <div class="grid grid-cols-6 gap-x-1 gap-y-2 text-center items-end">
-                        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Value</div>
-                        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Racial</div>
-                        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Equip</div>
-                        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Temp</div>
-                        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Exp</div>
-                        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Max Exp</div>
-
-                        <div>
-                            <input
-                                type="number"
-                                id="${statName}-value"
-                                name="${statName}-value"
-                                min="0"
-                                value="${statData.value}"
-                                class="mt-1 block w-full px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-center"
-                            />
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700'; // Add hover effect to rows
+                row.innerHTML = `
+                    <td class="px-2 py-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">${statName}</td>
+                    <td class="px-2 py-1 whitespace-nowrap">
+                        <input type="number" id="${statName}-value" name="${statName}-value" min="0" value="${statData.value}" class="stat-input" />
+                    </td>
+                    <td class="px-2 py-1 whitespace-nowrap">
+                        <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${statData.racialChange}" class="stat-input" />
+                    </td>
+                    <td class="px-2 py-1 whitespace-nowrap">
+                        <input type="number" id="${statName}-equipment" name="${statName}-equipment" value="${statData.equipment}" class="stat-input" />
+                    </td>
+                    <td class="px-2 py-1 whitespace-nowrap">
+                        <input type="number" id="${statName}-temporary" name="${statName}-temporary" value="${statData.temporary}" class="stat-input" />
+                    </td>
+                    <td class="px-2 py-1 whitespace-nowrap">
+                        <div class="flex items-center justify-center exp-inputs-wrapper">
+                            <input type="number" id="${statName}-experience" name="${statName}-experience" min="0" value="${statData.experience}" class="stat-input rounded-r-none" />
+                            <span class="px-1 py-1 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">/</span>
+                            <input type="number" id="${statName}-maxExperience" name="${statName}-maxExperience" min="1" value="${statData.maxExperience}" readonly class="stat-input rounded-l-none" />
                         </div>
-                        <div>
-                            <input
-                                type="number"
-                                id="${statName}-racialChange"
-                                name="${statName}-racialChange"
-                                value="${statData.racialChange}"
-                                class="mt-1 block w-full px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-center"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="number"
-                                id="${statName}-equipment"
-                                name="${statName}-equipment"
-                                value="${statData.equipment}"
-                                class="mt-1 block w-full px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-center"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="number"
-                                id="${statName}-temporary"
-                                name="${statName}-temporary"
-                                value="${statData.temporary}"
-                                class="mt-1 block w-full px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-center"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="number"
-                                id="${statName}-experience"
-                                name="${statName}-experience"
-                                value="${statData.experience}"
-                                min="0"
-                                class="mt-1 block w-full px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-center"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="number"
-                                id="${statName}-maxExperience"
-                                name="${statName}-maxExperience"
-                                value="${statData.maxExperience}"
-                                min="1"
-                                class="mt-1 block w-full px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-center"
-                            />
-                        </div>
-                        <div class="col-span-6 mt-2">
-                            <label for="${statName}-total" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Total</label>
-                            <input
-                                type="number"
-                                id="${statName}-total"
-                                name="${statName}-total"
-                                value="${statData.total}"
-                                readonly
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
-                            />
-                        </div>
-                    </div>
+                    </td>
+                    <td class="px-2 py-1 whitespace-nowrap">
+                        <input type="number" id="${statName}-total" name="${statName}-total" value="${statData.total}" readonly class="stat-input" />
+                    </td>
                 `;
-                playerStatsContainer.appendChild(statBlock);
+                playerStatsContainer.appendChild(row);
             });
 
 
             // Health & Combat
             document.getElementById('hp').value = character.hp;
+            document.getElementById('maxHp').value = character.maxHp;
+            document.getElementById('healthBonus').value = character.healthBonus; // Populate healthBonus
             document.getElementById('ac').value = character.ac;
 
             // Skills & Inventory
@@ -592,7 +699,7 @@
                 document.getElementById(`${statName}-total`).value = character[statName].total;
 
             } else {
-                // For other non-stat inputs (name, level, hp, ac, skills, inventory, race)
+                // For other non-stat inputs (name, level, hp, ac, skills, inventory, race, healthBonus)
                 // The 'class-display' input is read-only and handled by custom logic, so it's excluded here.
                 if (id === 'levelExperience') {
                     character.levelExperience = newValue;
@@ -604,18 +711,40 @@
                         document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
                     }
                     document.getElementById('levelExperience').value = character.levelExperience;
-                } else if (id !== 'class-display') {
-                    character[name || id] = newValue;
-
-                    // Apply/remove placeholder class for race selector
-                    if (id === 'race') {
-                        const raceSelect = document.getElementById('race');
-                        if (newValue === '') {
-                            raceSelect.classList.add('select-placeholder-text');
-                        } else {
-                            raceSelect.classList.remove('select-placeholder-text');
-                        }
+                } else if (id === 'level') {
+                    character.level = newValue;
+                    character.levelMaxExperience = calculateLevelMaxExperience(character.level);
+                    document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
+                    // Also update maxHp when level changes
+                    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+                    character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
+                    document.getElementById('maxHp').value = character.maxHp;
+                    document.getElementById('hp').value = character.hp;
+                } else if (id === 'race') {
+                    character.race = newValue;
+                    const raceSelect = document.getElementById('race');
+                    if (newValue === '') {
+                        raceSelect.classList.add('select-placeholder-text');
+                    } else {
+                        raceSelect.classList.remove('select-placeholder-text');
                     }
+                    // Update maxHp when race changes
+                    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+                    character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
+                    document.getElementById('maxHp').value = character.maxHp;
+                    document.getElementById('hp').value = character.hp;
+                } else if (id === 'hp') { // Handle current HP input
+                    character.hp = Math.min(newValue, character.maxHp); // Ensure current HP doesn't exceed max HP
+                    document.getElementById('hp').value = character.hp;
+                } else if (id === 'healthBonus') { // Handle new healthBonus input
+                    character.healthBonus = newValue;
+                    // Recalculate maxHp when healthBonus changes
+                    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+                    character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
+                    document.getElementById('maxHp').value = character.maxHp;
+                    document.getElementById('hp').value = character.hp;
+                } else if (id !== 'class-display' && id !== 'specialization-display') { // Exclude specialization-display
+                    character[name || id] = newValue;
                 }
             }
             // No saveCharacter here, as it's handled by saveCharacterToFile for explicit save.
@@ -624,6 +753,12 @@
         // Function to toggle the visibility of the class dropdown options
         function toggleClassDropdown() {
             const dropdown = document.getElementById('class-dropdown-options');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Function to toggle the visibility of the specialization dropdown options
+        function toggleSpecializationDropdown() {
+            const dropdown = document.getElementById('specialization-dropdown-options');
             dropdown.classList.toggle('hidden');
         }
 
@@ -640,18 +775,92 @@
             }
             // Update the displayed value in the input field
             document.getElementById('class-display').value = character.class.join(', ');
+
+            // After class changes, update specialization dropdown
+            updateSpecializationDropdownAndData();
             // No saveCharacter here, as it's handled by saveCharacterToFile for explicit save.
         }
+
+        // Function to handle changes in the specialization checkboxes
+        function handleSpecializationCheckboxChange(event) {
+            const { value, checked } = event.target;
+
+            if (checked) {
+                if (!character.specialization.includes(value)) {
+                    character.specialization.push(value);
+                }
+            } else {
+                character.specialization = character.specialization.filter(s => s !== value);
+            }
+            // Update the displayed value in the input field
+            document.getElementById('specialization-display').value = character.specialization.join(', ');
+            // No saveCharacter here, as it's handled by saveCharacterToFile for explicit save.
+        }
+
+        // Function to update the specialization dropdown options and filter selected specializations
+        function updateSpecializationDropdownAndData() {
+            const specializationDisplayInput = document.getElementById('specialization-display');
+            const specializationDropdownOptions = document.getElementById('specialization-dropdown-options');
+
+            // 1. Determine available specializations based on selected classes
+            const availableSpecializationsSet = new Set();
+            character.class.forEach(selectedClass => {
+                if (classSpecializationsMap[selectedClass]) {
+                    classSpecializationsMap[selectedClass].forEach(spec => availableSpecializationsSet.add(selectedClass + "→" + spec));
+                }
+            });
+            const availableSpecializations = Array.from(availableSpecializationsSet).sort();
+
+            // 2. Filter character.specialization to keep only valid ones
+            character.specialization = character.specialization.filter(spec => availableSpecializations.includes(spec));
+
+            // 3. Update the displayed value for specializations
+            specializationDisplayInput.value = character.specialization.join(', ');
+
+            // 4. Populate and update checkboxes in the dropdown options
+            specializationDropdownOptions.innerHTML = ''; // Clear existing options
+            if (availableSpecializations.length === 0) {
+                specializationDropdownOptions.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No specializations available for selected classes.</div>';
+            } else {
+                availableSpecializations.forEach(specName => {
+                    const checkboxDiv = document.createElement('div');
+                    checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
+                    checkboxDiv.innerHTML = `
+                        <input
+                            type="checkbox"
+                            id="specialization-${specName.replace(/\s/g, '-')}"
+                            name="specialization-option"
+                            value="${specName}"
+                            class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
+                            ${character.specialization.includes(specName) ? 'checked' : ''}
+                        />
+                        <label for="specialization-${specName.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
+                    `;
+                    specializationDropdownOptions.appendChild(checkboxDiv);
+                });
+            }
+        }
+
 
         // Attach event listeners to all relevant input fields
         function attachEventListeners() {
             // Attach listeners for standard inputs and the race selector
-            const inputs = document.querySelectorAll('input[type="text"]:not(#class-display), input[type="number"], textarea, select');
+            const inputs = document.querySelectorAll(
+                '#name, #level, #levelExperience, #race, #hp, #ac, #skills, #inventory, #healthBonus'
+            );
             inputs.forEach(input => {
                 if (!input.readOnly) {
                     input.addEventListener('input', handleChange);
                 }
             });
+
+            // Attach listeners for stat table inputs using delegation
+            document.getElementById('player-stats-container').addEventListener('input', function(event) {
+                if (event.target.classList.contains('stat-input')) {
+                    handleChange(event);
+                }
+            });
+
 
             // Attach event listener for the custom class display input to toggle dropdown
             document.getElementById('class-display').addEventListener('click', toggleClassDropdown);
@@ -663,14 +872,31 @@
                 }
             });
 
-            // Close the dropdown if clicked outside
+            // Attach event listener for the custom specialization display input to toggle dropdown
+            document.getElementById('specialization-display').addEventListener('click', toggleSpecializationDropdown);
+
+            // Attach event listeners to the dynamically created specialization checkboxes (delegation)
+            document.getElementById('specialization-dropdown-options').addEventListener('change', function(event) {
+                if (event.target.type === 'checkbox' && event.target.name === 'specialization-option') {
+                    handleSpecializationCheckboxChange(event);
+                }
+            });
+
+            // Close dropdowns if clicked outside
             document.addEventListener('click', function(event) {
                 const classDisplayInput = document.getElementById('class-display');
                 const classDropdownOptions = document.getElementById('class-dropdown-options');
+                const specializationDisplayInput = document.getElementById('specialization-display');
+                const specializationDropdownOptions = document.getElementById('specialization-dropdown-options');
+
                 if (!classDisplayInput.contains(event.target) && !classDropdownOptions.contains(event.target)) {
                     classDropdownOptions.classList.add('hidden');
                 }
+                if (!specializationDisplayInput.contains(event.target) && !specializationDropdownOptions.contains(event.target)) {
+                    specializationDropdownOptions.classList.add('hidden');
+                }
             });
+
 
             // Attach event listener for the Quick Roll Stats button
             document.getElementById('quick-roll-stats-btn').addEventListener('click', quickRollStats);
@@ -685,8 +911,8 @@
 
         // Initialize the application when the DOM is fully loaded
         window.onload = function() {
-            // When loading from a file, we don't have initial data, so we just update the DOM
-            // to reflect the default empty state, then wait for user to load a file.
+            // Initialize maxHp based on default race, level, and healthBonus
+            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
             updateDOM();
             attachEventListeners(); // Attach event listeners after DOM is updated
         };
