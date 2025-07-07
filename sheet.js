@@ -511,7 +511,7 @@ function quickTd(element, type, isClosed, dataInventoryType, dataField, dataInde
     else 
         string += `>${value}</${element}>`
 
-    return string + cssClass ? cssClass : '' + '</td>';
+    return string + cssClass ? `class="${cssClass}"` : '' + '</td>';
 }
 
 // Function to render the Weapon Inventory table
@@ -591,7 +591,7 @@ function renderGeneralInventory() {
             ${quickTd('input', 'number', false, 'general', 'valuePerUnit', index, item.valuePerUnit, 'w-full')}
             ${quickTd('button', null, true, 'general', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
         `;
-        
+
         // Set textarea value after it's in the DOM
         row.querySelector('textarea[data-field="effect"]').value = item.effect;
     });
