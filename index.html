@@ -2038,7 +2038,7 @@
                 const res = await gapi.client.drive.files.list({
                     pageSize: 20, // Fetch up to 20 files
                     fields: 'files(id, name, modifiedTime)',
-                    q: "mimeType='application/json' and name contains '_sheet'", // Filter for JSON files named 'character_sheets'
+                    q: "mimeType='application/json'", // Filter for JSON files named 'character_sheets'
                     orderBy: 'modifiedTime desc' // Order by most recently modified
                 });
 
