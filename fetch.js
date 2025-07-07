@@ -11,10 +11,11 @@ export const googleDriveFileFetcher = {
      * @param {string} [options.csvDelimiter=','] The delimiter to use when parsing CSV data. Defaults to ','.
      * @param {number} [options.sheetId=0] For Google Sheets, the gid of the specific sheet to fetch. Defaults to 0 (first sheet).
      * @param {boolean} [options.useCorsProxy=false] If true, uses a CORS proxy to fetch the data. Useful for bypassing CORS issues.
+     * @param {string} [options.range] For Google Sheets, a range string (e.g., "A1:C5", "B:B", "1:5") to extract specific cells from the CSV.
      * @returns {Promise<any>} A Promise that resolves to the parsed content (string, object, Blob, or 2D array for CSV).
      */
     fetchGoogleDriveFile: async function(driveShareLink, options = {}) {
-        const { responseType = 'text', csvDelimiter = ',', sheetId = 0, useCorsProxy = false } = options;
+        const { responseType = 'text', csvDelimiter = ',', sheetId = 0, useCorsProxy = false, range } = options;
 
         try {
             let fileId;
@@ -47,15 +48,15 @@ export const googleDriveFileFetcher = {
                 console.log(`Using CORS proxy. Final fetch URL: ${directDownloadUrl}`);
             }
 
-            // 3. Make the fetch request
+            // Make the fetch request
             const response = await fetch(directDownloadUrl);
 
-            // 4. Check if the request was successful (status code 200-299)
+            // Check if the request was successful (status code 200-299)
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
             }
 
-            // 5. Process the response based on the desired responseType
+            // Process the response based on the desired responseType
             switch (responseType.toLowerCase()) {
                 case 'text':
                     return await response.text();
@@ -67,7 +68,14 @@ export const googleDriveFileFetcher = {
                     return await response.blob();
                 case 'csv':
                     const csvText = await response.text();
-                    return this.parseCsv(csvText, csvDelimiter); // Use 'this' to call internal method
+                    let data = this.parseCsv(csvText, csvDelimiter); // Use 'this' to call internal method
+
+                    // Apply range filtering if specified and it's a Google Sheet
+                    if (range && sheetIdMatch) {
+                        console.log(`Applying range "${range}" to CSV data.`);
+                        data = this.extractRangeFromCsv(data, range);
+                    }
+                    return data;
                 default:
                     throw new Error(`Unsupported responseType: ${responseType}. Choose 'text', 'json', 'blob', or 'csv'.`);
             }
@@ -96,6 +104,96 @@ export const googleDriveFileFetcher = {
         });
     },
 
+    /**
+     * Extracts a specific range from a 2D array (CSV data).
+     * Supports A1:C5, A:C, 1:5 formats.
+     *
+     * @param {Array<Array<string>>} data The full 2D array representing the CSV data.
+     * @param {string} rangeString The range string (e.g., "A1:C5", "B:B", "1:5").
+     * @returns {Array<Array<string>>} A new 2D array containing only the data within the specified range.
+     */
+    extractRangeFromCsv: function(data, rangeString) {
+        if (!data || data.length === 0) return [];
+        if (!rangeString) return data;
+
+        const parseColumn = (colStr) => {
+            let col = 0;
+            for (let i = 0; i < colStr.length; i++) {
+                col = col * 26 + (colStr.charCodeAt(i) - 'A'.charCodeAt(0) + 1);
+            }
+            return col - 1; // Convert to 0-based index
+        };
+
+        const parseCellReference = (ref) => {
+            const match = ref.match(/^([A-Z]+)?([0-9]+)?$/i);
+            if (!match) throw new Error(`Invalid range reference: ${ref}`);
+
+            const colStr = match[1] ? match[1].toUpperCase() : null;
+            const rowStr = match[2] ? parseInt(match[2], 10) : null;
+
+            return {
+                col: colStr !== null ? parseColumn(colStr) : null,
+                row: rowStr !== null ? rowStr - 1 : null // Convert to 0-based index
+            };
+        };
+
+        let startCol = 0, endCol = data[0].length - 1;
+        let startRow = 0, endRow = data.length - 1;
+
+        const parts = rangeString.split(':');
+        const startRef = parseCellReference(parts[0]);
+        const endRef = parts.length > 1 ? parseCellReference(parts[1]) : startRef;
+
+        // Determine start and end columns
+        if (startRef.col !== null) {
+            startCol = startRef.col;
+        }
+        if (endRef.col !== null) {
+            endCol = endRef.col;
+        } else if (startRef.col !== null && parts.length === 1) { // Single column like "A"
+             endCol = startCol;
+        }
+
+        // Determine start and end rows
+        if (startRef.row !== null) {
+            startRow = startRef.row;
+        }
+        if (endRef.row !== null) {
+            endRow = endRef.row;
+        } else if (startRef.row !== null && parts.length === 1) { // Single row like "1"
+            endRow = startRow;
+        }
+
+        // Ensure valid ranges
+        startCol = Math.max(0, Math.min(startCol, data[0].length - 1));
+        endCol = Math.max(0, Math.min(endCol, data[0].length - 1));
+        startRow = Math.max(0, Math.min(startRow, data.length - 1));
+        endRow = Math.max(0, Math.min(endRow, data.length - 1));
+
+        // Adjust for "A:A" or "1:1" where start and end might be swapped if only one part is given
+        if (parts.length === 1) {
+             if (startRef.col !== null && startRef.row === null) { // e.g., "A"
+                 endCol = startCol;
+             } else if (startRef.row !== null && startRef.col === null) { // e.g., "1"
+                 endRow = startRow;
+             }
+        }
+
+
+        // Extract the sub-array
+        const extractedData = [];
+        for (let r = startRow; r <= endRow; r++) {
+            if (data[r]) { // Ensure row exists
+                const newRow = [];
+                for (let c = startCol; c <= endCol; c++) {
+                    newRow.push(data[r][c] !== undefined ? data[r][c] : ''); // Handle cases where cell might not exist
+                }
+                extractedData.push(newRow);
+            }
+        }
+        return extractedData;
+    },
+
     // NEW: Google Sheets Link Example - These can be made configurable or passed in externally
     MY_PUBLIC_GOOGLE_SHEET_LINK: "https://docs.google.com/spreadsheets/d/1lNIzvAC3E5dHzYzEaBaiAQLyar-UvA8XMEZpoXu3cMQ/edit", // Replace with your actual Google Sheet link
 
@@ -119,5 +217,38 @@ export const googleDriveFileFetcher = {
             console.error("Failed to fetch specific Google Sheet tab data:", error);
             throw error;
         }
+    },
+
+    // NEW Example: Fetching a specific range from a Google Sheet tab as CSV
+    fetchGoogleSheetRange: async function(gid, range) {
+        console.log(`\n--- Fetching Google Sheet Tab with Range: GID ${gid}, Range "${range}" ---`);
+        try {
+            const sheetArray = await this.fetchGoogleDriveFile(this.MY_PUBLIC_GOOGLE_SHEET_LINK, { responseType: 'csv', csvDelimiter: ',', sheetId: gid, range: range });
+            console.log(`Google Sheet Data for Range "${range}" (2D Array):\n`, sheetArray);
+            return sheetArray;
+        } catch (error) {
+            console.error(`Failed to fetch Google Sheet data for range "${range}":`, error);
+            throw error;
+        }
     }
 };
+
+// Example Usage (for demonstration, you would call these from your application)
+/*
+(async () => {
+    // Example 1: Fetching the entire 'Races' tab
+    await googleDriveFileFetcher.fetchSpecificGoogleSheetTab(googleDriveFileFetcher.My_Gid.Races);
+
+    // Example 2: Fetching a specific range from the 'Classes' tab (e.g., A1:C5)
+    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Gid.Classes, "A1:C5");
+
+    // Example 3: Fetching entire columns from 'ClassesRelated' (e.g., B:D)
+    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Gid.ClassesRelated, "B:D");
+
+    // Example 4: Fetching entire rows from 'Races' (e.g., 2:4)
+    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Gid.Races, "2:4");
+
+    // Example 5: Fetching a single cell (e.g., C3)
+    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Gid.Classes, "C3");
+})();
+*/
