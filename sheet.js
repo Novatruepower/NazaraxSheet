@@ -6,6 +6,8 @@ const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 // IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
 const ORIGIN = window.location.origin;
 
+import { googleDriveFileFetcher } from './fetch.js';
+
 let tokenClient;
 let gapiInited = false;
 let gisInited = false;
