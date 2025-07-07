@@ -913,7 +913,7 @@
 
         // Default character data for creating new characters
         const defaultCharacterData = () => ({
-            name: 'Your character name',
+            name: '',
             class: [],
             specialization: [],
             race: '',
@@ -2037,7 +2037,7 @@
                 const res = await gapi.client.drive.files.list({
                     pageSize: 20, // Fetch up to 20 files
                     fields: 'files(id, name, modifiedTime)',
-                    q: "mimeType='application/json' and name contains 'character_sheets'", // Filter for JSON files named 'character_sheets'
+                    q: "mimeType='application/json'", // Filter for JSON files named 'character_sheets'
                     orderBy: 'modifiedTime desc' // Order by most recently modified
                 });
 
