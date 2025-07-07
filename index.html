@@ -1829,14 +1829,16 @@
                     return;
                 }
                 // Set the token for gapi.client to use
-                gapi.client.setToken(resp); // Set the token from the response
+                gapi.client.setToken(resp);
                 updateSignInStatus(true);
                 showStatusMessage("Signed in to Google Drive.");
             };
 
             if (gapi.client.getToken() === null) {
+                // Prompt for consent if no token is present
                 tokenClient.requestAccessToken({prompt: 'consent'});
             } else {
+                // Request token silently if already signed in
                 tokenClient.requestAccessToken({prompt: ''});
             }
         }
@@ -1847,11 +1849,10 @@
         function handleSignoutClick() {
             const token = gapi.client.getToken();
             if (token !== null) {
-                google.accounts.oauth2.revoke(token.access_token, () => {
-                    gapi.client.setToken('');
-                    updateSignInStatus(false);
-                    showStatusMessage("Signed out from Google Drive.");
-                });
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken('');
+                updateSignInStatus(false);
+                showStatusMessage("Signed out from Google Drive.");
             }
         }
 
@@ -2222,8 +2223,9 @@
             document.getElementById('load-google-drive-btn').addEventListener('click', loadCharacterFromGoogleDrive);
 
             // Google Drive Auth buttons
-            authorizeButton.onclick = handleAuthClick; // Changed to onclick
-            signoutButton.onclick = handleSignoutClick; // Changed to onclick
+            // These are now handled directly by the gapi/gsi initialization
+            // authorizeButton.onclick = handleAuthClick;
+            // signoutButton.onclick = handleSignoutClick;
 
 
             // Attach event listeners for Personal Notes button and panel close button
@@ -2282,6 +2284,10 @@
             const personalNotesPanel = document.getElementById('personal-notes-panel');
             const personalNotesHeader = document.querySelector('.personal-notes-header');
             makeDraggable(personalNotesPanel, personalNotesHeader);
+
+            // Attach Google Auth button handlers here, as per user's request for DOMContentLoaded behavior
+            document.getElementById("authorize_button").onclick = handleAuthClick;
+            document.getElementById("signout_button").onclick = handleSignoutClick;
         };
     </script>
 </body>
