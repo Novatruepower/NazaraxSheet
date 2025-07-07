@@ -1837,6 +1837,8 @@ window.onload = async function() {
             let race = value[0];
             fetchedPlayerStatsList[race] = { };
 
+
+            console(head);
             let index = 1;
             fetchedPlayerStatsList[race]['Stats'][head[index]] = value[index];
             ++index;
