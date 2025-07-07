@@ -1747,11 +1747,11 @@
         // Go to Google Cloud Console -> APIs & Services -> Credentials
         // Create OAuth 2.0 Client ID (Web application) and API Key
         // Enable Google Drive API for your project
-        const CLIENT_ID = '267631737294-kobdgr3f7uvq4cor0rr8ne9lf9554io6.apps.googleusercontent.com'; // Replace with your Client ID
+        const CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com'; // Replace with your Client ID
         const API_KEY = 'AIzaSyDAjAsXXOa_XUlBlgzdyPGxBdcjfTTZYRA'; // Replace with your API Key
 
         const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
-        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file'; // drive.appdata for hidden app data, drive.file for user-visible files
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // drive.file for user-visible files
 
         let tokenClient;
         let gapiInited = false;
@@ -1786,22 +1786,10 @@
          * Callback after Google Identity Services are loaded.
          */
         function gisLoaded() {
-            // Use initTokenClient for client-side applications to directly get an access token
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
                 scope: SCOPES,
-                callback: (tokenResponse) => {
-                    if (tokenResponse.error !== undefined) {
-                        console.error("Token response error:", tokenResponse.error);
-                        showStatusMessage("Google Sign-In failed.", true);
-                        updateSignInStatus(false);
-                        return;
-                    }
-                    // Set the token for gapi.client to use
-                    gapi.client.setToken(tokenResponse);
-                    updateSignInStatus(true);
-                    showStatusMessage("Signed in to Google Drive.");
-                },
+                callback: '', // defined later
             });
             gisInited = true;
             maybeEnableButtons();
@@ -1824,9 +1812,7 @@
          */
         function maybeEnableButtons() {
             if (gapiInited && gisInited) {
-                authorizeButton.style.display = 'block';
-                signoutButton.style.display = 'block';
-                // Check initial sign-in status
+                // Check initial sign-in status and update UI accordingly
                 updateSignInStatus(gapi.client.getToken() !== null);
             }
         }
@@ -1835,11 +1821,23 @@
          * Sign in the user upon button click.
          */
         function handleAuthClick() {
-            if (tokenClient) {
-                // Prompt the user to select a Google account and grant permissions
-                tokenClient.requestAccessToken();
+            tokenClient.callback = async (resp) => {
+                if (resp.error) {
+                    console.error("Token response error:", resp.error);
+                    showStatusMessage("Google Sign-In failed.", true);
+                    updateSignInStatus(false);
+                    return;
+                }
+                // Set the token for gapi.client to use
+                gapi.client.setToken(resp); // Set the token from the response
+                updateSignInStatus(true);
+                showStatusMessage("Signed in to Google Drive.");
+            };
+
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
             } else {
-                showStatusMessage("Google Identity Services not initialized.", true);
+                tokenClient.requestAccessToken({prompt: ''});
             }
         }
 
@@ -2224,8 +2222,8 @@
             document.getElementById('load-google-drive-btn').addEventListener('click', loadCharacterFromGoogleDrive);
 
             // Google Drive Auth buttons
-            authorizeButton.addEventListener('click', handleAuthClick);
-            signoutButton.addEventListener('click', handleSignoutClick);
+            authorizeButton.onclick = handleAuthClick; // Changed to onclick
+            signoutButton.onclick = handleSignoutClick; // Changed to onclick
 
 
             // Attach event listeners for Personal Notes button and panel close button
