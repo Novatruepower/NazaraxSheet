@@ -6,408 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        .dark ::-webkit-scrollbar-track {
-            background: #333;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background: #555;
-        }
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background: #777;
-        }
-        /* Style for the placeholder-like text in the select element itself */
-        .select-placeholder-text {
-            color: #9ca3af; /* text-gray-400 */
-        }
-
-        .select-placeholder-text:focus {
-            color: black; /* text-gray-400 */
-        }
-
-        .defaultOption {
-            display: none;
-        }
-        /* Specific styling for table inputs to make them compact */
-        .stat-input {
-            width: 100%;
-            padding: 0.25rem 0.2rem; /* Adjusted padding to ensure visibility */
-            font-size: 0.875rem; /* text-sm */
-            text-align: center;
-            background-color: #f9fafb; /* bg-gray-50 */
-            border: 1px solid #d1d5db; /* border-gray-300 */
-            border-radius: 0.375rem; /* rounded-md */
-        }
-        .dark .stat-input {
-            background-color: #374151; /* bg-gray-700 */
-            border-color: #4b5563; /* border-gray-600 */
-            color: #f3f4f6; /* text-gray-100 */
-        }
-        .stat-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); /* focus:ring-indigo-500 */
-            border-color: #6366f1; /* focus:border-indigo-500 */
-        }
-        .stat-input[readonly] {
-            background-color: #e5e7eb; /* bg-gray-200 */
-            cursor: not-allowed;
-            color: #4b5563; /* text-gray-600 */
-        }
-        .dark .stat-input[readonly] {
-            background-color: #4b5563; /* bg-gray-600 */
-            color: #d1d5db; /* text-gray-300 */
-        }
-        /* Adjust column widths for better display */
-        #player-stats-container table th,
-        #player-stats-container table td {
-            min-width: 60px; /* Minimum width for input columns */
-            white-space: nowrap; /* Prevent text wrapping */
-        }
-        #player-stats-container table th:first-child,
-        #player-stats-container table td:first-child {
-            min-width: 100px; /* Wider for stat name */
-        }
-        /* Make Experience column wider */
-        #player-stats-container table th:nth-child(6), /* Targets the new Experience header */
-        #player-stats-container table td:nth-child(6) { /* Targets the new Experience cell */
-            min-width: 110px; /* Adjusted to be slightly wider for combined Exp/Max Exp */
-        }
-        /* Ensure inputs within the combined Exp/Max Exp cell are compact */
-        .exp-inputs-wrapper input {
-            width: calc(50% - 8px); /* Adjust width for two inputs and a separator */
-            padding: 0.25rem 0.2rem;
-        }
-
-        /* Personal Notes Panel Styles */
-        .personal-notes-panel {
-            position: fixed;
-            top: 50px; /* Initial position from top */
-            right: 20px; /* Initial position from right */
-            width: 350px; /* Default width */
-            min-width: 250px; /* Minimum width */
-            min-height: 250px; /* Minimum height */
-            background-color: #fff;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            z-index: 100; /* Higher than other content */
-            resize: both; /* Allow resizing in both directions */
-            overflow: hidden; /* Hide scrollbars if content is smaller than panel */
-            border: 1px solid #e2e8f0; /* subtle border */
-        }
-        .dark .personal-notes-panel {
-            background-color: #1f2937; /* Darker gray for dark mode */
-            color: #f3f4f6;
-            border-color: #374151;
-        }
-
-        .personal-notes-header {
-            cursor: grab; /* Indicate draggable area */
-            user-select: none; /* Prevent text selection during drag */
-            flex-shrink: 0; /* Prevent header from shrinking */
-        }
-
-        .personal-notes-textarea {
-            flex-grow: 1; /* Allow textarea to fill available space */
-            min-height: 150px; /* Minimum height for textarea within the panel */
-            resize: none; /* Disable default textarea resize, as parent resizes */
-            padding: 1rem; /* Padding inside textarea */
-            box-sizing: border-box; /* Include padding in width/height */
-            border: none; /* Remove textarea border */
-            outline: none; /* Remove textarea outline on focus */
-            background-color: transparent; /* Make textarea background transparent */
-            color: inherit; /* Inherit text color from parent */
-            overflow-y: auto; /* Enable vertical scrolling for content */
-        }
-
-        /* Table specific styles for inventory sections */
-        .inventory-table-container {
-            overflow-x: auto;
-            margin-bottom: 1rem;
-        }
-        .inventory-table-container table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .inventory-table-container th,
-        .inventory-table-container td {
-            padding: 0.5rem;
-            border: 1px solid #e2e8f0; /* border-gray-200 */
-            text-align: left;
-            font-size: 0.875rem; /* text-sm */
-            white-space: nowrap; /* Prevent text wrapping in table cells */
-        }
-        .dark .inventory-table-container th,
-        .dark .inventory-table-container td {
-            border-color: #4b5563; /* border-gray-600 */
-        }
-        .inventory-table-container th {
-            background-color: #f1f5f9; /* bg-gray-100 */
-            font-weight: 600;
-            color: #4a5568; /* text-gray-700 */
-        }
-        .dark .inventory-table-container th {
-            background-color: #374151; /* bg-gray-700 */
-            color: #d1d5db; /* text-gray-300 */
-        }
-        .inventory-table-container td input[type="text"],
-        .inventory-table-container td input[type="number"],
-        .inventory-table-container td textarea { /* Added textarea */
-            width: 100%;
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.25rem;
-            background-color: #fff;
-            color: #1a202c;
-            box-sizing: border-box; /* Ensure padding doesn't increase total width */
-        }
-        .dark .inventory-table-container td input[type="text"],
-        .dark .inventory-table-container td input[type="number"],
-        .dark .inventory-table-container td textarea { /* Added textarea */
-            background-color: #1f2937;
-            border-color: #4b5563;
-            color: #f3f4f6;
-        }
-        .inventory-table-container td input[type="checkbox"] {
-            margin-left: 0.5rem;
-        }
-        .inventory-table-container td button {
-            background-color: #ef4444; /* bg-red-500 */
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            line-height: 1;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .inventory-table-container td button:hover {
-            background-color: #dc2626; /* bg-red-600 */
-        }
-
-        /* Styles for hover-to-zoom effect on Effect textareas */
-        .inventory-effect-textarea {
-            transition: all 0.2s ease-in-out;
-            position: relative; /* Needed for z-index to work correctly */
-            z-index: 1; /* Default z-index */
-            overflow: hidden; /* Hide scrollbar initially */
-            resize: both; /* Allow both vertical and horizontal resizing */
-            min-width: 100%; /* Ensure it doesn't shrink below its cell */
-        }
-
-        .inventory-effect-textarea:hover,
-        .inventory-effect-textarea:focus {
-            z-index: 10; /* Bring to front on hover/focus */
-            width: 250%; /* Zoom out horizontally */
-            height: 200px; /* Increase height for better visibility */
-            transform: scale(1.05); /* Slight visual enlargement */
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5), 0 5px 15px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
-            overflow: auto; /* Show scrollbar if content overflows on hover/focus */
-        }
-
-        /* Specific height adjustments for different effect textareas */
-        #weapon-inventory-table .inventory-effect-textarea,
-        #armor-inventory-table .inventory-effect-textarea {
-            height: 6rem; /* h-24 = 6rem */
-        }
-
-        #general-inventory-table .inventory-effect-textarea {
-            height: 5rem; /* h-20 = 5rem */
-        }
-
-        /* Adjust hover height for general inventory to be slightly smaller */
-        #general-inventory-table .inventory-effect-textarea:hover,
-        #general-inventory-table .inventory-effect-textarea:focus {
-            height: 150px; /* Adjusted hover height for general inventory */
-        }
-
-        /* Min-width for Weapon Inventory columns */
-        #weapon-inventory-table th:nth-child(1), #weapon-inventory-table td:nth-child(1) { min-width: 120px; } /* Name */
-        #weapon-inventory-table th:nth-child(2), #weapon-inventory-table td:nth-child(2) { min-width: 80px; }  /* Type */
-        #weapon-inventory-table th:nth-child(3), #weapon-inventory-table td:nth-child(3) { min-width: 90px; }  /* Material */
-        #weapon-inventory-table th:nth-child(4), #weapon-inventory-table td:nth-child(4) { min-width: 100px; } /* Requirement */
-        #weapon-inventory-table th:nth-child(5), #weapon-inventory-table td:nth-child(5) { min-width: 110px; } /* Required Stat */
-        #weapon-inventory-table th:nth-child(6), #weapon-inventory-table td:nth-child(6) { min-width: 80px; }  /* Accuracy */
-        #weapon-inventory-table th:nth-child(7), #weapon-inventory-table td:nth-child(7) { min-width: 200px; } /* Damage - increased width for textarea */
-        #weapon-inventory-table th:nth-child(8), #weapon-inventory-table td:nth-child(8) { min-width: 200px; } /* Magic Damage - increased width for textarea */
-        #weapon-inventory-table th:nth-child(9), #weapon-inventory-table td:nth-child(9) { min-width: 90px; }  /* Magic Type */
-        #weapon-inventory-table th:nth-child(10), #weapon-inventory-table td:nth-child(10) { min-width: 200px; } /* Effect */
-        #weapon-inventory-table th:nth-child(11), #weapon-inventory-table td:nth-child(11) { min-width: 70px; }  /* Value */
-        #weapon-inventory-table th:nth-child(12), #weapon-inventory-table td:nth-child(12) { min-width: 60px; }  /* Use */
-        #weapon-inventory-table th:nth-child(13), #weapon-inventory-table td:nth-child(13) { min-width: 80px; }  /* Actions */
-
-        /* Min-width for Armor Inventory columns */
-        #armor-inventory-table th:nth-child(1), #armor-inventory-table td:nth-child(1) { min-width: 120px; } /* Name */
-        #armor-inventory-table th:nth-child(2), #armor-inventory-table td:nth-child(2) { min-width: 90px; }  /* Location */
-        #armor-inventory-table th:nth-child(3), #armor-inventory-table td:nth-child(3) { min-width: 90px; }  /* Material */
-        #armor-inventory-table th:nth-child(4), #armor-inventory-table td:nth-child(4) { min-width: 100px; } /* Requirement */
-        #armor-inventory-table th:nth-child(5), #armor-inventory-table td:nth-child(5) { min-width: 110px; } /* Required Stat */
-        #armor-inventory-table th:nth-child(6), #armor-inventory-table td:nth-child(6) { min-width: 80px; }  /* Defense */
-        #armor-inventory-table th:nth-child(7), #armor-inventory-table td:nth-child(7) { min-width: 110px; } /* Magic Defense */
-        #armor-inventory-table th:nth-child(8), #armor-inventory-table td:nth-child(8) { min-width: 90px; }  /* Magic Type */
-        #armor-inventory-table th:nth-child(9), #armor-inventory-table td:nth-child(9) { min-width: 200px; } /* Effect */
-        #armor-inventory-table th:nth-child(10), #armor-inventory-table td:nth-child(10) { min-width: 70px; } /* Value */
-        #armor-inventory-table th:nth-child(11), #armor-inventory-table td:nth-child(11) { min-width: 80px; } /* Equipped */
-        #armor-inventory-table th:nth-child(12), #armor-inventory-table td:nth-child(12) { min-width: 80px; } /* Actions */
-
-        /* Min-width for General Inventory columns */
-        #general-inventory-table th:nth-child(1), #general-inventory-table td:nth-child(1) { min-width: 120px; } /* Name */
-        #general-inventory-table th:nth-child(2), #general-inventory-table td:nth-child(2) { min-width: 80px; }  /* Type */
-        #general-inventory-table th:nth-child(3), #general-inventory-table td:nth-child(3) { min-width: 200px; } /* Effect */
-        #general-inventory-table th:nth-child(4), #general-inventory-table td:nth-child(4) { min-width: 80px; }  /* Accuracy */
-        #general-inventory-table th:nth-child(5), #general-inventory-table td:nth-child(5) { min-width: 70px; }  /* Amount */
-        #general-inventory-table th:nth-child(6), #general-inventory-table td:nth-child(6) { min-width: 100px; } /* Value (per unit) */
-        #general-inventory-table th:nth-child(7), #general-inventory-table td:nth-child(7) { min-width: 80px; }  /* Actions */
-
-        /* Dropdown specific styles */
-        .dropdown-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            background-color: #f9fafb; /* bg-gray-50 */
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            border-radius: 0.375rem; /* rounded-md */
-            overflow: hidden; /* Ensures rounded corners apply to children */
-            right: 0; /* Align dropdown to the right of the button */
-            top: 100%; /* Position below the button */
-            margin-top: 0.5rem; /* Space between button and dropdown */
-        }
-
-        .dark .dropdown-menu {
-            background-color: #374151; /* bg-gray-700 */
-        }
-
-        .dropdown-menu button {
-            color: #1a202c; /* text-gray-900 */
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            width: 100%; /* Make button fill dropdown width */
-            text-align: left;
-            border: none;
-            background: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .dark .dropdown-menu button {
-            color: #f3f4f6; /* text-gray-100 */
-        }
-
-        .dropdown-menu button:hover {
-            background-color: #e5e7eb; /* bg-gray-200 */
-        }
-
-        .dark .dropdown-menu button:hover {
-            background-color: #4b5563; /* bg-gray-600 */
-        }
-
-        /* Status message styling */
-        #status-message {
-            margin-left: 1rem;
-            font-size: 0.9rem;
-            color: #6b7280; /* text-gray-500 */
-        }
-        .dark #status-message {
-            color: #9ca3af; /* text-gray-400 */
-        }
-
-        /* Modal styles */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            color: #1a202c;
-        }
-
-        .dark .modal-content {
-            background-color: #1f2937;
-            color: #f3f4f6;
-        }
-
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .dark .close-button:hover,
-        .dark .close-button:focus {
-            color: #eee;
-        }
-
-        .modal-list-item {
-            padding: 8px 0;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-
-        .dark .modal-list-item {
-            border-bottom: 1px solid #374151;
-        }
-
-        .modal-list-item:hover {
-            background-color: #f0f0f0;
-        }
-
-        .dark .modal-list-item:hover {
-            background-color: #4b5563;
-        }
-    </style>
+    <link href="sheet.css" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center">
 
@@ -1844,6 +1443,9 @@
         const googleDriveFileList = document.getElementById('google-drive-file-list');
         const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
 
+        // Key for local storage to persist Google Drive authorization status
+        const GOOGLE_DRIVE_AUTH_STATUS_KEY = 'googleDriveAuthorized';
+
 
         /**
          * Shows a status message to the user.
@@ -1893,16 +1495,28 @@
 
         /**
          * Enables Google Drive buttons if both GAPI and GIS are initialized.
+         * Also updates the UI based on current authorization status and local storage.
          */
         function maybeEnableGoogleDriveButtons() {
             if (gapiInited && gisInited) {
                 authorizeGoogleDriveButton.disabled = false;
-                // Check if already authorized (e.g., from a previous session)
-                if (gapi.client.getToken()) {
+                const currentToken = gapi.client.getToken();
+                const wasAuthorizedInLocalStorage = localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true';
+
+                if (currentToken) {
+                    // User is currently authorized
                     googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized';
                     authorizeGoogleDriveButton.classList.add('hidden');
                     signoutGoogleDriveButton.classList.remove('hidden');
+                    localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Ensure local storage is updated
+                } else if (wasAuthorizedInLocalStorage) {
+                    // User was authorized previously, but session might have expired
+                    googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized (Session Expired)';
+                    authorizeGoogleDriveButton.classList.remove('hidden'); // Show authorize to re-auth
+                    signoutGoogleDriveButton.classList.remove('hidden'); // Still allow sign out
                 } else {
+                    // User is not authorized and never was (or explicitly signed out)
+                    googleDriveAuthStatusSpan.textContent = 'Google Drive: Not Authorized';
                     authorizeGoogleDriveButton.classList.remove('hidden');
                     signoutGoogleDriveButton.classList.add('hidden');
                 }
@@ -1917,12 +1531,13 @@
                 if (resp.error) {
                     console.error("Google Drive authorization error:", resp);
                     showStatusMessage("Google Drive authorization failed.", true);
+                    localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear local storage on error
+                    maybeEnableGoogleDriveButtons(); // Update UI
                     return;
                 }
-                googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized';
-                authorizeGoogleDriveButton.classList.add('hidden');
-                signoutGoogleDriveButton.classList.remove('hidden');
+                localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
                 showStatusMessage("Google Drive authorized successfully!");
+                maybeEnableGoogleDriveButtons(); // Update UI
             };
             tokenClient.requestAccessToken({ prompt: 'consent' });
         }
@@ -1935,12 +1550,11 @@
             if (token) {
                 google.accounts.oauth2.revoke(token.access_token);
                 gapi.client.setToken('');
-                googleDriveAuthStatusSpan.textContent = 'Google Drive: Not Authorized';
-                authorizeGoogleDriveButton.classList.remove('hidden');
-                signoutGoogleDriveButton.classList.add('hidden');
-                currentGoogleDriveFileId = null; // Clear current file ID on sign out
-                showStatusMessage("Signed out from Google Drive.");
             }
+            localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear persisted status
+            currentGoogleDriveFileId = null; // Clear current file ID on sign out
+            showStatusMessage("Signed out from Google Drive.");
+            maybeEnableGoogleDriveButtons(); // Update UI
         }
 
         /**
@@ -1949,6 +1563,10 @@
         async function saveCharacterToGoogleDrive() {
             if (!gapi.client.getToken()) {
                 showStatusMessage("Please authorize Google Drive to save.", true);
+                // If local storage says it was authorized, prompt to re-authorize
+                if (localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true') {
+                    showStatusMessage("Google Drive session expired. Please re-authorize.", true);
+                }
                 return;
             }
 
@@ -2026,6 +1644,10 @@
         async function loadCharacterFromGoogleDrive() {
             if (!gapi.client.getToken()) {
                 showStatusMessage("Please authorize Google Drive to load.", true);
+                // If local storage says it was authorized, prompt to re-authorize
+                if (localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true') {
+                    showStatusMessage("Google Drive session expired. Please re-authorize.", true);
+                }
                 return;
             }
 
@@ -2341,6 +1963,8 @@
             // Initialize Google API libraries
             gapiLoaded();
             gisLoaded();
+            // Initial UI update for Google Drive buttons based on local storage and current token
+            maybeEnableGoogleDriveButtons();
         };
     </script>
 </body>
