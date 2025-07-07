@@ -1838,8 +1838,11 @@ window.onload = async function() {
             fetchedPlayerStatsList[race] = { };
 
             let index = 1;
+            fetchedPlayerStatsList[race]['Stats'][head[index]] = value[index];
+            ++index;
+
             head.forEach(statName => {
-                fetchedPlayerStatsList[race][statName] = value[index];
+                fetchedPlayerStatsList[race]['Stats']['Roll'][statName] = value[index];
                 ++index;
             });
         });
