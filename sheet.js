@@ -1829,9 +1829,23 @@ window.onload = async function() {
     await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
         let test = {};
 
+        delete arr[0][0];
+        let head = arr[0];
+        delete arr[0];
+
+        console.log(head);
+
         arr.forEach(value => {
-            console.log(value);
-            //test[value[0]] = { value: result, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: result };
+            let race = value[0];
+            test[race] = { };
+
+            let index = 1;
+            head.forEach(statName => {
+                test[race][statName] = value[index];
+                ++index;
+            });
         });
+
+        console.log(test);
     });
 };
