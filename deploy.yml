@@ -1,0 +1,35 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject secrets into env.js
+        run: |
+          echo "window.GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}';" > env.js
+          echo "window.GOOGLE_API_KEY = '${{ secrets.GOOGLE_API_KEY }}';" >> env.js
+
+      - name: Commit and push env.js
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add env.js
+          git commit -m "Add env.js from secrets" || echo "No changes to commit"
+          git push
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./  # root folder
