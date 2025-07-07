@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1060,12 +1062,13 @@
                 delete char.ac;
             });
 
+            const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() + '_sheet' : 'character_sheets') + '.json';
             const dataStr = JSON.stringify(charactersToSave, null, 2); // Pretty print JSON
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `character_sheets.json`; // Save all characters in one file
+            a.download = fileName; // Save all characters in one file
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1970,7 +1973,7 @@
 
                 const content = JSON.stringify(charactersToSave, null, 2);
                 // Determine the file name based on the first character's name, or a default
-                const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() : 'character_sheets') + '.json';
+                const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() + '_sheet' : 'character_sheets') + '.json';
                 const mimeType = 'application/json';
 
                 if (currentGoogleDriveFileId) {
@@ -2037,7 +2040,7 @@
                 const res = await gapi.client.drive.files.list({
                     pageSize: 20, // Fetch up to 20 files
                     fields: 'files(id, name, modifiedTime)',
-                    q: "mimeType='application/json'", // Filter for JSON files named 'character_sheets'
+                    q: "mimeType='application/json' and name contains '_sheet'", // Filter for JSON files named 'character_sheets'
                     orderBy: 'modifiedTime desc' // Order by most recently modified
                 });
 
@@ -2343,3 +2346,5 @@
         };
     </script>
 </body>
+
+</html>
