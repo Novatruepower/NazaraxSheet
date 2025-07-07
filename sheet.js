@@ -1097,9 +1097,12 @@ function handleGoogleDriveAuthClick() {
             console.error("Google Drive authorization error:", resp);
             showStatusMessage("Google Drive authorization failed.", true);
             localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear local storage on error
+            gapi.client.setToken(''); // Clear token in gapi.client as well
             maybeEnableGoogleDriveButtons(); // Update UI
             return;
         }
+        // Set the token for gapi.client after successful authorization
+        gapi.client.setToken(resp);
         localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
         showStatusMessage("Google Drive authorized successfully!");
         maybeEnableGoogleDriveButtons(); // Update UI
