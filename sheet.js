@@ -4,7 +4,7 @@ const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKKqgqCN4cjTGg';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 // IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
-const ORIGIN = window.location.origin;
+const ORIGIN = 'https://novatruepower.github.io/NazaraxSheet/';
 
 let tokenClient;
 let gapiInited = false;
