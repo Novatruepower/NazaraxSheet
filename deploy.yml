@@ -7,31 +7,25 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository files
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Inject secrets into env.js
-      - name: Generate env.js file
+      # Generate env.js in memory
+      - name: Create env.js
         run: |
           echo "window.GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}';" > env.js
           echo "window.GOOGLE_API_KEY = '${{ secrets.GOOGLE_API_KEY }}';" >> env.js
 
-      # Step 3: List files to verify env.js exists
-      - name: Verify generated files
-        run: ls -la
-
-      # Step 4: Deploy to GitHub Pages
+      # Deploy everything from working directory (including env.js) to gh-pages branch
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./       # Change this if your HTML files are in a different folder
+          publish_dir: .
+          publish_branch: gh-pages
