@@ -44,6 +44,12 @@ const raceHealthMultipliers = {
     "": 1.00 // Default for no race selected
 };
 
+// List of player stats for easy iteration
+const playerStatsList = [
+    'strength', 'agility', 'magic', 'luck', 'crafting',
+    'intelligence', 'intimidation', 'charisma', 'negotiation'
+];
+
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
     const multiplier = raceHealthMultipliers[race] || 1.00; // Default to 1 if race not found
@@ -60,50 +66,58 @@ function calculateMaxRacialPower(level) {
     return level * 100;
 }
 
+// Generate a random number between min and max (inclusive)
+function roll(min, max) {
+    return rolledValue = Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 // Default character data for creating new characters
-const defaultCharacterData = () => ({
-    name: '',
-    class: [],
-    specialization: [],
-    race: '',
-    level: 1,
-    levelExperience: 0,
-    levelMaxExperience: calculateLevelMaxExperience(1),
-    strength: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    agility: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    magic: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    luck: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    crafting: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    intelligence: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    intimidation: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    charisma: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    negotiation: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-    hp: 100,
-    maxHp: 100,
-    healthBonus: 0,
-    currentMagicPoints: 100,
-    maxMagicPoints: 100,
-    racialPower: 100,
-    maxRacialPower: 100,
-    ac: 0,
-    armorBonus: 0,
-    skills: '',
-    personalNotes: '',
-    // New inventory sections
-    weaponInventory: [],
-    armorInventory: [],
-    generalInventory: [],
-    // Section visibility states - NEW
-    sectionVisibility: {
-        'basic-info-content': true,
-        'player-stats-content': true,
-        'health-combat-content': true,
-        'skills-content': true,
-        'weapon-inventory-content': true,
-        'armor-inventory-content': true,
-        'general-inventory-content': true,
-    }
-});
+const maxRollStat = 20;
+const minRollStat = 6;
+
+const defaultCharacterData = function() { 
+    let newCharacter = ({
+        name: '',
+        class: [],
+        specialization: [],
+        race: '',
+        level: 1,
+        levelExperience: 0,
+        levelMaxExperience: calculateLevelMaxExperience(1),
+        hp: 100,
+        maxHp: 100,
+        healthBonus: 0,
+        currentMagicPoints: 100,
+        maxMagicPoints: 100,
+        racialPower: 100,
+        maxRacialPower: 100,
+        ac: 0,
+        armorBonus: 0,
+        skills: '',
+        personalNotes: '',
+        // New inventory sections
+        weaponInventory: [],
+        armorInventory: [],
+        generalInventory: [],
+        // Section visibility states - NEW
+        sectionVisibility: {
+            'basic-info-content': true,
+            'player-stats-content': true,
+            'health-combat-content': true,
+            'skills-content': true,
+            'weapon-inventory-content': true,
+            'armor-inventory-content': true,
+            'general-inventory-content': true,
+        }
+    })
+
+    playerStatsList.forEach(statName => {
+        const result = roll(minRollStat, maxRollStat);
+        newCharacter[statName] = { value: result, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: result };
+    });
+
+    return newCharacter;
+};
 
 // Array to hold all character sheets
 let characters = [defaultCharacterData()];
@@ -124,13 +138,6 @@ const character = new Proxy({}, {
         return true;
     }
 });
-
-
-// List of player stats for easy iteration
-const playerStatsList = [
-    'strength', 'agility', 'magic', 'luck', 'crafting',
-    'intelligence', 'intimidation', 'charisma', 'negotiation'
-];
 
 // Mapping for common terms to character properties for formula evaluation
 const statMapping = {
@@ -486,6 +493,27 @@ function updateDOM() {
     updateSectionVisibility();
 }
 
+// Helper function to create table data (<td>) elements
+function quickTd(element, type, isClosed, dataInventoryType, dataField, dataIndex, value, cssClass) {
+    let string = `<td><${element}`;
+
+    if (type != null)
+        string += ` type="${type}"`;
+
+    string += ` data-inventory-type="${dataInventoryType}" data-field="${dataField}" data-index="${dataIndex}"`;
+
+    if (!isClosed) {
+        if (type != 'checkbox')
+            string += ` value="${value}">`;
+        else
+            string += ` ${value}>`;
+    }
+    else 
+        string += `>${value}</${element}>`
+
+    return string + cssClass ? cssClass : '' + '</td>';
+}
+
 // Function to render the Weapon Inventory table
 function renderWeaponInventory() {
     const tbody = document.querySelector('#weapon-inventory-table tbody');
@@ -498,20 +526,21 @@ function renderWeaponInventory() {
         const displayMagicDamage = weapon.use ? calculateFormula(weapon.magicDamage) : weapon.magicDamage;
 
         row.innerHTML = `
-            <td><input type="text" data-inventory-type="weapon" data-field="name" data-index="${index}" value="${weapon.name}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="weapon" data-field="type" data-index="${index}" value="${weapon.type}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="weapon" data-field="material" data-index="${index}" value="${weapon.material}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="weapon" data-field="requirement" data-index="${index}" value="${weapon.requirement}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="weapon" data-field="requiredStat" data-index="${index}" value="${weapon.requiredStat}" class="w-full"></td>
-            <td><input type="number" data-inventory-type="weapon" data-field="accuracy" data-index="${index}" value="${weapon.accuracy}" class="w-full"></td>
-            <td><textarea data-inventory-type="weapon" data-field="damage" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
-            <td><textarea data-inventory-type="weapon" data-field="magicDamage" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
-            <td><input type="text" data-inventory-type="weapon" data-field="magicType" data-index="${index}" value="${weapon.magicType}" class="w-full"></td>
-            <td><textarea data-inventory-type="weapon" data-field="effect" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
-            <td><input type="number" data-inventory-type="weapon" data-field="value" data-index="${index}" value="${weapon.value}" class="w-full"></td>
-            <td><input type="checkbox" data-inventory-type="weapon" data-field="use" data-index="${index}" ${weapon.use ? 'checked' : ''}></td>
-            <td><button class="remove-item-btn bg-red-500 hover:bg-red-600" data-inventory-type="weapon" data-index="${index}">Remove</button></td>
+            ${quickTd('input', 'text', false, 'weapon', 'name', index, weapon.name, 'w-full')}
+            ${quickTd('input', 'text', false, 'weapon', 'type', index, weapon.type, 'w-full')}
+            ${quickTd('input', 'text', false, 'weapon', 'material', index, weapon.material, 'w-full')}
+            ${quickTd('input', 'text', false, 'weapon', 'requirement', index, weapon.requirement, 'w-full')}
+            ${quickTd('input', 'text', false, 'weapon', 'requiredStat', index, weapon.requiredStat, 'w-full')}
+            ${quickTd('input', 'number', false, 'weapon', 'accuracy', index, weapon.accuracy, 'w-full')}
+            ${quickTd('textarea', null, true, 'weapon', 'damage', index, displayDamage, 'w-full inventory-effect-textarea')}
+            ${quickTd('textarea', null, true, 'weapon', 'magicDamage', index, displayMagicDamage, 'w-full inventory-effect-textarea')}
+            ${quickTd('input', 'text', false, 'weapon', 'magicType', index, weapon.magicType, 'w-full')}
+            ${quickTd('textarea', null, true, 'weapon', 'effect', index, weapon.effect, 'w-full inventory-effect-textarea')}
+            ${quickTd('input', 'number', false, 'weapon', 'value', index, weapon.value, 'w-full')}
+            ${quickTd('input', 'checkbox', false, 'weapon', 'use', index, weapon.use ? 'checked' : '', null)}
+            ${quickTd('button', null, true, 'weapon', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
         `;
+
         // Set textarea values after they are in the DOM
         row.querySelector('textarea[data-field="damage"]').value = displayDamage;
         row.querySelector('textarea[data-field="magicDamage"]').value = displayMagicDamage;
@@ -527,19 +556,20 @@ function renderArmorInventory() {
     character.armorInventory.forEach((armor, index) => {
         const row = tbody.insertRow();
         row.innerHTML = `
-            <td><input type="text" data-inventory-type="armor" data-field="name" data-index="${index}" value="${armor.name}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="armor" data-field="location" data-index="${index}" value="${armor.location}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="armor" data-field="material" data-index="${index}" value="${armor.material}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="armor" data-field="requirement" data-index="${index}" value="${armor.requirement}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="armor" data-field="requiredStat" data-index="${index}" value="${armor.requiredStat}" class="w-full"></td>
-            <td><input type="number" data-inventory-type="armor" data-field="defense" data-index="${index}" value="${armor.defense}" class="w-full"></td>
-            <td><input type="number" data-inventory-type="armor" data-field="magicDefense" data-index="${index}" value="${armor.magicDefense}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="armor" data-field="magicType" data-index="${index}" value="${armor.magicType}" class="w-full"></td>
-            <td><textarea data-inventory-type="armor" data-field="effect" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
-            <td><input type="number" data-inventory-type="armor" data-field="value" data-index="${index}" value="${armor.value}" class="w-full"></td>
-            <td><input type="checkbox" data-inventory-type="armor" data-field="equipped" data-index="${index}" ${armor.equipped ? 'checked' : ''}></td>
-            <td><button class="remove-item-btn bg-red-500 hover:bg-red-600" data-inventory-type="armor" data-index="${index}">Remove</button></td>
+            ${quickTd('input', 'text', false, 'armor', 'name', index, armor.name, 'w-full')}
+            ${quickTd('input', 'text', false, 'armor', 'location', index, armor.location, 'w-full')}
+            ${quickTd('input', 'text', false, 'armor', 'material', index, armor.material, 'w-full')}
+            ${quickTd('input', 'text', false, 'armor', 'requirement', index, armor.requirement, 'w-full')}
+            ${quickTd('input', 'text', false, 'armor', 'requiredStat', index, armor.requiredStat, 'w-full')}
+            ${quickTd('input', 'number', false, 'armor', 'defense', index, armor.defense, 'w-full')}
+            ${quickTd('input', 'number', false, 'armor', 'magicDefense', index, armor.magicDefense, 'w-full')}
+            ${quickTd('input', 'text', false, 'armor', 'magicType', index, armor.magicType, 'w-full')}
+            ${quickTd('textarea', null, true, 'armor', 'effect', index, armor.effect, 'w-full inventory-effect-textarea')}
+            ${quickTd('input', 'number', false, 'armor', 'value', index, armor.value, 'w-full')}
+            ${quickTd('input', 'checkbox', false, 'armor', 'equipped', index, armor.equipped ? 'checked' : '', null)}
+            ${quickTd('button', null, true, 'armor', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
         `;
+
         // Set textarea value after it's in the DOM
         row.querySelector('textarea[data-field="effect"]').value = armor.effect;
     });
@@ -553,14 +583,15 @@ function renderGeneralInventory() {
     character.generalInventory.forEach((item, index) => {
         const row = tbody.insertRow();
         row.innerHTML = `
-            <td><input type="text" data-inventory-type="general" data-field="name" data-index="${index}" value="${item.name}" class="w-full"></td>
-            <td><input type="text" data-inventory-type="general" data-field="type" data-index="${index}" value="${item.type}" class="w-full"></td>
-            <td><textarea data-inventory-type="general" data-field="effect" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
-            <td><input type="number" data-inventory-type="general" data-field="accuracy" data-index="${index}" value="${item.accuracy}" class="w-full"></td>
-            <td><input type="number" data-inventory-type="general" data-field="amount" data-index="${index}" value="${item.amount}" class="w-full"></td>
-            <td><input type="number" data-inventory-type="general" data-field="valuePerUnit" data-index="${index}" value="${item.valuePerUnit}" class="w-full"></td>
-            <td><button class="remove-item-btn bg-red-500 hover:bg-red-600" data-inventory-type="general" data-index="${index}">Remove</button></td>
+            ${quickTd('input', 'text', false, 'general', 'name', index, item.name, 'w-full')}
+            ${quickTd('input', 'text', false, 'general', 'type', index, item.type, 'w-full')}
+            ${quickTd('textarea', null, true, 'general', 'effect', index, item.effect, 'w-full inventory-effect-textarea')}
+            ${quickTd('input', 'number', false, 'general', 'accuracy', index, item.accuracy, 'w-full')}
+            ${quickTd('input', 'number', false, 'general', 'amount', index, item.amount, 'w-full')}
+            ${quickTd('input', 'number', false, 'general', 'valuePerUnit', index, item.valuePerUnit, 'w-full')}
+            ${quickTd('button', null, true, 'general', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
         `;
+        
         // Set textarea value after it's in the DOM
         row.querySelector('textarea[data-field="effect"]').value = item.effect;
     });
@@ -569,11 +600,7 @@ function renderGeneralInventory() {
 // Function to perform a quick roll for all player stats
 function quickRollStats() {
     playerStatsList.forEach(statName => {
-        // Generate a random number between 6 and 20 (inclusive)
-        const max = 20;
-        const min = 6;
-        const rolledValue = Math.floor(Math.random() * (max - min + 1)) + min;
-        character[statName].value = rolledValue; // Assign to the 'value' property
+        character[statName].value = roll(minRollStat, maxRollStat); // Assign to the 'value' property
 
         // Recalculate total for the updated stat
         character[statName].total = calculateTotal(statName);
@@ -998,6 +1025,42 @@ function removeItem(event) {
         renderGeneralInventory();
     }
 }
+
+// Function to reset the current character to default data
+function resetCurrentCharacter() {
+    const confirmReset = confirm("Are you sure you want to reset the current character? All data will be lost.");
+    if (confirmReset) {
+        characters[currentCharacterIndex] = defaultCharacterData();
+        characters[currentCharacterIndex].name = `Character ${currentCharacterIndex + 1}`; // Keep current character name convention
+        updateDOM();
+        showStatusMessage("Current character reset successfully!");
+    }
+}
+
+// Function to delete the current character
+function deleteCurrentCharacter() {
+    if (characters.length === 1) {
+        // If it's the last character, just reset it instead of deleting
+        resetCurrentCharacter();
+        showStatusMessage("Cannot delete the last character. Character has been reset instead.", false);
+        return;
+    }
+
+    const confirmDelete = confirm(`Are you sure you want to delete "${character.name || `Character ${currentCharacterIndex + 1}`}?" This action cannot be undone.`);
+    if (confirmDelete) {
+        characters.splice(currentCharacterIndex, 1); // Remove the current character
+
+        // Adjust currentCharacterIndex if the last character was deleted
+        if (currentCharacterIndex >= characters.length) {
+            currentCharacterIndex = characters.length - 1;
+        }
+        
+        updateDOM();
+        populateCharacterSelector(); // Re-populate selector after deletion
+        showStatusMessage("Character deleted successfully!");
+    }
+}
+
 
 // Function to toggle dropdown visibility
 function toggleDropdown(menuId) {
@@ -1454,8 +1517,6 @@ function toggleSidebar() {
                 child.classList.add('hidden');
             }
         });
-        // Ensure the toggle button itself is not hidden
-        toggleButton.classList.remove('hidden');
         // Explicitly hide the personal notes button if it's not already hidden by the loop (e.g., if it's a direct child of sidebar)
         if (toggleNotesBtn) {
             toggleNotesBtn.classList.add('hidden');
@@ -1615,6 +1676,10 @@ function attachEventListeners() {
 
     // Attach event listener for sidebar toggle button
     document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
+
+    // Attach event listeners for Reset and Delete buttons - NEW
+    document.getElementById('reset-character-btn').addEventListener('click', resetCurrentCharacter);
+    document.getElementById('delete-character-btn').addEventListener('click', deleteCurrentCharacter);
 }
 
 // Initialize the application when the DOM is fully loaded
