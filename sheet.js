@@ -1322,6 +1322,7 @@ async function loadGoogleDriveFileContent(fileId) {
                 newChar.hp = Math.min(newChar.hp, newChar.maxHp);
                 newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
                 newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
+
                 return newChar;
             });
             currentCharacterIndex = 0;
@@ -1426,6 +1427,52 @@ function updateSectionVisibility() {
                 toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
             }
         }
+    }
+}
+
+/**
+ * Toggles the visibility and width of the left sidebar.
+ */
+function toggleSidebar() {
+    const sidebar = document.getElementById('left-sidebar');
+    const mainContent = document.getElementById('main-content');
+    const toggleButton = document.getElementById('sidebar-toggle-btn');
+    const toggleIcon = toggleButton.querySelector('svg path');
+    const toggleNotesBtn = document.getElementById('toggle-notes-btn'); // Get the personal notes button
+
+    if (sidebar.classList.contains('w-64')) {
+        // Collapse sidebar
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-16'); // Collapsed width
+        mainContent.classList.remove('ml-64');
+        mainContent.classList.add('ml-16'); // Adjust main content margin
+        toggleIcon.setAttribute('d', 'M9 5l7 7-7 7'); // Chevron right
+        
+        // Hide all children except the sidebar toggle button
+        Array.from(sidebar.children).forEach(child => {
+            if (child.id !== 'sidebar-toggle-btn') {
+                child.classList.add('hidden');
+            }
+        });
+        // Ensure the toggle button itself is not hidden
+        toggleButton.classList.remove('hidden');
+        // Explicitly hide the personal notes button if it's not already hidden by the loop (e.g., if it's a direct child of sidebar)
+        if (toggleNotesBtn) {
+            toggleNotesBtn.classList.add('hidden');
+        }
+
+    } else {
+        // Expand sidebar
+        sidebar.classList.remove('w-16');
+        sidebar.classList.add('w-64');
+        mainContent.classList.remove('ml-16');
+        mainContent.classList.add('ml-64');
+        toggleIcon.setAttribute('d', 'M15 19l-7-7 7-7'); // Chevron left
+        
+        // Show all content within the sidebar
+        Array.from(sidebar.children).forEach(child => {
+            child.classList.remove('hidden');
+        });
     }
 }
 
@@ -1565,6 +1612,9 @@ function attachEventListeners() {
             toggleSection(targetId);
         });
     });
+
+    // Attach event listener for sidebar toggle button
+    document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
 }
 
 // Initialize the application when the DOM is fully loaded
