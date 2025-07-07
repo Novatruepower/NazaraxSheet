@@ -70,7 +70,7 @@ function calculateMaxRacialPower(level) {
 
 // Generate a random number between min and max (inclusive)
 function roll(min, max) {
-    return rolledValue = Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Default character data for creating new characters
