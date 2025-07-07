@@ -502,6 +502,9 @@ function quickTd(element, type, isClosed, dataInventoryType, dataField, dataInde
 
     string += ` data-inventory-type="${dataInventoryType}" data-field="${dataField}" data-index="${dataIndex}"`;
 
+    if (cssClass != null)
+        string += ` class="${cssClass}"`;
+
     if (!isClosed) {
         if (type != 'checkbox')
             string += ` value="${value}">`;
@@ -511,7 +514,8 @@ function quickTd(element, type, isClosed, dataInventoryType, dataField, dataInde
     else 
         string += `>${value}</${element}>`
 
-    return string + cssClass ? `class="${cssClass}"` : '' + '</td>';
+
+    return string + '</td>';
 }
 
 // Function to render the Weapon Inventory table
