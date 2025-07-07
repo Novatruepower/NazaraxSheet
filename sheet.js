@@ -1803,7 +1803,7 @@ function attachEventListeners() {
 }
 
 // Initialize the application when the DOM is fully loaded
-window.onload = function() {
+window.onload = async function() {
     // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
     characters[0].maxHp = calculateMaxHealth(characters[0].race, characters[0].level, characters[0].healthBonus);
     characters[0].maxMagicPoints = calculateMaxMagic(characters[0].level);
@@ -1825,4 +1825,8 @@ window.onload = function() {
     gisLoaded();
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
+
+    await googleDriveFileFetcher.fetchSpecificGoogleSheetTab(googleDriveFileFetcher.My_Gid.Races).then(value => {
+        
+    });
 };
