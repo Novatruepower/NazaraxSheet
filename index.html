@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Sheet</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="sheet.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center">
+
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-20 w-full bg-indigo-800 dark:bg-indigo-950 shadow-lg py-3 px-4 md:px-8 flex justify-center items-center space-x-4">
+        <!-- Save Dropdown -->
+        <div class="dropdown-container">
+            <button id="save-dropdown-btn"
+                    class="px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 flex items-center">
+                Save <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="save-dropdown-menu" class="dropdown-menu hidden">
+                <button id="save-current-system-btn">Current System (JSON)</button>
+                <button id="save-google-drive-btn">Google Drive</button>
+            </div>
+        </div>
+
+        <!-- Load Dropdown -->
+        <div class="dropdown-container">
+            <button id="load-dropdown-btn"
+                    class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 flex items-center">
+                Load <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="load-dropdown-menu" class="dropdown-menu hidden">
+                <input type="file" id="load-json-input" accept=".json" class="hidden"/>
+                <button id="load-current-system-btn">Current System (JSON)</button>
+                <button id="load-google-drive-btn">Google Drive</button>
+            </div>
+        </div>
+
+        <button id="toggle-notes-btn"
+                class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+            Personal Notes
+        </button>
+
+        <!-- New Character Selector and Add Button -->
+        <div class="flex items-center space-x-2">
+            <select id="character-selector"
+                    class="px-4 py-2 bg-gray-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                <!-- Options will be populated by JS -->
+            </select>
+            <button id="add-character-btn"
+                    class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                Add New Character
+            </button>
+        </div>
+        <!-- Google Drive Auth Status and Button -->
+        <div class="flex items-center space-x-2 ml-4">
+            <span id="google-drive-auth-status" class="text-sm text-gray-300">Google Drive: Not Authorized</span>
+            <button id="authorize_google_drive_button" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-md shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                Authorize Google Drive
+            </button>
+            <button id="signout_google_drive_button" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-md shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 hidden">
+                Sign Out Google Drive
+            </button>
+        </div>
+        <span id="status-message" class="text-gray-300"></span>
+    </header>
+
+    <div class="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 mt-6 mb-6">
+        <h1 class="text-4xl font-bold text-center mb-6 text-indigo-700 dark:text-indigo-400">
+            Character Sheet
+        </h1>
+
+        <!-- Basic Info Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Basic Info</h2>
+                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="basic-info-content">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+            <div id="basic-info-content" class="section-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Character Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            placeholder="e.g., Elara Whisperwind"
+                        />
+                    </div>
+                    <div>
+                        <label for="class-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class</label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="class-display"
+                                name="class-display"
+                                readonly
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 cursor-pointer"
+                                placeholder="Select classes..."
+                            />
+                            <div id="class-dropdown-options" class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
+                                <!-- Options will be dynamically populated here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Specialization Section -->
+                    <div>
+                        <label for="specialization-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Specialization</label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="specialization-display"
+                                name="specialization-display"
+                                readonly
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 cursor-pointer"
+                                placeholder="Select specializations..."
+                            />
+                            <div id="specialization-dropdown-options" class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
+                                <!-- Options will be dynamically populated here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="race" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Race</label>
+                        <select
+                            id="race"
+                            name="race"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 dark:text-gray-100 select-placeholder-text"
+                        >
+                            <option value="" disabled selected class="defaultOption">Select a Race</option>
+                            <option value="Architect">Architect</option>
+                            <option value="Demi-humans">Demi-humans</option>
+                            <option value="Dimensional">Dimensional</option>
+                            <option value="Dragonkin">Dragonkin</option>
+                            <option value="Dwarf">Dwarf</option>
+                            <option value="Elf">Elf</option>
+                            <option value="Gnome">Gnome</option>
+                            <option value="Human">Human</option>
+                            <option value="Mutant">Mutant</option>
+                            <option value="Noki">Noki</option>
+                            <option value="Succubus">Succubus</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="level" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Level</label>
+                        <input
+                            type="number"
+                            id="level"
+                            name="level"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Level Experience</label>
+                        <div class="flex items-center mt-1">
+                            <input
+                                type="number"
+                                id="levelExperience"
+                                name="levelExperience"
+                                min="0"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-center"
+                            />
+                            <span class="px-2 py-2 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">/</span>
+                            <input
+                                type="number"
+                                id="levelMaxExperience"
+                                name="levelMaxExperience"
+                                min="1"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
+                                readonly
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Stats Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Player Stats</h2>
+                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="player-stats-content">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+            <div id="player-stats-content" class="section-content">
+                <button id="quick-roll-stats-btn"
+                        class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                    Quick Roll Stats
+                </button>
+                <div id="player-stats-container" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stat Name</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Value</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Racial</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equip</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Temp</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Exp</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <!-- Player stats rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health & Combat Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Health & Combat</h2>
+                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="health-combat-content">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+            <div id="health-combat-content" class="section-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Health / Max Health + Max Health Bonus Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Health</label>
+                        <div class="flex items-center mt-1">
+                            <input
+                                type="number"
+                                id="hp"
+                                name="hp"
+                                min="0"
+                                class="w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-center"
+                            />
+                            <span class="px-2 py-2 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">/</span>
+                            <input
+                                type="number"
+                                id="maxHp"
+                                name="maxHp"
+                                min="0"
+                                class="w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
+                                readonly
+                            />
+                            <span class="px-2 py-2 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">+</span>
+                            <input
+                                type="number"
+                                id="healthBonus"
+                                name="healthBonus"
+                                class="w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-center"
+                            />
+                        </div>
+                    </div>
+                    <!-- Racial Power / Max Racial Power Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Racial Power</label>
+                        <div class="flex items-center mt-1">
+                            <input
+                                type="number"
+                                id="racialPower"
+                                name="racialPower"
+                                min="0"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-center"
+                            />
+                            <span class="px-2 py-2 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">/</span>
+                            <input
+                                type="number"
+                                id="maxRacialPower"
+                                name="maxRacialPower"
+                                min="0"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
+                                readonly
+                            />
+                        </div>
+                    </div>
+                    <!-- Magic / Max Magic Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Magic</label>
+                        <div class="flex items-center mt-1">
+                            <input
+                                type="number"
+                                id="currentMagicPoints"
+                                name="currentMagicPoints"
+                                min="0"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-center"
+                            />
+                            <span class="px-2 py-2 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">/</span>
+                            <input
+                                type="number"
+                                id="maxMagicPoints"
+                                name="maxMagicPoints"
+                                min="0"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
+                                readonly
+                            />
+                        </div>
+                    </div>
+                    <!-- Total armor + Armor Bonus Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Total armor</label>
+                        <div class="flex items-center mt-1">
+                            <input
+                                type="number"
+                                id="ac"
+                                name="ac"
+                                min="0"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
+                                readonly
+                            />
+                            <span class="px-2 py-2 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">+</span>
+                            <input
+                                type="number"
+                                id="armorBonus"
+                                name="armorBonus"
+                                min="0"
+                                class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-center"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Skills</h2>
+                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="skills-content">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+            <div id="skills-content" class="section-content">
+                <textarea
+                    id="skills"
+                    name="skills"
+                    rows="6"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-y"
+                    placeholder="e.g., Stealth +5, Perception +4, Acrobatics +3"
+                ></textarea>
+            </div>
+        </div>
+
+        <!-- Weapon Inventory Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Weapon Inventory</h2>
+                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="weapon-inventory-content">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+            <div id="weapon-inventory-content" class="section-content">
+                <button id="add-weapon-btn"
+                        class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                    Add Weapon
+                </button>
+                <div class="inventory-table-container">
+                    <table id="weapon-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Material</th>
+                                <th>Requirement</th>
+                                <th>Required Stat</th>
+                                <th>Accuracy</th>
+                                <th>Damage</th>
+                                <th>Magic Damage</th>
+                                <th>Magic Type</th>
+                                <th>Effect</th>
+                                <th>Value</th>
+                                <th>Use</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Weapon rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Armor Inventory Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Armor Inventory</h2>
+                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="armor-inventory-content">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+            <div id="armor-inventory-content" class="section-content">
+                <button id="add-armor-btn"
+                        class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                    Add Armor
+                </button>
+                <div class="inventory-table-container">
+                    <table id="armor-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Material</th>
+                                <th>Requirement</th>
+                                <th>Required Stat</th>
+                                <th>Defense</th>
+                                <th>Magic Defense</th>
+                                <th>Magic Type</th>
+                                <th>Effect</th>
+                                <th>Value</th>
+                                <th>Equipped</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Armor rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- General Inventory Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Inventory</h2>
+                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="general-inventory-content">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+            <div id="general-inventory-content" class="section-content">
+                <button id="add-general-item-btn"
+                        class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                    Add Item
+                </button>
+                <div class="inventory-table-container">
+                    <table id="general-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Effect</th>
+                                <th>Accuracy</th>
+                                <th>Amount</th>
+                                <th>Value (per unit)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- General item rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Notes Panel (Movable and Resizable) -->
+    <div id="personal-notes-panel" class="personal-notes-panel hidden">
+        <div class="personal-notes-header cursor-grab bg-indigo-700 dark:bg-indigo-900 text-white p-3 rounded-t-lg flex justify-between items-center">
+            <h2 class="text-lg font-semibold">Personal Notes</h2>
+            <button id="close-notes-panel-btn" class="text-white hover:text-gray-200 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <textarea
+            id="personalNotes"
+            name="personalNotes"
+            class="personal-notes-textarea w-full px-3 py-2 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            placeholder="Write your personal notes here..."
+        ></textarea>
+    </div>
+
+    <!-- Google Drive File List Modal -->
+    <div id="google-drive-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" id="close-google-drive-modal">&times;</span>
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">Select a Google Drive File</h2>
+            <ul id="google-drive-file-list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Files will be loaded here -->
+            </ul>
+            <p id="google-drive-modal-status" class="text-sm text-gray-500 mt-2"></p>
+        </div>
+    </div>
+
+    <!-- Google API Scripts -->
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Github Secret -->
+    <script src="env.js"></script>
+    
+    <!-- Sheet Scripts -->
+    <script type="text/javascript" src="sheet.js" async></script>
+</body>
+</html>
