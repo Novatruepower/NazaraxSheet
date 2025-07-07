@@ -1826,7 +1826,7 @@ window.onload = async function() {
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
 
-    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
+    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
         let test = {};
 
         arr.forEach(value => {
