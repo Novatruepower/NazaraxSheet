@@ -1,0 +1,32 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject secrets into env.js
+        run: |
+          echo "window.GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}';" > env.js
+          echo "window.GOOGLE_API_KEY = '${{ secrets.GOOGLE_API_KEY }}';" >> env.js
+
+      - name: Check generated files
+        run: ls -la
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./   # adjust if your static site files are in a subfolder
