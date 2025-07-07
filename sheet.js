@@ -1,5 +1,5 @@
 const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
-const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tWKgqCN4cjTGg';
+const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqgqCN4cjTGg';
 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
@@ -93,7 +93,7 @@ const defaultCharacterData = () => ({
     weaponInventory: [],
     armorInventory: [],
     generalInventory: [],
-    // Section visibility states
+    // Section visibility states - NEW
     sectionVisibility: {
         'basic-info-content': true,
         'player-stats-content': true,
@@ -281,7 +281,7 @@ function loadCharacterFromFile(event) {
                     newChar.weaponInventory = loadedChar.weaponInventory || [];
                     newChar.armorInventory = loadedChar.armorInventory || [];
                     newChar.generalInventory = loadedChar.generalInventory || [];
-                    // Handle section visibility
+                    // Handle section visibility - UPDATED
                     newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
 
 
@@ -340,13 +340,13 @@ function loadCharacterFromFile(event) {
                 newChar.weaponInventory = loadedData.weaponInventory || [];
                 newChar.armorInventory = loadedData.armorInventory || [];
                 newChar.generalInventory = loadedData.generalInventory || [];
-                // Handle section visibility
+                // Handle section visibility - UPDATED
                 newChar.sectionVisibility = loadedData.sectionVisibility || defaultCharacterData().sectionVisibility;
 
                 // Initialize originalDamage/originalMagicDamage if not present in loaded data
                 newChar.weaponInventory.forEach(weapon => {
                     if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
-                    if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
+                    if (typeof weapon.originalMagicDamage === 'undefined') weapon.magicDamage = weapon.magicDamage;
                 });
 
                 newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
@@ -481,7 +481,7 @@ function updateDOM() {
     renderArmorInventory();
     renderGeneralInventory();
 
-    // Update section visibility
+    // Update section visibility - NEW
     updateSectionVisibility();
 }
 
@@ -604,8 +604,8 @@ function handleChange(event) {
                     character.weaponInventory[itemIndex].originalDamage = character.weaponInventory[itemIndex].damage;
                     character.weaponInventory[itemIndex].originalMagicDamage = character.weaponInventory[itemIndex].magicDamage;
                     // Apply default formulas (can be customized)
-                    character.weaponInventory[itemIndex].damage = calculateFormula(character.weaponInventory[itemIndex].damage);
-                    character.weaponInventory[itemIndex].magicDamage = calculateFormula(character.weaponInventory[itemIndex].magicDamage);
+                    character.weaponInventory[itemIndex].damage = calculateFormula(character.weaponInventory[itemIndex].originalDamage); // Use original for calculation
+                    character.weaponInventory[itemIndex].magicDamage = calculateFormula(character.weaponInventory[itemIndex].originalMagicDamage); // Use original for calculation
                 } else {
                     // Restore original values
                     character.weaponInventory[itemIndex].damage = character.weaponInventory[itemIndex].originalDamage;
@@ -1557,7 +1557,7 @@ function attachEventListeners() {
         }
     });
 
-    // Attach event listeners for section toggle buttons
+    // Attach event listeners for section toggle buttons - NEW
     document.querySelectorAll('.toggle-section-btn').forEach(button => {
         button.addEventListener('click', (event) => {
             const targetId = event.currentTarget.dataset.target;
