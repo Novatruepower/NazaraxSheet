@@ -1037,7 +1037,7 @@ function gapiLoaded() {
  */
 async function initializeGapiClient() {
     await gapi.client.init({
-        apiKey: window.GOOGLE_API_KEY,
+        apiKey: "AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqCN4cjTGg",
         discoveryDocs: [DISCOVERY_DOC],
     });
     gapiInited = true;
@@ -1049,7 +1049,7 @@ async function initializeGapiClient() {
  */
 function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: window.GOOGLE_CLIENT_ID,
+        client_id: "527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com",
         scope: SCOPES,
         callback: '', // Will be set dynamically before request
         redirect_uri: ORIGIN
