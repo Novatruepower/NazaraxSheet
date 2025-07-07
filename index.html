@@ -1786,24 +1786,21 @@
          * Callback after Google Identity Services are loaded.
          */
         function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initCodeClient({
+            // Use initTokenClient for client-side applications to directly get an access token
+            tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
                 scope: SCOPES,
-                callback: (resp) => {
-                    if (resp.error !== undefined) {
-                        throw (resp);
-                    }
-                    // Exchange authorization code for tokens
-                    // In a real app, this would involve a backend to securely exchange the code
-                    // For this client-side only example, we directly use the access token if available
-                    // This is NOT secure for production and should only be used for demonstration
-                    if (resp.access_token) {
-                        gapi.client.setToken({ access_token: resp.access_token });
-                        updateSignInStatus(true);
-                    } else {
-                        showStatusMessage("Failed to get access token from Google Identity Services.", true);
+                callback: (tokenResponse) => {
+                    if (tokenResponse.error !== undefined) {
+                        console.error("Token response error:", tokenResponse.error);
+                        showStatusMessage("Google Sign-In failed.", true);
                         updateSignInStatus(false);
+                        return;
                     }
+                    // Set the token for gapi.client to use
+                    gapi.client.setToken(tokenResponse);
+                    updateSignInStatus(true);
+                    showStatusMessage("Signed in to Google Drive.");
                 },
             });
             gisInited = true;
@@ -1839,6 +1836,7 @@
          */
         function handleAuthClick() {
             if (tokenClient) {
+                // Prompt the user to select a Google account and grant permissions
                 tokenClient.requestAccessToken();
             } else {
                 showStatusMessage("Google Identity Services not initialized.", true);
