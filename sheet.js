@@ -1821,8 +1821,8 @@ async function externalData() {
             console.log(value);
             console.log(head);
             let index = 0;
-            fetchedPlayerStatsList[race]['Stats'][head[index]] = value[index];
             delete head[index];
+            fetchedPlayerStatsList[race]['Stats'][head[index+1]] = value[index];
             ++index;
 
             head.forEach(statName => {
