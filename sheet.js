@@ -1802,6 +1802,38 @@ function attachEventListeners() {
     });
 }
 
+async function externalData() {
+        await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
+        let fetchedPlayerStatsList = {};
+
+        delete arr[0][0];
+        const head = arr[0];
+        delete arr[0];
+
+        arr.forEach(value => {
+            let race = value[0];
+            fetchedPlayerStatsList[race] = {
+                Stats: {
+                    Roll: {} 
+                }
+            };
+
+            console.log(value);
+            console.log(head);
+            let index = 0;
+            fetchedPlayerStatsList[race]['Stats'][head[index]] = value[index];
+            ++index;
+
+            head.forEach(statName => {
+                fetchedPlayerStatsList[race]['Stats']['Roll'][statName] = value[index];
+                ++index;
+            });
+        });
+
+        console.log(fetchedPlayerStatsList);
+    });
+}
+
 // Initialize the application when the DOM is fully loaded
 window.onload = async function() {
     // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
@@ -1826,33 +1858,5 @@ window.onload = async function() {
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
 
-    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
-        let fetchedPlayerStatsList = {};
-
-        delete arr[0][0];
-        const head = arr[0];
-        delete arr[0];
-
-        arr.forEach(value => {
-            let race = value[0];
-            fetchedPlayerStatsList[race] = {
-                Stats: {
-                    Roll: {} 
-                }
-            };
-
-            console.log(value);
-            console.log(head);
-            let index = 1;
-            fetchedPlayerStatsList[race]['Stats'][head[index]] = value[index];
-            ++index;
-
-            head.forEach(statName => {
-                fetchedPlayerStatsList[race]['Stats']['Roll'][statName] = value[index];
-                ++index;
-            });
-        });
-
-        console.log(fetchedPlayerStatsList);
-    });
+    await externalData();
 };
