@@ -6,6 +6,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google API Client Library -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <!-- Google Identity Services for OAuth 2.0 -->
+    <script src="https://accounts.google.com/gsi/client"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -281,21 +285,94 @@
         #general-inventory-table th:nth-child(6), #general-inventory-table td:nth-child(6) { min-width: 100px; } /* Value (per unit) */
         #general-inventory-table th:nth-child(7), #general-inventory-table td:nth-child(7) { min-width: 80px; }  /* Actions */
 
+        /* Dropdown specific styles */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            background-color: #f9fafb; /* bg-gray-50 */
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 0.375rem; /* rounded-md */
+            overflow: hidden; /* Ensures rounded corners apply to children */
+            right: 0; /* Align dropdown to the right of the button */
+            top: 100%; /* Position below the button */
+            margin-top: 0.5rem; /* Space between button and dropdown */
+        }
+
+        .dark .dropdown-menu {
+            background-color: #374151; /* bg-gray-700 */
+        }
+
+        .dropdown-menu button {
+            color: #1a202c; /* text-gray-900 */
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            width: 100%; /* Make button fill dropdown width */
+            text-align: left;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .dark .dropdown-menu button {
+            color: #f3f4f6; /* text-gray-100 */
+        }
+
+        .dropdown-menu button:hover {
+            background-color: #e5e7eb; /* bg-gray-200 */
+        }
+
+        .dark .dropdown-menu button:hover {
+            background-color: #4b5563; /* bg-gray-600 */
+        }
+
+        /* Status message styling */
+        #status-message {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+            color: #6b7280; /* text-gray-500 */
+        }
+        .dark #status-message {
+            color: #9ca3af; /* text-gray-400 */
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center">
 
     <!-- Sticky Header -->
     <header class="sticky top-0 z-20 w-full bg-indigo-800 dark:bg-indigo-950 shadow-lg py-3 px-4 md:px-8 flex justify-center items-center space-x-4">
-        <button id="save-json-btn"
-                class="px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-            Save Characters (JSON)
-        </button>
-        <input type="file" id="load-json-input" accept=".json" class="hidden"/>
-        <button id="load-json-btn"
-                class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-            Load Characters (JSON)
-        </button>
+        <!-- Save Dropdown -->
+        <div class="dropdown-container">
+            <button id="save-dropdown-btn"
+                    class="px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 flex items-center">
+                Save <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="save-dropdown-menu" class="dropdown-menu hidden">
+                <button id="save-current-system-btn">Current System (JSON)</button>
+                <button id="save-google-drive-btn">Google Drive</button>
+            </div>
+        </div>
+
+        <!-- Load Dropdown -->
+        <div class="dropdown-container">
+            <button id="load-dropdown-btn"
+                    class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 flex items-center">
+                Load <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="load-dropdown-menu" class="dropdown-menu hidden">
+                <input type="file" id="load-json-input" accept=".json" class="hidden"/>
+                <button id="load-current-system-btn">Current System (JSON)</button>
+                <button id="load-google-drive-btn">Google Drive</button>
+            </div>
+        </div>
+
         <button id="toggle-notes-btn"
                 class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
             Personal Notes
@@ -312,6 +389,18 @@
                 Add New Character
             </button>
         </div>
+
+        <!-- Google Drive Auth Status and Button -->
+        <div class="flex items-center space-x-2 ml-4">
+            <span id="auth-status" class="text-sm text-gray-300">Not Signed In</span>
+            <button id="authorize_button" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-md shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 hidden">
+                Sign In
+            </button>
+            <button id="signout_button" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-md shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 hidden">
+                Sign Out
+            </button>
+        </div>
+        <span id="status-message" class="text-gray-300"></span>
     </header>
 
     <div class="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 mt-6 mb-6">
@@ -876,15 +965,6 @@
                 delete char.maxMagicPoints;
                 delete char.maxRacialPower;
                 delete char.ac;
-
-                // For weapons, if 'use' is true, save the originalDamage/originalMagicDamage
-                // and clear the damage/magicDamage fields to avoid saving calculated values.
-                // Or, more robustly, ensure that when saving, we only save the *original* values
-                // and clear any calculated ones if they are not meant to be persistent.
-                // The current implementation of `handleChange` ensures `damage`/`magicDamage` hold
-                // the correct value (user-entered or formula string) at the time of saving.
-                // The `originalDamage`/`originalMagicDamage` are for temporary UI state.
-                // So, no special handling needed here for saving the calculated values.
             });
 
             const dataStr = JSON.stringify(charactersToSave, null, 2); // Pretty print JSON
@@ -897,6 +977,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            showStatusMessage("Character data saved to JSON file!");
             console.log("All character data downloaded as JSON file!");
         }
 
@@ -939,7 +1020,7 @@
                                             newChar[key].total = calculateTotal(key);
                                         }
                                     } else {
-                                        newChar[key] = loadedChar[key];
+                                        newChar[key] = loadedData[key];
                                     }
                                 }
                             }
@@ -1023,10 +1104,11 @@
                     }
                     updateDOM(); // Update the UI with loaded data
                     populateCharacterSelector(); // Repopulate the selector
+                    showStatusMessage(`Character data loaded from JSON file!`);
                     console.log(`Character data loaded from JSON file!`);
                 } catch (e) {
+                    showStatusMessage("Error parsing JSON file.", true);
                     console.error("Error parsing JSON file:", e);
-                    // In a real app, you might show a user-friendly error message here
                 }
             };
             reader.readAsText(file);
@@ -1618,6 +1700,7 @@
             currentCharacterIndex = characters.length - 1; // Switch to the new character
             populateCharacterSelector(); // Update the dropdown
             updateDOM(); // Update the UI
+            showStatusMessage(`Added new character: ${newChar.name}`);
             console.log(`Added new character: ${newChar.name}`);
         }
 
@@ -1654,6 +1737,409 @@
             }
         }
 
+        // Function to toggle dropdown visibility
+        function toggleDropdown(menuId) {
+            document.getElementById(menuId).classList.toggle('hidden');
+        }
+
+        // --- Google Drive Integration ---
+        // IMPORTANT: Replace with your actual Client ID and API Key from Google Cloud Console
+        // Go to Google Cloud Console -> APIs & Services -> Credentials
+        // Create OAuth 2.0 Client ID (Web application) and API Key
+        // Enable Google Drive API for your project
+        const CLIENT_ID = '267631737294-kobdgr3f7uvq4cor0rr8ne9lf9554io6.apps.googleusercontent.com'; // Replace with your Client ID
+        const API_KEY = 'AIzaSyDAjAsXXOa_XUlBlgzdyPGxBdcjfTTZYRA'; // Replace with your API Key
+
+        const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file'; // drive.appdata for hidden app data, drive.file for user-visible files
+
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        const authStatusSpan = document.getElementById('auth-status');
+        const authorizeButton = document.getElementById('authorize_button');
+        const signoutButton = document.getElementById('signout_button');
+        const statusMessageElement = document.getElementById('status-message');
+
+        /**
+         * Shows a status message to the user.
+         * @param {string} message The message to display.
+         * @param {boolean} isError Whether the message indicates an error.
+         */
+        function showStatusMessage(message, isError = false) {
+            statusMessageElement.textContent = message;
+            statusMessageElement.style.color = isError ? '#ef4444' : '#22c55e'; // red-500 or green-500
+            setTimeout(() => {
+                statusMessageElement.textContent = '';
+            }, 5000); // Clear message after 5 seconds
+        }
+
+        /**
+         * Callback after api.js is loaded.
+         */
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+
+        /**
+         * Callback after Google Identity Services are loaded.
+         */
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initCodeClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: (resp) => {
+                    if (resp.error !== undefined) {
+                        throw (resp);
+                    }
+                    // Exchange authorization code for tokens
+                    // In a real app, this would involve a backend to securely exchange the code
+                    // For this client-side only example, we directly use the access token if available
+                    // This is NOT secure for production and should only be used for demonstration
+                    if (resp.access_token) {
+                        gapi.client.setToken({ access_token: resp.access_token });
+                        updateSignInStatus(true);
+                    } else {
+                        showStatusMessage("Failed to get access token from Google Identity Services.", true);
+                        updateSignInStatus(false);
+                    }
+                },
+            });
+            gisInited = true;
+            maybeEnableButtons();
+        }
+
+        /**
+         * Initializes the Google API client.
+         */
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                apiKey: API_KEY,
+                discoveryDocs: DISCOVERY_DOCS,
+            });
+            gapiInited = true;
+            maybeEnableButtons();
+        }
+
+        /**
+         * Enables/disables buttons based on API and GIS loading status.
+         */
+        function maybeEnableButtons() {
+            if (gapiInited && gisInited) {
+                authorizeButton.style.display = 'block';
+                signoutButton.style.display = 'block';
+                // Check initial sign-in status
+                updateSignInStatus(gapi.client.getToken() !== null);
+            }
+        }
+
+        /**
+         * Sign in the user upon button click.
+         */
+        function handleAuthClick() {
+            if (tokenClient) {
+                tokenClient.requestAccessToken();
+            } else {
+                showStatusMessage("Google Identity Services not initialized.", true);
+            }
+        }
+
+        /**
+         * Sign out the user upon button click.
+         */
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token, () => {
+                    gapi.client.setToken('');
+                    updateSignInStatus(false);
+                    showStatusMessage("Signed out from Google Drive.");
+                });
+            }
+        }
+
+        /**
+         * Update UI to reflect sign-in status.
+         * @param {boolean} isSignedIn
+         */
+        function updateSignInStatus(isSignedIn) {
+            if (isSignedIn) {
+                authStatusSpan.textContent = 'Signed In (Google Drive)';
+                authorizeButton.classList.add('hidden');
+                signoutButton.classList.remove('hidden');
+            } else {
+                authStatusSpan.textContent = 'Not Signed In (Google Drive)';
+                authorizeButton.classList.remove('hidden');
+                signoutButton.classList.add('hidden');
+            }
+        }
+
+        // Load Google API client and Identity Services
+        gapiLoaded();
+        gisLoaded(); // Call gisLoaded immediately as per new GSI client library guidelines
+
+        // --- Google Drive File Operations ---
+        const DRIVE_FOLDER_NAME = 'CharacterSheetsApp'; // Folder to store character sheets
+
+        /**
+         * Saves character data to Google Drive.
+         */
+        async function saveCharacterToGoogleDrive() {
+            if (!gapi.client.getToken()) {
+                showStatusMessage("Please sign in to Google Drive first.", true);
+                return;
+            }
+
+            showStatusMessage("Saving to Google Drive...");
+
+            try {
+                const charactersToSave = JSON.parse(JSON.stringify(characters));
+                charactersToSave.forEach(char => {
+                    playerStatsList.forEach(statName => {
+                        if (char[statName]) {
+                            const { maxExperience, total, ...rest } = char[statName];
+                            char[statName] = rest;
+                        }
+                    });
+                    delete char.maxHp;
+                    delete char.maxMagicPoints;
+                    delete char.maxRacialPower;
+                    delete char.ac;
+                });
+                const fileContent = JSON.stringify(charactersToSave, null, 2);
+                const fileName = 'character_sheets.json';
+                const fileMimeType = 'application/json';
+
+                // 1. Check if the folder exists, create if not
+                let folderId = null;
+                try {
+                    const folderResponse = await gapi.client.drive.files.list({
+                        q: `name='${DRIVE_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+                        spaces: 'drive',
+                        fields: 'files(id, name)',
+                    });
+                    if (folderResponse.result.files.length > 0) {
+                        folderId = folderResponse.result.files[0].id;
+                    } else {
+                        const createFolderResponse = await gapi.client.drive.files.create({
+                            name: DRIVE_FOLDER_NAME,
+                            mimeType: 'application/vnd.google-apps.folder',
+                            fields: 'id',
+                        });
+                        folderId = createFolderResponse.result.id;
+                    }
+                } catch (error) {
+                    console.error("Error managing Google Drive folder:", error);
+                    showStatusMessage("Error accessing Google Drive folder.", true);
+                    return;
+                }
+
+                // 2. Check if the file already exists in the folder
+                let fileId = null;
+                try {
+                    const fileResponse = await gapi.client.drive.files.list({
+                        q: `'${folderId}' in parents and name='${fileName}' and trashed=false`,
+                        spaces: 'drive',
+                        fields: 'files(id, name)',
+                    });
+                    if (fileResponse.result.files.length > 0) {
+                        fileId = fileResponse.result.files[0].id;
+                    }
+                } catch (error) {
+                    console.error("Error listing Google Drive files:", error);
+                    showStatusMessage("Error checking for existing file.", true);
+                    return;
+                }
+
+                // 3. Create or Update the file
+                if (fileId) {
+                    // Update existing file
+                    const response = await gapi.client.request({
+                        path: '/upload/drive/v3/files/' + fileId,
+                        method: 'PATCH',
+                        params: {
+                            uploadType: 'media'
+                        },
+                        headers: {
+                            'Content-Type': fileMimeType
+                        },
+                        body: fileContent
+                    });
+                    console.log('File updated:', response.result);
+                    showStatusMessage("Character data updated on Google Drive!");
+                } else {
+                    // Create new file
+                    const fileMetadata = {
+                        'name': fileName,
+                        'mimeType': fileMimeType,
+                        'parents': [folderId]
+                    };
+                    const response = await gapi.client.drive.files.create({
+                        resource: fileMetadata,
+                        media: {
+                            mimeType: fileMimeType,
+                            body: fileContent
+                        },
+                        fields: 'id'
+                    });
+                    console.log('File created:', response.result);
+                    showStatusMessage("Character data saved to Google Drive!");
+                }
+
+            } catch (error) {
+                console.error('Error saving to Google Drive:', error);
+                showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
+            }
+        }
+
+        /**
+         * Loads character data from Google Drive.
+         */
+        async function loadCharacterFromGoogleDrive() {
+            if (!gapi.client.getToken()) {
+                showStatusMessage("Please sign in to Google Drive first.", true);
+                return;
+            }
+
+            showStatusMessage("Loading from Google Drive...");
+
+            try {
+                // List files in the specific application folder
+                const response = await gapi.client.drive.files.list({
+                    q: `name='character_sheets.json' and mimeType='application/json' and trashed=false`,
+                    spaces: 'drive',
+                    fields: 'files(id, name)',
+                });
+
+                const files = response.result.files;
+                if (files.length === 0) {
+                    showStatusMessage("No character sheet file found on Google Drive.", true);
+                    return;
+                }
+
+                // For simplicity, load the first found file.
+                // In a real application, you might provide a file picker UI.
+                const fileId = files[0].id;
+
+                const fileContentResponse = await gapi.client.drive.files.get({
+                    fileId: fileId,
+                    alt: 'media'
+                });
+
+                const loadedData = JSON.parse(fileContentResponse.body);
+
+                if (Array.isArray(loadedData)) {
+                    characters = loadedData.map(loadedChar => {
+                        const newChar = defaultCharacterData();
+                        for (const key in newChar) {
+                            if (loadedChar.hasOwnProperty(key)) {
+                                if (key === 'class') {
+                                    newChar.class = Array.isArray(loadedChar.class) ? loadedChar.class : [];
+                                } else if (key === 'specialization') {
+                                    newChar.specialization = Array.isArray(loadedChar.specialization) ? loadedChar.specialization : [];
+                                } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
+                                    if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
+                                        newChar[key] = {
+                                            ...newChar[key],
+                                            ...loadedChar[key]
+                                        };
+                                        newChar[key].total = calculateTotal(key);
+                                        if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
+                                            newChar[key].maxExperience = defaultStatMaxExperience;
+                                        }
+                                    } else {
+                                        newChar[key] = {
+                                            ...newChar[key],
+                                            value: parseFloat(loadedChar[key]) || newChar[key].value
+                                        };
+                                        newChar[key].total = calculateTotal(key);
+                                    }
+                                } else {
+                                    newChar[key] = loadedChar[key];
+                                }
+                            }
+                        }
+                        newChar.weaponInventory = loadedChar.weaponInventory || [];
+                        newChar.armorInventory = loadedChar.armorInventory || [];
+                        newChar.generalInventory = loadedChar.generalInventory || [];
+
+                        newChar.weaponInventory.forEach(weapon => {
+                            if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
+                            if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
+                        });
+
+                        newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
+                        newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                        newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
+                        newChar.ac = newChar.armorBonus;
+                        newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+                        newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
+                        newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
+                        return newChar;
+                    });
+                    currentCharacterIndex = 0;
+                } else {
+                    // Handle single character object as before
+                    const newChar = defaultCharacterData();
+                    for (const key in newChar) {
+                        if (loadedData.hasOwnProperty(key)) {
+                            if (key === 'class') {
+                                newChar.class = Array.isArray(loadedData.class) ? loadedData.class : [];
+                            } else if (key === 'specialization') {
+                                newChar.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
+                            } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
+                                if (typeof loadedData[key] === 'object' && loadedData[key] !== null) {
+                                    newChar[key] = {
+                                        ...newChar[key],
+                                        ...loadedData[key]
+                                    };
+                                    newChar[key].total = calculateTotal(key);
+                                    if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
+                                        newChar[key].maxExperience = defaultStatMaxExperience;
+                                    }
+                                } else {
+                                    newChar[key] = {
+                                        ...newChar[key],
+                                        value: parseFloat(loadedData[key]) || newChar[key].value
+                                    };
+                                    newChar[key].total = calculateTotal(key);
+                                }
+                            } else {
+                                newChar[key] = loadedData[key];
+                            }
+                        }
+                    }
+                    newChar.weaponInventory = loadedData.weaponInventory || [];
+                    newChar.armorInventory = loadedData.armorInventory || [];
+                    newChar.generalInventory = loadedData.generalInventory || [];
+
+                    newChar.weaponInventory.forEach(weapon => {
+                        if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
+                        if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
+                    });
+
+                    newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
+                    newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                    newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
+                    newChar.ac = newChar.armorBonus;
+                    newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+                    newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
+                    newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
+
+                    characters = [newChar];
+                    currentCharacterIndex = 0;
+                }
+                updateDOM();
+                populateCharacterSelector();
+                showStatusMessage("Character data loaded from Google Drive!");
+                console.log("Character data loaded from Google Drive!");
+
+            } catch (error) {
+                console.error('Error loading from Google Drive:', error);
+                showStatusMessage("Failed to load from Google Drive. Check console for details.", true);
+            }
+        }
 
         // Attach event listeners to all relevant input fields
         function attachEventListeners() {
@@ -1701,6 +2187,11 @@
                 const classDropdownOptions = document.getElementById('class-dropdown-options');
                 const specializationDisplayInput = document.getElementById('specialization-display');
                 const specializationDropdownOptions = document.getElementById('specialization-dropdown-options');
+                const saveDropdownBtn = document.getElementById('save-dropdown-btn');
+                const saveDropdownMenu = document.getElementById('save-dropdown-menu');
+                const loadDropdownBtn = document.getElementById('load-dropdown-btn');
+                const loadDropdownMenu = document.getElementById('load-dropdown-menu');
+
 
                 if (!classDisplayInput.contains(event.target) && !classDropdownOptions.contains(event.target)) {
                     classDropdownOptions.classList.add('hidden');
@@ -1708,18 +2199,36 @@
                 if (!specializationDisplayInput.contains(event.target) && !specializationDropdownOptions.contains(event.target)) {
                     specializationDropdownOptions.classList.add('hidden');
                 }
+                // Close save dropdown if clicked outside
+                if (!saveDropdownBtn.contains(event.target) && !saveDropdownMenu.contains(event.target)) {
+                    saveDropdownMenu.classList.add('hidden');
+                }
+                // Close load dropdown if clicked outside
+                if (!loadDropdownBtn.contains(event.target) && !loadDropdownMenu.contains(event.target)) {
+                    loadDropdownMenu.classList.add('hidden');
+                }
             });
 
 
             // Attach event listener for the Quick Roll Stats button
             document.getElementById('quick-roll-stats-btn').addEventListener('click', quickRollStats);
 
-            // Attach event listeners for Save/Load JSON buttons
-            document.getElementById('save-json-btn').addEventListener('click', saveCharacterToFile);
-            document.getElementById('load-json-btn').addEventListener('click', () => {
+            // Attach event listeners for Save/Load dropdown buttons and options
+            document.getElementById('save-dropdown-btn').addEventListener('click', () => toggleDropdown('save-dropdown-menu'));
+            document.getElementById('save-current-system-btn').addEventListener('click', saveCharacterToFile);
+            document.getElementById('save-google-drive-btn').addEventListener('click', saveCharacterToGoogleDrive);
+
+            document.getElementById('load-dropdown-btn').addEventListener('click', () => toggleDropdown('load-dropdown-menu'));
+            document.getElementById('load-current-system-btn').addEventListener('click', () => {
                 document.getElementById('load-json-input').click(); // Trigger file input click
             });
             document.getElementById('load-json-input').addEventListener('change', loadCharacterFromFile);
+            document.getElementById('load-google-drive-btn').addEventListener('click', loadCharacterFromGoogleDrive);
+
+            // Google Drive Auth buttons
+            authorizeButton.addEventListener('click', handleAuthClick);
+            signoutButton.addEventListener('click', handleSignoutClick);
+
 
             // Attach event listeners for Personal Notes button and panel close button
             document.getElementById('toggle-notes-btn').addEventListener('click', togglePersonalNotesPanel);
