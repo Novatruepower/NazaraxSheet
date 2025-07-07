@@ -1810,6 +1810,8 @@ async function externalData() {
         const head = arr[0];
         delete arr[0];
 
+        console.log(arr);
+
         arr.forEach(value => {
             let race = value[0];
             fetchedPlayerStatsList[race] = {
@@ -1820,9 +1822,9 @@ async function externalData() {
 
             console.log(value);
             console.log(head);
-            let index = 0;
-            delete head[index];
-            fetchedPlayerStatsList[race]['Stats'][head[index+1]] = value[index];
+
+            let index = 1;
+            fetchedPlayerStatsList[race]['Stats'][head[index]] = value[index];
             ++index;
 
             head.forEach(statName => {
