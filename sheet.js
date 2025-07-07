@@ -1835,7 +1835,11 @@ window.onload = async function() {
 
         arr.forEach(value => {
             let race = value[0];
-            fetchedPlayerStatsList[race] = { };
+            fetchedPlayerStatsList[race] = {
+                Stats: {
+                    Roll: {} 
+                }
+            };
 
             console.log(value);
             console.log(head);
