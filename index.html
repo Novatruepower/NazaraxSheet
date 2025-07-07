@@ -24,7 +24,7 @@
   <ul id="file_list"></ul>
 
   <h2>Edit File</h2>
-  <textarea id="editor" placeholder="Select a file to load content..."></textarea><br>
+  <textarea id="editor" placeholder="Select a file to load content or write a new one..."></textarea><br>
   <button id="save_button">Save</button>
 
   <!-- Google API Scripts -->
@@ -32,14 +32,17 @@
   <script src="https://accounts.google.com/gsi/client" onload="gisLoaded()" async defer></script>
 
   <script>
+    // Replace these with your actual credentials and origin
     const CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
     const API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tWKgqCN4cjTGg';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+    const ORIGIN = 'https://novatruepower.github.io/NazaraxSheet';
 
     let tokenClient;
     let gapiInited = false;
     let gisInited = false;
+    let currentFileId = null;
 
     function gapiLoaded() {
       gapi.load('client', initializeGapiClient);
@@ -59,6 +62,8 @@
         client_id: CLIENT_ID,
         scope: SCOPES,
         callback: '',
+        // ensure correct redirect origin
+        redirect_uri: ORIGIN
       });
       gisInited = true;
       maybeEnableButtons();
@@ -72,7 +77,10 @@
 
     document.getElementById('authorize_button').onclick = () => {
       tokenClient.callback = async (resp) => {
-        if (resp.error) throw resp;
+        if (resp.error) {
+          console.error(resp);
+          return;
+        }
         document.getElementById('signout_button').disabled = false;
         listFiles();
       };
@@ -86,6 +94,7 @@
         gapi.client.setToken('');
         document.getElementById('file_list').innerHTML = '';
         document.getElementById('editor').value = '';
+        currentFileId = null;
         alert('Signed out.');
       }
     };
@@ -115,21 +124,46 @@
 
     async function loadFile(fileId) {
       const res = await gapi.client.drive.files.get({ fileId, alt: 'media' });
-      const editor = document.getElementById('editor');
-      editor.value = res.body;
-
-      document.getElementById('save_button').onclick = async () => {
-        await gapi.client.request({
-          path: `/upload/drive/v3/files/${fileId}`,
-          method: 'PATCH',
-          params: {
-            uploadType: 'media'
-          },
-          body: editor.value
-        });
-        alert('File saved!');
-      };
+      document.getElementById('editor').value = res.body;
+      currentFileId = fileId;
     }
+
+    document.getElementById('save_button').onclick = async () => {
+      const content = document.getElementById('editor').value;
+
+      if (currentFileId) {
+        // Update existing file
+        await gapi.client.request({
+          path: `/upload/drive/v3/files/${currentFileId}`,
+          method: 'PATCH',
+          params: { uploadType: 'media' },
+          body: content
+        });
+        alert('File updated!');
+      } else {
+        // Create new file
+        const metadata = { name: 'New File.txt', mimeType: 'text/plain' };
+        const boundary = 'foo_bar_baz';
+        const multipartRequestBody =
+          `--${boundary}\r\n` +
+          `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+          JSON.stringify(metadata) + `\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Type: text/plain\r\n\r\n` +
+          content + `\r\n` +
+          `--${boundary}--`;
+
+        const response = await gapi.client.request({
+          path: '/upload/drive/v3/files?uploadType=multipart',
+          method: 'POST',
+          headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+          body: multipartRequestBody
+        });
+
+        currentFileId = response.result.id;
+        alert('New file created and saved!');
+        listFiles();
+      }
+    };
   </script>
 </body>
-
