@@ -1,5 +1,5 @@
 const CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
-const API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tWKgqCN4cjTGg';
+const API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqCN4cjTGg';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 // IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
@@ -92,6 +92,16 @@ const defaultCharacterData = () => ({
     weaponInventory: [],
     armorInventory: [],
     generalInventory: [],
+    // Section visibility states
+    sectionVisibility: {
+        'basic-info-content': true,
+        'player-stats-content': true,
+        'health-combat-content': true,
+        'skills-content': true,
+        'weapon-inventory-content': true,
+        'armor-inventory-content': true,
+        'general-inventory-content': true,
+    }
 });
 
 // Array to hold all character sheets
@@ -270,6 +280,9 @@ function loadCharacterFromFile(event) {
                     newChar.weaponInventory = loadedChar.weaponInventory || [];
                     newChar.armorInventory = loadedChar.armorInventory || [];
                     newChar.generalInventory = loadedChar.generalInventory || [];
+                    // Handle section visibility
+                    newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
+
 
                     // Initialize originalDamage/originalMagicDamage if not present in loaded data
                     newChar.weaponInventory.forEach(weapon => {
@@ -326,6 +339,8 @@ function loadCharacterFromFile(event) {
                 newChar.weaponInventory = loadedData.weaponInventory || [];
                 newChar.armorInventory = loadedData.armorInventory || [];
                 newChar.generalInventory = loadedData.generalInventory || [];
+                // Handle section visibility
+                newChar.sectionVisibility = loadedData.sectionVisibility || defaultCharacterData().sectionVisibility;
 
                 // Initialize originalDamage/originalMagicDamage if not present in loaded data
                 newChar.weaponInventory.forEach(weapon => {
@@ -464,6 +479,9 @@ function updateDOM() {
     renderWeaponInventory();
     renderArmorInventory();
     renderGeneralInventory();
+
+    // Update section visibility
+    updateSectionVisibility();
 }
 
 // Function to render the Weapon Inventory table
@@ -1284,6 +1302,8 @@ async function loadGoogleDriveFileContent(fileId) {
                 newChar.weaponInventory = loadedChar.weaponInventory || [];
                 newChar.armorInventory = loadedChar.armorInventory || [];
                 newChar.generalInventory = loadedChar.generalInventory || [];
+                newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
+
 
                 newChar.weaponInventory.forEach(weapon => {
                     if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
@@ -1333,6 +1353,7 @@ async function loadGoogleDriveFileContent(fileId) {
             newChar.weaponInventory = loadedData.weaponInventory || [];
             newChar.armorInventory = loadedData.armorInventory || [];
             newChar.generalInventory = loadedData.generalInventory || [];
+            newChar.sectionVisibility = loadedData.sectionVisibility || defaultCharacterData().sectionVisibility;
 
             newChar.weaponInventory.forEach(weapon => {
                 if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
@@ -1358,6 +1379,48 @@ async function loadGoogleDriveFileContent(fileId) {
     } catch (error) {
         console.error('Error loading Google Drive file content:', error);
         showStatusMessage("Failed to load character data from Google Drive. Check console for details.", true);
+    }
+}
+
+/**
+ * Toggles the visibility of a section and updates the button icon.
+ * @param {string} sectionId The ID of the section content div.
+ */
+function toggleSection(sectionId) {
+    const sectionContent = document.getElementById(sectionId);
+    const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"] svg`);
+
+    if (sectionContent && toggleButton) {
+        const isHidden = sectionContent.classList.contains('hidden');
+        if (isHidden) {
+            sectionContent.classList.remove('hidden');
+            toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
+            character.sectionVisibility[sectionId] = true;
+        } else {
+            sectionContent.classList.add('hidden');
+            toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
+            character.sectionVisibility[sectionId] = false;
+        }
+    }
+}
+
+/**
+ * Updates the visibility of all sections based on the character's sectionVisibility data.
+ */
+function updateSectionVisibility() {
+    for (const sectionId in character.sectionVisibility) {
+        const sectionContent = document.getElementById(sectionId);
+        const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"] svg`);
+
+        if (sectionContent && toggleButton) {
+            if (character.sectionVisibility[sectionId]) {
+                sectionContent.classList.remove('hidden');
+                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
+            } else {
+                sectionContent.classList.add('hidden');
+                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
+            }
+        }
     }
 }
 
@@ -1488,6 +1551,14 @@ function attachEventListeners() {
         if (event.target.classList.contains('remove-item-btn')) {
             removeItem(event);
         }
+    });
+
+    // Attach event listeners for section toggle buttons
+    document.querySelectorAll('.toggle-section-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const targetId = event.currentTarget.dataset.target;
+            toggleSection(targetId);
+        });
     });
 }
 
