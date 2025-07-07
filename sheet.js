@@ -1,5 +1,3 @@
-import { googleDriveFileFetcher } from './fetch.js';
-
 const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
 const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKKqgqCN4cjTGg';
 
@@ -1803,7 +1801,7 @@ function attachEventListeners() {
 }
 
 // Initialize the application when the DOM is fully loaded
-window.onload = async function() {
+window.onload = function() {
     // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
     characters[0].maxHp = calculateMaxHealth(characters[0].race, characters[0].level, characters[0].healthBonus);
     characters[0].maxMagicPoints = calculateMaxMagic(characters[0].level);
@@ -1825,6 +1823,4 @@ window.onload = async function() {
     gisLoaded();
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
-
-    const racesData = await googleDriveFileFetcher.fetchSpecificGoogleSheetTab(googleDriveFileFetcher.My_Gid.Races);
 };
