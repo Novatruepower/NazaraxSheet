@@ -1835,10 +1835,9 @@ window.onload = async function() {
 
         arr.forEach(value => {
             let race = value[0];
-            fetchedPlayerStatsList[race] = {};
-            fetchedPlayerStatsList[race]['Stats'] = {};
+            fetchedPlayerStatsList[race] = { };
 
-
+            console.log(value);
             console.log(head);
             let index = 1;
             fetchedPlayerStatsList[race]['Stats'][head[index]] = value[index];
