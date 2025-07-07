@@ -718,7 +718,7 @@
         <!-- Weapon Inventory Section -->
         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Weapon Inventory</h2>
+                <h2 class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">Weapon Inventory</h2>
                 <button id="add-weapon-btn"
                         class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
                     Add Weapon
@@ -1969,7 +1969,8 @@
                 });
 
                 const content = JSON.stringify(charactersToSave, null, 2);
-                const fileName = `character_sheets.json`;
+                // Determine the file name based on the first character's name, or a default
+                const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() : 'character_sheets') + '.json';
                 const mimeType = 'application/json';
 
                 if (currentGoogleDriveFileId) {
