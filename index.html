@@ -6,10 +6,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Google API Client Library (with onload) -->
-    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-    <!-- Google Identity Services for OAuth 2.0 (with onload) -->
-    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -356,7 +352,7 @@
             </button>
             <div id="save-dropdown-menu" class="dropdown-menu hidden">
                 <button id="save-current-system-btn">Current System (JSON)</button>
-                <button id="save-google-drive-btn">Google Drive</button>
+                <button id="save-cloud-btn">Cloud (Firebase)</button>
             </div>
         </div>
 
@@ -369,7 +365,7 @@
             <div id="load-dropdown-menu" class="dropdown-menu hidden">
                 <input type="file" id="load-json-input" accept=".json" class="hidden"/>
                 <button id="load-current-system-btn">Current System (JSON)</button>
-                <button id="load-google-drive-btn">Google Drive</button>
+                <button id="load-cloud-btn">Cloud (Firebase)</button>
             </div>
         </div>
 
@@ -390,11 +386,11 @@
             </button>
         </div>
 
-        <!-- Google Drive Auth Status and Button -->
+        <!-- Firebase Auth Status and Button -->
         <div class="flex items-center space-x-2 ml-4">
             <span id="auth-status" class="text-sm text-gray-300">Not Signed In</span>
             <button id="authorize_button" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-md shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 hidden">
-                Sign In
+                Sign In with Google
             </button>
             <button id="signout_button" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-md shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 hidden">
                 Sign Out
@@ -768,7 +764,31 @@
         ></textarea>
     </div>
 
-    <script>
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithRedirect, signOut, GoogleAuthProvider, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Globals (provided by Canvas environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            // Your web app's Firebase configuration (replace with your actual config)
+            apiKey: "AIzaSyCk-ePlbywdGnyTGaR-z1TnHcf3uHEcTyc",
+            authDomain: "nazarax-sheet-13ee4.firebaseapp.com",
+            projectId: "nazarax-sheet-13ee4",
+            storageBucket: "nazarax-sheet-13ee4.firebasestorage.app",
+            messagingSenderId: "968516970050",
+            appId: "1:968516970050:web:8e8682fe5c63f870486fdb"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let db;
+        let auth;
+        let userId = null; // Will store the authenticated user's ID or anonymous ID
+        let isAuthReady = false; // Flag to indicate Firebase auth is ready
+
         const defaultStatMaxExperience = 7;
 
         // Function to calculate max experience for a given level
@@ -1001,7 +1021,7 @@
                                     if (key === 'class') {
                                         newChar.class = Array.isArray(loadedChar.class) ? loadedChar.class : [];
                                     } else if (key === 'specialization') {
-                                        newChar.specialization = Array.isArray(loadedChar.specialization) ? loadedChar.specialization : [];
+                                        newChar.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
                                     } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
                                         if (typeof loadedChar[key] === 'object' && loadedData[key] !== null) {
                                             newChar[key] = {
@@ -1742,21 +1762,6 @@
             document.getElementById(menuId).classList.toggle('hidden');
         }
 
-        // --- Google Drive Integration ---
-        // IMPORTANT: Replace with your actual Client ID and API Key from Google Cloud Console
-        // Go to Google Cloud Console -> APIs & Services -> Credentials
-        // Create OAuth 2.0 Client ID (Web application) and API Key
-        // Enable Google Drive API for your project
-        const CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com'; // Replace with your Client ID
-        const API_KEY = 'AIzaSyDAjAsXXOa_XUlBlgzdyPGxBdcjfTTZYRA'; // Replace with your API Key
-
-        const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // drive.file for user-visible files
-
-        let tokenClient;
-        let gapiInited = false;
-        let gisInited = false;
-
         const authStatusSpan = document.getElementById('auth-status');
         const authorizeButton = document.getElementById('authorize_button');
         const signoutButton = document.getElementById('signout_button');
@@ -1776,116 +1781,102 @@
         }
 
         /**
-         * Callback after api.js is loaded.
+         * Initializes Firebase and sets up authentication listener.
          */
-        function gapiLoaded() {
-            gapi.load('client', initializeGapiClient);
-        }
-
-        /**
-         * Callback after Google Identity Services are loaded.
-         */
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: '', // defined later
-            });
-            gisInited = true;
-            maybeEnableButtons();
-        }
-
-        /**
-         * Initializes the Google API client.
-         */
-        async function initializeGapiClient() {
-            await gapi.client.init({
-                apiKey: API_KEY,
-                discoveryDocs: DISCOVERY_DOCS,
-            });
-            gapiInited = true;
-            maybeEnableButtons();
-        }
-
-        /**
-         * Enables/disables buttons based on API and GIS loading status.
-         */
-        function maybeEnableButtons() {
-            if (gapiInited && gisInited) {
-                // Check initial sign-in status and update UI accordingly
-                updateSignInStatus(gapi.client.getToken() !== null);
+        function initializeFirebase() {
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase config is not available. Cloud features will be disabled.");
+                showStatusMessage("Cloud features disabled: Firebase config missing.", true);
+                return;
             }
-        }
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
 
-        /**
-         * Sign in the user upon button click.
-         */
-        function handleAuthClick() {
-            tokenClient.callback = async (resp) => {
-                if (resp.error) {
-                    console.error("Token response error:", resp.error);
-                    showStatusMessage("Google Sign-In failed.", true);
-                    updateSignInStatus(false);
-                    return;
+            // Listen for authentication state changes
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    authStatusSpan.textContent = `Signed In (Firebase): ${userId}`;
+                    authorizeButton.classList.add('hidden');
+                    signoutButton.classList.remove('hidden');
+                    showStatusMessage("Signed in to Firebase.");
+                } else {
+                    userId = null;
+                    authStatusSpan.textContent = 'Not Signed In (Firebase)';
+                    authorizeButton.classList.remove('hidden');
+                    signoutButton.classList.add('hidden');
+                    showStatusMessage("Signed out from Firebase.");
                 }
-                // Set the token for gapi.client to use
-                gapi.client.setToken(resp);
-                updateSignInStatus(true);
-                showStatusMessage("Signed in to Google Drive.");
-            };
+                isAuthReady = true;
+                // Once auth is ready, try to load data if it's the initial load
+                if (window.firebaseInitialLoadComplete) { // Use a flag to prevent multiple loads
+                    await loadCharacterFromFirestore();
+                }
+            });
 
-            if (gapi.client.getToken() === null) {
-                // Prompt the user to select a Google Account and ask for consent to share their data
-                // when establishing a new session.
-                tokenClient.requestAccessToken({prompt: 'consent'});
+            // Sign in with custom token if available, otherwise anonymously
+            if (initialAuthToken) {
+                signInWithCustomToken(auth, initialAuthToken).catch((error) => {
+                    console.error("Error signing in with custom token:", error);
+                    signInAnonymously(auth).catch(e => console.error("Error signing in anonymously:", e));
+                });
             } else {
-                // Skip display of account chooser and consent dialog for an existing session.
-                tokenClient.requestAccessToken({prompt: ''});
+                signInAnonymously(auth).catch(e => console.error("Error signing in anonymously:", e));
             }
         }
 
         /**
-         * Sign out the user upon button click.
+         * Handles Google Sign-In using Firebase Authentication.
          */
-        function handleSignoutClick() {
-            const token = gapi.client.getToken();
-            if (token !== null) {
-                google.accounts.oauth2.revoke(token.access_token);
-                gapi.client.setToken('');
-                updateSignInStatus(false);
-                showStatusMessage("Signed out from Google Drive.");
+        async function handleAuthClick() {
+            const provider = new GoogleAuthProvider();
+            try {
+                // signInWithRedirect is preferred for GitHub Pages due to third-party cookie restrictions
+                await signInWithRedirect(auth, provider);
+                // The redirect will handle updating the auth state and UI
+            } catch (error) {
+                console.error("Error during Google sign-in redirect:", error);
+                // Log the current origin to help the user identify what to add to authorized domains
+                console.error("Current origin (add this to Firebase Authorized Domains):", window.location.origin);
+                if (error.code === 'auth/unauthorized-domain') {
+                    showStatusMessage(
+                        `Sign-in failed: Unauthorized domain. Please add "${window.location.origin}" to your Firebase project's authorized domains in the Firebase Console (Authentication -> Settings -> Authorized domains).`,
+                        true
+                    );
+                } else {
+                    showStatusMessage("Google Sign-In failed. Check console for details.", true);
+                }
             }
         }
 
         /**
-         * Update UI to reflect sign-in status.
-         * @param {boolean} isSignedIn
+         * Handles Firebase Sign Out.
          */
-        function updateSignInStatus(isSignedIn) {
-            if (isSignedIn) {
-                authStatusSpan.textContent = 'Signed In (Google Drive)';
-                authorizeButton.classList.add('hidden');
-                signoutButton.classList.remove('hidden');
-            } else {
-                authStatusSpan.textContent = 'Not Signed In (Google Drive)';
-                authorizeButton.classList.remove('hidden');
-                signoutButton.classList.add('hidden');
+        async function handleSignoutClick() {
+            try {
+                await signOut(auth);
+                showStatusMessage("Signed out from Firebase.");
+            } catch (error) {
+                console.error("Error signing out:", error);
+                showStatusMessage("Failed to sign out.", true);
             }
         }
 
-        // --- Google Drive File Operations ---
-        const DRIVE_FOLDER_NAME = 'CharacterSheetsApp'; // Folder to store character sheets
-
         /**
-         * Saves character data to Google Drive.
+         * Saves character data to Firestore.
          */
-        async function saveCharacterToGoogleDrive() {
-            if (!gapi.client.getToken()) {
-                showStatusMessage("Please sign in to Google Drive first.", true);
+        async function saveCharacterToFirestore() {
+            if (!userId) {
+                showStatusMessage("Please sign in to save to cloud.", true);
+                return;
+            }
+            if (!db) {
+                showStatusMessage("Firestore not initialized.", true);
                 return;
             }
 
-            showStatusMessage("Saving to Google Drive...");
+            showStatusMessage("Saving to Cloud...");
 
             try {
                 const charactersToSave = JSON.parse(JSON.stringify(characters));
@@ -1901,142 +1892,104 @@
                     delete char.maxRacialPower;
                     delete char.ac;
                 });
-                const fileContent = JSON.stringify(charactersToSave, null, 2);
-                const fileName = 'character_sheets.json';
-                const fileMimeType = 'application/json';
 
-                // 1. Check if the folder exists, create if not
-                let folderId = null;
-                try {
-                    const folderResponse = await gapi.client.drive.files.list({
-                        q: `name='${DRIVE_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-                        spaces: 'drive',
-                        fields: 'files(id, name)',
-                    });
-                    if (folderResponse.result.files.length > 0) {
-                        folderId = folderResponse.result.files[0].id;
-                    } else {
-                        const createFolderResponse = await gapi.client.drive.files.create({
-                            name: DRIVE_FOLDER_NAME,
-                            mimeType: 'application/vnd.google-apps.folder',
-                            fields: 'id',
-                        });
-                        folderId = createFolderResponse.result.id;
-                    }
-                } catch (error) {
-                    console.error("Error managing Google Drive folder:", error);
-                    showStatusMessage("Error accessing Google Drive folder.", true);
-                    return;
-                }
-
-                // 2. Check if the file already exists in the folder
-                let fileId = null;
-                try {
-                    const fileResponse = await gapi.client.drive.files.list({
-                        q: `'${folderId}' in parents and name='${fileName}' and trashed=false`,
-                        spaces: 'drive',
-                        fields: 'files(id, name)',
-                    });
-                    if (fileResponse.result.files.length > 0) {
-                        fileId = fileResponse.result.files[0].id;
-                    }
-                } catch (error) {
-                    console.error("Error listing Google Drive files:", error);
-                    showStatusMessage("Error checking for existing file.", true);
-                    return;
-                }
-
-                // 3. Create or Update the file
-                if (fileId) {
-                    // Update existing file
-                    const response = await gapi.client.request({
-                        path: '/upload/drive/v3/files/' + fileId,
-                        method: 'PATCH',
-                        params: {
-                            uploadType: 'media'
-                        },
-                        headers: {
-                            'Content-Type': fileMimeType
-                        },
-                        body: fileContent
-                    });
-                    console.log('File updated:', response.result);
-                    showStatusMessage("Character data updated on Google Drive!");
-                } else {
-                    // Create new file
-                    const fileMetadata = {
-                        'name': fileName,
-                        'mimeType': fileMimeType,
-                        'parents': [folderId]
-                    };
-                    const response = await gapi.client.drive.files.create({
-                        resource: fileMetadata,
-                        media: {
-                            mimeType: fileMimeType,
-                            body: fileContent
-                        },
-                        fields: 'id'
-                    });
-                    console.log('File created:', response.result);
-                    showStatusMessage("Character data saved to Google Drive!");
-                }
-
+                // Store all characters as a single document for simplicity
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/characterSheets`, 'allCharacters');
+                await setDoc(docRef, { data: charactersToSave });
+                showStatusMessage("Character data saved to Cloud!");
+                console.log("Character data saved to Cloud!");
             } catch (error) {
-                console.error('Error saving to Google Drive:', error);
-                showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
+                console.error('Error saving to Firestore:', error);
+                showStatusMessage("Failed to save to Cloud. Check console for details.", true);
             }
         }
 
         /**
-         * Loads character data from Google Drive.
+         * Loads character data from Firestore.
          */
-        async function loadCharacterFromGoogleDrive() {
-            if (!gapi.client.getToken()) {
-                showStatusMessage("Please sign in to Google Drive first.", true);
+        async function loadCharacterFromFirestore() {
+            if (!userId || !isAuthReady) { // Ensure auth is ready before attempting load
+                console.log("Auth not ready or user not signed in, skipping cloud load.");
+                return;
+            }
+            if (!db) {
+                showStatusMessage("Firestore not initialized.", true);
                 return;
             }
 
-            showStatusMessage("Loading from Google Drive...");
+            showStatusMessage("Loading from Cloud...");
 
             try {
-                // List files in the specific application folder
-                const response = await gapi.client.drive.files.list({
-                    q: `name='character_sheets.json' and mimeType='application/json' and trashed=false`,
-                    spaces: 'drive',
-                    fields: 'files(id, name)',
-                });
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/characterSheets`, 'allCharacters');
+                const docSnap = await getDoc(docRef);
 
-                const files = response.result.files;
-                if (files.length === 0) {
-                    showStatusMessage("No character sheet file found on Google Drive.", true);
-                    return;
-                }
+                if (docSnap.exists()) {
+                    const loadedData = docSnap.data().data; // Assuming data is stored under a 'data' field
 
-                // For simplicity, load the first found file.
-                // In a real application, you might provide a file picker UI.
-                const fileId = files[0].id;
+                    if (Array.isArray(loadedData)) {
+                        characters = loadedData.map(loadedChar => {
+                            const newChar = defaultCharacterData();
+                            for (const key in newChar) {
+                                if (loadedChar.hasOwnProperty(key)) {
+                                    if (key === 'class') {
+                                        newChar.class = Array.isArray(loadedChar.class) ? loadedChar.class : [];
+                                    } else if (key === 'specialization') {
+                                        newChar.specialization = Array.isArray(loadedChar.specialization) ? loadedChar.specialization : [];
+                                    } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
+                                        if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
+                                            newChar[key] = {
+                                                ...newChar[key],
+                                                ...loadedChar[key]
+                                            };
+                                            newChar[key].total = calculateTotal(key);
+                                            if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
+                                                newChar[key].maxExperience = defaultStatMaxExperience;
+                                            }
+                                        } else {
+                                            newChar[key] = {
+                                                ...newChar[key],
+                                                value: parseFloat(loadedChar[key]) || newChar[key].value
+                                            };
+                                            newChar[key].total = calculateTotal(key);
+                                        }
+                                    } else {
+                                        newChar[key] = loadedChar[key];
+                                    }
+                                }
+                            }
+                            newChar.weaponInventory = loadedChar.weaponInventory || [];
+                            newChar.armorInventory = loadedChar.armorInventory || [];
+                            newChar.generalInventory = loadedChar.generalInventory || [];
 
-                const fileContentResponse = await gapi.client.drive.files.get({
-                    fileId: fileId,
-                    alt: 'media'
-                });
+                            newChar.weaponInventory.forEach(weapon => {
+                                if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
+                                if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
+                            });
 
-                const loadedData = JSON.parse(fileContentResponse.body);
-
-                if (Array.isArray(loadedData)) {
-                    characters = loadedData.map(loadedChar => {
+                            newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
+                            newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                            newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
+                            newChar.ac = newChar.armorBonus;
+                            newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+                            newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
+                            newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
+                            return newChar;
+                        });
+                        currentCharacterIndex = 0;
+                    } else {
+                        // Handle single character object if old format
                         const newChar = defaultCharacterData();
                         for (const key in newChar) {
-                            if (loadedChar.hasOwnProperty(key)) {
+                            if (loadedData.hasOwnProperty(key)) {
                                 if (key === 'class') {
-                                    newChar.class = Array.isArray(loadedChar.class) ? loadedChar.class : [];
+                                    newChar.class = Array.isArray(loadedData.class) ? loadedData.class : [];
                                 } else if (key === 'specialization') {
-                                    newChar.specialization = Array.isArray(loadedChar.specialization) ? loadedChar.specialization : [];
+                                    newChar.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
                                 } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
-                                    if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
+                                    if (typeof loadedData[key] === 'object' && loadedData[key] !== null) {
                                         newChar[key] = {
                                             ...newChar[key],
-                                            ...loadedChar[key]
+                                            ...loadedData[key]
                                         };
                                         newChar[key].total = calculateTotal(key);
                                         if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
@@ -2045,18 +1998,18 @@
                                     } else {
                                         newChar[key] = {
                                             ...newChar[key],
-                                            value: parseFloat(loadedChar[key]) || newChar[key].value
+                                            value: parseFloat(loadedData[key]) || newChar[key].value
                                         };
                                         newChar[key].total = calculateTotal(key);
                                     }
                                 } else {
-                                    newChar[key] = loadedChar[key];
+                                    newChar[key] = loadedData[key];
                                 }
                             }
                         }
-                        newChar.weaponInventory = loadedChar.weaponInventory || [];
-                        newChar.armorInventory = loadedChar.armorInventory || [];
-                        newChar.generalInventory = loadedChar.generalInventory || [];
+                        newChar.weaponInventory = loadedData.weaponInventory || [];
+                        newChar.armorInventory = loadedData.armorInventory || [];
+                        newChar.generalInventory = loadedData.generalInventory || [];
 
                         newChar.weaponInventory.forEach(weapon => {
                             if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
@@ -2070,68 +2023,21 @@
                         newChar.hp = Math.min(newChar.hp, newChar.maxHp);
                         newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
                         newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
-                        return newChar;
-                    });
-                    currentCharacterIndex = 0;
-                } else {
-                    // Handle single character object as before
-                    const newChar = defaultCharacterData();
-                    for (const key in newChar) {
-                        if (loadedData.hasOwnProperty(key)) {
-                            if (key === 'class') {
-                                newChar.class = Array.isArray(loadedData.class) ? loadedData.class : [];
-                            } else if (key === 'specialization') {
-                                newChar.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
-                            } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
-                                if (typeof loadedData[key] === 'object' && loadedData[key] !== null) {
-                                    newChar[key] = {
-                                        ...newChar[key],
-                                        ...loadedData[key]
-                                    };
-                                    newChar[key].total = calculateTotal(key);
-                                    if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
-                                        newChar[key].maxExperience = defaultStatMaxExperience;
-                                    }
-                                } else {
-                                    newChar[key] = {
-                                        ...newChar[key],
-                                        value: parseFloat(loadedData[key]) || newChar[key].value
-                                    };
-                                    newChar[key].total = calculateTotal(key);
-                                }
-                            } else {
-                                newChar[key] = loadedData[key];
-                            }
-                        }
+
+                        characters = [newChar];
+                        currentCharacterIndex = 0;
                     }
-                    newChar.weaponInventory = loadedData.weaponInventory || [];
-                    newChar.armorInventory = loadedData.armorInventory || [];
-                    newChar.generalInventory = loadedData.generalInventory || [];
-
-                    newChar.weaponInventory.forEach(weapon => {
-                        if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
-                        if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
-                    });
-
-                    newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
-                    newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
-                    newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
-                    newChar.ac = newChar.armorBonus;
-                    newChar.hp = Math.min(newChar.hp, newChar.maxHp);
-                    newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
-                    newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
-
-                    characters = [newChar];
-                    currentCharacterIndex = 0;
+                    updateDOM();
+                    populateCharacterSelector();
+                    showStatusMessage("Character data loaded from Cloud!");
+                    console.log("Character data loaded from Cloud!");
+                } else {
+                    showStatusMessage("No character data found in Cloud for this user.", false);
+                    console.log("No character data found in Firestore for this user.");
                 }
-                updateDOM();
-                populateCharacterSelector();
-                showStatusMessage("Character data loaded from Google Drive!");
-                console.log("Character data loaded from Google Drive!");
-
             } catch (error) {
-                console.error('Error loading from Google Drive:', error);
-                showStatusMessage("Failed to load from Google Drive. Check console for details.", true);
+                console.error('Error loading from Firestore:', error);
+                showStatusMessage("Failed to load from Cloud. Check console for details.", true);
             }
         }
 
@@ -2210,16 +2116,16 @@
             // Attach event listeners for Save/Load dropdown buttons and options
             document.getElementById('save-dropdown-btn').addEventListener('click', () => toggleDropdown('save-dropdown-menu'));
             document.getElementById('save-current-system-btn').addEventListener('click', saveCharacterToFile);
-            document.getElementById('save-google-drive-btn').addEventListener('click', saveCharacterToGoogleDrive);
+            document.getElementById('save-cloud-btn').addEventListener('click', saveCharacterToFirestore); // Changed to save to Firestore
 
             document.getElementById('load-dropdown-btn').addEventListener('click', () => toggleDropdown('load-dropdown-menu'));
             document.getElementById('load-current-system-btn').addEventListener('click', () => {
                 document.getElementById('load-json-input').click(); // Trigger file input click
             });
             document.getElementById('load-json-input').addEventListener('change', loadCharacterFromFile);
-            document.getElementById('load-google-drive-btn').addEventListener('click', loadCharacterFromGoogleDrive);
+            document.getElementById('load-cloud-btn').addEventListener('click', loadCharacterFromFirestore); // Changed to load from Firestore
 
-            // Google Drive Auth buttons
+            // Firebase Auth buttons
             document.getElementById("authorize_button").onclick = handleAuthClick;
             document.getElementById("signout_button").onclick = handleSignoutClick;
 
@@ -2280,6 +2186,10 @@
             const personalNotesPanel = document.getElementById('personal-notes-panel');
             const personalNotesHeader = document.querySelector('.personal-notes-header');
             makeDraggable(personalNotesPanel, personalNotesHeader);
+
+            // Initialize Firebase and set up auth listener
+            initializeFirebase();
+            window.firebaseInitialLoadComplete = true; // Set flag after initial setup
         };
     </script>
 </body>
