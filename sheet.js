@@ -1827,25 +1827,25 @@ window.onload = async function() {
     maybeEnableGoogleDriveButtons();
 
     await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
-        let test = {};
+       // let test = {};
 
         delete arr[0][0];
-        let head = arr[0];
+        const head = arr[0];
         delete arr[0];
 
         console.log(head);
 
         arr.forEach(value => {
             let race = value[0];
-            test[race] = { };
+            //test[race] = { };
 
             let index = 1;
             head.forEach(statName => {
-                test[race][statName] = value[index];
+                head[race][statName] = value[index];
                 ++index;
             });
         });
 
-        console.log(test);
+        console.log(head);
     });
 };
