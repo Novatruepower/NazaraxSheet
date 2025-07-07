@@ -120,4 +120,6 @@ async function fetchSpecificGoogleSheetTab(gid) {
 // Uncomment the function calls below to test them.
 // Remember to replace the placeholder links with your actual Google Drive public read-only links!
 
-fetchSpecificGoogleSheetTab(My_Gid.Races);
+window.onload = function() {
+    fetchSpecificGoogleSheetTab(My_Gid.Races);
+}
