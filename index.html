@@ -793,25 +793,25 @@
 
         // Mapping for common terms to character properties for formula evaluation
         const statMapping = {
-            "Strength": "strength.total",
-            "Agility": "agility.total",
-            "Magic": "magic.total",
-            "Luck": "luck.total",
-            "Crafting": "crafting.total",
-            "Intelligence": "intelligence.total",
-            "Intimidation": "intimidation.total",
-            "Charisma": "charisma.total",
-            "Negotiation": "negotiation.total",
-            "HP": "hp",
-            "Health": "hp",
-            "MaxHP": "maxHp",
-            "MaxHealth": "maxHp",
-            "MagicPoints": "currentMagicPoints",
-            "MaxMagicPoints": "maxMagicPoints",
-            "RacialPower": "racialPower",
-            "MaxRacialPower": "maxRacialPower",
-            "AC": "ac",
-            "Armor": "ac"
+        "Strength": "strength-total",
+        "Agility": "agility-total",
+        "Magic": "magic-total",
+        "Luck": "luck-total",
+        "Crafting": "crafting-total",
+        "Intelligence": "intelligence-total",
+        "Intimidation": "intimidation-total",
+        "Charisma": "charisma-total",
+        "Negotiation": "negotiation-total",
+        "HP": "hp",
+        "Health": "hp",
+        "MaxHP": "maxHp",
+        "MaxHealth": "maxHp",
+        "MagicPoints": "currentMagicPoints",
+        "MaxMagicPoints": "maxMagicPoints",
+        "RacialPower": "racialPower",
+        "MaxRacialPower": "maxRacialPower",
+        "AC": "ac",
+        "Armor": "ac"
         };
 
 
@@ -828,9 +828,33 @@
             return value + racialChange + equipment + temporary;
         }
 
+        // Then use a function like this to fetch the actual value from the document
+        function getStatValue(statLabel) {
+        const elementId = statMapping[statLabel];
+        if (!elementId) return '';
+        const el = document.getElementById(elementId);
+        if (!el) return '';
+        return parseFloat(el.value) || 0;
+        }
 
+        // Updated calculateFormula to perform regex replace using statMapping
         function calculateFormula(formulaString) {
-            return formulaString;
+        if (typeof formulaString !== 'string') return formulaString != null ? formulaString : '';
+
+        // Replace all mapped keys in the formula with actual values from the DOM
+        let parsedFormula = formulaString;
+        for (const [label, id] of Object.entries(statMapping)) {
+            const value = getStatValue(label);
+            const regex = new RegExp(`\\b${label}\\b`, 'gi');
+            parsedFormula = parsedFormula.replace(regex, value);
+        }
+
+        try {
+            return eval(parsedFormula); // Note: `eval` can be dangerous; sanitize input if needed
+        } catch (error) {
+            console.warn(`Error evaluating formula: ${formulaString}`, error);
+            return parsedFormula;
+        }
         }
 
 
@@ -1237,8 +1261,8 @@
                             character.weaponInventory[itemIndex].originalDamage = character.weaponInventory[itemIndex].damage;
                             character.weaponInventory[itemIndex].originalMagicDamage = character.weaponInventory[itemIndex].magicDamage;
                             // Apply default formulas (can be customized)
-                            character.weaponInventory[itemIndex].damage = "Strength + Agility";
-                            character.weaponInventory[itemIndex].magicDamage = "Magic";
+                            character.weaponInventory[itemIndex].damage = calculateFormula(character.weaponInventory[itemIndex].damage);
+                            character.weaponInventory[itemIndex].magicDamage = calculateFormula(character.weaponInventory[itemIndex].magicDamage);
                         } else {
                             // Restore original values
                             character.weaponInventory[itemIndex].damage = character.weaponInventory[itemIndex].originalDamage;
