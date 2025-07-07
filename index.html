@@ -88,68 +88,228 @@
         #player-stats-container table td:first-child {
             min-width: 100px; /* Wider for stat name */
         }
-        /* Make Experience column narrower */
+        /* Make Experience column wider */
         #player-stats-container table th:nth-child(6), /* Targets the new Experience header */
         #player-stats-container table td:nth-child(6) { /* Targets the new Experience cell */
-            min-width: 90px; /* Adjusted to be smaller for combined Exp/Max Exp */
+            min-width: 110px; /* Adjusted to be slightly wider for combined Exp/Max Exp */
         }
         /* Ensure inputs within the combined Exp/Max Exp cell are compact */
         .exp-inputs-wrapper input {
             width: calc(50% - 8px); /* Adjust width for two inputs and a separator */
             padding: 0.25rem 0.2rem;
         }
-        /* Modal Styles */
-        .modal-overlay {
+
+        /* Personal Notes Panel Styles */
+        .personal-notes-panel {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 50; /* Higher than header */
-        }
-        .modal-content {
+            top: 50px; /* Initial position from top */
+            right: 20px; /* Initial position from right */
+            width: 350px; /* Default width */
+            min-width: 250px; /* Minimum width */
+            min-height: 250px; /* Minimum height */
             background-color: #fff;
-            padding: 2rem;
             border-radius: 0.75rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh; /* Limit height for scrollability */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
+            z-index: 100; /* Higher than other content */
+            resize: both; /* Allow resizing in both directions */
+            overflow: hidden; /* Hide scrollbars if content is smaller than panel */
+            border: 1px solid #e2e8f0; /* subtle border */
         }
-        .dark .modal-content {
+        .dark .personal-notes-panel {
             background-color: #1f2937; /* Darker gray for dark mode */
             color: #f3f4f6;
+            border-color: #374151;
         }
-        .modal-textarea {
+
+        .personal-notes-header {
+            cursor: grab; /* Indicate draggable area */
+            user-select: none; /* Prevent text selection during drag */
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+
+        .personal-notes-textarea {
             flex-grow: 1; /* Allow textarea to fill available space */
-            min-height: 200px; /* Minimum height for textarea */
-            resize: vertical; /* Allow vertical resizing */
+            min-height: 150px; /* Minimum height for textarea within the panel */
+            resize: none; /* Disable default textarea resize, as parent resizes */
+            padding: 1rem; /* Padding inside textarea */
+            box-sizing: border-box; /* Include padding in width/height */
+            border: none; /* Remove textarea border */
+            outline: none; /* Remove textarea outline on focus */
+            background-color: transparent; /* Make textarea background transparent */
+            color: inherit; /* Inherit text color from parent */
+            overflow-y: auto; /* Enable vertical scrolling for content */
         }
+
+        /* Table specific styles for inventory sections */
+        .inventory-table-container {
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        .inventory-table-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .inventory-table-container th,
+        .inventory-table-container td {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0; /* border-gray-200 */
+            text-align: left;
+            font-size: 0.875rem; /* text-sm */
+            white-space: nowrap; /* Prevent text wrapping in table cells */
+        }
+        .dark .inventory-table-container th,
+        .dark .inventory-table-container td {
+            border-color: #4b5563; /* border-gray-600 */
+        }
+        .inventory-table-container th {
+            background-color: #f1f5f9; /* bg-gray-100 */
+            font-weight: 600;
+            color: #4a5568; /* text-gray-700 */
+        }
+        .dark .inventory-table-container th {
+            background-color: #374151; /* bg-gray-700 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        .inventory-table-container td input[type="text"],
+        .inventory-table-container td input[type="number"],
+        .inventory-table-container td textarea { /* Added textarea */
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            background-color: #fff;
+            color: #1a202c;
+            box-sizing: border-box; /* Ensure padding doesn't increase total width */
+        }
+        .dark .inventory-table-container td input[type="text"],
+        .dark .inventory-table-container td input[type="number"],
+        .dark .inventory-table-container td textarea { /* Added textarea */
+            background-color: #1f2937;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+        .inventory-table-container td input[type="checkbox"] {
+            margin-left: 0.5rem;
+        }
+        .inventory-table-container td button {
+            background-color: #ef4444; /* bg-red-500 */
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .inventory-table-container td button:hover {
+            background-color: #dc2626; /* bg-red-600 */
+        }
+
+        /* Styles for hover-to-zoom effect on Effect textareas */
+        .inventory-effect-textarea {
+            transition: all 0.2s ease-in-out;
+            position: relative; /* Needed for z-index to work correctly */
+            z-index: 1; /* Default z-index */
+            overflow: hidden; /* Hide scrollbar initially */
+            resize: both; /* Allow both vertical and horizontal resizing */
+            min-width: 100%; /* Ensure it doesn't shrink below its cell */
+        }
+
+        .inventory-effect-textarea:hover,
+        .inventory-effect-textarea:focus {
+            z-index: 10; /* Bring to front on hover/focus */
+            width: 250%; /* Zoom out horizontally */
+            height: 200px; /* Increase height for better visibility */
+            transform: scale(1.05); /* Slight visual enlargement */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5), 0 5px 15px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
+            overflow: auto; /* Show scrollbar if content overflows on hover/focus */
+        }
+
+        /* Specific height adjustments for different effect textareas */
+        #weapon-inventory-table .inventory-effect-textarea,
+        #armor-inventory-table .inventory-effect-textarea {
+            height: 6rem; /* h-24 = 6rem */
+        }
+
+        #general-inventory-table .inventory-effect-textarea {
+            height: 5rem; /* h-20 = 5rem */
+        }
+
+        /* Adjust hover height for general inventory to be slightly smaller */
+        #general-inventory-table .inventory-effect-textarea:hover,
+        #general-inventory-table .inventory-effect-textarea:focus {
+            height: 150px; /* Adjusted hover height for general inventory */
+        }
+
+        /* Min-width for Weapon Inventory columns */
+        #weapon-inventory-table th:nth-child(1), #weapon-inventory-table td:nth-child(1) { min-width: 120px; } /* Name */
+        #weapon-inventory-table th:nth-child(2), #weapon-inventory-table td:nth-child(2) { min-width: 80px; }  /* Type */
+        #weapon-inventory-table th:nth-child(3), #weapon-inventory-table td:nth-child(3) { min-width: 90px; }  /* Material */
+        #weapon-inventory-table th:nth-child(4), #weapon-inventory-table td:nth-child(4) { min-width: 100px; } /* Requirement */
+        #weapon-inventory-table th:nth-child(5), #weapon-inventory-table td:nth-child(5) { min-width: 110px; } /* Required Stat */
+        #weapon-inventory-table th:nth-child(6), #weapon-inventory-table td:nth-child(6) { min-width: 80px; }  /* Accuracy */
+        #weapon-inventory-table th:nth-child(7), #weapon-inventory-table td:nth-child(7) { min-width: 200px; } /* Damage - increased width for textarea */
+        #weapon-inventory-table th:nth-child(8), #weapon-inventory-table td:nth-child(8) { min-width: 200px; } /* Magic Damage - increased width for textarea */
+        #weapon-inventory-table th:nth-child(9), #weapon-inventory-table td:nth-child(9) { min-width: 90px; }  /* Magic Type */
+        #weapon-inventory-table th:nth-child(10), #weapon-inventory-table td:nth-child(10) { min-width: 200px; } /* Effect */
+        #weapon-inventory-table th:nth-child(11), #weapon-inventory-table td:nth-child(11) { min-width: 70px; }  /* Value */
+        #weapon-inventory-table th:nth-child(12), #weapon-inventory-table td:nth-child(12) { min-width: 60px; }  /* Use */
+        #weapon-inventory-table th:nth-child(13), #weapon-inventory-table td:nth-child(13) { min-width: 80px; }  /* Actions */
+
+        /* Min-width for Armor Inventory columns */
+        #armor-inventory-table th:nth-child(1), #armor-inventory-table td:nth-child(1) { min-width: 120px; } /* Name */
+        #armor-inventory-table th:nth-child(2), #armor-inventory-table td:nth-child(2) { min-width: 90px; }  /* Location */
+        #armor-inventory-table th:nth-child(3), #armor-inventory-table td:nth-child(3) { min-width: 90px; }  /* Material */
+        #armor-inventory-table th:nth-child(4), #armor-inventory-table td:nth-child(4) { min-width: 100px; } /* Requirement */
+        #armor-inventory-table th:nth-child(5), #armor-inventory-table td:nth-child(5) { min-width: 110px; } /* Required Stat */
+        #armor-inventory-table th:nth-child(6), #armor-inventory-table td:nth-child(6) { min-width: 80px; }  /* Defense */
+        #armor-inventory-table th:nth-child(7), #armor-inventory-table td:nth-child(7) { min-width: 110px; } /* Magic Defense */
+        #armor-inventory-table th:nth-child(8), #armor-inventory-table td:nth-child(8) { min-width: 90px; }  /* Magic Type */
+        #armor-inventory-table th:nth-child(9), #armor-inventory-table td:nth-child(9) { min-width: 200px; } /* Effect */
+        #armor-inventory-table th:nth-child(10), #armor-inventory-table td:nth-child(10) { min-width: 70px; } /* Value */
+        #armor-inventory-table th:nth-child(11), #armor-inventory-table td:nth-child(11) { min-width: 80px; } /* Equipped */
+        #armor-inventory-table th:nth-child(12), #armor-inventory-table td:nth-child(12) { min-width: 80px; } /* Actions */
+
+        /* Min-width for General Inventory columns */
+        #general-inventory-table th:nth-child(1), #general-inventory-table td:nth-child(1) { min-width: 120px; } /* Name */
+        #general-inventory-table th:nth-child(2), #general-inventory-table td:nth-child(2) { min-width: 80px; }  /* Type */
+        #general-inventory-table th:nth-child(3), #general-inventory-table td:nth-child(3) { min-width: 200px; } /* Effect */
+        #general-inventory-table th:nth-child(4), #general-inventory-table td:nth-child(4) { min-width: 80px; }  /* Accuracy */
+        #general-inventory-table th:nth-child(5), #general-inventory-table td:nth-child(5) { min-width: 70px; }  /* Amount */
+        #general-inventory-table th:nth-child(6), #general-inventory-table td:nth-child(6) { min-width: 100px; } /* Value (per unit) */
+        #general-inventory-table th:nth-child(7), #general-inventory-table td:nth-child(7) { min-width: 80px; }  /* Actions */
+
     </style>
 </head>
 <body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center">
 
     <!-- Sticky Header -->
-    <header class="sticky top-0 z-20 w-full bg-indigo-800 dark:bg-indigo-950 shadow-lg py-3 px-4 md:px-8 flex justify-center">
-        <div class="flex space-x-4">
-            <button id="save-json-btn"
-                    class="px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                Save Character (JSON)
-            </button>
-            <input type="file" id="load-json-input" accept=".json" class="hidden"/>
-            <button id="load-json-btn"
-                    class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                Load Character (JSON)
-            </button>
-            <button id="toggle-notes-btn"
-                    class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                Personal Notes
+    <header class="sticky top-0 z-20 w-full bg-indigo-800 dark:bg-indigo-950 shadow-lg py-3 px-4 md:px-8 flex justify-center items-center space-x-4">
+        <button id="save-json-btn"
+                class="px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+            Save Characters (JSON)
+        </button>
+        <input type="file" id="load-json-input" accept=".json" class="hidden"/>
+        <button id="load-json-btn"
+                class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+            Load Characters (JSON)
+        </button>
+        <button id="toggle-notes-btn"
+                class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+            Personal Notes
+        </button>
+
+        <!-- New Character Selector and Add Button -->
+        <div class="flex items-center space-x-2">
+            <select id="character-selector"
+                    class="px-4 py-2 bg-gray-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                <!-- Options will be populated by JS -->
+            </select>
+            <button id="add-character-btn"
+                    class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                Add New Character
             </button>
         </div>
     </header>
@@ -279,7 +439,6 @@
                                 <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equip</th>
                                 <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Temp</th>
                                 <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Exp</th>
-                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Max Exp</th>
                                 <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
                             </tr>
                         </thead>
@@ -402,34 +561,122 @@
                 placeholder="e.g., Stealth +5, Perception +4, Acrobatics +3"
             ></textarea>
         </div>
+
+        <!-- Weapon Inventory Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Weapon Inventory</h2>
+                <button id="add-weapon-btn"
+                        class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                    Add Weapon
+                </button>
+            </div>
+            <div class="inventory-table-container">
+                <table id="weapon-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Material</th>
+                            <th>Requirement</th>
+                            <th>Required Stat</th>
+                            <th>Accuracy</th>
+                            <th>Damage</th>
+                            <th>Magic Damage</th>
+                            <th>Magic Type</th>
+                            <th>Effect</th>
+                            <th>Value</th>
+                            <th>Use</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Weapon rows will be dynamically populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Armor Inventory Section -->
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Armor Inventory</h2>
+                <button id="add-armor-btn"
+                        class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                    Add Armor
+                </button>
+            </div>
+            <div class="inventory-table-container">
+                <table id="armor-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Material</th>
+                            <th>Requirement</th>
+                            <th>Required Stat</th>
+                            <th>Defense</th>
+                            <th>Magic Defense</th>
+                            <th>Magic Type</th>
+                            <th>Effect</th>
+                            <th>Value</th>
+                            <th>Equipped</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Armor rows will be dynamically populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- General Inventory Section -->
         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
-            <h2 class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">Inventory</h2>
-            <textarea
-                id="inventory"
-                name="inventory"
-                rows="6"
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-y"
-                placeholder="e.g., Longsword, Leather Armor, 50 Gold Pieces, Potion of Healing"
-            ></textarea>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Inventory</h2>
+                <button id="add-general-item-btn"
+                        class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                    Add Item
+                </button>
+            </div>
+            <div class="inventory-table-container">
+                <table id="general-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Effect</th>
+                            <th>Accuracy</th>
+                            <th>Amount</th>
+                            <th>Value (per unit)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- General item rows will be dynamically populated here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Personal Notes Modal -->
-    <div id="notes-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">Personal Notes</h2>
-            <textarea
-                id="personalNotes"
-                name="personalNotes"
-                rows="15"
-                class="modal-textarea mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                placeholder="Write your personal notes here..."
-            ></textarea>
-            <button id="close-notes-modal-btn"
-                    class="mt-4 px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                Close
+    <!-- Personal Notes Panel (Movable and Resizable) -->
+    <div id="personal-notes-panel" class="personal-notes-panel hidden">
+        <div class="personal-notes-header cursor-grab bg-indigo-700 dark:bg-indigo-900 text-white p-3 rounded-t-lg flex justify-between items-center">
+            <h2 class="text-lg font-semibold">Personal Notes</h2>
+            <button id="close-notes-panel-btn" class="text-white hover:text-gray-200 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
         </div>
+        <textarea
+            id="personalNotes"
+            name="personalNotes"
+            class="personal-notes-textarea w-full px-3 py-2 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            placeholder="Write your personal notes here..."
+        ></textarea>
     </div>
 
     <script>
@@ -439,6 +686,16 @@
         function calculateLevelMaxExperience(level) {
             return 100;
         }
+
+        // List of available classes for the multi-select dropdown
+        const classOptionsList = ["Archer", "Assassin", "Bard", "Berserker", "Brawler", "Knight", "Mage", "Martial artist", "Oracle", "Paladin", "Priest"];
+
+        // Define class specializations
+        const classSpecializationsMap = {
+            "Mage": ["Chaos", "Dark", "Thunder"],
+            "Knight": ["Order"],
+            "Martial artist": ["Apprentice", "Warrior", "Master", "Grand Master", "Lord", "King"],
+        };
 
         // Race health multipliers
         const raceHealthMultipliers = {
@@ -472,45 +729,61 @@
             return level * 100;
         }
 
-        // Define class specializations
-        const classSpecializationsMap = {
-            "Mage": ["Chaos", "Dark", "Thunder"],
-            "Knight": ["Order"],
-            "Martial artist": ["Apprentice", "Warrior", "Master", "Grand Master", "Lord", "King"],
-        };
-
-        // Initial character data structure with nested objects for player stats
-        let character = {
-            name: '',
-            class: [], // Changed class to an array for multiple selections
-            specialization: [], // New property for specializations
+        // Default character data for creating new characters
+        const defaultCharacterData = () => ({
+            name: 'Your character name',
+            class: [],
+            specialization: [],
             race: '',
             level: 1,
-            levelExperience: 0, // Current experience for the character's overall level
-            levelMaxExperience: calculateLevelMaxExperience(1), // Max experience to reach the next level
-            // Player stats with their sub-components, including experience and maxExperience
+            levelExperience: 0,
+            levelMaxExperience: calculateLevelMaxExperience(1),
             strength: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             agility: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-            magic: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 }, // This is the player stat 'magic'
+            magic: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             luck: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             crafting: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             intelligence: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             intimidation: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             charisma: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
             negotiation: { value: 10, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: 10 },
-            hp: 100, // Current health
-            maxHp: 100, // Calculated max health (will include healthBonus)
-            healthBonus: 0, // New property for additional max health
-            currentMagicPoints: 100, // Current magic points (renamed from 'magic')
-            maxMagicPoints: 100, // Calculated max magic points (renamed from 'maxMagic')
-            racialPower: 100, // Current racial power points
-            maxRacialPower: 100, // Calculated max racial power points
-            ac: 0, // Total armor
-            armorBonus: 0, // New property for armor bonus
+            hp: 100,
+            maxHp: 100,
+            healthBonus: 0,
+            currentMagicPoints: 100,
+            maxMagicPoints: 100,
+            racialPower: 100,
+            maxRacialPower: 100,
+            ac: 0,
+            armorBonus: 0,
             skills: '',
-            inventory: '',
-            personalNotes: '', // New property for personal notes
-        };
+            personalNotes: '',
+            // New inventory sections
+            weaponInventory: [],
+            armorInventory: [],
+            generalInventory: [],
+        });
+
+        // Array to hold all character sheets
+        let characters = [defaultCharacterData()];
+        // Index of the currently active character sheet
+        let currentCharacterIndex = 0;
+
+        // Getter to easily access the current character
+        const character = new Proxy({}, {
+            get: function(target, prop) {
+                return characters[currentCharacterIndex][prop];
+            },
+            set: function(target, prop, value) {
+                characters[currentCharacterIndex][prop] = value;
+                // If the character name changes, update the selector
+                if (prop === 'name') {
+                    populateCharacterSelector();
+                }
+                return true;
+            }
+        });
+
 
         // List of player stats for easy iteration
         const playerStatsList = [
@@ -518,8 +791,28 @@
             'intelligence', 'intimidation', 'charisma', 'negotiation'
         ];
 
-        // List of available classes for the multi-select dropdown
-        const classOptionsList = ["Archer", "Assassin", "Bard", "Berserker", "Brawler", "Knight", "Mage", "Martial artist", "Oracle", "Paladin", "Priest"];
+        // Mapping for common terms to character properties for formula evaluation
+        const statMapping = {
+            "Strength": "strength.total",
+            "Agility": "agility.total",
+            "Magic": "magic.total",
+            "Luck": "luck.total",
+            "Crafting": "crafting.total",
+            "Intelligence": "intelligence.total",
+            "Intimidation": "intimidation.total",
+            "Charisma": "charisma.total",
+            "Negotiation": "negotiation.total",
+            "HP": "hp",
+            "Health": "hp",
+            "MaxHP": "maxHp",
+            "MaxHealth": "maxHp",
+            "MagicPoints": "currentMagicPoints",
+            "MaxMagicPoints": "maxMagicPoints",
+            "RacialPower": "racialPower",
+            "MaxRacialPower": "maxRacialPower",
+            "AC": "ac",
+            "Armor": "ac"
+        };
 
 
         // Function to calculate the total for a given stat
@@ -535,33 +828,52 @@
             return value + racialChange + equipment + temporary;
         }
 
-        // Function to save character data to a JSON file (download)
-        function saveCharacterToFile() {
-            // Create a copy of the character object to modify for saving
-            const characterToSave = { ...character };
 
-            // Exclude maxExperience and total from each player stat
-            playerStatsList.forEach(statName => {
-                if (characterToSave[statName]) {
-                    const { maxExperience, total, ...rest } = characterToSave[statName];
-                    characterToSave[statName] = rest; // Assign the object without maxExperience and total
-                }
+        function calculateFormula(formulaString) {
+            return formulaString;
+        }
+
+
+        // Function to save all character data to a JSON file (download)
+        function saveCharacterToFile() {
+            // Create a deep copy of the characters array to modify for saving
+            const charactersToSave = JSON.parse(JSON.stringify(characters));
+
+            // Exclude maxExperience and total from each player stat for each character
+            charactersToSave.forEach(char => {
+                playerStatsList.forEach(statName => {
+                    if (char[statName]) {
+                        const { maxExperience, total, ...rest } = char[statName];
+                        char[statName] = rest; // Assign the object without maxExperience and total
+                    }
+                });
+                // Exclude calculated properties (maxHp, maxMagicPoints, maxRacialPower, ac) from the saved data
+                delete char.maxHp;
+                delete char.maxMagicPoints;
+                delete char.maxRacialPower;
+                delete char.ac;
+
+                // For weapons, if 'use' is true, save the originalDamage/originalMagicDamage
+                // and clear the damage/magicDamage fields to avoid saving calculated values.
+                // Or, more robustly, ensure that when saving, we only save the *original* values
+                // and clear any calculated ones if they are not meant to be persistent.
+                // The current implementation of `handleChange` ensures `damage`/`magicDamage` hold
+                // the correct value (user-entered or formula string) at the time of saving.
+                // The `originalDamage`/`originalMagicDamage` are for temporary UI state.
+                // So, no special handling needed here for saving the calculated values.
             });
 
-            // Exclude calculated properties (maxHp, maxMagicPoints, maxRacialPower, ac) from the saved data
-            const { maxHp, maxMagicPoints, maxRacialPower, ac, ...finalCharacterToSave } = characterToSave;
-
-            const dataStr = JSON.stringify(finalCharacterToSave, null, 2); // Pretty print JSON
+            const dataStr = JSON.stringify(charactersToSave, null, 2); // Pretty print JSON
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${character.name || 'character'}_sheet.json`;
+            a.download = `character_sheets.json`; // Save all characters in one file
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            console.log("Character data downloaded as JSON file!");
+            console.log("All character data downloaded as JSON file!");
         }
 
         // Function to load character data from a JSON file (upload)
@@ -575,69 +887,119 @@
             reader.onload = (e) => {
                 try {
                     const loadedData = JSON.parse(e.target.result);
-                    // Deep merge to preserve structure for new/missing sub-properties
-                    for (const key in character) {
-                        if (loadedData.hasOwnProperty(key)) {
-                            if (key === 'class') {
-                                character.class = Array.isArray(loadedData.class) ? loadedData.class : [];
-                            } else if (key === 'specialization') { // Handle specialization separately
-                                character.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
-                            }
-                            else if (typeof character[key] === 'object' && character[key] !== null) {
-                                if (typeof loadedData[key] === 'object' && loadedData[key] !== null) {
-                                    // Merge loaded stat properties, but ensure maxExperience and total are re-calculated or default
-                                    character[key] = {
-                                        ...character[key], // Start with default sub-properties (like maxExperience)
-                                        ...loadedData[key] // Overlay loaded data
-                                    };
-                                    // Recalculate total for loaded stats (as it's not saved)
-                                    character[key].total = calculateTotal(key);
-                                    // Ensure maxExperience is set if it was missing from loaded data
-                                    if (typeof character[key].maxExperience === 'undefined' || character[key].maxExperience === null) {
-                                        character[key].maxExperience = defaultStatMaxExperience; // Default value
+                    if (Array.isArray(loadedData)) {
+                        characters = loadedData.map(loadedChar => {
+                            const newChar = defaultCharacterData(); // Start with a fresh default structure
+                            // Deep merge to preserve structure for new/missing sub-properties
+                            for (const key in newChar) {
+                                if (loadedChar.hasOwnProperty(key)) {
+                                    if (key === 'class') {
+                                        newChar.class = Array.isArray(loadedChar.class) ? loadedChar.class : [];
+                                    } else if (key === 'specialization') {
+                                        newChar.specialization = Array.isArray(loadedChar.specialization) ? loadedChar.specialization : [];
+                                    } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
+                                        if (typeof loadedChar[key] === 'object' && loadedData[key] !== null) {
+                                            newChar[key] = {
+                                                ...newChar[key],
+                                                ...loadedChar[key]
+                                            };
+                                            newChar[key].total = calculateTotal(key); // Recalculate total
+                                            if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
+                                                newChar[key].maxExperience = defaultStatMaxExperience;
+                                            }
+                                        } else {
+                                            newChar[key] = {
+                                                ...newChar[key],
+                                                value: parseFloat(loadedChar[key]) || newChar[key].value
+                                            };
+                                            newChar[key].total = calculateTotal(key);
+                                        }
+                                    } else {
+                                        newChar[key] = loadedChar[key];
                                     }
-
-                                } else {
-                                    character[key] = {
-                                        ...character[key],
-                                        value: parseFloat(loadedData[key]) || character[key].value
-                                    };
-                                    character[key].total = calculateTotal(key); // Recalculate total
                                 }
-                            } else {
-                                // For properties like hp, healthBonus, racialPower, currentMagicPoints, ac, skills, inventory, personalNotes
-                                // Use the loaded value if it exists, otherwise retain the default
-                                if (key === 'hp' || key === 'healthBonus' || key === 'racialPower' || key === 'skills' || key === 'inventory' || key === 'armorBonus' || key === 'personalNotes') { // Added armorBonus and personalNotes
-                                    character[key] = loadedData[key];
-                                } else if (key === 'currentMagicPoints') { // Handle the renamed magic property
-                                    character.currentMagicPoints = loadedData.currentMagicPoints !== undefined ? loadedData.currentMagicPoints : 100;
+                            }
+                            // Handle new inventory arrays, providing defaults if missing
+                            newChar.weaponInventory = loadedChar.weaponInventory || [];
+                            newChar.armorInventory = loadedChar.armorInventory || [];
+                            newChar.generalInventory = loadedChar.generalInventory || [];
+
+                            // Initialize originalDamage/originalMagicDamage if not present in loaded data
+                            newChar.weaponInventory.forEach(weapon => {
+                                if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
+                                if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
+                            });
+
+                            // Recalculate derived properties
+                            newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
+                            newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                            newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
+                            newChar.ac = newChar.armorBonus;
+
+                            // Ensure current HP, Magic, and Racial Power don't exceed new max values
+                            newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+                            newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
+                            newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
+
+                            return newChar;
+                        });
+                        currentCharacterIndex = 0; // Select the first loaded character
+                    } else {
+                        // If a single character object was loaded (old format), convert it to an array
+                        const newChar = defaultCharacterData();
+                        for (const key in newChar) {
+                            if (loadedData.hasOwnProperty(key)) {
+                                if (key === 'class') {
+                                    newChar.class = Array.isArray(loadedData.class) ? loadedData.class : [];
+                                } else if (key === 'specialization') {
+                                    newChar.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
+                                } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
+                                    if (typeof loadedData[key] === 'object' && loadedData[key] !== null) {
+                                        newChar[key] = {
+                                            ...newChar[key],
+                                            ...loadedData[key]
+                                        };
+                                        newChar[key].total = calculateTotal(key);
+                                        if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
+                                            newChar[key].maxExperience = defaultStatMaxExperience;
+                                        }
+                                    } else {
+                                        newChar[key] = {
+                                            ...newChar[key],
+                                            value: parseFloat(loadedData[key]) || newChar[key].value
+                                        };
+                                        newChar[key].total = calculateTotal(key);
+                                    }
                                 } else {
-                                    character[key] = loadedData[key];
+                                    newChar[key] = loadedData[key];
                                 }
                             }
                         }
+                        // If loading an old file, initialize new inventory arrays as empty
+                        newChar.weaponInventory = loadedData.weaponInventory || [];
+                        newChar.armorInventory = loadedData.armorInventory || [];
+                        newChar.generalInventory = loadedData.generalInventory || [];
+
+                        // Initialize originalDamage/originalMagicDamage if not present in loaded data
+                        newChar.weaponInventory.forEach(weapon => {
+                            if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
+                            if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
+                        });
+
+                        newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
+                        newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                        newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
+                        newChar.ac = newChar.armorBonus;
+                        newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+                        newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
+                        newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
+
+                        characters = [newChar];
+                        currentCharacterIndex = 0;
                     }
-
-                    // Handle new level experience properties, providing defaults if missing
-                    character.levelExperience = loadedData.levelExperience !== undefined ? loadedData.levelExperience : 0;
-                    character.levelMaxExperience = loadedData.levelMaxExperience !== undefined ? loadedData.levelMaxExperience : calculateLevelMaxExperience(character.level);
-
-                    // Recalculate maxHp, maxMagicPoints, and maxRacialPower after level, race, and healthBonus are potentially loaded
-                    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
-                    character.maxMagicPoints = calculateMaxMagic(character.level);
-                    character.maxRacialPower = calculateMaxRacialPower(character.level);
-                    // Recalculate AC after armorBonus is loaded
-                    character.ac = character.armorBonus;
-
-
-                    // Ensure current HP, Magic, and Racial Power don't exceed new max values
-                    character.hp = Math.min(character.hp, character.maxHp);
-                    character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
-                    character.racialPower = Math.min(character.racialPower, character.maxRacialPower);
-
-
                     updateDOM(); // Update the UI with loaded data
-                    console.log(`Character "${character.name}" loaded from JSON file!`); // Added console log
+                    populateCharacterSelector(); // Repopulate the selector
+                    console.log(`Character data loaded from JSON file!`);
                 } catch (e) {
                     console.error("Error parsing JSON file:", e);
                     // In a real app, you might show a user-friendly error message here
@@ -747,11 +1109,93 @@
             document.getElementById('armorBonus').value = character.armorBonus; // Populate armor bonus
 
 
-            // Skills & Inventory
+            // Skills
             document.getElementById('skills').value = character.skills;
-            document.getElementById('inventory').value = character.inventory;
-            // Personal Notes
-            document.getElementById('personalNotes').value = character.personalNotes;
+
+            // Render new inventory tables
+            renderWeaponInventory();
+            renderArmorInventory();
+            renderGeneralInventory();
+        }
+
+        // Function to render the Weapon Inventory table
+        function renderWeaponInventory() {
+            const tbody = document.querySelector('#weapon-inventory-table tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            character.weaponInventory.forEach((weapon, index) => {
+                const row = tbody.insertRow(); // Changed from insertCell() to insertRow()
+                // Determine the displayed damage values based on the 'use' checkbox
+                const displayDamage = weapon.use ? calculateFormula(weapon.damage) : weapon.damage;
+                const displayMagicDamage = weapon.use ? calculateFormula(weapon.magicDamage) : weapon.magicDamage;
+
+                row.innerHTML = `
+                    <td><input type="text" data-inventory-type="weapon" data-field="name" data-index="${index}" value="${weapon.name}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="weapon" data-field="type" data-index="${index}" value="${weapon.type}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="weapon" data-field="material" data-index="${index}" value="${weapon.material}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="weapon" data-field="requirement" data-index="${index}" value="${weapon.requirement}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="weapon" data-field="requiredStat" data-index="${index}" value="${weapon.requiredStat}" class="w-full"></td>
+                    <td><input type="number" data-inventory-type="weapon" data-field="accuracy" data-index="${index}" value="${weapon.accuracy}" class="w-full"></td>
+                    <td><textarea data-inventory-type="weapon" data-field="damage" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
+                    <td><textarea data-inventory-type="weapon" data-field="magicDamage" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
+                    <td><input type="text" data-inventory-type="weapon" data-field="magicType" data-index="${index}" value="${weapon.magicType}" class="w-full"></td>
+                    <td><textarea data-inventory-type="weapon" data-field="effect" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
+                    <td><input type="number" data-inventory-type="weapon" data-field="value" data-index="${index}" value="${weapon.value}" class="w-full"></td>
+                    <td><input type="checkbox" data-inventory-type="weapon" data-field="use" data-index="${index}" ${weapon.use ? 'checked' : ''}></td>
+                    <td><button class="remove-item-btn bg-red-500 hover:bg-red-600" data-inventory-type="weapon" data-index="${index}">Remove</button></td>
+                `;
+                // Set textarea values after they are in the DOM
+                row.querySelector('textarea[data-field="damage"]').value = displayDamage;
+                row.querySelector('textarea[data-field="magicDamage"]').value = displayMagicDamage;
+                row.querySelector('textarea[data-field="effect"]').value = weapon.effect;
+            });
+        }
+
+        // Function to render the Armor Inventory table
+        function renderArmorInventory() {
+            const tbody = document.querySelector('#armor-inventory-table tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            character.armorInventory.forEach((armor, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><input type="text" data-inventory-type="armor" data-field="name" data-index="${index}" value="${armor.name}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="armor" data-field="location" data-index="${index}" value="${armor.location}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="armor" data-field="material" data-index="${index}" value="${armor.material}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="armor" data-field="requirement" data-index="${index}" value="${armor.requirement}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="armor" data-field="requiredStat" data-index="${index}" value="${armor.requiredStat}" class="w-full"></td>
+                    <td><input type="number" data-inventory-type="armor" data-field="defense" data-index="${index}" value="${armor.defense}" class="w-full"></td>
+                    <td><input type="number" data-inventory-type="armor" data-field="magicDefense" data-index="${index}" value="${armor.magicDefense}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="armor" data-field="magicType" data-index="${index}" value="${armor.magicType}" class="w-full"></td>
+                    <td><textarea data-inventory-type="armor" data-field="effect" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
+                    <td><input type="number" data-inventory-type="armor" data-field="value" data-index="${index}" value="${armor.value}" class="w-full"></td>
+                    <td><input type="checkbox" data-inventory-type="armor" data-field="equipped" data-index="${index}" ${armor.equipped ? 'checked' : ''}></td>
+                    <td><button class="remove-item-btn bg-red-500 hover:bg-red-600" data-inventory-type="armor" data-index="${index}">Remove</button></td>
+                `;
+                // Set textarea value after it's in the DOM
+                row.querySelector('textarea[data-field="effect"]').value = armor.effect;
+            });
+        }
+
+        // Function to render the General Inventory table
+        function renderGeneralInventory() {
+            const tbody = document.querySelector('#general-inventory-table tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            character.generalInventory.forEach((item, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><input type="text" data-inventory-type="general" data-field="name" data-index="${index}" value="${item.name}" class="w-full"></td>
+                    <td><input type="text" data-inventory-type="general" data-field="type" data-index="${index}" value="${item.type}" class="w-full"></td>
+                    <td><textarea data-inventory-type="general" data-field="effect" data-index="${index}" class="w-full inventory-effect-textarea"></textarea></td>
+                    <td><input type="number" data-inventory-type="general" data-field="accuracy" data-index="${index}" value="${item.accuracy}" class="w-full"></td>
+                    <td><input type="number" data-inventory-type="general" data-field="amount" data-index="${index}" value="${item.amount}" class="w-full"></td>
+                    <td><input type="number" data-inventory-type="general" data-field="valuePerUnit" data-index="${index}" value="${item.valuePerUnit}" class="w-full"></td>
+                    <td><button class="remove-item-btn bg-red-500 hover:bg-red-600" data-inventory-type="general" data-index="${index}">Remove</button></td>
+                `;
+                // Set textarea value after it's in the DOM
+                row.querySelector('textarea[data-field="effect"]').value = item.effect;
+            });
         }
 
         // Function to perform a quick roll for all player stats
@@ -770,14 +1214,60 @@
                 document.getElementById(`${statName}-value`).value = character[statName].value;
                 document.getElementById(`${statName}-total`).value = character[statName].total;
             });
-            // No saveCharacter here, as it's handled by handleChange for individual inputs
-            // or by the saveCharacterToFile for explicit save.
+            // Re-render weapon inventory to update calculated damage values
+            renderWeaponInventory();
         }
 
         // Event listener for all input changes (excluding the custom class multi-select)
         function handleChange(event) {
-            const { name, id, value, type } = event.target;
+            const { name, id, value, type, dataset, checked } = event.target;
             let newValue;
+
+            // Check if the input is part of an inventory table
+            if (dataset.inventoryType) {
+                const inventoryType = dataset.inventoryType;
+                const itemIndex = parseInt(dataset.index);
+                const field = dataset.field;
+
+                if (inventoryType === 'weapon') {
+                    if (field === 'use') { // Handle checkbox for 'use'
+                        character.weaponInventory[itemIndex][field] = checked;
+                        if (checked) {
+                            // Store original values before applying formula
+                            character.weaponInventory[itemIndex].originalDamage = character.weaponInventory[itemIndex].damage;
+                            character.weaponInventory[itemIndex].originalMagicDamage = character.weaponInventory[itemIndex].magicDamage;
+                            // Apply default formulas (can be customized)
+                            character.weaponInventory[itemIndex].damage = "Strength + Agility";
+                            character.weaponInventory[itemIndex].magicDamage = "Magic";
+                        } else {
+                            // Restore original values
+                            character.weaponInventory[itemIndex].damage = character.weaponInventory[itemIndex].originalDamage;
+                            character.weaponInventory[itemIndex].magicDamage = character.weaponInventory[itemIndex].originalMagicDamage;
+                        }
+                        renderWeaponInventory(); // Re-render to show calculated/restored values
+                    } else if (type === 'number' && field !== 'damage' && field !== 'magicDamage') { // Exclude damage/magicDamage from number parsing
+                        character.weaponInventory[itemIndex][field] = parseFloat(value) || 0;
+                    } else {
+                        // For text fields like damage/magicDamage, store the string directly
+                        character.weaponInventory[itemIndex][field] = value;
+                    }
+                } else if (inventoryType === 'armor') {
+                    if (field === 'equipped') { // Handle checkbox for 'equipped'
+                        character.armorInventory[itemIndex][field] = checked;
+                    } else if (type === 'number') {
+                        character.armorInventory[itemIndex][field] = parseFloat(value) || 0;
+                    } else {
+                        character.armorInventory[itemIndex][field] = value;
+                    }
+                } else if (inventoryType === 'general') {
+                    if (type === 'number') {
+                        character.generalInventory[itemIndex][field] = parseFloat(value) || 0;
+                    } else {
+                        character.generalInventory[itemIndex][field] = value;
+                    }
+                }
+                return; // Exit as inventory change is handled
+            }
 
             // This handleChange will now only handle non-class inputs and the race selector
             if (type === 'number') {
@@ -838,6 +1328,9 @@
                 character[statName].total = calculateTotal(statName);
                 // Update the total display in the DOM immediately
                 document.getElementById(`${statName}-total`).value = character[statName].total;
+
+                // If a stat changes, re-render weapon inventory to update calculated damage values
+                renderWeaponInventory();
 
             } else {
                 // For other non-stat inputs (name, level, hp, ac, skills, inventory, race, healthBonus, currentMagicPoints, racialPower, personalNotes)
@@ -911,6 +1404,8 @@
                 else if (id !== 'class-display' && id !== 'specialization-display') { // Exclude specialization-display
                     character[name || id] = newValue;
                 }
+                // If any of these core stats change, re-render weapon inventory to update calculated damage values
+                renderWeaponInventory();
             }
             // No saveCharacter here, as it's handled by saveCharacterToFile for explicit save.
         }
@@ -1006,19 +1501,132 @@
             }
         }
 
-        // Function to toggle the personal notes modal
-        function toggleNotesModal() {
-            const notesModal = document.getElementById('notes-modal');
+        // Function to toggle the personal notes panel visibility
+        function togglePersonalNotesPanel() {
+            const notesPanel = document.getElementById('personal-notes-panel');
             const personalNotesTextarea = document.getElementById('personalNotes');
 
-            if (notesModal.classList.contains('hidden')) {
-                // Show modal: populate textarea with current notes
+            if (notesPanel.classList.contains('hidden')) {
+                // Show panel: populate textarea with current notes
                 personalNotesTextarea.value = character.personalNotes;
-                notesModal.classList.remove('hidden');
+                notesPanel.classList.remove('hidden');
             } else {
-                // Hide modal: save textarea content to character data
+                // Hide panel: save textarea content to character data
                 character.personalNotes = personalNotesTextarea.value;
-                notesModal.classList.add('hidden');
+                notesPanel.classList.add('hidden');
+            }
+        }
+
+        // Draggable functionality for the personal notes panel
+        function makeDraggable(element, handle) {
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            handle.addEventListener("mousedown", dragStart);
+
+            function dragStart(e) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+
+                if (e.target === handle || handle.contains(e.target)) {
+                    isDragging = true;
+                    element.style.cursor = 'grabbing';
+                    document.addEventListener("mousemove", drag);
+                    document.addEventListener("mouseup", dragEnd);
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault(); // Prevent text selection
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    element.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+                }
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                element.style.cursor = 'grab';
+                document.removeEventListener("mousemove", drag);
+                document.removeEventListener("mouseup", dragEnd);
+            }
+        }
+
+        // Function to populate the character selector dropdown
+        function populateCharacterSelector() {
+            const selector = document.getElementById('character-selector');
+            selector.innerHTML = ''; // Clear existing options
+
+            characters.forEach((charData, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = charData.name || `Character ${index + 1}`;
+                selector.appendChild(option);
+            });
+
+            selector.value = currentCharacterIndex; // Select the current character
+        }
+
+        // Function to switch to a different character
+        function switchCharacter(event) {
+            currentCharacterIndex = parseInt(event.target.value);
+            updateDOM(); // Update the UI with the new character's data
+        }
+
+        // Function to add a new character sheet
+        function addNewCharacter() {
+            const newChar = defaultCharacterData();
+            // Give a unique name to the new character
+            newChar.name = `Character ${characters.length + 1}`;
+            characters.push(newChar);
+            currentCharacterIndex = characters.length - 1; // Switch to the new character
+            populateCharacterSelector(); // Update the dropdown
+            updateDOM(); // Update the UI
+            console.log(`Added new character: ${newChar.name}`);
+        }
+
+        // Functions to add new items to inventories
+        function addWeapon() {
+            character.weaponInventory.push({ name: '', type: '', material: '', requirement: '', requiredStat: '', accuracy: 100, damage: '', magicDamage: '', magicType: '', effect: '', value: 0, use: false }); // 'use' is now boolean
+            renderWeaponInventory();
+        }
+
+        function addArmor() {
+            character.armorInventory.push({ name: '', location: '', material: '', requirement: '', requiredStat: '', defense: 0, magicDefense: 0, magicType: '', effect: '', value: 0, equipped: false });
+            renderArmorInventory();
+        }
+
+        function addGeneralItem() {
+            character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 0, valuePerUnit: 0 });
+            renderGeneralInventory();
+        }
+
+        // Function to remove an item from inventory
+        function removeItem(event) {
+            const inventoryType = event.target.dataset.inventoryType;
+            const index = parseInt(event.target.dataset.index);
+
+            if (inventoryType === 'weapon') {
+                character.weaponInventory.splice(index, 1);
+                renderWeaponInventory();
+            } else if (inventoryType === 'armor') {
+                character.armorInventory.splice(index, 1);
+                renderArmorInventory();
+            } else if (inventoryType === 'general') {
+                character.generalInventory.splice(index, 1);
+                renderGeneralInventory();
             }
         }
 
@@ -1027,7 +1635,7 @@
         function attachEventListeners() {
             // Attach listeners for standard inputs and the race selector
             const inputs = document.querySelectorAll(
-                '#name, #level, #levelExperience, #race, #hp, #currentMagicPoints, #racialPower, #skills, #inventory, #healthBonus, #armorBonus' // Added armorBonus
+                '#name, #level, #levelExperience, #race, #hp, #currentMagicPoints, #racialPower, #skills, #healthBonus, #armorBonus'
             );
             inputs.forEach(input => {
                 if (!input.readOnly) {
@@ -1089,21 +1697,62 @@
             });
             document.getElementById('load-json-input').addEventListener('change', loadCharacterFromFile);
 
-            // Attach event listeners for Personal Notes button and modal close button
-            document.getElementById('toggle-notes-btn').addEventListener('click', toggleNotesModal);
-            document.getElementById('close-notes-modal-btn').addEventListener('click', toggleNotesModal);
+            // Attach event listeners for Personal Notes button and panel close button
+            document.getElementById('toggle-notes-btn').addEventListener('click', togglePersonalNotesPanel);
+            document.getElementById('close-notes-panel-btn').addEventListener('click', togglePersonalNotesPanel); // Changed ID
+
+            // Attach event listeners for character selector and add button
+            document.getElementById('character-selector').addEventListener('change', switchCharacter);
+            document.getElementById('add-character-btn').addEventListener('click', addNewCharacter);
+
+            // Attach listeners for Add Inventory buttons
+            document.getElementById('add-weapon-btn').addEventListener('click', addWeapon);
+            document.getElementById('add-armor-btn').addEventListener('click', addArmor);
+            document.getElementById('add-general-item-btn').addEventListener('click', addGeneralItem);
+
+            // Attach delegated event listeners for inventory table inputs and remove buttons
+            // Use 'input' for text/number fields and 'change' for checkboxes
+            document.getElementById('weapon-inventory-table').addEventListener('input', handleChange);
+            document.getElementById('armor-inventory-table').addEventListener('input', handleChange);
+            document.getElementById('general-inventory-table').addEventListener('input', handleChange);
+
+            document.getElementById('weapon-inventory-table').addEventListener('change', handleChange); // For checkbox 'use'
+            document.getElementById('armor-inventory-table').addEventListener('change', handleChange); // For checkbox 'equipped'
+
+            document.getElementById('weapon-inventory-table').addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-item-btn')) {
+                    removeItem(event);
+                }
+            });
+            document.getElementById('armor-inventory-table').addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-item-btn')) {
+                    removeItem(event);
+                }
+            });
+            document.getElementById('general-inventory-table').addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-item-btn')) {
+                    removeItem(event);
+                }
+            });
         }
 
         // Initialize the application when the DOM is fully loaded
         window.onload = function() {
-            // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus
-            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
-            character.maxMagicPoints = calculateMaxMagic(character.level);
-            character.maxRacialPower = calculateMaxRacialPower(character.level);
-            // Initialize AC based on armorBonus
-            character.ac = character.armorBonus;
+            // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
+            characters[0].maxHp = calculateMaxHealth(characters[0].race, characters[0].level, characters[0].healthBonus);
+            characters[0].maxMagicPoints = calculateMaxMagic(characters[0].level);
+            characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
+            // Initialize AC based on armorBonus for the first character
+            characters[0].ac = characters[0].armorBonus;
+
+            populateCharacterSelector(); // Populate the selector on load
             updateDOM();
             attachEventListeners(); // Attach event listeners after DOM is updated
+
+            // Make the personal notes panel draggable
+            const personalNotesPanel = document.getElementById('personal-notes-panel');
+            const personalNotesHeader = document.querySelector('.personal-notes-header');
+            makeDraggable(personalNotesPanel, personalNotesHeader);
         };
     </script>
 </body>
