@@ -1,3 +1,6 @@
+const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
+const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tWKgqCN4cjTGg';
+
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 // IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
@@ -1037,7 +1040,7 @@ function gapiLoaded() {
  */
 async function initializeGapiClient() {
     await gapi.client.init({
-        apiKey: window.GOOGLE_API_KEY,
+        apiKey: GOOGLE_API_KEY,
         discoveryDocs: [DISCOVERY_DOC],
     });
     gapiInited = true;
@@ -1049,7 +1052,7 @@ async function initializeGapiClient() {
  */
 function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: window.GOOGLE_CLIENT_ID,
+        client_id: Auth_CLIENT_ID,
         scope: SCOPES,
         callback: '', // Will be set dynamically before request
         redirect_uri: ORIGIN
