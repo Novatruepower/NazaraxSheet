@@ -1,5 +1,5 @@
 const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
-const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqgqCN4cjTGg';
+const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKKqgqCN4cjTGg';
 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
@@ -124,13 +124,21 @@ let characters = [defaultCharacterData()];
 // Index of the currently active character sheet
 let currentCharacterIndex = 0;
 
+// Flag to track if there are unsaved changes
+let hasUnsavedChanges = false;
+
 // Getter to easily access the current character
 const character = new Proxy({}, {
     get: function(target, prop) {
         return characters[currentCharacterIndex][prop];
     },
     set: function(target, prop, value) {
-        characters[currentCharacterIndex][prop] = value;
+        // Only set hasUnsavedChanges to true if the value actually changes
+        if (characters[currentCharacterIndex][prop] !== value) {
+            characters[currentCharacterIndex][prop] = value;
+            hasUnsavedChanges = true; // Mark that there are unsaved changes
+        }
+        
         // If the character name changes, update the selector
         if (prop === 'name') {
             populateCharacterSelector();
@@ -239,6 +247,7 @@ function saveCharacterToFile() {
     URL.revokeObjectURL(url);
     showStatusMessage("Character data saved to JSON file!");
     console.log("All character data downloaded as JSON file!");
+    hasUnsavedChanges = false; // Data is now saved
 }
 
 // Function to load character data from a JSON file (upload)
@@ -372,6 +381,7 @@ function loadCharacterFromFile(event) {
             currentGoogleDriveFileId = null;
             showStatusMessage(`Character data loaded from JSON file!`);
             console.log(`Character data loaded from JSON file!`);
+            hasUnsavedChanges = false; // Data is now loaded and considered "saved"
         } catch (e) {
             showStatusMessage("Error parsing JSON file.", true);
             console.error("Error parsing JSON file:", e);
@@ -615,6 +625,7 @@ function quickRollStats() {
     });
     // Re-render weapon inventory to update calculated damage values
     renderWeaponInventory();
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 // Event listener for all input changes (excluding the custom class multi-select)
@@ -665,6 +676,7 @@ function handleChange(event) {
                 character.generalInventory[itemIndex][field] = value;
             }
         }
+        hasUnsavedChanges = true; // Mark that there are unsaved changes
         return; // Exit as inventory change is handled
     }
 
@@ -806,7 +818,7 @@ function handleChange(event) {
         // If any of these core stats change, re-render weapon inventory to update calculated damage values
         renderWeaponInventory();
     }
-    // No saveCharacter here, as it's handled by saveCharacterToFile for explicit save.
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 // Function to toggle the visibility of the class dropdown options
@@ -837,7 +849,7 @@ function handleClassCheckboxChange(event) {
 
     // After class changes, update specialization dropdown
     updateSpecializationDropdownAndData();
-    // No saveCharacter here, as it's handled by saveCharacterToFile for explicit save.
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 // Function to handle changes in the specialization checkboxes
@@ -853,7 +865,7 @@ function handleSpecializationCheckboxChange(event) {
     }
     // Update the displayed value in the input field
     document.getElementById('specialization-display').value = character.specialization.join(', ');
-    // No saveCharacter here, as it's handled by saveCharacterToFile for explicit save.
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 // Function to update the specialization dropdown options and filter selected specializations
@@ -913,6 +925,7 @@ function togglePersonalNotesPanel() {
         // Hide panel: save textarea content to character data
         character.personalNotes = personalNotesTextarea.value;
         notesPanel.classList.add('hidden');
+        hasUnsavedChanges = true; // Mark that there are unsaved changes
     }
 }
 
@@ -980,37 +993,69 @@ function populateCharacterSelector() {
 
 // Function to switch to a different character
 function switchCharacter(event) {
-    currentCharacterIndex = parseInt(event.target.value);
-    updateDOM(); // Update the UI with the new character's data
+    // Before switching, check for unsaved changes and prompt if necessary
+    if (hasUnsavedChanges) {
+        // Using a custom modal instead of confirm()
+        showConfirmationModal("You have unsaved changes. Are you sure you want to switch characters without saving?", () => {
+            currentCharacterIndex = parseInt(event.target.value);
+            updateDOM(); // Update the UI with the new character's data
+            hasUnsavedChanges = false; // Reset unsaved changes flag after switching
+        }, () => {
+            // If user cancels, revert the dropdown selection
+            event.target.value = currentCharacterIndex;
+        });
+    } else {
+        currentCharacterIndex = parseInt(event.target.value);
+        updateDOM(); // Update the UI with the new character's data
+    }
 }
 
 // Function to add a new character sheet
 function addNewCharacter() {
-    const newChar = defaultCharacterData();
-    // Give a unique name to the new character
-    newChar.name = `Character ${characters.length + 1}`;
-    characters.push(newChar);
-    currentCharacterIndex = characters.length - 1; // Switch to the new character
-    populateCharacterSelector(); // Update the dropdown
-    updateDOM(); // Update the UI
-    showStatusMessage(`Added new character: ${newChar.name}`);
-    console.log(`Added new character: ${newChar.name}`);
+    // Before adding, check for unsaved changes and prompt if necessary
+    if (hasUnsavedChanges) {
+        showConfirmationModal("You have unsaved changes. Are you sure you want to add a new character without saving?", () => {
+            const newChar = defaultCharacterData();
+            // Give a unique name to the new character
+            newChar.name = `Character ${characters.length + 1}`;
+            characters.push(newChar);
+            currentCharacterIndex = characters.length - 1; // Switch to the new character
+            populateCharacterSelector(); // Update the dropdown
+            updateDOM(); // Update the UI
+            showStatusMessage(`Added new character: ${newChar.name}`);
+            console.log(`Added new character: ${newChar.name}`);
+            hasUnsavedChanges = false; // Reset unsaved changes flag after adding
+        });
+    } else {
+        const newChar = defaultCharacterData();
+        // Give a unique name to the new character
+        newChar.name = `Character ${characters.length + 1}`;
+        characters.push(newChar);
+        currentCharacterIndex = characters.length - 1; // Switch to the new character
+        populateCharacterSelector(); // Update the dropdown
+        updateDOM(); // Update the UI
+        showStatusMessage(`Added new character: ${newChar.name}`);
+        console.log(`Added new character: ${newChar.name}`);
+    }
 }
 
 // Functions to add new items to inventories
 function addWeapon() {
     character.weaponInventory.push({ name: '', type: '', material: '', requirement: '', requiredStat: '', accuracy: 100, damage: '', magicDamage: '', magicType: '', effect: '', value: 0, use: false }); // 'use' is now boolean
     renderWeaponInventory();
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 function addArmor() {
     character.armorInventory.push({ name: '', location: '', material: '', requirement: '', requiredStat: '', defense: 0, magicDefense: 0, magicType: '', effect: '', value: 0, equipped: false });
     renderArmorInventory();
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 function addGeneralItem() {
     character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 0, valuePerUnit: 0 });
     renderGeneralInventory();
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 // Function to remove an item from inventory
@@ -1028,30 +1073,32 @@ function removeItem(event) {
         character.generalInventory.splice(index, 1);
         renderGeneralInventory();
     }
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
 // Function to reset the current character to default data
 function resetCurrentCharacter() {
-    const confirmReset = confirm("Are you sure you want to reset the current character? All data will be lost.");
-    if (confirmReset) {
+    showConfirmationModal("Are you sure you want to reset the current character? All data will be lost.", () => {
         characters[currentCharacterIndex] = defaultCharacterData();
         characters[currentCharacterIndex].name = `Character ${currentCharacterIndex + 1}`; // Keep current character name convention
         updateDOM();
         showStatusMessage("Current character reset successfully!");
-    }
+        hasUnsavedChanges = false; // Reset unsaved changes flag after reset
+    });
 }
 
 // Function to delete the current character
 function deleteCurrentCharacter() {
     if (characters.length === 1) {
         // If it's the last character, just reset it instead of deleting
-        resetCurrentCharacter();
-        showStatusMessage("Cannot delete the last character. Character has been reset instead.", false);
+        showConfirmationModal("Cannot delete the last character. It will be reset instead. Are you sure?", () => {
+            resetCurrentCharacter();
+            showStatusMessage("Cannot delete the last character. Character has been reset instead.", false);
+        });
         return;
     }
 
-    const confirmDelete = confirm(`Are you sure you want to delete "${character.name || `Character ${currentCharacterIndex + 1}`}?" This action cannot be undone.`);
-    if (confirmDelete) {
+    showConfirmationModal(`Are you sure you want to delete "${character.name || `Character ${currentCharacterIndex + 1}`}?" This action cannot be undone.`, () => {
         characters.splice(currentCharacterIndex, 1); // Remove the current character
 
         // Adjust currentCharacterIndex if the last character was deleted
@@ -1062,7 +1109,8 @@ function deleteCurrentCharacter() {
         updateDOM();
         populateCharacterSelector(); // Re-populate selector after deletion
         showStatusMessage("Character deleted successfully!");
-    }
+        hasUnsavedChanges = false; // Reset unsaved changes flag after deletion
+    });
 }
 
 
@@ -1078,6 +1126,11 @@ const signoutGoogleDriveButton = document.getElementById('signout_google_drive_b
 const googleDriveModal = document.getElementById('google-drive-modal');
 const googleDriveFileList = document.getElementById('google-drive-file-list');
 const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
+const confirmationModal = document.getElementById('confirmation-modal');
+const confirmMessage = document.getElementById('confirm-message');
+const confirmOkBtn = document.getElementById('confirm-ok-btn');
+const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+
 
 // Key for local storage to persist Google Drive authorization status
 const GOOGLE_DRIVE_AUTH_STATUS_KEY = 'googleDriveAuthorized';
@@ -1094,6 +1147,34 @@ function showStatusMessage(message, isError = false) {
     setTimeout(() => {
         statusMessageElement.textContent = '';
     }, 5000); // Clear message after 5 seconds
+}
+
+/**
+ * Shows a custom confirmation modal.
+ * @param {string} message The message to display in the modal.
+ * @param {function} onConfirm Callback function to execute if user confirms.
+ * @param {function} onCancel Callback function to execute if user cancels (optional).
+ */
+function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
+    confirmMessage.textContent = message;
+    confirmationModal.classList.remove('hidden');
+
+    const handleConfirm = () => {
+        confirmationModal.classList.add('hidden');
+        confirmOkBtn.removeEventListener('click', handleConfirm);
+        confirmCancelBtn.removeEventListener('click', handleCancel);
+        onConfirm();
+    };
+
+    const handleCancel = () => {
+        confirmationModal.classList.add('hidden');
+        confirmOkBtn.removeEventListener('click', handleConfirm);
+        confirmCancelBtn.removeEventListener('click', handleCancel);
+        onCancel();
+    };
+
+    confirmOkBtn.addEventListener('click', handleConfirm);
+    confirmCancelBtn.addEventListener('click', handleCancel);
 }
 
 /**
@@ -1271,6 +1352,7 @@ async function saveCharacterToGoogleDrive() {
             showStatusMessage("New character data saved to Google Drive!");
         }
         console.log("Character data saved to Google Drive!");
+        hasUnsavedChanges = false; // Data is now saved
     } catch (error) {
         console.error('Error saving to Google Drive:', error);
         showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
@@ -1290,6 +1372,17 @@ async function loadCharacterFromGoogleDrive() {
         return;
     }
 
+    // Before loading, check for unsaved changes and prompt if necessary
+    if (hasUnsavedChanges) {
+        showConfirmationModal("You have unsaved changes. Are you sure you want to load a new file without saving?", async () => {
+            await proceedToLoadGoogleDriveFile();
+        });
+    } else {
+        await proceedToLoadGoogleDriveFile();
+    }
+}
+
+async function proceedToLoadGoogleDriveFile() {
     showStatusMessage("Loading files from Google Drive...");
     googleDriveModal.classList.remove('hidden');
     googleDriveFileList.innerHTML = '';
@@ -1449,6 +1542,7 @@ async function loadGoogleDriveFileContent(fileId) {
         populateCharacterSelector();
         showStatusMessage("Character data loaded from Google Drive!");
         console.log("Character data loaded from Google Drive!");
+        hasUnsavedChanges = false; // Data is now loaded and considered "saved"
     } catch (error) {
         console.error('Error loading Google Drive file content:', error);
         showStatusMessage("Failed to load character data from Google Drive. Check console for details.", true);
@@ -1474,6 +1568,7 @@ function toggleSection(sectionId) {
             toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
             character.sectionVisibility[sectionId] = false;
         }
+        hasUnsavedChanges = true; // Mark that there are unsaved changes
     }
 }
 
@@ -1621,7 +1716,14 @@ function attachEventListeners() {
 
     document.getElementById('load-dropdown-btn').addEventListener('click', () => toggleDropdown('load-dropdown-menu'));
     document.getElementById('load-current-system-btn').addEventListener('click', () => {
-        document.getElementById('load-json-input').click(); // Trigger file input click
+        // Before triggering file input, check for unsaved changes
+        if (hasUnsavedChanges) {
+            showConfirmationModal("You have unsaved changes. Are you sure you want to load a new file without saving?", () => {
+                document.getElementById('load-json-input').click(); // Trigger file input click
+            });
+        } else {
+            document.getElementById('load-json-input').click(); // Trigger file input click
+        }
     });
     document.getElementById('load-json-input').addEventListener('change', loadCharacterFromFile);
     document.getElementById('load-google-drive-btn').addEventListener('click', loadCharacterFromGoogleDrive);
@@ -1684,6 +1786,18 @@ function attachEventListeners() {
     // Attach event listeners for Reset and Delete buttons - NEW
     document.getElementById('reset-character-btn').addEventListener('click', resetCurrentCharacter);
     document.getElementById('delete-character-btn').addEventListener('click', deleteCurrentCharacter);
+
+    // Add the beforeunload event listener
+    window.addEventListener('beforeunload', (event) => {
+        if (hasUnsavedChanges) {
+            // Cancel the event to trigger the browser's confirmation prompt
+            event.preventDefault();
+            // Chrome requires returnValue to be set
+            event.returnValue = ''; 
+            // Most browsers will display a generic message, but some older ones might show this:
+            return "You have unsaved changes. Are you sure you want to exit?";
+        }
+    });
 }
 
 // Initialize the application when the DOM is fully loaded
