@@ -6,10 +6,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Google API Client Library -->
-    <script src="https://apis.google.com/js/api.js"></script>
-    <!-- Google Identity Services for OAuth 2.0 -->
-    <script src="https://accounts.google.com/gsi/client"></script>
+    <!-- Google API Client Library (with onload) -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <!-- Google Identity Services for OAuth 2.0 (with onload) -->
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -1835,10 +1835,11 @@
             };
 
             if (gapi.client.getToken() === null) {
-                // Prompt for consent if no token is present
+                // Prompt the user to select a Google Account and ask for consent to share their data
+                // when establishing a new session.
                 tokenClient.requestAccessToken({prompt: 'consent'});
             } else {
-                // Request token silently if already signed in
+                // Skip display of account chooser and consent dialog for an existing session.
                 tokenClient.requestAccessToken({prompt: ''});
             }
         }
@@ -1871,10 +1872,6 @@
                 signoutButton.classList.add('hidden');
             }
         }
-
-        // Load Google API client and Identity Services
-        gapiLoaded();
-        gisLoaded(); // Call gisLoaded immediately as per new GSI client library guidelines
 
         // --- Google Drive File Operations ---
         const DRIVE_FOLDER_NAME = 'CharacterSheetsApp'; // Folder to store character sheets
@@ -2223,9 +2220,8 @@
             document.getElementById('load-google-drive-btn').addEventListener('click', loadCharacterFromGoogleDrive);
 
             // Google Drive Auth buttons
-            // These are now handled directly by the gapi/gsi initialization
-            // authorizeButton.onclick = handleAuthClick;
-            // signoutButton.onclick = handleSignoutClick;
+            document.getElementById("authorize_button").onclick = handleAuthClick;
+            document.getElementById("signout_button").onclick = handleSignoutClick;
 
 
             // Attach event listeners for Personal Notes button and panel close button
@@ -2284,10 +2280,6 @@
             const personalNotesPanel = document.getElementById('personal-notes-panel');
             const personalNotesHeader = document.querySelector('.personal-notes-header');
             makeDraggable(personalNotesPanel, personalNotesHeader);
-
-            // Attach Google Auth button handlers here, as per user's request for DOMContentLoaded behavior
-            document.getElementById("authorize_button").onclick = handleAuthClick;
-            document.getElementById("signout_button").onclick = handleSignoutClick;
         };
     </script>
 </body>
