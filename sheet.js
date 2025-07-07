@@ -1826,13 +1826,12 @@ window.onload = async function() {
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
 
-    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Gid.Races, "A2:K").then(arr => {
-        delete arr[0];
-
+    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
         let test = {};
 
         arr.forEach(value => {
-            test[value[0]] = { value: result, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: result };
+            console.log(value);
+            //test[value[0]] = { value: result, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: result };
         });
     });
 };

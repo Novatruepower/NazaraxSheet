@@ -197,10 +197,10 @@ export const googleDriveFileFetcher = {
     // NEW: Google Sheets Link Example - These can be made configurable or passed in externally
     MY_PUBLIC_GOOGLE_SHEET_LINK: "https://docs.google.com/spreadsheets/d/1lNIzvAC3E5dHzYzEaBaiAQLyar-UvA8XMEZpoXu3cMQ/edit", // Replace with your actual Google Sheet link
 
-    My_Gid: {
-        "Races": 0,
-        "Classes": 1740043699,
-        "ClassesRelated": 1187765211,
+    My_Sheet: {
+        "Races": {gid: 0, range: 'A2:K'},
+        "Classes": {gid: 1740043699, range: 'A2:A'},
+        "ClassesRelated": {gid: 1187765211, range: 'A2:B'},
     },
 
     // NEW Example: Fetching a specific tab from a Google Sheet as CSV
