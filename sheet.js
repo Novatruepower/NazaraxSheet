@@ -362,6 +362,7 @@ function loadCharacterFromFile(event) {
             }
             updateDOM(); // Update the UI with loaded data
             populateCharacterSelector(); // Repopulate the selector
+            currentGoogleDriveFileId = null;
             showStatusMessage(`Character data loaded from JSON file!`);
             console.log(`Character data loaded from JSON file!`);
         } catch (e) {

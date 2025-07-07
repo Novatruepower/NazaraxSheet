@@ -1,4 +1,4 @@
- body {
+body {
     font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
@@ -135,7 +135,7 @@
 
 /* Table specific styles for inventory sections */
 .inventory-table-container {
-    overflow-x: auto;
+    overflow-x: auto; /* Allows horizontal scrolling for tables on small screens */
     margin-bottom: 1rem;
 }
 .inventory-table-container table {
@@ -148,7 +148,7 @@
     border: 1px solid #e2e8f0; /* border-gray-200 */
     text-align: left;
     font-size: 0.875rem; /* text-sm */
-    white-space: nowrap; /* Prevent text wrapping in table cells */
+    /* white-space: nowrap; Removed to allow text wrapping within cells if needed */
 }
 .dark .inventory-table-container th,
 .dark .inventory-table-container td {
@@ -235,6 +235,7 @@
 }
 
 /* Min-width for Weapon Inventory columns */
+/* These min-widths are important for preventing extreme shrinking on small screens */
 #weapon-inventory-table th:nth-child(1), #weapon-inventory-table td:nth-child(1) { min-width: 120px; } /* Name */
 #weapon-inventory-table th:nth-child(2), #weapon-inventory-table td:nth-child(2) { min-width: 80px; }  /* Type */
 #weapon-inventory-table th:nth-child(3), #weapon-inventory-table td:nth-child(3) { min-width: 90px; }  /* Material */
