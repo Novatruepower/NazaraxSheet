@@ -1826,7 +1826,7 @@ window.onload = async function() {
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
 
-    await googleDriveFileFetcher.fetchSpecificGoogleSheetTab(googleDriveFileFetcher.My_Gid.Races).then(arr => {
+    await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Gid.Races, "A2:K").then(arr => {
         delete arr[0];
 
         let test = {};
