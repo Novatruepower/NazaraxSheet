@@ -7,26 +7,25 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Inject secrets into env.js
+      # Generate env.js in memory
+      - name: Create env.js
         run: |
           echo "window.GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}';" > env.js
           echo "window.GOOGLE_API_KEY = '${{ secrets.GOOGLE_API_KEY }}';" >> env.js
 
-      - name: Check generated files
-        run: ls -la
-
+      # Deploy everything from working directory (including env.js) to gh-pages branch
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./   # adjust if your static site files are in a subfolder
+          publish_dir: .
+          publish_branch: gh-pages
