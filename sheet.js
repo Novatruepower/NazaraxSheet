@@ -1,4 +1,4 @@
-import { googleDriveFileFetcher } from 'fetch.js';
+import { googleDriveFileFetcher } from './fetch.js';
 
 const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
 const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKKqgqCN4cjTGg';
