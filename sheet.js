@@ -54,9 +54,11 @@ async function externalData() {
 
         delete arr[0][0];
         const head = arr[0];
+        fetchedData['Save'] = head;
         delete arr[0];
         const health = head[1];
         delete head[1];
+        fetchedData['Roll'] = head;
 
         arr.forEach(value => {
             let race = value[0];
@@ -106,11 +108,13 @@ const maxRollStat = 20;
 const minRollStat = 6;
 
 const defaultCharacterData = function() { 
+    const firstRace = Object.keys(fetchedData)[0];
+
     let newCharacter = ({
         name: '',
         class: [],
         specialization: [],
-        race: '',
+        race: firstRace,
         level: 1,
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
@@ -141,7 +145,7 @@ const defaultCharacterData = function() {
         }
     })
 
-    fetchedData['Stats']['Roll'].forEach(statName => {
+    fetchedData[firstRace]['Stats']['Roll'].forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
         newCharacter[statName] = { value: result, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: result };
     });
@@ -251,7 +255,7 @@ function saveCharacterToFile() {
 
     // Exclude maxExperience and total from each player stat for each character
     charactersToSave.forEach(char => {
-        fetchedData['Stats']['Roll'].forEach(statName => {
+        fetchedData[char.race]['Stats']['Roll'].forEach(statName => {
             if (char[statName]) {
                 const { maxExperience, total, ...rest } = char[statName];
                 char[statName] = rest; // Assign the object without maxExperience and total
