@@ -62,7 +62,7 @@ export const ExternalDataManager = {
                 arr.forEach(value => {
                     let charClass = value[0]; // The first element is the class name
                     if (charClass) { // Ensure class name is not empty
-                        this._data['Classes'][charClass] = { specs:{} }
+                        this._data['Classes'][charClass] = { specs:[] }
                     }
                 });
             });
@@ -72,8 +72,7 @@ export const ExternalDataManager = {
                 arr.forEach(value => {
                     let charClass = value[0]; // The first element is the class name
                     if (charClass) { // Ensure class name is not empty
-                    console.log(value);
-                        //this._data['Classes'][charClass]['specs'] = {...this._data['Classes'][charClass]['specs'], ...value[1]};
+                        this._data['Classes'][charClass]['specs'].push(value[1]);
                     }
                 });
             });
