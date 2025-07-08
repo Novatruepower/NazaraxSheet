@@ -15,30 +15,39 @@ let currentGoogleDriveFileId = null; // To store the ID of the currently loaded 
 
 const defaultStatMaxExperience = 7;
 
-// List of all applicable stats for racial changes, including Health and Magic
-const APPLICABLE_STATS = [
-    'Health', 'Magic', // Special cases for Health and Magic Points
-    'Strength', 'Agility', 'Magic', 'Luck', 'Crafting', 'Intelligence', 'Intimidation', 'Charisma', 'Negotiation'
-];
+// Function to calculate max experience for a given level
+function calculateLevelMaxExperience(level) {
+    return 100;
+}
+
+function calculateBaseMaxHealth(charData, race) {
+    let multiplier = ExternalDataManager.getRaceHealthChange(race) || 1;
+
+    if (race === 'Mutant' && charData && charData.baseMaxHealthDoubled)
+        multiplier *= 2; // Double the base value for Mutants
+    else if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
+        multiplier += charData.healthRacialChange;
+    }
+
+    return charData.baseHealth * multiplier;
+}
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(charData, race, level, healthBonus) {
-    let baseHealth = 100;
+    let effectiveBaseHealth = charData.healthMultiplicator; // Use the baseHealth from charData
 
     // Apply Mutant's "Doubling your base max health" if active
     if (race === 'Mutant' && charData && charData.baseMaxHealthDoubled) {
-        baseHealth = 150; // Doubling the base 75 value mentioned in the doc (75 * 2 = 150)
+        effectiveBaseHealth = charData.baseHealth * 2; // Double the base value for Mutants
     }
 
     // Get the racial health change from manual passives (for Demi-humans) or ExternalDataManager (for others)
-    let racialHealthChange = 0;
+    let healthRacialChange = 1;
     if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
-        racialHealthChange = charData.healthRacialChange;
-    } else {
-        racialHealthChange = ExternalDataManager.getRaceHealthChange(race) || 0; // ExternalDataManager returns a percentage change (e.g., 0.25)
+        healthRacialChange += charData.healthRacialChange;
     }
 
-    return Math.floor(baseHealth * (1 + racialHealthChange) * level) + (healthBonus || 0);
+    return Math.floor(calculateBaseMaxHealth(charData, race) * healthRacialChange * level) + (healthBonus || 0);
 }
 
 // Function to calculate max magic based on level
@@ -73,6 +82,7 @@ const defaultCharacterData = function() {
         level: 1,
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
+        baseHealth: 100, // Will be used to Calculate calculateBaseMaxHealth
         hp: 0, // Will be calculated dynamically
         maxHp: 0, // Will be calculated dynamically
         healthBonus: 0,
@@ -100,8 +110,8 @@ const defaultCharacterData = function() {
         // New properties for Demi-human stat choices
         demiHumanStatChoices: [], // Stores { statName: 'Strength', modifier: 0.25, slotId: '...' }
         demiHumanStatsAffected: new Set(), // Stores names of stats already chosen by Demi-human modifiers
-        healthRacialChange: 0, // Initial racial change for health, will be set by Demi-human player choice
-        magicRacialChange: 0, // Initial racial change for magic, will be set by Demi-human player choice
+        racialHealthChange: 1, // Initial racial change for health, will be set by Demi-human player choice
+        racilMagicChange: 1, // Initial racial change for magic, will be set by Demi-human player choice
 
         // New properties for Mutant stat choices
         mutantMutations: [], // Stores { type: 'stat_multiplier_50', statName: 'Strength', level: 1, slotId: '...' }
@@ -231,12 +241,12 @@ const statMapping = {
 
 
 // Function to calculate the total for a given stat
-function calculateTotal(charData, statName) {
-    const stat = charData[statName];
+function calculateTotal(statName) {
+    const stat = character[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
     const value = parseFloat(stat.value) || 0;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
-    const racialChange = getAppliedRacialChange(charData, statName);
+    const racialChange = getAppliedRacialChange(character, statName);
     const equipment = parseFloat(stat.equipment) || 0;
     const temporary = parseFloat(stat.temporary) || 0;
 
@@ -382,7 +392,7 @@ function loadCharacterFromFile(event) {
                                     };
                                     // Recalculate total for loaded stats
                                     if (ExternalDataManager.rollStats.includes(key)) {
-                                        newChar[key].total = calculateTotal(newChar, key);
+                                        newChar[key].total = calculateTotal(key);
                                     }
                                     if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                         newChar[key].maxExperience = defaultStatMaxExperience;
@@ -393,7 +403,7 @@ function loadCharacterFromFile(event) {
                                         value: parseFloat(loadedChar[key]) || newChar[key].value
                                     };
                                     if (ExternalDataManager.rollStats.includes(key)) {
-                                        newChar[key].total = calculateTotal(newChar, key);
+                                        newChar[key].total = calculateTotal(key);
                                     }
                                 }
                             } else {
@@ -423,7 +433,6 @@ function loadCharacterFromFile(event) {
                     newChar.naturalManaRegenActive = loadedChar.naturalManaRegenActive || false;
                     newChar.healthRegenDoubled = loadedChar.healthRegenDoubled || false;
                     newChar.manaRegenDoubled = loadedChar.manaRegenDoubled || false;
-
 
                     // Initialize originalDamage/originalMagicDamage if not present in loaded data
                     newChar.weaponInventory.forEach(weapon => {
@@ -461,7 +470,7 @@ function loadCharacterFromFile(event) {
                                     ...loadedData[key]
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(newChar, key);
+                                    newChar[key].total = calculateTotal(key);
                                 }
                                 if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                     newChar[key].maxExperience = defaultStatMaxExperience;
@@ -472,7 +481,7 @@ function loadCharacterFromFile(event) {
                                     value: parseFloat(loadedData[key]) || newChar[key].value
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(newChar, key);
+                                    newChar[key].total = calculateTotal(key);
                                 }
                             }
                         } else {
@@ -622,7 +631,7 @@ function updateDOM() {
                 </div>
             </td>
             <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(character, statName)}" readonly class="stat-input" />
+                <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(statName)}" readonly class="stat-input" />
             </td>
         `;
         playerStatsContainer.appendChild(row);
@@ -768,7 +777,7 @@ function quickRollStats() {
         character[statName].value = roll(minRollStat, maxRollStat); // Assign to the 'value' property
 
         // Recalculate total for the updated stat
-        character[statName].total = calculateTotal(character, statName);
+        character[statName].total = calculateTotal(statName);
 
         // Update the DOM for value and total immediately
         document.getElementById(`${statName}-value`).value = character[statName].value;
@@ -803,7 +812,7 @@ function handleChangeRace() {
         // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
         const initialRacialChange = (character.race === 'Demi-humans' || character.race === 'Mutant') ? 0 : ExternalDataManager.getRacialChange(character.race, statName);
         character[statName].racialChange = initialRacialChange;
-        character[statName].total = calculateTotal(character, statName);
+        character[statName].total = calculateTotal(statName);
         document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Use getAppliedRacialChange for display
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
@@ -1424,7 +1433,7 @@ function handleChange(event) {
         }
 
         // Recalculate the total for this stat after any change in its sub-properties
-        character[statName].total = calculateTotal(character, statName);
+        character[statName].total = calculateTotal(statName);
         // Update the total display in the DOM immediately
         document.getElementById(`${statName}-total`).value = character[statName].total;
 
@@ -2243,7 +2252,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                     ...loadedChar[key]
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(newChar, key);
+                                    newChar[key].total = calculateTotal(key);
                                 }
                                 if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                     newChar[key].maxExperience = defaultStatMaxExperience;
@@ -2254,7 +2263,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                     value: parseFloat(loadedChar[key]) || newChar[key].value
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(newChar, key);
+                                    newChar[key].total = calculateTotal(key);
                                 }
                             }
                         } else {
@@ -2280,7 +2289,6 @@ async function loadGoogleDriveFileContent(fileId) {
                 newChar.naturalManaRegenActive = loadedChar.naturalManaRegenActive || false;
                 newChar.healthRegenDoubled = loadedChar.healthRegenDoubled || false;
                 newChar.manaRegenDoubled = loadedChar.manaRegenDoubled || false;
-
 
                 newChar.weaponInventory.forEach(weapon => {
                     if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
@@ -2313,7 +2321,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                 ...loadedData[key]
                             };
                             if (ExternalDataManager.rollStats.includes(key)) {
-                                newChar[key].total = calculateTotal(newChar, key);
+                                newChar[key].total = calculateTotal(key);
                             }
                             if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                 newChar[key].maxExperience = defaultStatMaxExperience;
@@ -2324,7 +2332,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                 value: parseFloat(loadedData[key]) || newChar[key].value
                             };
                             if (ExternalDataManager.rollStats.includes(key)) {
-                                newChar[key].total = calculateTotal(newChar, key);
+                                newChar[key].total = calculateTotal(key);
                             }
                         }
                     } else {
