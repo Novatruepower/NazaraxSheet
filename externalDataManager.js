@@ -11,7 +11,7 @@ import { googleDriveFileFetcher } from './fetch.js';
 
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
-    _data: { Races:{}, Stats:{}, Roll:{} },
+    _data: { Races:{}, Stats:{}, Roll:{}, Classes:{} },
 
 
     parsePercent(numberString) {
@@ -57,6 +57,25 @@ export const ExternalDataManager = {
                     }
                 });
             });
+
+            await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Classes.gid, googleDriveFileFetcher.My_Sheet.Classes.range).then(arr => {
+                arr.forEach(value => {
+                    let charClass = value[0]; // The first element is the class name
+                    if (charClass) { // Ensure class name is not empty
+                        this._data['Classes'][charClass] = { specs:{} }
+                    }
+                });
+            });
+
+            await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.ClassesRelated.gid, googleDriveFileFetcher.My_Sheet.ClassesRelated.range).then(arr => {
+                arr.forEach(value => {
+                    let charClass = value[0]; // The first element is the class name
+                    if (charClass) { // Ensure class name is not empty
+                        this._data['Classes'][charClass]['specs'] = {...this._data['Classes'][charClass]['specs'], ...value[1]};
+                    }
+                });
+            });
+
             console.log("External data loaded successfully into ExternalDataManager.");
             console.log(this._data);
         } catch (error) {
