@@ -59,7 +59,7 @@ const maxRollStat = 20;
 const minRollStat = 6;
 
 const defaultCharacterData = function() { 
-    const firstRace = Object.keys(ExternalDataManager._data)[0];
+    const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
     console.log(firstRace);
     const raceHealthChange = ExternalDataManager.getRaceHealthChange(firstRace);
 
