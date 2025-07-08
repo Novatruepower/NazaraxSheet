@@ -1671,13 +1671,14 @@ function populateRaceSelector() {
 
     if (character.race === '')
         raceSelect.classList.add('select-placeholder-text');
-    else {
+    else
         raceSelect.classList.remove('select-placeholder-text');
-        raceSelect.appendChild(`<option selected value="${race}">${race}</option>`);
-    }
 
     races.forEach(race => {
-        raceSelect.appendChild(`<option value="${race}">${race}</option>`);
+        const option = document.createElement('option');
+        option.value = race;
+        option.textContent = race;
+        raceSelect.appendChild(option);
     });
 
     raceSelect.value = character.race; // Set the selected race
