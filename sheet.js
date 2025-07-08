@@ -266,8 +266,6 @@ function getAppliedRacialChange(charData, statName) {
         totalRacialChange = ExternalDataManager.getRacialChange(charData.race, statName);
     }
 
-    charData[statName].racialChange = totalRacialChange;
-
     return totalRacialChange;
 }
 
@@ -824,13 +822,13 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         console.log(`  Cleared previous stat '${previousChoice.statName}' from demiHumanStatsAffected.`);
 
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-            character[previousChoice.statName].racialChange = 0; // Reset to 0 for Demi-humans
+            character[previousChoice.statName].racialChange -= previousChoice.modifier;
             console.log(`  Reset character.${previousChoice.statName}.racialChange to 0.`);
         } else if (previousChoice.statName === 'Health') {
-            character.healthRacialChange = 0; // Reset to 0
+            character.healthRacialChange -= previousChoice.modifier;
             console.log(`  Reset character.healthRacialChange to 0.`);
         } else if (previousChoice.statName === 'Magic') {
-            character.magicRacialChange = 0; // Reset to 0
+            character.magicRacialChange -= previousChoice.modifier;
             console.log(`  Reset character.magicRacialChange to 0.`);
         }
     }
