@@ -581,6 +581,7 @@
 
             window.gisInited = true;
             console.log("✅ GIS Initialized");
+            document.dispatchEvent(new Event("gis-ready"));
         }
     </script>
 
