@@ -62,7 +62,7 @@ export const ExternalDataManager = {
                 arr.forEach(value => {
                     let charClass = value[0]; // The first element is the class name
                     if (charClass) { // Ensure class name is not empty
-                        this._data['Classes'][charClass] = { specs:[] }
+                        this._data['Classes'][charClass] = { Specs:[] }
                     }
                 });
             });
@@ -72,7 +72,7 @@ export const ExternalDataManager = {
                 arr.forEach(value => {
                     let charClass = value[0]; // The first element is the class name
                     if (charClass) { // Ensure class name is not empty
-                        this._data['Classes'][charClass]['specs'].push(value[1]);
+                        this._data['Classes'][charClass]['Specs'].push(value[1]);
                     }
                 });
             });
@@ -97,6 +97,36 @@ export const ExternalDataManager = {
             return [];
         }
         return this._data['Roll'];
+    },
+
+    /**
+     * Retrieves all data associated with a specific race from the internal data.
+     * @param {string} className The name of the race (e.g., "Human", "Elf").
+     * @returns {Object|null} An object containing all data for the specified race,
+     * or null if the race is not found.
+     */
+    getClassData(className) {
+        if (typeof this._data === 'undefined' || !this._data['Classes'].hasOwnProperty(className)) {
+            console.warn(`ExternalDataManager: Class data for "${className}" not found. Call init() first or check class name.`);
+            return null;
+        }
+        return this._data['Classes'][className];
+    },
+
+    /**
+     * Retrieves the racial multiplier for a specific stat of a given race from the internal data.
+     * @param {string} className The name of the race.
+     * @returns {number|null} The roll value for the stat, or null if not found.
+     */
+    getClassSpecs(className) {
+        const classData = this.getClassData(className);
+
+        if (classData)
+            return classData['Specs'];
+
+        console.warn(`ExternalDataManager: Stat roll for "${statName}" in race "${raceName}" not found.`);
+
+        return null;
     },
 
     /**

@@ -20,16 +20,6 @@ function calculateLevelMaxExperience(level) {
     return 100;
 }
 
-// List of available classes for the multi-select dropdown
-const classOptionsList = ["Archer", "Assassin", "Bard", "Berserker", "Brawler", "Knight", "Mage", "Martial artist", "Oracle", "Paladin", "Priest"];
-
-// Define class specializations
-const classSpecializationsMap = {
-    "Mage": ["Chaos", "Dark", "Thunder"],
-    "Knight": ["Order"],
-    "Martial artist": ["Apprentice", "Warrior", "Master", "Grand Master", "Lord", "King"],
-};
-
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
     const healthChange = ExternalDataManager.getRaceHealthChange(race) || 1.00; // Default to 1 if race not found
@@ -436,7 +426,7 @@ function updateDOM() {
 
     // Populate and update checkboxes in the dropdown options
     classDropdownOptions.innerHTML = ''; // Clear existing options
-    classOptionsList.forEach(className => {
+    ExternalDataManager._data.Classes.forEach(className => {
         const checkboxDiv = document.createElement('div');
         checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
         checkboxDiv.innerHTML = `
@@ -918,8 +908,9 @@ function updateSpecializationDropdownAndData() {
     // 1. Determine available specializations based on selected classes
     const availableSpecializationsSet = new Set();
     character.class.forEach(selectedClass => {
-        if (classSpecializationsMap[selectedClass]) {
-            classSpecializationsMap[selectedClass].forEach(spec => availableSpecializationsSet.add(selectedClass + "→" + spec));
+        const specs = ExternalDataManager.getClassSpecs(selectedClass);
+        if (specs) {
+            specs.forEach(spec => availableSpecializationsSet.add(selectedClass + "→" + spec));
         }
     });
     const availableSpecializations = Array.from(availableSpecializationsSet).sort();
