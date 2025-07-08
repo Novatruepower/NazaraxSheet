@@ -815,15 +815,15 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     const previousChoiceIndex = character.demiHumanStatChoices.findIndex(c => c.slotId === slotId);
     const previousChoice = previousChoiceIndex !== -1 ? character.demiHumanStatChoices[previousChoiceIndex] : null;
 
-    // If a stat was previously selected for this slot, remove it from affected list and reset its racialChange
+    // If a stat was previously selected for this slot, remove it from affected list and reset to it's previous state
     if (previousChoice && previousChoice.statName) {
         character.demiHumanStatsAffected.delete(previousChoice.statName);
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-            character[previousChoice.statName].racialChange = 0; // Reset to 0 for Demi-humans
+            character[previousChoice.statName].racialChange -= previousChoice.modifier; 
         } else if (previousChoice.statName === 'Health') {
-            character.healthRacialChange = 0; // Reset to 0
+            character.healthRacialChange -= previousChoice.modifier; 
         } else if (previousChoice.statName === 'Magic') {
-            character.magicRacialChange = 0; // Reset to 0
+            character.magicRacialChange -= previousChoice.modifier; 
         }
     }
 
@@ -851,11 +851,11 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
 
         // Apply the modifier to the chosen stat
         if (ExternalDataManager.rollStats.includes(selectedStatName)) {
-            character[selectedStatName].racialChange = modifierValue;
+            character[selectedStatName].racialChange += modifierValue;
         } else if (selectedStatName === 'Health') {
-            character.healthRacialChange = modifierValue;
+            character.healthRacialChange += modifierValue;
         } else if (selectedStatName === 'Magic') {
-            character.magicRacialChange = modifierValue;
+            character.magicRacialChange += modifierValue;
         }
     } else {
         // If the selected option is empty, remove the choice
