@@ -1664,6 +1664,25 @@ function makeDraggable(element, handle) {
     }
 }
 
+function populateRaceSelector() {
+    // Handle race selector placeholder color and update max HP
+    const raceSelect = document.getElementById('race');
+    raceSelect.innerHTML = `<option value="" disabled selected class="defaultOption">Select a Race</option>`;
+
+    if (character.race === '')
+        raceSelect.classList.add('select-placeholder-text');
+    else {
+        raceSelect.classList.remove('select-placeholder-text');
+        raceSelect.appendChild(`<option selected value="${race}">${race}</option>`);
+    }
+
+    races.forEach(race => {
+        raceSelect.appendChild(`<option value="${race}">${race}</option>`);
+    });
+
+    raceSelect.value = character.race; // Set the selected race
+}
+
 // Function to populate the character selector dropdown
 function populateCharacterSelector() {
     const selector = document.getElementById('character-selector');
@@ -2611,6 +2630,7 @@ function initPage() {
     // Initialize AC based on armorBonus for the first character
     characters[0].ac = characters[0].armorBonus;
 
+    populateRaceSelector();
     populateCharacterSelector(); // Populate the selector on load
     updateDOM();
     attachEventListeners(); // Attach event listeners after DOM is updated
