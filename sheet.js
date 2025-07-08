@@ -165,7 +165,7 @@ function calculateTotal(statName) {
     const temporary = parseFloat(stat.temporary) || 0;
 
     // Calculate total based on the formula: Value + Racial change + Equipment + Temporary
-    return value + racialChange + equipment + temporary;
+    return value * racialChange + equipment + temporary;
 }
 
 // Then use a function like this to fetch the actual value from the document
@@ -612,6 +612,29 @@ function quickRollStats() {
     hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
+// Function to perform a quick roll for all player stats
+function handleChangeRace() {
+    // Update maxHp when race changes
+    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
+    document.getElementById('maxHp').value = character.maxHp;
+    document.getElementById('hp').value = character.hp;
+
+    ExternalDataManager.rollStats.forEach(statName => {
+
+        character[statName].racialChange = ExternalDataManager.getRacialChange(character.race, statName);
+
+        // Recalculate total for the updated stat
+        character[statName].total = calculateTotal(statName);
+
+        // Update the DOM for racialChange and total immediately
+        document.getElementById(`${statName}-racialChange`).value = character[statName].racialChange;
+        document.getElementById(`${statName}-total`).value = character[statName].total;
+    });
+
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
+}
+
 // Event listener for all input changes (excluding the custom class multi-select)
 function handleChange(event) {
     const { name, id, value, type, dataset, checked } = event.target;
@@ -707,12 +730,12 @@ function handleChange(event) {
             // Update the DOM for maxExperience immediately
             document.getElementById(`${statName}-maxExperience`).value = character[statName].maxExperience;
             // Re-evaluate experience if maxExperience changed and current experience is sufficient
-            if (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
+            while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
                 character[statName].value++;
                 character[statName].experience -= character[statName].maxExperience;
-                document.getElementById(`${statName}-value`).value = character[statName].value;
-                document.getElementById(`${statName}-experience`).value = character[statName].experience;
             }
+            document.getElementById(`${statName}-value`).value = character[statName].value;
+            document.getElementById(`${statName}-experience`).value = character[statName].experience;
 
         } else {
             // For other sub-properties (value, racialChange, equipment, temporary)
@@ -770,11 +793,7 @@ function handleChange(event) {
             } else {
                 raceSelect.classList.remove('select-placeholder-text');
             }
-            // Update maxHp when race changes
-            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
-            character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
-            document.getElementById('maxHp').value = character.maxHp;
-            document.getElementById('hp').value = character.hp;
+            handleChangeRace();
         } else if (id === 'hp') { // Handle current HP input
             character.hp = Math.min(newValue, character.maxHp); // Ensure current HP doesn't exceed max HP
             document.getElementById('hp').value = character.hp;
