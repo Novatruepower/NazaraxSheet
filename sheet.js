@@ -540,8 +540,8 @@ function updateDOM() {
 
 
     // Health & Combat
-    document.getElementById('Health').value = character.Health;
-    document.getElementById('maxHealth').value = character.maxHealth; // This now includes healthBonus
+    document.getElementById('hp').value = character.Health;
+    document.getElementById('maxHph').value = character.maxHealth; // This now includes healthBonus
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
     document.getElementById('racialPower').value = character.racialPower; // Populate racialPower
     document.getElementById('maxRacialPower').value = character.maxRacialPower; // Populate maxRacialPower
@@ -721,8 +721,8 @@ function handleChangeRace() {
     // Update maxHealth, maxMagicPoints and maxRacialPower when race changes
     character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-    document.getElementById('maxHealth').value = character.maxHealth;
-    document.getElementById('Health').value = character.Health;
+    document.getElementById('maxHp').value = character.maxHealth;
+    document.getElementById('hp').value = character.Health;
 
     character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
@@ -1362,8 +1362,8 @@ function handleChange(event) {
             // Also update maxHealth, maxMagicPoints and maxRacialPower when level changes
             character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-            document.getElementById('maxHealth').value = character.maxHealth;
-            document.getElementById('Health').value = character.Health;
+            document.getElementById('maxHp').value = character.maxHealth;
+            document.getElementById('hp').value = character.Health;
 
             character.maxMagicPoints = calculateMaxMagic(character, character.level);
             character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
@@ -1386,7 +1386,7 @@ function handleChange(event) {
             handleChangeRace(); // Call handleChangeRace to update racial characteristics
         } else if (id === 'Health') { // Handle current Health input
             character.Health = Math.min(newValue, character.maxHealth); // Ensure current Health doesn't exceed max Health
-            document.getElementById('Health').value = character.Health;
+            document.getElementById('hp').value = character.Health;
         } else if (id === 'currentMagicPoints') { // Handle current Magic input (renamed)
             character.currentMagicPoints = Math.min(newValue, character.maxMagicPoints); // Ensure current Magic doesn't exceed max Magic
             document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
@@ -1398,8 +1398,8 @@ function handleChange(event) {
             // Recalculate maxHealth when healthBonus changes
             character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-            document.getElementById('maxHealth').value = character.maxHealth;
-            document.getElementById('Health').value = character.Health;
+            document.getElementById('maxHp').value = character.maxHealth;
+            document.getElementById('hp').value = character.Health;
         } else if (id === 'armorBonus') { // Handle armorBonus input
             character.armorBonus = newValue;
             character.ac = character.armorBonus; // Update AC based on armorBonus
