@@ -60,6 +60,7 @@ const minRollStat = 6;
 
 const defaultCharacterData = function() { 
     const firstRace = Object.keys(ExternalDataManager._data)[0];
+    console.log(firstRace);
     const raceHealthChange = ExternalDataManager.getRaceHealthChange(firstRace);
 
     let newCharacter = ({
@@ -1810,8 +1811,6 @@ function initPage() {
     gisLoaded();
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
-
-    console.log("init page")
 }
 
 // Initialize the application when the DOM is fully loaded
