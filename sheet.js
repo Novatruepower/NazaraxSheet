@@ -118,7 +118,7 @@ const defaultCharacterData = function() {
         const result = roll(minRollStat, maxRollStat);
         // For Demi-humans and Mutants, initial racialChange is 0, as they gain changes via choices
         // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
-        const initialRacialChange = (newCharacter.race === 'Demi-humans' || newCharacter.race === 'Mutant') ? 0 : ExternalDataManager.getRacialChange(newCharacter.race, statName);
+        const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
         newCharacter[statName] = {
             value: result,
             racialChange: initialRacialChange, // This will be 0 for Demi-humans/Mutants initially, or the fixed percentage for others
@@ -245,9 +245,7 @@ function calculateTotal(statName) {
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-
-    console.log(charData);
-    let totalRacialChange = ExternalDataManager.getRacialChange(charData.race, statName);
+    let totalRacialChange = charData[statName].racialChange;
 
     if (charData.race === 'Demi-humans') {
         const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
@@ -272,11 +270,8 @@ function getAppliedRacialChange(charData, statName) {
         if (mutantDegeneration) {
             totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
         }
-    } else {
-        // For other races, get the racial change from ExternalDataManager
-        // ExternalDataManager.getRacialChange returns the percentage change (e.g., 0.25 for +25%)
-        totalRacialChange = charData[statName] ? charData[statName].racialChange : 0;
     }
+    
     return totalRacialChange;
 }
 
