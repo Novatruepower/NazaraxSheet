@@ -1674,7 +1674,7 @@ function populateRaceSelector() {
     else
         raceSelect.classList.remove('select-placeholder-text');
 
-    races.forEach(race => {
+    Object.keys(ExternalDataManager._data.Races).forEach(race => {
         const option = document.createElement('option');
         option.value = race;
         option.textContent = race;
