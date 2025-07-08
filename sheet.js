@@ -32,6 +32,7 @@ const classSpecializationsMap = {
 
 // List of data for easy iteration
 await ExternalDataManager.init();
+console.log("nice");
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
@@ -59,9 +60,7 @@ const maxRollStat = 20;
 const minRollStat = 6;
 
 const defaultCharacterData = function() { 
-    console.log(Object.keys(ExternalDataManager._data.Races)[0]);
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
-    console.log(firstRace);
     const raceHealthChange = ExternalDataManager.getRaceHealthChange(firstRace);
 
     let newCharacter = ({
