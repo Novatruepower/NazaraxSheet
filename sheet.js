@@ -106,6 +106,8 @@ const defaultCharacterData = function() {
     return newCharacter;
 };
 
+console.log("nice");
+
 // Array to hold all character sheets
 let characters = [];
 // Index of the currently active character sheet
@@ -1815,4 +1817,7 @@ function initPage() {
 // Initialize the application when the DOM is fully loaded
 window.onload = function() {
     initPage();
+    console.log("load");
 };
+
+console.log("end");
