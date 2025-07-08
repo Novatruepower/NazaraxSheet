@@ -111,7 +111,7 @@ const defaultCharacterData = function() {
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
         newCharacter[statName] = {
             value: result,
-            racialChange: initialRacialChange, // This will be 0 for Demi-humans/Mutants initially, or the fixed percentage for others
+            racialChange: initialRacialChange, // This will be 0 for Demi-humans initially, or the fixed percentage for others
             equipment: 0,
             temporary: 0,
             experience: 0,
@@ -230,46 +230,48 @@ function calculateTotal(statName) {
     const temporary = parseFloat(stat.temporary) || 0;
 
     // Calculate total based on the formula: Value * (1 + Racial change) + Equipment + Temporary
-    return value * racialChange + equipment + temporary;
+    return value * (1 + racialChange) + equipment + temporary;
 }
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-    let totalRacialChange = 0; // Initialize to 0 for Demi-humans/Mutants as their base is 0 for rollStats
-
-    // For rollStats, get the racialChange from the stat object
-    if (ExternalDataManager.rollStats.includes(statName)) {
-        totalRacialChange = charData[statName].racialChange;
-    }
+    console.log(`getAppliedRacialChange called for ${statName}. Current charData.demiHumanStatChoices:`, JSON.parse(JSON.stringify(charData.demiHumanStatChoices)));
+    let totalRacialChange = 0;
 
     if (charData.race === 'Demi-humans') {
         const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
         if (choice) {
-            totalRacialChange += choice.modifier;
+            totalRacialChange += choice.modifier; // This is where the 0.25 is added.
+            console.log(`  Found Demi-human choice for ${statName}. Modifier: ${choice.modifier}. totalRacialChange now: ${totalRacialChange}`);
         }
-        // Health and Magic are special cases and stored directly in charData object for Demi-humans
+        // Health and Magic are special cases and stored directly on charData object for Demi-humans
         if (statName === 'Health') {
             totalRacialChange += charData.healthRacialChange;
+            console.log(`  Adding healthRacialChange for Health. totalRacialChange now: ${totalRacialChange}`);
         }
         if (statName === 'Magic') { // Note: 'Magic' here refers to the stat, not magic points
             totalRacialChange += charData.magicRacialChange;
+            console.log(`  Adding magicRacialChange for Magic. totalRacialChange now: ${totalRacialChange}`);
         }
     } else if (charData.race === 'Mutant') {
         // Check for stat multiplier mutations
         const mutantStatMutation = charData.mutantMutations.find(m => m.statName === statName);
         if (mutantStatMutation) {
             totalRacialChange += mutantStatMutation.value; // This value is already a percentage change (e.g., 0.50)
+            console.log(`  Found Mutant mutation for ${statName}. Value: ${mutantStatMutation.value}. totalRacialChange now: ${totalRacialChange}`);
         }
         // Check for stat degeneration
         const mutantDegeneration = charData.mutantDegenerations.find(d => d.statName === statName);
         if (mutantDegeneration) {
             totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
+            console.log(`  Found Mutant degeneration for ${statName}. Value: ${mutantDegeneration.value}. totalRacialChange now: ${totalRacialChange}`);
         }
     } else {
         // For other races, get the racial change from ExternalDataManager
         totalRacialChange = ExternalDataManager.getRacialChange(charData.race, statName);
+        console.log(`  Fetching racial change from ExternalDataManager for ${charData.race}, ${statName}. Value: ${totalRacialChange}`);
     }
-    
+    console.log(`getAppliedRacialChange returning: ${totalRacialChange} for ${statName}`);
     return totalRacialChange;
 }
 
@@ -540,8 +542,8 @@ function updateDOM() {
 
 
     // Health & Combat
-    document.getElementById('hp').value = character.Health;
-    document.getElementById('maxHp').value = character.maxHealth; // This now includes healthBonus
+    document.getElementById('Health').value = character.Health;
+    document.getElementById('maxHealth').value = character.maxHealth; // This now includes healthBonus
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
     document.getElementById('racialPower').value = character.racialPower; // Populate racialPower
     document.getElementById('maxRacialPower').value = character.maxRacialPower; // Populate maxRacialPower
@@ -714,15 +716,15 @@ function handleChangeRace() {
         const initialRacialChange = ExternalDataManager.getRacialChange(character.race, statName);
         character[statName].racialChange = initialRacialChange;
         character[statName].total = calculateTotal(statName);
-        document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Use getAppliedRacialChange for display
+        document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Display raw number
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
 
     // Update maxHealth, maxMagicPoints and maxRacialPower when race changes
     character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-    document.getElementById('maxHp').value = character.maxHealth;
-    document.getElementById('hp').value = character.Health;
+    document.getElementById('maxHealth').value = character.maxHealth;
+    document.getElementById('Health').value = character.Health;
 
     character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
@@ -812,18 +814,28 @@ function renderDemiHumanStatChoiceUI() {
  * @param {string} selectedStatName The name of the stat chosen by the player.
  */
 function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
+    console.log("--- handleDemiHumanStatChoice called ---");
+    console.log("Input parameters:", { slotId, modifierValue, selectedStatName });
+    console.log("Current demiHumanStatChoices (before update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
+    console.log("Current demiHumanStatsAffected (before update):", Array.from(character.demiHumanStatsAffected));
+
     const previousChoiceIndex = character.demiHumanStatChoices.findIndex(c => c.slotId === slotId);
     const previousChoice = previousChoiceIndex !== -1 ? character.demiHumanStatChoices[previousChoiceIndex] : null;
 
-    // If a stat was previously selected for this slot, remove it from affected list and reset to it's previous state
+    // If a stat was previously selected for this slot, remove it from affected list and reset its racialChange
     if (previousChoice && previousChoice.statName) {
         character.demiHumanStatsAffected.delete(previousChoice.statName);
+        console.log(`  Cleared previous stat '${previousChoice.statName}' from demiHumanStatsAffected.`);
+
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-            character[previousChoice.statName].racialChange -= previousChoice.modifier; 
+            character[previousChoice.statName].racialChange = 0; // Reset to 0 for Demi-humans
+            console.log(`  Reset character.${previousChoice.statName}.racialChange to 0.`);
         } else if (previousChoice.statName === 'Health') {
-            character.healthRacialChange -= previousChoice.modifier; 
+            character.healthRacialChange = 0; // Reset to 0
+            console.log(`  Reset character.healthRacialChange to 0.`);
         } else if (previousChoice.statName === 'Magic') {
-            character.magicRacialChange -= previousChoice.modifier; 
+            character.magicRacialChange = 0; // Reset to 0
+            console.log(`  Reset character.magicRacialChange to 0.`);
         }
     }
 
@@ -837,6 +849,7 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
             if (selectElement) {
                 selectElement.value = previousChoice ? previousChoice.statName : '';
             }
+            console.log(`  Stat '${selectedStatName}' already chosen. Reverting dropdown.`);
             return;
         }
 
@@ -844,22 +857,29 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         const newChoice = { slotId, statName: selectedStatName, modifier: modifierValue };
         if (previousChoice) {
             Object.assign(previousChoice, newChoice); // Update existing choice
+            console.log(`  Updated existing choice for slot ${slotId} to:`, newChoice);
         } else {
             character.demiHumanStatChoices.push(newChoice); // Add new choice
+            console.log(`  Added new choice for slot ${slotId}:`, newChoice);
         }
         character.demiHumanStatsAffected.add(selectedStatName);
+        console.log(`  Added '${selectedStatName}' to demiHumanStatsAffected.`);
 
         // Apply the modifier to the chosen stat
         if (ExternalDataManager.rollStats.includes(selectedStatName)) {
-            character[selectedStatName].racialChange += modifierValue;
+            character[selectedStatName].racialChange = modifierValue;
+            console.log(`  Set character.${selectedStatName}.racialChange to ${modifierValue}.`);
         } else if (selectedStatName === 'Health') {
-            character.healthRacialChange += modifierValue;
+            character.healthRacialChange = modifierValue;
+            console.log(`  Set character.healthRacialChange to ${modifierValue}.`);
         } else if (selectedStatName === 'Magic') {
-            character.magicRacialChange += modifierValue;
+            character.magicRacialChange = modifierValue;
+            console.log(`  Set character.magicRacialChange to ${modifierValue}.`);
         }
     } else {
         // If the selected option is empty, remove the choice
         character.demiHumanStatChoices = character.demiHumanStatChoices.filter(c => c.slotId !== slotId);
+        console.log(`  Cleared choice for slot ${slotId}.`);
     }
 
     // Recalculate derived properties that depend on racial changes
@@ -868,10 +888,15 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
 
+    console.log("Updated demiHumanStatChoices (after update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
+    console.log("Updated demiHumanStatsAffected (after update):", Array.from(character.demiHumanStatsAffected));
+    console.log(`Final racialChange for ${selectedStatName} (from character object):`, character[selectedStatName]?.racialChange);
+
     // Update the UI to reflect changes (e.g., disable/enable options)
     updateDOM(); // Re-render the entire DOM to update all stat totals and choice dropdowns
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
+    console.log("--- handleDemiHumanStatChoice finished ---");
 }
 
 /**
@@ -1362,8 +1387,8 @@ function handleChange(event) {
             // Also update maxHealth, maxMagicPoints and maxRacialPower when level changes
             character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-            document.getElementById('maxHp').value = character.maxHealth;
-            document.getElementById('hp').value = character.Health;
+            document.getElementById('maxHealth').value = character.maxHealth;
+            document.getElementById('Health').value = character.Health;
 
             character.maxMagicPoints = calculateMaxMagic(character, character.level);
             character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
@@ -1386,7 +1411,7 @@ function handleChange(event) {
             handleChangeRace(); // Call handleChangeRace to update racial characteristics
         } else if (id === 'Health') { // Handle current Health input
             character.Health = Math.min(newValue, character.maxHealth); // Ensure current Health doesn't exceed max Health
-            document.getElementById('hp').value = character.Health;
+            document.getElementById('Health').value = character.Health;
         } else if (id === 'currentMagicPoints') { // Handle current Magic input (renamed)
             character.currentMagicPoints = Math.min(newValue, character.maxMagicPoints); // Ensure current Magic doesn't exceed max Magic
             document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
@@ -1398,8 +1423,8 @@ function handleChange(event) {
             // Recalculate maxHealth when healthBonus changes
             character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-            document.getElementById('maxHp').value = character.maxHealth;
-            document.getElementById('hp').value = character.Health;
+            document.getElementById('maxHealth').value = character.maxHealth;
+            document.getElementById('Health').value = character.Health;
         } else if (id === 'armorBonus') { // Handle armorBonus input
             character.armorBonus = newValue;
             character.ac = character.armorBonus; // Update AC based on armorBonus
