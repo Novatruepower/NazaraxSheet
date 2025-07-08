@@ -111,22 +111,32 @@ let currentCharacterIndex = 0;
 // Flag to track if there are unsaved changes
 let hasUnsavedChanges = false;
 
-// History stack for revert functionality
+// History stack for revert/forward functionality
 let historyStack = [];
+let historyPointer = -1; // Pointer to the current state in the historyStack
 const MAX_HISTORY_LENGTH = 10; // Store last 10 states
 
 // Function to push the current character's state to the history stack
 function saveCurrentStateToHistory() {
     // Deep copy the entire characters array to save its state
     const currentState = JSON.parse(JSON.stringify(characters));
+
+    // If the history pointer is not at the end, it means we reverted and are now making a new change.
+    // In this case, discard all "future" states from the current pointer onwards.
+    if (historyPointer < historyStack.length - 1) {
+        historyStack.splice(historyPointer + 1);
+    }
+
     // Only push if the current state is different from the last saved state
     if (historyStack.length === 0 || JSON.stringify(currentState) !== JSON.stringify(historyStack[historyStack.length - 1])) {
         historyStack.push(currentState);
         if (historyStack.length > MAX_HISTORY_LENGTH) {
             historyStack.shift(); // Remove the oldest state
         }
-        console.log("State saved to history. History length:", historyStack.length);
+        historyPointer = historyStack.length - 1; // Update pointer to the new end
+        console.log("State saved to history. History length:", historyStack.length, "Pointer:", historyPointer);
     }
+    updateHistoryButtonsState(); // Update button states after saving
 }
 
 // Getter to easily access the current character
@@ -139,7 +149,6 @@ const character = new Proxy({}, {
         if (characters[currentCharacterIndex][prop] !== value) {
             characters[currentCharacterIndex][prop] = value;
             hasUnsavedChanges = true; // Mark that there are unsaved changes
-            // Removed: pushCurrentCharacterStateToHistory(); // This was too granular
         }
         
         // If the character name changes, update the selector
@@ -385,6 +394,7 @@ function loadCharacterFromFile(event) {
             showStatusMessage(`Character data loaded from JSON file!`);
             console.log(`Character data loaded from JSON file!`);
             historyStack = []; // Clear previous history
+            historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the newly loaded state as the first history entry
             hasUnsavedChanges = false; // Data is now loaded and considered "saved"
         } catch (e) {
@@ -506,6 +516,8 @@ function updateDOM() {
 
     // Update section visibility - NEW
     updateSectionVisibility();
+
+    updateHistoryButtonsState(); // Update history button states after DOM update
 }
 
 // Helper function to create table data (<td>) elements
@@ -1031,6 +1043,7 @@ function switchCharacter(event) {
             currentCharacterIndex = parseInt(event.target.value);
             updateDOM(); // Update the UI with the new character's data
             historyStack = []; // Clear previous history
+            historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new character's state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after switching
         }, () => {
@@ -1041,6 +1054,7 @@ function switchCharacter(event) {
         currentCharacterIndex = parseInt(event.target.value);
         updateDOM(); // Update the UI with the new character's data
         historyStack = []; // Clear previous history
+        historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the new character's state as the first history entry
     }
 }
@@ -1060,6 +1074,7 @@ function addNewCharacter() {
             showStatusMessage(`Added new character: ${newChar.name}`);
             console.log(`Added new character: ${newChar.name}`);
             historyStack = []; // Clear previous history
+            historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new character's state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after adding
         });
@@ -1074,6 +1089,7 @@ function addNewCharacter() {
         showStatusMessage(`Added new character: ${newChar.name}`);
         console.log(`Added new character: ${newChar.name}`);
         historyStack = []; // Clear previous history
+        historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the new character's state as the first history entry
     }
 }
@@ -1127,6 +1143,7 @@ function resetCurrentCharacter() {
         updateDOM();
         showStatusMessage("Current character reset successfully!");
         historyStack = []; // Clear history after a full reset
+        historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the reset state as the first history entry
         hasUnsavedChanges = false; // Reset unsaved changes flag after reset
     });
@@ -1155,30 +1172,74 @@ function deleteCurrentCharacter() {
         populateCharacterSelector(); // Re-populate selector after deletion
         showStatusMessage("Character deleted successfully!");
         historyStack = []; // Clear history after deletion
+        historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the new state as the first history entry
         hasUnsavedChanges = false; // Reset unsaved changes flag after deletion
     });
 }
 
+/**
+ * Applies a historical state to the current character and updates the DOM.
+ * @param {Array} state The character array state to apply.
+ */
+function applyHistoryState(state) {
+    characters = JSON.parse(JSON.stringify(state)); // Deep copy the state
+    // Ensure currentCharacterIndex is valid after applying history, especially if characters were added/deleted
+    if (currentCharacterIndex >= characters.length) {
+        currentCharacterIndex = characters.length - 1;
+    } else if (currentCharacterIndex < 0 && characters.length > 0) {
+        currentCharacterIndex = 0; // Default to the first character if somehow invalid
+    } else if (characters.length === 0) {
+        // If no characters left, create a default one
+        characters.push(defaultCharacterData());
+        currentCharacterIndex = 0;
+    }
+    updateDOM();
+    populateCharacterSelector(); // Update selector in case character names changed
+    hasUnsavedChanges = false; // Reverted/Forwarded state is now considered "saved" locally
+    updateHistoryButtonsState(); // Update button states after applying history
+}
+
 // Function to revert the current character to the previous state in history
 function revertCurrentCharacter() {
-    if (historyStack.length > 1) { // Need at least 2 states to revert (current + previous)
-        historyStack.pop(); // Remove the current state
-        const previousState = historyStack[historyStack.length - 1]; // Get the state to revert to
-        characters = JSON.parse(JSON.stringify(previousState)); // Apply the previous state
-        
-        // Ensure currentCharacterIndex is valid after revert, especially if characters were added/deleted
-        if (currentCharacterIndex >= characters.length) {
-            currentCharacterIndex = characters.length - 1;
-        }
-        updateDOM();
-        populateCharacterSelector(); // Update selector in case character names changed
-        hasUnsavedChanges = false; // Reverted state is now considered "saved" locally
+    if (historyPointer > 0) {
+        historyPointer--;
+        applyHistoryState(historyStack[historyPointer]);
         showStatusMessage("Reverted to previous state.");
-        console.log("Reverted to previous state. History length:", historyStack.length);
+        console.log("Reverted to previous state. History length:", historyStack.length, "Pointer:", historyPointer);
     } else {
         showStatusMessage("No previous state to revert to.", true);
         console.log("No previous state to revert to.");
+    }
+}
+
+// Function to move the current character to the next state in history (undo a revert)
+function forwardCurrentCharacter() {
+    if (historyPointer < historyStack.length - 1) {
+        historyPointer++;
+        applyHistoryState(historyStack[historyPointer]);
+        showStatusMessage("Moved forward to next state.");
+        console.log("Moved forward to next state. History length:", historyStack.length, "Pointer:", historyPointer);
+    } else {
+        showStatusMessage("No future state to move to.", true);
+        console.log("No future state to move to.");
+    }
+}
+
+// Function to update the enabled/disabled state of the history buttons
+function updateHistoryButtonsState() {
+    const revertButton = document.getElementById('revert-character-btn');
+    const forwardButton = document.getElementById('forward-character-btn');
+
+    if (revertButton) {
+        revertButton.disabled = (historyPointer <= 0);
+        revertButton.classList.toggle('opacity-50', revertButton.disabled);
+        revertButton.classList.toggle('cursor-not-allowed', revertButton.disabled);
+    }
+    if (forwardButton) {
+        forwardButton.disabled = (historyPointer >= historyStack.length - 1);
+        forwardButton.classList.toggle('opacity-50', forwardButton.disabled);
+        forwardButton.classList.toggle('cursor-not-allowed', forwardButton.disabled);
     }
 }
 
@@ -1538,7 +1599,6 @@ async function loadGoogleDriveFileContent(fileId) {
                 newChar.generalInventory = loadedChar.generalInventory || [];
                 newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
 
-
                 newChar.weaponInventory.forEach(weapon => {
                     if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
                     if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
@@ -1612,6 +1672,7 @@ async function loadGoogleDriveFileContent(fileId) {
         showStatusMessage("Character data loaded from Google Drive!");
         console.log("Character data loaded from Google Drive!");
         historyStack = []; // Clear previous history
+        historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the newly loaded state as the first history entry
         hasUnsavedChanges = false; // Data is now loaded and considered "saved"
     } catch (error) {
@@ -1860,6 +1921,8 @@ function attachEventListeners() {
     document.getElementById('delete-character-btn').addEventListener('click', deleteCurrentCharacter);
     // Attach event listener for Revert button
     document.getElementById('revert-character-btn').addEventListener('click', revertCurrentCharacter);
+    // Attach event listener for Forward button
+    document.getElementById('forward-character-btn').addEventListener('click', forwardCurrentCharacter);
 
     // Add the beforeunload event listener
     window.addEventListener('beforeunload', (event) => {
