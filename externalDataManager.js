@@ -35,9 +35,11 @@ export const ExternalDataManager = {
                 arr.forEach(value => {
                     let race = value[0]; // The first element is the race name
                     if (race) { // Ensure race name is not empty
-                        this._data[race] = {
-                            Stats: {
-                                Roll: {}
+                        this._data['Races'] = {
+                            race: {
+                                Stats: {
+                                    Roll: {}
+                                }
                             }
                         };
 
@@ -46,7 +48,7 @@ export const ExternalDataManager = {
 
                         head.forEach(statName => {
                             // Assign stat roll value for the current race
-                            this._data[race]['Stats']['Roll'][statName] = value[index];
+                            this._data['Races'][race]['Stats']['Roll'][statName] = value[index];
                             ++index;
                         });
                     }
@@ -81,11 +83,11 @@ export const ExternalDataManager = {
      * or null if the race is not found.
      */
     getRaceData(raceName) {
-        if (typeof this._data === 'undefined' || !this._data.hasOwnProperty(raceName)) {
+        if (typeof this._data === 'undefined' || !this._data['Races'].hasOwnProperty(raceName)) {
             console.warn(`ExternalDataManager: Race data for "${raceName}" not found. Call init() first or check race name.`);
             return null;
         }
-        return this._data[raceName];
+        return this._data['Races'][raceName];
     },
 
     /**
