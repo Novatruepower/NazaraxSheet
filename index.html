@@ -544,24 +544,26 @@
     </div>
 
     <script>
-        /**
-         * Initializes Google API client libraries.
-         */
+        window.gapiInited = false;
+        window.gisInited = false;
+        window.tokenClient = null;
+
         function gapiLoaded() {
-            gapi.load('client', initializeGapiClient);
-        }
-
-        /**
-         * Initializes the Google Drive API client.
-         */
-        async function initializeGapiClient() {
-
             const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqgqCN4cjTGg';
             const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
-            await gapi.client.init({
-                apiKey: GOOGLE_API_KEY,
-                discoveryDocs: [DISCOVERY_DOC],
+            gapi.load('client', async () => {
+                try {
+                    await gapi.client.init({
+                        apiKey: GOOGLE_API_KEY,
+                        discoveryDocs: [DISCOVERY_DOC],
+                    });
+                    window.gapiInited = true;
+                    console.log("✅ GAPI Initialized");
+                    document.dispatchEvent(new Event("gapi-ready"));
+                } catch (err) {
+                    console.error("❌ GAPI Init Failed:", err);
+                }
             });
         }
 
@@ -579,9 +581,12 @@
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: Auth_CLIENT_ID,
                 scope: SCOPES,
-                callback: '', // Will be set dynamically before request
+                callback: () => {}, 
                 redirect_uri: ORIGIN
             });
+
+            window.gisInited = true;
+            console.log("✅ GIS Initialized");
         }
     </script>
 
@@ -589,6 +594,6 @@
     <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded"></script>
     <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded"></script>
     
-
+    <script src="./sheet.js" type="module"></script>
 </body>
 </html>

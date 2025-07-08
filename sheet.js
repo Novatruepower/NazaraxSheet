@@ -1,8 +1,5 @@
 import { ExternalDataManager } from './externalDataManager.js';
 
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
@@ -1970,9 +1967,9 @@ function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
  * Also updates the UI based on current authorization status and local storage.
  */
 function maybeEnableGoogleDriveButtons() {
-    if (gapiInited && gisInited) {
+    if (window.gapiInited && window.gisInited) {
         authorizeGoogleDriveButton.disabled = false;
-        const currentToken = gapi.client.getToken();
+        const currentToken = window.gapi.client.getToken();
         const wasAuthorizedInLocalStorage = localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true';
 
         if (currentToken) {
@@ -1999,32 +1996,32 @@ function maybeEnableGoogleDriveButtons() {
  * Handles Google Drive authorization click.
  */
 function handleGoogleDriveAuthClick() {
-    tokenClient.callback = async (resp) => {
+    window.tokenClient.callback = async (resp) => {
         if (resp.error) {
             console.error("Google Drive authorization error:", resp);
             showStatusMessage("Google Drive authorization failed.", true);
             localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear local storage on error
-            gapi.client.setToken(''); // Clear token in gapi.client as well
+            window.gapi.client.setToken(''); // Clear token in gapi.client as well
             maybeEnableGoogleDriveButtons(); // Update UI
             return;
         }
         // Set the token for gapi.client after successful authorization
-        gapi.client.setToken(resp);
+        window.gapi.client.setToken(resp);
         localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
         showStatusMessage("Google Drive authorized successfully!");
         maybeEnableGoogleDriveButtons(); // Update UI
     };
-    tokenClient.requestAccessToken({ prompt: 'consent' });
+    window.tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
 /**
  * Handles Google Drive sign-out.
  */
 function handleGoogleDriveSignoutClick() {
-    const token = gapi.client.getToken();
+    const token = window.gapi.client.getToken();
     if (token) {
         google.accounts.oauth2.revoke(token.access_token);
-        gapi.client.setToken('');
+        window.gapi.client.setToken('');
     }
     localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear persisted status
     currentGoogleDriveFileId = null; // Clear current file ID on sign out
@@ -2036,7 +2033,7 @@ function handleGoogleDriveSignoutClick() {
  * Saves character data to Google Drive.
  */
 async function saveCharacterToGoogleDrive() {
-    if (!gapi.client.getToken()) {
+    if (!window.gapi.client.getToken()) {
         showStatusMessage("Please authorize Google Drive to save.", true);
         // If local storage says it was authorized, prompt to re-authorize
         if (localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true') {
@@ -2076,7 +2073,7 @@ async function saveCharacterToGoogleDrive() {
 
         if (currentGoogleDriveFileId) {
             // Update existing file
-            await gapi.client.request({
+            await window.gapi.client.request({
                 path: `/upload/drive/v3/files/${currentGoogleDriveFileId}`,
                 method: 'PATCH',
                 params: { uploadType: 'media' },
@@ -2104,7 +2101,7 @@ async function saveCharacterToGoogleDrive() {
                 content + `\r\n` +
                 `--${boundary}--`;
 
-            const response = await gapi.client.request({
+            const response = await window.gapi.client.request({
                 path: '/upload/drive/v3/files?uploadType=multipart',
                 method: 'POST',
                 headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
@@ -2125,7 +2122,7 @@ async function saveCharacterToGoogleDrive() {
  * Loads character data from Google Drive.
  */
 async function loadCharacterFromGoogleDrive() {
-    if (!gapi.client.getToken()) {
+    if (!window.gapi.client.getToken()) {
         showStatusMessage("Please authorize Google Drive to load.", true);
         // If local storage says it was authorized, prompt to re-authorize
         if (localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true') {
@@ -2151,7 +2148,7 @@ async function proceedToLoadGoogleDriveFile() {
     googleDriveModalStatus.textContent = 'Loading...';
 
     try {
-        const res = await gapi.client.drive.files.list({
+        const res = await window.gapi.client.drive.files.list({
             pageSize: 20, // Fetch up to 20 files
             fields: 'files(id, name, modifiedTime)',
             q: "mimeType='application/json' and fullText contains '_sheet'", // Filter for JSON files named 'character_sheets'
@@ -2192,7 +2189,7 @@ async function proceedToLoadGoogleDriveFile() {
 async function loadGoogleDriveFileContent(fileId) {
     showStatusMessage("Loading character data from Google Drive...");
     try {
-        const res = await gapi.client.drive.files.get({ fileId, alt: 'media' });
+        const res = await window.gapi.client.drive.files.get({ fileId, alt: 'media' });
         const loadedData = JSON.parse(res.body);
 
         if (Array.isArray(loadedData)) {
@@ -2635,12 +2632,10 @@ function initPage() {
 
 
 window.addEventListener("gis-ready", () => {
-    gapiInited = true;
     maybeEnableGoogleDriveButtons();
 });
 
 window.addEventListener("gapi-ready", () => {
-    gapiInited = true;
     maybeEnableGoogleDriveButtons();
 });
 
