@@ -99,8 +99,8 @@ const defaultCharacterData = function() {
         // New properties for Demi-human stat choices
         demiHumanStatChoices: [], // Stores { statName: 'Strength', modifier: 0.25, slotId: '...' }
         demiHumanStatsAffected: new Set(), // Stores names of stats already chosen by Demi-human modifiers
-        racialHealthChange: 1, // Initial racial change for health, will be set by Demi-human player choice
-        racilMagicChange: 1, // Initial racial change for magic, will be set by Demi-human player choice
+        racialHealthChange: 0, // Initial racial change for health, will be set by Demi-human player choice
+        racialMagicChange: 0, // Initial racial change for magic, will be set by Demi-human player choice
 
         // New properties for Mutant stat choices
         mutantMutations: [], // Stores { type: 'stat_multiplier_50', statName: 'Strength', level: 1, slotId: '...' }
@@ -245,27 +245,28 @@ function calculateTotal(statName) {
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-    let totalRacialChange = charData[statName].racialChange;
+    let totalRacialChange = charData[statName].racialChange; // Start with the base racial change from ExternalDataManager
 
     if (charData.race === 'Demi-humans') {
+        // Add Demi-human specific stat modifiers
         const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
         if (choice) {
             totalRacialChange += choice.modifier;
         }
         // Health and Magic are special cases and stored directly in charData object for Demi-humans
-        if (statName === 'Health' && charData.healthRacialChange !== undefined) {
-            totalRacialChange += charData.healthRacialChange;
+        if (statName === 'Health' && charData.racialHealthChange !== undefined) {
+            totalRacialChange += charData.racialHealthChange;
         }
-        if (statName === 'Magic' && charData.magicRacialChange !== undefined) {
-            totalRacialChange += charData.magicRacialChange;
+        if (statName === 'Magic' && charData.racialMagicChange !== undefined) {
+            totalRacialChange += charData.racialMagicChange;
         }
     } else if (charData.race === 'Mutant') {
-        // Check for stat multiplier mutations
+        // Add Mutant stat multiplier mutations
         const mutantStatMutation = charData.mutantMutations.find(m => m.type === 'stat_multiplier_set_50' && m.statName === statName);
         if (mutantStatMutation) {
             totalRacialChange += mutantStatMutation.value; // This value is already a percentage change (e.g., 0.50)
         }
-        // Check for stat degeneration
+        // Add Mutant stat degeneration
         const mutantDegeneration = charData.mutantDegenerations.find(d => d.statName === statName);
         if (mutantDegeneration) {
             totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
@@ -407,8 +408,8 @@ function loadCharacterFromFile(event) {
                     // Load Demi-human specific properties
                     newChar.demiHumanStatChoices = loadedChar.demiHumanStatChoices || [];
                     newChar.demiHumanStatsAffected = new Set(loadedChar.demiHumanStatsAffected || []);
-                    newChar.healthRacialChange = loadedChar.healthRacialChange !== undefined ? loadedChar.healthRacialChange : 0;
-                    newChar.magicRacialChange = loadedChar.magicRacialChange !== undefined ? loadedChar.magicRacialChange : 0;
+                    newChar.racialHealthChange = loadedChar.racialHealthChange !== undefined ? loadedChar.racialHealthChange : 0;
+                    newChar.racialMagicChange = loadedChar.racialMagicChange !== undefined ? loadedChar.racialMagicChange : 0;
 
                     // Load Mutant specific properties
                     newChar.mutantMutations = loadedChar.mutantMutations || [];
@@ -485,8 +486,8 @@ function loadCharacterFromFile(event) {
                 // Load Demi-human specific properties
                 newChar.demiHumanStatChoices = loadedData.demiHumanStatChoices || [];
                 newChar.demiHumanStatsAffected = new Set(loadedData.demiHumanStatsAffected || []);
-                newChar.healthRacialChange = loadedData.healthRacialChange !== undefined ? loadedData.healthRacialChange : 0;
-                newChar.magicRacialChange = loadedData.magicRacialChange !== undefined ? loadedData.magicRacialChange : 0;
+                newChar.racialHealthChange = loadedData.racialHealthChange !== undefined ? loadedData.racialHealthChange : 0;
+                newChar.racialMagicChange = loadedData.racialMagicChange !== undefined ? loadedData.racialMagicChange : 0;
 
                 // Load Mutant specific properties
                 newChar.mutantMutations = loadedData.mutantMutations || [];
@@ -780,8 +781,8 @@ function handleChangeRace() {
     // Reset all manual passive choices and flags
     character.demiHumanStatChoices = [];
     character.demiHumanStatsAffected = new Set();
-    character.healthRacialChange = 0;
-    character.magicRacialChange = 0;
+    character.racialHealthChange = 0;
+    character.racialMagicChange = 0;
 
     character.mutantMutations = [];
     character.mutantDegenerations = [];
@@ -905,11 +906,12 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         character.demiHumanStatsAffected.delete(previousChoice.statName);
         // Reset racialChange for the previously chosen stat (if it was a stat affected by this choice)
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-            character[previousChoice.statName].racialChange = 0; // Reset to 0 for Demi-humans
+            // Subtract the previous modifier value to revert the change
+            character[previousChoice.statName].racialChange = ExternalDataManager.getRacialChange('Demi-humans', previousChoice.statName);
         } else if (previousChoice.statName === 'Health') {
-            character.healthRacialChange = 0;
+            character.racialHealthChange = 0;
         } else if (previousChoice.statName === 'Magic') {
-            character.magicRacialChange = 0;
+            character.racialMagicChange = 0;
         }
     }
 
@@ -937,11 +939,12 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
 
         // Apply the modifier to the chosen stat
         if (ExternalDataManager.rollStats.includes(selectedStatName)) {
+            // Add the new modifier value
             character[selectedStatName].racialChange = modifierValue;
         } else if (selectedStatName === 'Health') {
-            character.healthRacialChange = modifierValue;
+            character.racialHealthChange = modifierValue;
         } else if (selectedStatName === 'Magic') {
-            character.magicRacialChange = modifierValue;
+            character.racialMagicChange = modifierValue;
         }
     } else {
         // If the selected option is empty, remove the choice
@@ -1156,7 +1159,8 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
         if (previousChoice.statName) {
             character.mutantAffectedStats.delete(previousChoice.statName);
             if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-                character[previousChoice.statName].racialChange = 0; // Reset to 0 for Mutants
+                // Subtract the previous modifier value to revert the change
+                character[previousChoice.statName].racialChange = ExternalDataManager.getRacialChange('Mutant', previousChoice.statName);
             }
         }
         if (previousChoice.type === 'double_base_health') {
@@ -1194,6 +1198,7 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
             character.mutantAffectedStats.add(selectedStatName);
 
             if (ExternalDataManager.rollStats.includes(selectedStatName)) {
+                // Add the new modifier value
                 character[selectedStatName].racialChange = optionDetails.value;
             }
 
@@ -1241,7 +1246,8 @@ function attachClearMutantChoiceListeners() {
                 if (choiceToClear.statName) {
                     character.mutantAffectedStats.delete(choiceToClear.statName);
                     if (ExternalDataManager.rollStats.includes(choiceToClear.statName)) {
-                        character[choiceToClear.statName].racialChange = 0; // Reset to 0 for Mutants
+                        // Reset to the base racial change for Mutants
+                        character[choiceToClear.statName].racialChange = ExternalDataManager.getRacialChange('Mutant', choiceToClear.statName);
                     }
                 }
                 // Reset specific flags
@@ -2251,8 +2257,8 @@ async function loadGoogleDriveFileContent(fileId) {
 
                 newChar.demiHumanStatChoices = loadedChar.demiHumanStatChoices || [];
                 newChar.demiHumanStatsAffected = new Set(loadedChar.demiHumanStatsAffected || []); // Convert back to Set
-                newChar.healthRacialChange = loadedChar.healthRacialChange !== undefined ? loadedChar.healthRacialChange : 0;
-                newChar.magicRacialChange = loadedChar.magicRacialChange !== undefined ? loadedChar.magicRacialChange : 0;
+                newChar.racialHealthChange = loadedChar.racialHealthChange !== undefined ? loadedChar.racialHealthChange : 0;
+                newChar.racialMagicChange = loadedChar.racialMagicChange !== undefined ? loadedChar.racialMagicChange : 0;
 
                 newChar.mutantMutations = loadedChar.mutantMutations || [];
                 newChar.mutantDegenerations = loadedChar.mutantDegenerations || [];
@@ -2320,8 +2326,8 @@ async function loadGoogleDriveFileContent(fileId) {
 
             newChar.demiHumanStatChoices = loadedData.demiHumanStatChoices || [];
             newChar.demiHumanStatsAffected = new Set(loadedData.demiHumanStatsAffected || []);
-            newChar.healthRacialChange = loadedData.healthRacialChange !== undefined ? loadedData.healthRacialChange : 0;
-            newChar.magicRacialChange = loadedData.magicRacialChange !== undefined ? loadedData.magicRacialChange : 0;
+            newChar.racialHealthChange = loadedData.racialHealthChange !== undefined ? loadedData.racialHealthChange : 0;
+            newChar.racialMagicChange = loadedData.racialMagicChange !== undefined ? loadedData.racialMagicChange : 0;
 
             newChar.mutantMutations = loadedData.mutantMutations || [];
             newChar.mutantDegenerations = loadedData.mutantDegenerations || [];
