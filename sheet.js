@@ -1811,7 +1811,7 @@ function initPage() {
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
 
-    console.log(characters)
+    console.log("init page")
 }
 
 // Initialize the application when the DOM is fully loaded
