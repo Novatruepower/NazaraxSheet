@@ -13,7 +13,6 @@ export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
     _data: { Races:{}, Stats:{}, Roll:{}, Classes:{} },
 
-
     parsePercent(numberString) {
         return parseFloat(numberString.replace('%', '')) / 100;
     },
@@ -77,6 +76,34 @@ export const ExternalDataManager = {
                 });
             });
 
+            // Fetch and load manual_passives_data.json
+            const manualPassivesResponse = await fetch('./manual_passives_data.json');
+            const manualPassivesData = await manualPassivesResponse.json();
+
+            // Integrate manual passives data into _data.Races and _data.Classes
+            if (manualPassivesData.races) {
+                for (const raceName in manualPassivesData.races) {
+                    if (this._data['Races'][raceName]) {
+                        this._data['Races'][raceName]['manualPassives'] = manualPassivesData.races[raceName].manualPassives;
+                    } else {
+                        // If a race exists in manual_passives_data but not in the sheet, create a basic entry
+                        this._data['Races'][raceName] = { manualPassives: manualPassivesData.races[raceName].manualPassives };
+                    }
+                }
+            }
+
+            if (manualPassivesData.classes) {
+                for (const className in manualPassivesData.classes) {
+                    if (this._data['Classes'][className]) {
+                        this._data['Classes'][className]['manualPassives'] = manualPassivesData.classes[className].manualPassives;
+                    } else {
+                        // If a class exists in manual_passives_data but not in the sheet, create a basic entry
+                        this._data['Classes'][className] = { manualPassives: manualPassivesData.classes[className].manualPassives };
+                    }
+                }
+            }
+
+
             console.log("External data loaded successfully into ExternalDataManager.");
             console.log(this._data);
         } catch (error) {
@@ -100,10 +127,10 @@ export const ExternalDataManager = {
     },
 
     /**
-     * Retrieves all data associated with a specific race from the internal data.
-     * @param {string} className The name of the race (e.g., "Human", "Elf").
-     * @returns {Object|null} An object containing all data for the specified race,
-     * or null if the race is not found.
+     * Retrieves all data associated with a specific class from the internal data.
+     * @param {string} className The name of the class (e.g., "Brawler").
+     * @returns {Object|null} An object containing all data for the specified class,
+     * or null if the class is not found.
      */
     getClassData(className) {
         if (typeof this._data === 'undefined' || !this._data['Classes'].hasOwnProperty(className)) {
@@ -114,18 +141,16 @@ export const ExternalDataManager = {
     },
 
     /**
-     * Retrieves the racial multiplier for a specific stat of a given race from the internal data.
-     * @param {string} className The name of the race.
-     * @returns {number|null} The roll value for the stat, or null if not found.
+     * Retrieves the specializations for a specific class from the internal data.
+     * @param {string} className The name of the class.
+     * @returns {Array<string>|null} An array of specialization names, or null if not found.
      */
     getClassSpecs(className) {
         const classData = this.getClassData(className);
-
-        if (classData)
-            return classData['Specs'];
-
-        console.warn(`ExternalDataManager: Stat roll for "${statName}" in race "${raceName}" not found.`);
-
+        if (classData && classData.Specs) {
+            return classData.Specs;
+        }
+        console.warn(`ExternalDataManager: Specializations for class "${className}" not found.`);
         return null;
     },
 
@@ -180,15 +205,29 @@ export const ExternalDataManager = {
         return null;
     },
 
-    // You can add more helper methods here as needed, for example:
-    // getOtherRaceSpecificProperty(raceName, propertyPath) { ... }
-};
+    /**
+     * Retrieves the manual passive choices for a specific race.
+     * @param {string} raceName The name of the race.
+     * @returns {Object|null} The manual passive choices object for the race, or null if not found.
+     */
+    getRaceManualPassives(raceName) {
+        const raceData = this.getRaceData(raceName);
+        if (raceData && raceData.manualPassives) {
+            return raceData.manualPassives;
+        }
+        return null;
+    },
 
-// Example of how to initialize and use it:
-// In your main application logic (e.g., in window.onload or your app's main async function):
-// (async () => {
-//     await ExternalDataManager.init();
-//     // Now you can safely use ExternalDataManager's getters and methods
-//     console.log("Roll Stats:", ExternalDataManager.rollStats);
-//     console.log("Human Health Multiplier:", ExternalDataManager.getRaceHealthMultiplier("Human"));
-// })();
+    /**
+     * Retrieves the manual passive choices for a specific class.
+     * @param {string} className The name of the class.
+     * @returns {Object|null} The manual passive choices object for the class, or null if not found.
+     */
+    getClassManualPassives(className) {
+        const classData = this.getClassData(className);
+        if (classData && classData.manualPassives) {
+            return classData.manualPassives;
+        }
+        return null;
+    }
+};

@@ -1,5 +1,5 @@
 const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
-const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tWKgqCN4cjTGg';
+const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqgqCN4cjTGg';
 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
@@ -15,6 +15,12 @@ let currentGoogleDriveFileId = null; // To store the ID of the currently loaded 
 
 const defaultStatMaxExperience = 7;
 
+// List of all applicable stats for racial changes, including Health and Magic
+const APPLICABLE_STATS = [
+    'Health', 'Magic', // Special cases for Health and Magic Points
+    'Strength', 'Agility', 'Magic', 'Luck', 'Crafting', 'Intelligence', 'Intimidation', 'Charisma', 'Negotiation'
+];
+
 // Function to calculate max experience for a given level
 function calculateLevelMaxExperience(level) {
     return 100;
@@ -22,13 +28,29 @@ function calculateLevelMaxExperience(level) {
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
-    const healthChange = ExternalDataManager.getRaceHealthChange(race) || 1.00; // Default to 1 if race not found
-    return Math.floor(100 * healthChange * level) + (healthBonus || 0); // Add healthBonus
+    let baseHealth = 100;
+
+    // Apply Mutant's "Doubling your base max health" if active
+    if (race === 'Mutant' && character && character.baseMaxHealthDoubled) {
+        baseHealth = 150; // Doubling the base 75 value mentioned in the doc (75 * 2 = 150)
+    }
+
+    // Get the racial health change from manual passives (for Demi-humans) or ExternalDataManager (for others)
+    let racialHealthChange = 0;
+    if (race === 'Demi-humans' && character && character.healthRacialChange !== undefined) {
+        racialHealthChange = character.healthRacialChange;
+    } else {
+        racialHealthChange = ExternalDataManager.getRaceHealthChange(race) || 0; // ExternalDataManager returns a percentage change (e.g., 0.25)
+    }
+
+    return Math.floor(baseHealth * (1 + racialHealthChange) * level) + (healthBonus || 0);
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMagic(level) {
-    return level * 100;
+    // Get the racial magic change from manual passives (for Demi-humans)
+    const magicChange = (character && character.magicRacialChange !== undefined) ? character.magicRacialChange : 0; // Default to 0 if not Demi-human or not set
+    return Math.floor(level * 100 * (1 + magicChange)); // Apply magicChange as a multiplier
 }
 
 // Function to calculate max racial power based on level
@@ -45,9 +67,8 @@ function roll(min, max) {
 const maxRollStat = 20;
 const minRollStat = 6;
 
-const defaultCharacterData = function() { 
+const defaultCharacterData = function() {
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
-    const raceHealthChange = ExternalDataManager.getRaceHealthChange(firstRace);
 
     let newCharacter = ({
         name: '',
@@ -57,22 +78,20 @@ const defaultCharacterData = function() {
         level: 1,
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
-        hp: 100 * raceHealthChange,
-        maxHp: 100 * raceHealthChange,
+        hp: 0, // Will be calculated dynamically
+        maxHp: 0, // Will be calculated dynamically
         healthBonus: 0,
-        currentMagicPoints: 100,
-        maxMagicPoints: 100,
+        currentMagicPoints: 0, // Will be calculated dynamically
+        maxMagicPoints: 0, // Will be calculated dynamically
         racialPower: 100,
         maxRacialPower: 100,
         ac: 0,
         armorBonus: 0,
         skills: '',
         personalNotes: '',
-        // New inventory sections
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
-        // Section visibility states - NEW
         sectionVisibility: {
             'basic-info-content': true,
             'player-stats-content': true,
@@ -81,14 +100,47 @@ const defaultCharacterData = function() {
             'weapon-inventory-content': true,
             'armor-inventory-content': true,
             'general-inventory-content': true,
-        }
+            'racial-passives-content': true, // Make racial passives section visible by default
+        },
+        // New properties for Demi-human stat choices
+        demiHumanStatChoices: [], // Stores { statName: 'Strength', modifier: 0.25, slotId: '...' }
+        demiHumanStatsAffected: new Set(), // Stores names of stats already chosen by Demi-human modifiers
+        healthRacialChange: 0, // Initial racial change for health, will be set by Demi-human player choice
+        magicRacialChange: 0, // Initial racial change for magic, will be set by Demi-human player choice
+
+        // New properties for Mutant stat choices
+        mutantMutations: [], // Stores { type: 'stat_multiplier_50', statName: 'Strength', level: 1, slotId: '...' }
+        mutantDegenerations: [], // Stores { statName: 'Agility', level: 1, slotId: '...' }
+        mutantAffectedStats: new Set(), // Stores names of stats affected by Mutant mutations/degenerations
+        baseMaxHealthDoubled: false, // Flag for Mutant's "Doubling your base max health"
+        naturalHealthRegenActive: false, // Placeholder for Mutant regen
+        naturalManaRegenActive: false, // Placeholder for Mutant regen
+        healthRegenDoubled: false, // Placeholder for Mutant regen
+        manaRegenDoubled: false, // Placeholder for Mutant regen
     });
 
+    // Initialize each stat with its rolled value, racial change, and calculated total
     ExternalDataManager.rollStats.forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
-        newCharacter[statName] = { value: result, racialChange: ExternalDataManager.getRacialChange(newCharacter.race, statName), equipment: 0, temporary: 0,
-             experience: 0, maxExperience: defaultStatMaxExperience, total: result };
+        // For Demi-humans and Mutants, initial racialChange is 0, as they gain changes via choices
+        // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
+        const initialRacialChange = (newCharacter.race === 'Demi-humans' || newCharacter.race === 'Mutant') ? 0 : ExternalDataManager.getRacialChange(newCharacter.race, statName);
+        newCharacter[statName] = {
+            value: result,
+            racialChange: initialRacialChange, // This will be 0 for Demi-humans/Mutants initially, or the fixed percentage for others
+            equipment: 0,
+            temporary: 0,
+            experience: 0,
+            maxExperience: defaultStatMaxExperience,
+            total: result * (1 + initialRacialChange) // Initial total calculation
+        };
     });
+
+    // Calculate initial HP and Magic based on the default race
+    newCharacter.maxHp = calculateMaxHealth(newCharacter.race, newCharacter.level, newCharacter.healthBonus);
+    newCharacter.hp = newCharacter.maxHp;
+    newCharacter.maxMagicPoints = calculateMaxMagic(newCharacter.level);
+    newCharacter.currentMagicPoints = newCharacter.maxMagicPoints;
 
     return newCharacter;
 };
@@ -110,6 +162,16 @@ const MAX_HISTORY_LENGTH = 10; // Store last 10 states
 function saveCurrentStateToHistory() {
     // Deep copy the entire characters array to save its state
     const currentState = JSON.parse(JSON.stringify(characters));
+
+    // Convert Sets to Arrays for saving
+    currentState.forEach(char => {
+        if (char.demiHumanStatsAffected instanceof Set) {
+            char.demiHumanStatsAffected = Array.from(char.demiHumanStatsAffected);
+        }
+        if (char.mutantAffectedStats instanceof Set) {
+            char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
+        }
+    });
 
     // If the history pointer is not at the end, it means we reverted and are now making a new change.
     // In this case, discard all "future" states from the current pointer onwards.
@@ -140,7 +202,7 @@ const character = new Proxy({}, {
             characters[currentCharacterIndex][prop] = value;
             hasUnsavedChanges = true; // Mark that there are unsaved changes
         }
-        
+
         // If the character name changes, update the selector
         if (prop === 'name') {
             populateCharacterSelector();
@@ -151,25 +213,25 @@ const character = new Proxy({}, {
 
 // Mapping for common terms to character properties for formula evaluation
 const statMapping = {
-"Strength": "strength-total",
-"Agility": "agility-total",
-"Magic": "magic-total",
-"Luck": "luck-total",
-"Crafting": "crafting-total",
-"Intelligence": "intelligence-total",
-"Intimidation": "intimidation-total",
-"Charisma": "charisma-total",
-"Negotiation": "negotiation-total",
-"HP": "hp",
-"Health": "hp",
-"MaxHP": "maxHp",
-"MaxHealth": "maxHp",
-"MagicPoints": "currentMagicPoints",
-"MaxMagicPoints": "maxMagicPoints",
-"RacialPower": "racialPower",
-"MaxRacialPower": "maxRacialPower",
-"AC": "ac",
-"Armor": "ac"
+    "Strength": "strength-total",
+    "Agility": "agility-total",
+    "Magic": "magic-total",
+    "Luck": "luck-total",
+    "Crafting": "crafting-total",
+    "Intelligence": "intelligence-total",
+    "Intimidation": "intimidation-total",
+    "Charisma": "charisma-total",
+    "Negotiation": "negotiation-total",
+    "HP": "hp",
+    "Health": "hp",
+    "MaxHP": "maxHp",
+    "MaxHealth": "maxHp",
+    "MagicPoints": "currentMagicPoints",
+    "MaxMagicPoints": "maxMagicPoints",
+    "RacialPower": "racialPower",
+    "MaxRacialPower": "maxRacialPower",
+    "AC": "ac",
+    "Armor": "ac"
 };
 
 
@@ -178,41 +240,78 @@ function calculateTotal(statName) {
     const stat = character[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
     const value = parseFloat(stat.value) || 0;
-    const racialChange = parseFloat(stat.racialChange) || 0;
+    // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
+    const racialChange = getAppliedRacialChange(statName);
     const equipment = parseFloat(stat.equipment) || 0;
     const temporary = parseFloat(stat.temporary) || 0;
 
-    // Calculate total based on the formula: Value * Racial change + Equipment + Temporary
-    return value * racialChange + equipment + temporary;
+    // Calculate total based on the formula: Value * (1 + Racial change) + Equipment + Temporary
+    return value * (1 + racialChange) + equipment + temporary;
 }
+
+// Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
+function getAppliedRacialChange(statName) {
+    let totalRacialChange = 0;
+
+    if (character.race === 'Demi-humans') {
+        const choice = character.demiHumanStatChoices.find(c => c.statName === statName);
+        if (choice) {
+            totalRacialChange += choice.modifier;
+        }
+        // Health and Magic are special cases and stored directly in character object for Demi-humans
+        if (statName === 'Health' && character.healthRacialChange !== undefined) {
+            totalRacialChange += character.healthRacialChange;
+        }
+        if (statName === 'Magic' && character.magicRacialChange !== undefined) {
+            totalRacialChange += character.magicRacialChange;
+        }
+    } else if (character.race === 'Mutant') {
+        // Check for stat multiplier mutations
+        const mutantStatMutation = character.mutantMutations.find(m => m.type === 'stat_multiplier_set_50' && m.statName === statName);
+        if (mutantStatMutation) {
+            totalRacialChange += mutantStatMutation.value; // This value is already a percentage change (e.g., 0.50)
+        }
+        // Check for stat degeneration
+        const mutantDegeneration = character.mutantDegenerations.find(d => d.statName === statName);
+        if (mutantDegeneration) {
+            totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
+        }
+    } else {
+        // For other races, get the racial change from ExternalDataManager
+        // ExternalDataManager.getRacialChange returns the percentage change (e.g., 0.25 for +25%)
+        totalRacialChange = character[statName] ? character[statName].racialChange : 0;
+    }
+    return totalRacialChange;
+}
+
 
 // Then use a function like this to fetch the actual value from the document
 function getStatValue(statLabel) {
-const elementId = statMapping[statLabel];
-if (!elementId) return '';
-const el = document.getElementById(elementId);
-if (!el) return '';
-return parseFloat(el.value) || 0;
+    const elementId = statMapping[statLabel];
+    if (!elementId) return '';
+    const el = document.getElementById(elementId);
+    if (!el) return '';
+    return parseFloat(el.value) || 0;
 }
 
 // Updated calculateFormula to perform regex replace using statMapping
 function calculateFormula(formulaString) {
-if (typeof formulaString !== 'string') return formulaString != null ? formulaString : '';
+    if (typeof formulaString !== 'string') return formulaString != null ? formulaString : '';
 
-// Replace all mapped keys in the formula with actual values from the DOM
-let parsedFormula = formulaString;
-for (const [label, id] of Object.entries(statMapping)) {
-    const value = getStatValue(label);
-    const regex = new RegExp(`\\b${label}\\b`, 'gi');
-    parsedFormula = parsedFormula.replace(regex, value);
-}
+    // Replace all mapped keys in the formula with actual values from the DOM
+    let parsedFormula = formulaString;
+    for (const [label, id] of Object.entries(statMapping)) {
+        const value = getStatValue(label);
+        const regex = new RegExp(`\\b${label}\\b`, 'gi');
+        parsedFormula = parsedFormula.replace(regex, value);
+    }
 
-try {
-    return eval(parsedFormula); // Note: `eval` can be dangerous; sanitize input if needed
-} catch (error) {
-    console.warn(`Error evaluating formula: ${formulaString}`, error);
-    return parsedFormula;
-}
+    try {
+        return eval(parsedFormula); // Note: `eval` can be dangerous; sanitize input if needed
+    } catch (error) {
+        console.warn(`Error evaluating formula: ${formulaString}`, error);
+        return parsedFormula;
+    }
 }
 
 
@@ -229,6 +328,13 @@ function saveCharacterToFile() {
                 char[statName] = rest; // Assign the object without maxExperience and total
             }
         });
+        // Convert Set to Array for saving
+        if (char.demiHumanStatsAffected instanceof Set) {
+            char.demiHumanStatsAffected = Array.from(char.demiHumanStatsAffected);
+        }
+        if (char.mutantAffectedStats instanceof Set) {
+            char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
+        }
         // Exclude calculated properties (maxHp, maxMagicPoints, maxRacialPower, ac) from the saved data
         delete char.maxHp;
         delete char.maxMagicPoints;
@@ -279,7 +385,10 @@ function loadCharacterFromFile(event) {
                                         ...newChar[key],
                                         ...loadedChar[key]
                                     };
-                                    newChar[key].total = calculateTotal(key); // Recalculate total
+                                    // Recalculate total for loaded stats
+                                    if (ExternalDataManager.rollStats.includes(key)) {
+                                        newChar[key].total = calculateTotal(key);
+                                    }
                                     if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                         newChar[key].maxExperience = defaultStatMaxExperience;
                                     }
@@ -288,7 +397,9 @@ function loadCharacterFromFile(event) {
                                         ...newChar[key],
                                         value: parseFloat(loadedChar[key]) || newChar[key].value
                                     };
-                                    newChar[key].total = calculateTotal(key);
+                                    if (ExternalDataManager.rollStats.includes(key)) {
+                                        newChar[key].total = calculateTotal(key);
+                                    }
                                 }
                             } else {
                                 newChar[key] = loadedData[key];
@@ -301,6 +412,22 @@ function loadCharacterFromFile(event) {
                     newChar.generalInventory = loadedChar.generalInventory || [];
                     // Handle section visibility - UPDATED
                     newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
+
+                    // Load Demi-human specific properties
+                    newChar.demiHumanStatChoices = loadedChar.demiHumanStatChoices || [];
+                    newChar.demiHumanStatsAffected = new Set(loadedChar.demiHumanStatsAffected || []);
+                    newChar.healthRacialChange = loadedChar.healthRacialChange !== undefined ? loadedChar.healthRacialChange : 0;
+                    newChar.magicRacialChange = loadedChar.magicRacialChange !== undefined ? loadedChar.magicRacialChange : 0;
+
+                    // Load Mutant specific properties
+                    newChar.mutantMutations = loadedChar.mutantMutations || [];
+                    newChar.mutantDegenerations = loadedChar.mutantDegenerations || [];
+                    newChar.mutantAffectedStats = new Set(loadedChar.mutantAffectedStats || []);
+                    newChar.baseMaxHealthDoubled = loadedChar.baseMaxHealthDoubled || false;
+                    newChar.naturalHealthRegenActive = loadedChar.naturalHealthRegenActive || false;
+                    newChar.naturalManaRegenActive = loadedChar.naturalManaRegenActive || false;
+                    newChar.healthRegenDoubled = loadedChar.healthRegenDoubled || false;
+                    newChar.manaRegenDoubled = loadedChar.manaRegenDoubled || false;
 
 
                     // Initialize originalDamage/originalMagicDamage if not present in loaded data
@@ -338,7 +465,9 @@ function loadCharacterFromFile(event) {
                                     ...newChar[key],
                                     ...loadedData[key]
                                 };
-                                newChar[key].total = calculateTotal(key);
+                                if (ExternalDataManager.rollStats.includes(key)) {
+                                    newChar[key].total = calculateTotal(key);
+                                }
                                 if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                     newChar[key].maxExperience = defaultStatMaxExperience;
                                 }
@@ -347,7 +476,9 @@ function loadCharacterFromFile(event) {
                                     ...newChar[key],
                                     value: parseFloat(loadedData[key]) || newChar[key].value
                                 };
-                                newChar[key].total = calculateTotal(key);
+                                if (ExternalDataManager.rollStats.includes(key)) {
+                                    newChar[key].total = calculateTotal(key);
+                                }
                             }
                         } else {
                             newChar[key] = loadedData[key];
@@ -361,7 +492,22 @@ function loadCharacterFromFile(event) {
                 // Handle section visibility - UPDATED
                 newChar.sectionVisibility = loadedData.sectionVisibility || defaultCharacterData().sectionVisibility;
 
-                // Initialize originalDamage/originalMagicDamage if not present in loaded data
+                // Load Demi-human specific properties
+                newChar.demiHumanStatChoices = loadedData.demiHumanStatChoices || [];
+                newChar.demiHumanStatsAffected = new Set(loadedData.demiHumanStatsAffected || []);
+                newChar.healthRacialChange = loadedData.healthRacialChange !== undefined ? loadedData.healthRacialChange : 0;
+                newChar.magicRacialChange = loadedData.magicRacialChange !== undefined ? loadedData.magicRacialChange : 0;
+
+                // Load Mutant specific properties
+                newChar.mutantMutations = loadedData.mutantMutations || [];
+                newChar.mutantDegenerations = loadedData.mutantDegenerations || [];
+                newChar.mutantAffectedStats = new Set(loadedData.mutantAffectedStats || []);
+                newChar.baseMaxHealthDoubled = loadedData.baseMaxHealthDoubled || false;
+                newChar.naturalHealthRegenActive = loadedData.naturalHealthRegenActive || false;
+                newChar.naturalManaRegenActive = loadedData.naturalManaRegenActive || false;
+                newChar.healthRegenDoubled = loadedData.healthRegenDoubled || false;
+                newChar.manaRegenDoubled = loadedData.manaRegenDoubled || false;
+
                 newChar.weaponInventory.forEach(weapon => {
                     if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
                     if (typeof weapon.originalMagicDamage === 'undefined') weapon.magicDamage = weapon.magicDamage;
@@ -447,6 +593,9 @@ function updateDOM() {
     // Update Specialization dropdown
     updateSpecializationDropdownAndData();
 
+    // Render racial passives based on selected race
+    renderRacialPassives();
+
 
     // Player Stats
     const playerStatsContainer = document.getElementById('player-stats-container').querySelector('tbody');
@@ -462,7 +611,7 @@ function updateDOM() {
                 <input type="number" id="${statName}-value" name="${statName}-value" min="0" value="${statData.value}" class="stat-input" />
             </td>
             <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${statData.racialChange}" class="stat-input" />
+                <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(statName)}" readonly class="stat-input" />
             </td>
             <td class="px-2 py-1 whitespace-nowrap">
                 <input type="number" id="${statName}-equipment" name="${statName}-equipment" value="${statData.equipment}" class="stat-input" />
@@ -478,7 +627,7 @@ function updateDOM() {
                 </div>
             </td>
             <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-total" name="${statName}-total" value="${statData.total}" readonly class="stat-input" />
+                <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(statName)}" readonly class="stat-input" />
             </td>
         `;
         playerStatsContainer.appendChild(row);
@@ -528,8 +677,7 @@ function quickTd(element, type, isClosed, dataInventoryType, dataField, dataInde
             string += ` value="${value}">`;
         else
             string += ` ${value}>`;
-    }
-    else 
+    } else
         string += `>${value}</${element}>`
 
 
@@ -637,29 +785,542 @@ function quickRollStats() {
     saveCurrentStateToHistory(); // Save state after modification
 }
 
-// Function to perform a quick roll for all player stats
+// Function to handle race change, updating racial characteristics
 function handleChangeRace() {
-    // Update maxHp when race changes
-    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
-    //character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
-    document.getElementById('maxHp').value = character.maxHp;
-    document.getElementById('hp').value = character.maxHp;
+    // Reset all manual passive choices and flags
+    character.demiHumanStatChoices = [];
+    character.demiHumanStatsAffected = new Set();
+    character.healthRacialChange = 0;
+    character.magicRacialChange = 0;
 
+    character.mutantMutations = [];
+    character.mutantDegenerations = [];
+    character.mutantAffectedStats = new Set();
+    character.baseMaxHealthDoubled = false;
+    character.naturalHealthRegenActive = false;
+    character.naturalManaRegenActive = false;
+    character.healthRegenDoubled = false;
+    character.manaRegenDoubled = false;
+
+    // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
-
-        character[statName].racialChange = ExternalDataManager.getRacialChange(character.race, statName);
-
-        // Recalculate total for the updated stat
+        // For Demi-humans and Mutants, initial racialChange is 0, as they gain changes via choices
+        // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
+        const initialRacialChange = (character.race === 'Demi-humans' || character.race === 'Mutant') ? 0 : ExternalDataManager.getRacialChange(character.race, statName);
+        character[statName].racialChange = initialRacialChange;
         character[statName].total = calculateTotal(statName);
-
-        // Update the DOM for racialChange and total immediately
-        document.getElementById(`${statName}-racialChange`).value = character[statName].racialChange;
+        document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(statName); // Use getAppliedRacialChange for display
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
+
+    // Update maxHp, maxMagicPoints and maxRacialPower when race changes
+    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
+    document.getElementById('maxHp').value = character.maxHp;
+    document.getElementById('hp').value = character.hp;
+
+    character.maxMagicPoints = calculateMaxMagic(character.level);
+    character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
+    document.getElementById('maxMagicPoints').value = character.maxMagicPoints;
+    document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
+
+    character.maxRacialPower = calculateMaxRacialPower(character.level);
+    character.racialPower = Math.min(character.racialPower, character.maxRacialPower); // Adjust current Racial Power if it exceeds new max
+    document.getElementById('maxRacialPower').value = character.maxRacialPower;
+    document.getElementById('racialPower').value = character.racialPower;
+
+    // Re-render the racial passives UI
+    renderRacialPassives();
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
+
+/**
+ * Renders the UI for Demi-human specific stat choices.
+ * This function creates and updates the dropdowns for applying stat modifiers.
+ */
+function renderDemiHumanStatChoiceUI() {
+    const demiHumanChoicesContainer = document.getElementById('demi-human-choices-container');
+    if (!demiHumanChoicesContainer) return; // Ensure the container exists
+
+    const demiHumanPassives = ExternalDataManager.getRaceManualPassives('Demi-humans');
+
+    if (character.race === 'Demi-humans' && demiHumanPassives && demiHumanPassives.choices) {
+        demiHumanChoicesContainer.classList.remove('hidden');
+        demiHumanChoicesContainer.innerHTML = `
+            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Demi-human Stat Adjustments</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${demiHumanPassives.description}</p>
+            <div id="demi-human-modifiers-list" class="space-y-3">
+                <!-- Modifiers will be dynamically added here -->
+            </div>
+        `;
+
+        const modifiersList = document.getElementById('demi-human-modifiers-list');
+
+        demiHumanPassives.choices.forEach((modifier, modIndex) => {
+            for (let i = 0; i < modifier.count; i++) {
+                const slotId = `demihuman-${modifier.type}-${modIndex}-${i}`; // Unique ID for each choice slot
+                const currentChoice = character.demiHumanStatChoices.find(c => c.slotId === slotId); // Find by slotId
+                const selectedStatName = currentChoice ? currentChoice.statName : '';
+
+                const choiceDiv = document.createElement('div');
+                choiceDiv.className = 'flex items-center space-x-2';
+                choiceDiv.innerHTML = `
+                    <label for="${slotId}" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-36">${modifier.label}</label>
+                    <select id="${slotId}" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Select a Stat --</option>
+                    </select>
+                    ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
+                `;
+                modifiersList.appendChild(choiceDiv);
+
+                const selectElement = choiceDiv.querySelector(`#${slotId}`);
+                modifier.applicableStats.forEach(statName => {
+                    const option = document.createElement('option');
+                    option.value = statName;
+                    option.textContent = statName;
+                    // Disable if already chosen by another slot, or if this is not the currently selected stat for this slot
+                    const isAlreadyChosen = character.demiHumanStatsAffected.has(statName) && statName !== selectedStatName;
+                    option.disabled = isAlreadyChosen;
+                    selectElement.appendChild(option);
+                });
+                selectElement.value = selectedStatName;
+
+                // Add event listener
+                selectElement.addEventListener('change', (e) => {
+                    handleDemiHumanStatChoice(slotId, modifier.value, e.target.value);
+                });
+            }
+        });
+    } else {
+        demiHumanChoicesContainer.classList.add('hidden');
+        demiHumanChoicesContainer.innerHTML = ''; // Clear content when hidden
+    }
+    attachClearDemiHumanChoiceListeners(); // Attach listeners for clear buttons
+}
+
+/**
+ * Handles the selection of a stat for a Demi-human racial modifier.
+ * @param {string} slotId The unique ID of the choice slot.
+ * @param {number} modifierValue The numerical value of the modifier (e.g., 0.25).
+ * @param {string} selectedStatName The name of the stat chosen by the player.
+ */
+function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
+    const previousChoiceIndex = character.demiHumanStatChoices.findIndex(c => c.slotId === slotId);
+    const previousChoice = previousChoiceIndex !== -1 ? character.demiHumanStatChoices[previousChoiceIndex] : null;
+
+    // If a stat was previously selected for this slot, remove it from affected list
+    if (previousChoice && previousChoice.statName) {
+        character.demiHumanStatsAffected.delete(previousChoice.statName);
+        // Reset racialChange for the previously chosen stat (if it was a stat affected by this choice)
+        if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
+            character[previousChoice.statName].racialChange = 0; // Reset to 0 for Demi-humans
+        } else if (previousChoice.statName === 'Health') {
+            character.healthRacialChange = 0;
+        } else if (previousChoice.statName === 'Magic') {
+            character.magicRacialChange = 0;
+        }
+    }
+
+    // If a new stat is selected (not empty option)
+    if (selectedStatName) {
+        // Check if the newly selected stat is already affected by another choice
+        if (character.demiHumanStatsAffected.has(selectedStatName)) {
+            showStatusMessage(`'${selectedStatName}' has already been chosen for another racial modifier. Please select a different stat.`, true);
+            // Revert the dropdown to its previous selection or empty
+            const selectElement = document.getElementById(slotId);
+            if (selectElement) {
+                selectElement.value = previousChoice ? previousChoice.statName : '';
+            }
+            return;
+        }
+
+        // Add the new choice
+        const newChoice = { slotId, statName: selectedStatName, modifier: modifierValue };
+        if (previousChoice) {
+            Object.assign(previousChoice, newChoice); // Update existing choice
+        } else {
+            character.demiHumanStatChoices.push(newChoice); // Add new choice
+        }
+        character.demiHumanStatsAffected.add(selectedStatName);
+
+        // Apply the modifier to the chosen stat
+        if (ExternalDataManager.rollStats.includes(selectedStatName)) {
+            character[selectedStatName].racialChange = modifierValue;
+        } else if (selectedStatName === 'Health') {
+            character.healthRacialChange = modifierValue;
+        } else if (selectedStatName === 'Magic') {
+            character.magicRacialChange = modifierValue;
+        }
+    } else {
+        // If the selected option is empty, remove the choice
+        character.demiHumanStatChoices = character.demiHumanStatChoices.filter(c => c.slotId !== slotId);
+    }
+
+    // Recalculate derived properties that depend on racial changes
+    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.hp = Math.min(character.hp, character.maxHp);
+    character.maxMagicPoints = calculateMaxMagic(character.level);
+    character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
+
+    // Update the UI to reflect changes (e.g., disable/enable options)
+    updateDOM(); // Re-render the entire DOM to update all stat totals and choice dropdowns
+    hasUnsavedChanges = true;
+    saveCurrentStateToHistory();
+}
+
+/**
+ * Attaches event listeners to the dynamically created clear buttons for Demi-human stat choices.
+ */
+function attachClearDemiHumanChoiceListeners() {
+    document.querySelectorAll('.clear-demi-human-choice-btn').forEach(button => {
+        button.onclick = (event) => {
+            const choiceId = event.target.dataset.choiceId;
+            const selectElement = document.getElementById(choiceId);
+            if (selectElement) {
+                selectElement.value = ''; // Set dropdown to empty
+                // Manually trigger the change event to clear the choice
+                selectElement.dispatchEvent(new Event('change'));
+            }
+        };
+    });
+}
+
+/**
+ * Renders the UI for Mutant specific stat choices (Mutation and Degeneration).
+ */
+function renderMutantChoiceUI() {
+    const mutantChoicesContainer = document.getElementById('mutant-choices-container');
+    if (!mutantChoicesContainer) return;
+
+    const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
+
+    if (character.race === 'Mutant' && mutantPassives && mutantPassives.abilities) {
+        mutantChoicesContainer.classList.remove('hidden');
+        mutantChoicesContainer.innerHTML = `
+            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Mutant Abilities: Mutation & Degeneration</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${mutantPassives.description}</p>
+            <div id="mutant-abilities-list" class="space-y-4">
+                <!-- Mutation and Degeneration choices will be dynamically added here -->
+            </div>
+        `;
+
+        const abilitiesList = document.getElementById('mutant-abilities-list');
+        const currentLevel = character.level;
+
+        // Helper to get available points for a type at current level
+        const getAvailablePoints = (abilityType) => {
+            const levels = mutantPassives.abilities[abilityType].levels;
+            const levelKeys = Object.keys(levels).map(Number).sort((a, b) => a - b);
+            let points = 0;
+            for (const levelThreshold of levelKeys) {
+                if (currentLevel >= levelThreshold) {
+                    points = levels[levelThreshold];
+                } else {
+                    break;
+                }
+            }
+            return points;
+        };
+
+        // Render Mutation choices
+        const maxMutations = getAvailablePoints('Mutation');
+        const mutationOptions = mutantPassives.abilities.Mutation.options;
+
+        for (let i = 0; i < maxMutations; i++) {
+            const slotId = `mutant-mutation-${i}`;
+            const currentMutation = character.mutantMutations.find(m => m.slotId === slotId);
+            const selectedOptionType = currentMutation ? currentMutation.type : '';
+            const selectedStatName = currentMutation && currentMutation.statName ? currentMutation.statName : '';
+
+            const mutationDiv = document.createElement('div');
+            mutationDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+            mutationDiv.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Mutation ${i + 1}:</label>
+                    <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Select Mutation Type --</option>
+                        ${mutationOptions.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${opt.type === 'skill_choice' || opt.type === 'natural_regen_active' || opt.type === 'regen_doubled' ? 'disabled' : ''}>${opt.label}</option>`).join('')}
+                    </select>
+                </div>
+                <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' ? '' : 'hidden'}">
+                    <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                    <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Select a Stat --</option>
+                    </select>
+                </div>
+                ${currentMutation ? `<button type="button" data-slot-id="${slotId}" data-ability-type="Mutation" class="clear-mutant-choice-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
+            `;
+            abilitiesList.appendChild(mutationDiv);
+
+            const typeSelect = mutationDiv.querySelector(`#${slotId}-type`);
+            const statSelectionDiv = mutationDiv.querySelector(`#${slotId}-stat-selection`);
+            const statSelect = mutationDiv.querySelector(`#${slotId}-stat`);
+
+            // Populate stat dropdown if type is 'stat_multiplier_set_50'
+            if (selectedOptionType === 'stat_multiplier_set_50') {
+                const applicableStats = mutationOptions.find(opt => opt.type === 'stat_multiplier_set_50').applicableStats;
+                applicableStats.forEach(statName => {
+                    const option = document.createElement('option');
+                    option.value = statName;
+                    option.textContent = statName;
+                    const isAlreadyChosen = character.mutantAffectedStats.has(statName) && statName !== selectedStatName;
+                    option.disabled = isAlreadyChosen;
+                    statSelect.appendChild(option);
+                });
+                statSelect.value = selectedStatName;
+            }
+
+            // Event listener for type change (to show/hide stat selection)
+            typeSelect.addEventListener('change', (e) => {
+                const newType = e.target.value;
+                if (newType === 'stat_multiplier_set_50') {
+                    statSelectionDiv.classList.remove('hidden');
+                    // Repopulate stat dropdown for this specific select
+                    statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
+                    const applicableStats = mutationOptions.find(opt => opt.type === 'stat_multiplier_set_50').applicableStats;
+                    applicableStats.forEach(statName => {
+                        const option = document.createElement('option');
+                        option.value = statName;
+                        option.textContent = statName;
+                        const isAlreadyChosen = character.mutantAffectedStats.has(statName) && statName !== statSelect.value; // Check against current value of *this* select
+                        option.disabled = isAlreadyChosen;
+                        statSelect.appendChild(option);
+                    });
+                    statSelect.value = selectedStatName; // Keep current selection if valid
+                } else {
+                    statSelectionDiv.classList.add('hidden');
+                    statSelect.value = ''; // Clear stat selection if type changes away from stat
+                }
+                handleMutantChoice(slotId, 'Mutation', newType, statSelect.value);
+            });
+
+            // Event listener for stat change
+            statSelect.addEventListener('change', (e) => {
+                handleMutantChoice(slotId, 'Mutation', typeSelect.value, e.target.value);
+            });
+        }
+
+        // Render Degeneration choices
+        const maxDegenerations = getAvailablePoints('Degeneration');
+        const degenerationOptions = mutantPassives.abilities.Degeneration.options;
+
+        for (let i = 0; i < maxDegenerations; i++) {
+            const slotId = `mutant-degeneration-${i}`;
+            const currentDegeneration = character.mutantDegenerations.find(d => d.slotId === slotId);
+            const selectedStatName = currentDegeneration ? currentDegeneration.statName : '';
+
+            const degenerationDiv = document.createElement('div');
+            degenerationDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+            degenerationDiv.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Degeneration ${i + 1}:</label>
+                    <select id="${slotId}-stat" class="mutant-degeneration-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Select a Stat --</option>
+                    </select>
+                </div>
+                ${selectedStatName ? `<button type="button" data-slot-id="${slotId}" data-ability-type="Degeneration" class="clear-mutant-choice-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
+            `;
+            abilitiesList.appendChild(degenerationDiv);
+
+            const statSelect = degenerationDiv.querySelector(`#${slotId}-stat`);
+            const applicableStats = degenerationOptions.find(opt => opt.type === 'stat_multiplier_reduce_50').applicableStats;
+            applicableStats.forEach(statName => {
+                const option = document.createElement('option');
+                option.value = statName;
+                option.textContent = statName;
+                const isAlreadyChosen = character.mutantAffectedStats.has(statName) && statName !== selectedStatName;
+                option.disabled = isAlreadyChosen;
+                statSelect.appendChild(option);
+            });
+            statSelect.value = selectedStatName;
+
+            // Event listener for stat change
+            statSelect.addEventListener('change', (e) => {
+                handleMutantChoice(slotId, 'Degeneration', 'stat_multiplier_reduce_50', e.target.value);
+            });
+        }
+
+    } else {
+        mutantChoicesContainer.classList.add('hidden');
+        mutantChoicesContainer.innerHTML = ''; // Clear content when hidden
+    }
+    attachClearMutantChoiceListeners(); // Attach listeners for clear buttons
+}
+
+/**
+ * Handles the selection of a stat for a Mutant mutation or degeneration.
+ * @param {string} slotId The unique ID of the choice slot.
+ * @param {string} abilityType 'Mutation' or 'Degeneration'.
+ * @param {string} optionType The type from MUTANT_CHOICES.options (e.g., 'stat_multiplier_set_50').
+ * @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
+ */
+function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = null) {
+    const choicesArray = abilityType === 'Mutation' ? character.mutantMutations : character.mutantDegenerations;
+    const previousChoiceIndex = choicesArray.findIndex(c => c.slotId === slotId);
+    const previousChoice = previousChoiceIndex !== -1 ? choicesArray[previousChoiceIndex] : null;
+
+    // Remove previous effect from affected stats and reset any previous stat changes
+    if (previousChoice) {
+        if (previousChoice.statName) {
+            character.mutantAffectedStats.delete(previousChoice.statName);
+            if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
+                character[previousChoice.statName].racialChange = 0; // Reset to 0 for Mutants
+            }
+        }
+        if (previousChoice.type === 'double_base_health') {
+            character.baseMaxHealthDoubled = false;
+        }
+        // Remove the previous choice from the array
+        choicesArray.splice(previousChoiceIndex, 1);
+    }
+
+    // If a new option is selected (not empty option for type/stat)
+    if (optionType) {
+        const optionDetails = ExternalDataManager.getRaceManualPassives('Mutant').abilities[abilityType].options.find(opt => opt.type === optionType);
+
+        // Handle stat-specific choices
+        if (optionDetails.type === 'stat_multiplier_set_50' || optionDetails.type === 'stat_multiplier_reduce_50') {
+            if (!selectedStatName) {
+                // User selected a stat mutation type but no stat, so just clear the previous and return
+                updateDOM();
+                hasUnsavedChanges = true;
+                saveCurrentStateToHistory();
+                return;
+            }
+            if (character.mutantAffectedStats.has(selectedStatName)) {
+                showStatusMessage(`'${selectedStatName}' has already been affected by a mutation or degeneration. Please select a different stat.`, true);
+                // Revert the dropdown to its previous selection or empty
+                const selectElement = document.getElementById(slotId + (optionDetails.type === 'stat_multiplier_set_50' ? '-stat' : '-type'));
+                if (selectElement) {
+                    selectElement.value = previousChoice ? (previousChoice.statName || '') : '';
+                }
+                return;
+            }
+            // Apply stat change
+            const newChoice = { slotId, type: optionDetails.type, statName: selectedStatName, value: optionDetails.value, level: character.level };
+            choicesArray.push(newChoice);
+            character.mutantAffectedStats.add(selectedStatName);
+
+            if (ExternalDataManager.rollStats.includes(selectedStatName)) {
+                character[selectedStatName].racialChange = optionDetails.value;
+            }
+
+        } else if (optionDetails.type === 'double_base_health') {
+            // Apply double base health
+            const newChoice = { slotId, type: optionDetails.type, level: character.level };
+            choicesArray.push(newChoice);
+            character.baseMaxHealthDoubled = true;
+        } else if (optionDetails.type === 'skill_choice' || optionDetails.type === 'natural_regen_active' || optionDetails.type === 'regen_doubled') {
+            // Placeholder for skill/regen choices
+            const newChoice = { slotId, type: optionDetails.type, level: character.level };
+            choicesArray.push(newChoice);
+            showStatusMessage(`'${optionDetails.label}' is not fully implemented yet.`, false);
+        }
+    }
+
+    // Recalculate derived properties that depend on racial changes
+    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.hp = Math.min(character.hp, character.maxHp);
+    character.maxMagicPoints = calculateMaxMagic(character.level);
+    character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
+
+    // Update the UI to reflect changes
+    updateDOM();
+    hasUnsavedChanges = true;
+    saveCurrentStateToHistory();
+}
+
+/**
+ * Attaches event listeners to the dynamically created clear buttons for Mutant choices.
+ */
+function attachClearMutantChoiceListeners() {
+    document.querySelectorAll('.clear-mutant-choice-btn').forEach(button => {
+        button.onclick = (event) => {
+            const slotId = event.target.dataset.slotId;
+            const abilityType = event.target.dataset.abilityType; // 'Mutation' or 'Degeneration'
+
+            const choicesArray = abilityType === 'Mutation' ? character.mutantMutations : character.mutantDegenerations;
+            const choiceIndex = choicesArray.findIndex(c => c.slotId === slotId);
+
+            if (choiceIndex !== -1) {
+                const choiceToClear = choicesArray[choiceIndex];
+
+                // Remove from affected stats
+                if (choiceToClear.statName) {
+                    character.mutantAffectedStats.delete(choiceToClear.statName);
+                    if (ExternalDataManager.rollStats.includes(choiceToClear.statName)) {
+                        character[choiceToClear.statName].racialChange = 0; // Reset to 0 for Mutants
+                    }
+                }
+                // Reset specific flags
+                if (choiceToClear.type === 'double_base_health') {
+                    character.baseMaxHealthDoubled = false;
+                }
+                // Remove the choice from the array
+                choicesArray.splice(choiceIndex, 1);
+            }
+
+            // Recalculate derived properties and update UI
+            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+            character.hp = Math.min(character.hp, character.maxHp);
+            character.maxMagicPoints = calculateMaxMagic(character.level);
+            character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
+
+            updateDOM();
+            hasUnsavedChanges = true;
+            saveCurrentStateToHistory();
+        };
+    });
+}
+
+
+/**
+ * Renders the generic racial passives for races that don't have manual choices.
+ */
+function renderGenericRacialPassives() {
+    const genericPassivesContainer = document.getElementById('generic-racial-passives-container');
+    if (!genericPassivesContainer) return;
+
+    // Clear previous content
+    genericPassivesContainer.innerHTML = '';
+    genericPassivesContainer.classList.add('hidden'); // Hide by default
+
+    const raceManualPassives = ExternalDataManager.getRaceManualPassives(character.race);
+
+    if (character.race !== 'Demi-humans' && character.race !== 'Mutant' && raceManualPassives && raceManualPassives.choices && raceManualPassives.choices.length === 0) {
+        // This condition is for races explicitly defined in manual_passives_data.json but with no manual choices
+        genericPassivesContainer.classList.remove('hidden');
+        genericPassivesContainer.innerHTML = `<p class="text-sm text-gray-600 dark:text-gray-400">${raceManualPassives.description || 'This race has no specific manually assigned passives.'}</p>`;
+    } else if (!raceManualPassives) {
+        // This condition is for races not defined in manual_passives_data.json at all
+        genericPassivesContainer.classList.remove('hidden');
+        genericPassivesContainer.innerHTML = '<p class="text-sm text-gray-600 dark:text-gray-400">This race has no specific manually assigned passives.</p>';
+    }
+    // If it's Demi-humans or Mutant, or if it has manual choices, this function won't render anything,
+    // as their specific render functions will handle it.
+}
+
+/**
+ * Orchestrates the rendering of all racial passive sections based on the current race.
+ */
+function renderRacialPassives() {
+    // Hide all specific containers first
+    document.getElementById('demi-human-choices-container').classList.add('hidden');
+    document.getElementById('mutant-choices-container').classList.add('hidden');
+    document.getElementById('generic-racial-passives-container').classList.add('hidden');
+
+    // Then render the appropriate one
+    if (character.race === 'Demi-humans') {
+        renderDemiHumanStatChoiceUI();
+    } else if (character.race === 'Mutant') {
+        renderMutantChoiceUI();
+    } else {
+        renderGenericRacialPassives();
+    }
+}
+
 
 // Event listener for all input changes (excluding the custom class multi-select)
 function handleChange(event) {
@@ -818,7 +1479,7 @@ function handleChange(event) {
             } else {
                 raceSelect.classList.remove('select-placeholder-text');
             }
-            handleChangeRace();
+            handleChangeRace(); // Call handleChangeRace to update racial characteristics
         } else if (id === 'hp') { // Handle current HP input
             character.hp = Math.min(newValue, character.maxHp); // Ensure current HP doesn't exceed max HP
             document.getElementById('hp').value = character.hp;
@@ -841,8 +1502,7 @@ function handleChange(event) {
             document.getElementById('ac').value = character.ac; // Update readonly AC input
         } else if (id === 'personalNotes') { // Handle personalNotes input
             character.personalNotes = newValue;
-        }
-        else if (id !== 'class-display' && id !== 'specialization-display') { // Exclude specialization-display
+        } else if (id !== 'class-display' && id !== 'specialization-display') { // Exclude specialization-display
             character[name || id] = newValue;
         }
         // If any of these core stats change, re-render weapon inventory to update calculated damage values
@@ -1159,7 +1819,7 @@ function deleteCurrentCharacter() {
         if (currentCharacterIndex >= characters.length) {
             currentCharacterIndex = characters.length - 1;
         }
-        
+
         updateDOM();
         populateCharacterSelector(); // Re-populate selector after deletion
         showStatusMessage("Character deleted successfully!");
@@ -1176,6 +1836,16 @@ function deleteCurrentCharacter() {
  */
 function applyHistoryState(state) {
     characters = JSON.parse(JSON.stringify(state)); // Deep copy the state
+    // Convert Sets back to Set after loading from history
+    characters.forEach(char => {
+        if (Array.isArray(char.demiHumanStatsAffected)) {
+            char.demiHumanStatsAffected = new Set(char.demiHumanStatsAffected);
+        }
+        if (Array.isArray(char.mutantAffectedStats)) {
+            char.mutantAffectedStats = new Set(char.mutantAffectedStats);
+        }
+    });
+
     // Ensure currentCharacterIndex is valid after applying history, especially if characters were added/deleted
     if (currentCharacterIndex >= characters.length) {
         currentCharacterIndex = characters.length - 1;
@@ -1423,6 +2093,13 @@ async function saveCharacterToGoogleDrive() {
                     char[statName] = rest;
                 }
             });
+            // Convert Set to Array for saving
+            if (char.demiHumanStatsAffected instanceof Set) {
+                char.demiHumanStatsAffected = Array.from(char.demiHumanStatsAffected);
+            }
+            if (char.mutantAffectedStats instanceof Set) {
+                char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
+            }
             delete char.maxHp;
             delete char.maxMagicPoints;
             delete char.maxRacialPower;
@@ -1570,7 +2247,9 @@ async function loadGoogleDriveFileContent(fileId) {
                                     ...newChar[key],
                                     ...loadedChar[key]
                                 };
-                                newChar[key].total = calculateTotal(key);
+                                if (ExternalDataManager.rollStats.includes(key)) {
+                                    newChar[key].total = calculateTotal(key);
+                                }
                                 if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                     newChar[key].maxExperience = defaultStatMaxExperience;
                                 }
@@ -1579,7 +2258,9 @@ async function loadGoogleDriveFileContent(fileId) {
                                     ...newChar[key],
                                     value: parseFloat(loadedChar[key]) || newChar[key].value
                                 };
-                                newChar[key].total = calculateTotal(key);
+                                if (ExternalDataManager.rollStats.includes(key)) {
+                                    newChar[key].total = calculateTotal(key);
+                                }
                             }
                         } else {
                             newChar[key] = loadedChar[key];
@@ -1590,6 +2271,21 @@ async function loadGoogleDriveFileContent(fileId) {
                 newChar.armorInventory = loadedChar.armorInventory || [];
                 newChar.generalInventory = loadedChar.generalInventory || [];
                 newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
+
+                newChar.demiHumanStatChoices = loadedChar.demiHumanStatChoices || [];
+                newChar.demiHumanStatsAffected = new Set(loadedChar.demiHumanStatsAffected || []); // Convert back to Set
+                newChar.healthRacialChange = loadedChar.healthRacialChange !== undefined ? loadedChar.healthRacialChange : 0;
+                newChar.magicRacialChange = loadedChar.magicRacialChange !== undefined ? loadedChar.magicRacialChange : 0;
+
+                newChar.mutantMutations = loadedChar.mutantMutations || [];
+                newChar.mutantDegenerations = loadedChar.mutantDegenerations || [];
+                newChar.mutantAffectedStats = new Set(loadedChar.mutantAffectedStats || []);
+                newChar.baseMaxHealthDoubled = loadedChar.baseMaxHealthDoubled || false;
+                newChar.naturalHealthRegenActive = loadedChar.naturalHealthRegenActive || false;
+                newChar.naturalManaRegenActive = loadedChar.naturalManaRegenActive || false;
+                newChar.healthRegenDoubled = loadedChar.healthRegenDoubled || false;
+                newChar.manaRegenDoubled = loadedChar.manaRegenDoubled || false;
+
 
                 newChar.weaponInventory.forEach(weapon => {
                     if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
@@ -1621,7 +2317,9 @@ async function loadGoogleDriveFileContent(fileId) {
                                 ...newChar[key],
                                 ...loadedData[key]
                             };
-                            newChar[key].total = calculateTotal(key);
+                            if (ExternalDataManager.rollStats.includes(key)) {
+                                newChar[key].total = calculateTotal(key);
+                            }
                             if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                 newChar[key].maxExperience = defaultStatMaxExperience;
                             }
@@ -1630,7 +2328,9 @@ async function loadGoogleDriveFileContent(fileId) {
                                 ...newChar[key],
                                 value: parseFloat(loadedData[key]) || newChar[key].value
                             };
-                            newChar[key].total = calculateTotal(key);
+                            if (ExternalDataManager.rollStats.includes(key)) {
+                                newChar[key].total = calculateTotal(key);
+                            }
                         }
                     } else {
                         newChar[key] = loadedData[key];
@@ -1642,9 +2342,23 @@ async function loadGoogleDriveFileContent(fileId) {
             newChar.generalInventory = loadedData.generalInventory || [];
             newChar.sectionVisibility = loadedData.sectionVisibility || defaultCharacterData().sectionVisibility;
 
+            newChar.demiHumanStatChoices = loadedData.demiHumanStatChoices || [];
+            newChar.demiHumanStatsAffected = new Set(loadedData.demiHumanStatsAffected || []);
+            newChar.healthRacialChange = loadedData.healthRacialChange !== undefined ? loadedData.healthRacialChange : 0;
+            newChar.magicRacialChange = loadedData.magicRacialChange !== undefined ? loadedData.magicRacialChange : 0;
+
+            newChar.mutantMutations = loadedData.mutantMutations || [];
+            newChar.mutantDegenerations = loadedData.mutantDegenerations || [];
+            newChar.mutantAffectedStats = new Set(loadedData.mutantAffectedStats || []);
+            newChar.baseMaxHealthDoubled = loadedData.baseMaxHealthDoubled || false;
+            newChar.naturalHealthRegenActive = loadedData.naturalHealthRegenActive || false;
+            newChar.naturalManaRegenActive = loadedData.naturalManaRegenActive || false;
+            newChar.healthRegenDoubled = loadedData.healthRegenDoubled || false;
+            newChar.manaRegenDoubled = loadedData.manaRegenDoubled || false;
+
             newChar.weaponInventory.forEach(weapon => {
                 if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
-                if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
+                if (typeof weapon.originalMagicDamage === 'undefined') originalMagicDamage = weapon.magicDamage;
             });
 
             newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
@@ -1734,7 +2448,7 @@ function toggleSidebar() {
         mainContent.classList.remove('ml-64');
         mainContent.classList.add('ml-16'); // Adjust main content margin
         toggleIcon.setAttribute('d', 'M9 5l7 7-7 7'); // Chevron right
-        
+
         // Hide all children except the sidebar toggle button
         Array.from(sidebar.children).forEach(child => {
             if (child.id !== 'sidebar-toggle-btn') {
@@ -1753,7 +2467,7 @@ function toggleSidebar() {
         mainContent.classList.remove('ml-16');
         mainContent.classList.add('ml-64');
         toggleIcon.setAttribute('d', 'M15 19l-7-7 7-7'); // Chevron left
-        
+
         // Show all content within the sidebar
         Array.from(sidebar.children).forEach(child => {
             child.classList.remove('hidden');
@@ -1922,7 +2636,7 @@ function attachEventListeners() {
             // Cancel the event to trigger the browser's confirmation prompt
             event.preventDefault();
             // Chrome requires returnValue to be set
-            event.returnValue = ''; 
+            event.returnValue = '';
             // Most browsers will display a generic message, but some older ones might show this:
             return "You have unsaved changes. Are you sure you want to exit?";
         }

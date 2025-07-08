@@ -218,6 +218,23 @@
                 </div>
             </div>
 
+            <!-- Manually Racial Passives Section (NEW) -->
+            <div id="racial-passives-section" class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Manually Racial Passives</h2>
+                    <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="racial-passives-content">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                </div>
+                <div id="racial-passives-content" class="section-content">
+                    <!-- Content for Demi-human or Mutant choices will be dynamically loaded here by JavaScript -->
+                    <div id="demi-human-choices-container"></div>
+                    <div id="mutant-choices-container"></div>
+                    <!-- New container for generic racial passives -->
+                    <div id="generic-racial-passives-container"></div>
+                </div>
+            </div>
+
             <!-- Player Stats Section -->
             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
                 <div class="flex items-center justify-between mb-4">
