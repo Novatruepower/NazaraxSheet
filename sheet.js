@@ -47,10 +47,7 @@ const raceHealthMultipliers = {
 };
 
 // List of player stats for easy iteration
-const playerStatsList = [
-    'strength', 'agility', 'magic', 'luck', 'crafting',
-    'intelligence', 'intimidation', 'charisma', 'negotiation'
-];
+let fetchedData = {};
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
@@ -113,7 +110,7 @@ const defaultCharacterData = function() {
         }
     })
 
-    playerStatsList.forEach(statName => {
+    fetchedData['Stats']['Roll'].forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
         newCharacter[statName] = { value: result, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: result };
     });
@@ -122,7 +119,7 @@ const defaultCharacterData = function() {
 };
 
 // Array to hold all character sheets
-let characters = [defaultCharacterData()];
+let characters = [];
 // Index of the currently active character sheet
 let currentCharacterIndex = 0;
 
@@ -223,7 +220,7 @@ function saveCharacterToFile() {
 
     // Exclude maxExperience and total from each player stat for each character
     charactersToSave.forEach(char => {
-        playerStatsList.forEach(statName => {
+        fetchedData['Stats']['Roll'].forEach(statName => {
             if (char[statName]) {
                 const { maxExperience, total, ...rest } = char[statName];
                 char[statName] = rest; // Assign the object without maxExperience and total
@@ -448,7 +445,7 @@ function updateDOM() {
     const playerStatsContainer = document.getElementById('player-stats-container').querySelector('tbody');
     playerStatsContainer.innerHTML = ''; // Clear existing rows
 
-    playerStatsList.forEach(statName => {
+    fetchedData['Stats']['Roll'].forEach(statName => {
         const statData = character[statName];
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700'; // Add hover effect to rows
@@ -615,7 +612,7 @@ function renderGeneralInventory() {
 
 // Function to perform a quick roll for all player stats
 function quickRollStats() {
-    playerStatsList.forEach(statName => {
+    fetchedData['stats']['roll'].forEach(statName => {
         character[statName].value = roll(minRollStat, maxRollStat); // Assign to the 'value' property
 
         // Recalculate total for the updated stat
@@ -694,7 +691,7 @@ function handleChange(event) {
     let statName = '';
     let subProperty = '';
 
-    for (const stat of playerStatsList) {
+    for (const stat of fetchedData['Stats']['roll']) {
         if (name.startsWith(`${stat}-`)) {
             isPlayerStatInput = true;
             statName = stat;
@@ -1297,7 +1294,7 @@ async function saveCharacterToGoogleDrive() {
     try {
         const charactersToSave = JSON.parse(JSON.stringify(characters));
         charactersToSave.forEach(char => {
-            playerStatsList.forEach(statName => {
+            fetchedData['Stats']['Roll'].forEach(statName => {
                 if (char[statName]) {
                     const { maxExperience, total, ...rest } = char[statName];
                     char[statName] = rest;
@@ -1804,7 +1801,6 @@ function attachEventListeners() {
 
 async function externalData() {
         await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
-        let fetchedPlayerStatsList = {};
 
         delete arr[0][0];
         const head = arr[0];
@@ -1812,35 +1808,28 @@ async function externalData() {
         const health = head[1];
         delete head[1];
 
-        console.log(arr);
-
         arr.forEach(value => {
             let race = value[0];
-            fetchedPlayerStatsList[race] = {
+            fetchedData[race] = {
                 Stats: {
                     Roll: {} 
                 }
             };
-
-            console.log(value);
-            console.log(head);
             
-            fetchedPlayerStatsList[race]['Stats'][health] = value[1];
-
+            fetchedData[race]['Stats'][health] = value[1];
             let index = 2;
 
             head.forEach(statName => {
-                fetchedPlayerStatsList[race]['Stats']['Roll'][statName] = value[index];
+                fetchedData[race]['Stats']['Roll'][statName] = value[index];
                 ++index;
             });
         });
 
-        console.log(fetchedPlayerStatsList);
+        characters = [defaultCharacterData()];
     });
 }
 
-// Initialize the application when the DOM is fully loaded
-window.onload = async function() {
+function initPage() {
     // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
     characters[0].maxHp = calculateMaxHealth(characters[0].race, characters[0].level, characters[0].healthBonus);
     characters[0].maxMagicPoints = calculateMaxMagic(characters[0].level);
@@ -1862,6 +1851,11 @@ window.onload = async function() {
     gisLoaded();
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
+}
 
-    await externalData();
+// Initialize the application when the DOM is fully loaded
+window.onload = async function() {
+    await externalData().then(() => {
+        initPage();
+    })
 };
