@@ -541,7 +541,7 @@ function updateDOM() {
 
     // Health & Combat
     document.getElementById('hp').value = character.Health;
-    document.getElementById('maxHph').value = character.maxHealth; // This now includes healthBonus
+    document.getElementById('maxHp').value = character.maxHealth; // This now includes healthBonus
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
     document.getElementById('racialPower').value = character.racialPower; // Populate racialPower
     document.getElementById('maxRacialPower').value = character.maxRacialPower; // Populate maxRacialPower
