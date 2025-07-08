@@ -42,7 +42,7 @@ function calculateMaxHealth(charData, race, level, healthBonus) {
 // Function to calculate max magic based on level
 function calculateMaxMagic(charData, level) {
     // Get the racial magic change from manual passives (for Demi-humans)
-    const magicChange = (charData && charData.magicRacialChange !== undefined) ? charData.magicRacialChange : 0; // Default to 0 if not Demi-human or not set
+    const magicChange = (charData && charData.racialMagicChange !== undefined) ? charData.racialMagicChange : 0; // Default to 0 if not Demi-human or not set
     return Math.floor(level * 100 * (1 + magicChange)); // Apply magicChange as a multiplier
 }
 
@@ -116,12 +116,11 @@ const defaultCharacterData = function() {
     // Initialize each stat with its rolled value, racial change, and calculated total
     ExternalDataManager.rollStats.forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
-        // For Demi-humans and Mutants, initial racialChange is 0, as they gain changes via choices
-        // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
+        // Always get the initial racialChange from ExternalDataManager for all races
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
         newCharacter[statName] = {
             value: result,
-            racialChange: initialRacialChange, // This will be 0 for Demi-humans/Mutants initially, or the fixed percentage for others
+            racialChange: initialRacialChange, // This will now correctly pull from ExternalDataManager for all races
             equipment: 0,
             temporary: 0,
             experience: 0,
@@ -781,8 +780,8 @@ function handleChangeRace() {
     // Reset all manual passive choices and flags
     character.demiHumanStatChoices = [];
     character.demiHumanStatsAffected = new Set();
-    character.racialHealthChange = 0;
-    character.racialMagicChange = 0;
+    character.racialHealthChange = 0; // Reset additional health racial change
+    character.racialMagicChange = 0; // Reset additional magic racial change
 
     character.mutantMutations = [];
     character.mutantDegenerations = [];
@@ -795,9 +794,8 @@ function handleChangeRace() {
 
     // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
-        // For Demi-humans and Mutants, initial racialChange is 0, as they gain changes via choices
-        // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
-        const initialRacialChange = (character.race === 'Demi-humans' || character.race === 'Mutant') ? 0 : ExternalDataManager.getRacialChange(character.race, statName);
+        // Always get the initial racialChange from ExternalDataManager for all races
+        const initialRacialChange = ExternalDataManager.getRacialChange(character.race, statName);
         character[statName].racialChange = initialRacialChange;
         character[statName].total = calculateTotal(statName);
         document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Use getAppliedRacialChange for display
@@ -904,14 +902,13 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     // If a stat was previously selected for this slot, remove it from affected list
     if (previousChoice && previousChoice.statName) {
         character.demiHumanStatsAffected.delete(previousChoice.statName);
-        // Reset racialChange for the previously chosen stat (if it was a stat affected by this choice)
+        // Reset racialChange for the previously chosen stat back to its base ExternalDataManager value
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-            // Subtract the previous modifier value to revert the change
-            character[previousChoice.statName].racialChange = ExternalDataManager.getRacialChange('Demi-humans', previousChoice.statName);
+            character[previousChoice.statName].racialChange = ExternalDataManager.getRacialChange(character.race, previousChoice.statName);
         } else if (previousChoice.statName === 'Health') {
-            character.racialHealthChange = 0;
+            character.racialHealthChange = 0; // Reset additional health racial change
         } else if (previousChoice.statName === 'Magic') {
-            character.racialMagicChange = 0;
+            character.racialMagicChange = 0; // Reset additional magic racial change
         }
     }
 
@@ -937,14 +934,13 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         }
         character.demiHumanStatsAffected.add(selectedStatName);
 
-        // Apply the modifier to the chosen stat
+        // Apply the modifier to the chosen stat by adding to its current racialChange
         if (ExternalDataManager.rollStats.includes(selectedStatName)) {
-            // Add the new modifier value
-            character[selectedStatName].racialChange = modifierValue;
+            character[selectedStatName].racialChange += modifierValue;
         } else if (selectedStatName === 'Health') {
-            character.racialHealthChange = modifierValue;
+            character.racialHealthChange += modifierValue;
         } else if (selectedStatName === 'Magic') {
-            character.racialMagicChange = modifierValue;
+            character.racialMagicChange += modifierValue;
         }
     } else {
         // If the selected option is empty, remove the choice
@@ -1158,9 +1154,9 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
     if (previousChoice) {
         if (previousChoice.statName) {
             character.mutantAffectedStats.delete(previousChoice.statName);
+            // Reset racialChange for the previously chosen stat back to its base ExternalDataManager value
             if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-                // Subtract the previous modifier value to revert the change
-                character[previousChoice.statName].racialChange = ExternalDataManager.getRacialChange('Mutant', previousChoice.statName);
+                character[previousChoice.statName].racialChange = ExternalDataManager.getRacialChange(character.race, previousChoice.statName);
             }
         }
         if (previousChoice.type === 'double_base_health') {
@@ -1192,14 +1188,13 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
                 }
                 return;
             }
-            // Apply stat change
+            // Apply stat change by adding to its current racialChange
             const newChoice = { slotId, type: optionDetails.type, statName: selectedStatName, value: optionDetails.value, level: character.level };
             choicesArray.push(newChoice);
             character.mutantAffectedStats.add(selectedStatName);
 
             if (ExternalDataManager.rollStats.includes(selectedStatName)) {
-                // Add the new modifier value
-                character[selectedStatName].racialChange = optionDetails.value;
+                character[selectedStatName].racialChange += optionDetails.value;
             }
 
         } else if (optionDetails.type === 'double_base_health') {
@@ -1245,10 +1240,8 @@ function attachClearMutantChoiceListeners() {
                 // Remove from affected stats
                 if (choiceToClear.statName) {
                     character.mutantAffectedStats.delete(choiceToClear.statName);
-                    if (ExternalDataManager.rollStats.includes(choiceToClear.statName)) {
-                        // Reset to the base racial change for Mutants
-                        character[choiceToClear.statName].racialChange = ExternalDataManager.getRacialChange('Mutant', choiceToClear.statName);
-                    }
+                    // Reset to the base racial change for Mutants from ExternalDataManager
+                    character[choiceToClear.statName].racialChange = ExternalDataManager.getRacialChange(character.race, choiceToClear.statName);
                 }
                 // Reset specific flags
                 if (choiceToClear.type === 'double_base_health') {
