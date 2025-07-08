@@ -50,33 +50,27 @@ const raceHealthMultipliers = {
 let fetchedData = {};
 
 async function externalData() {
-    await googleDriveFileFetcher.fetchGoogleSheetRange(
-        googleDriveFileFetcher.My_Sheet.Races.gid,
-        googleDriveFileFetcher.My_Sheet.Races.range
-    ).then(arr => {
-        arr.splice(0, 1);                            // remove the header row from array
-
-        // Clone the first row to avoid reference issues
-        const head = [...arr[0]];                    // shallow copy
-        const statsCopy = [...arr[0]];               // another shallow copy
-
+        await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
+            
+        delete arr[0][0];
+        const head = [...arr[0]];
+        fetchedData['Stats'] = [...arr[0]];
+        delete arr[0];
         const health = head[1];
-        delete head[1];                              // remove health column from head
-
-        fetchedData['Stats'] = statsCopy;
+        delete head[1];
         fetchedData['Roll'] = head;
 
         arr.forEach(value => {
-            const race = value[0];
+            let race = value[0];
             fetchedData[race] = {
                 Stats: {
-                    Roll: {}
+                    Roll: {} 
                 }
             };
-
+            
             fetchedData[race]['Stats'][health] = value[1];
-
             let index = 2;
+
             head.forEach(statName => {
                 fetchedData[race]['Stats']['Roll'][statName] = value[index];
                 ++index;
