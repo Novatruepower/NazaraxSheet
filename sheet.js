@@ -54,7 +54,7 @@ async function externalData() {
 
         delete arr[0][0];
         const head = arr[0];
-        fetchedData['Stats'] = arr[0];
+        fetchedData['Stats'] = [...arr[0]];
         delete arr[0];
         const health = head[1];
         delete head[1];
