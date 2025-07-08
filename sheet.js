@@ -229,8 +229,7 @@ function calculateTotal(statName) {
     const equipment = parseFloat(stat.equipment) || 0;
     const temporary = parseFloat(stat.temporary) || 0;
 
-    // Calculate total based on the formula: Value * (1 + Racial change) + Equipment + Temporary
-    return value * (1 + racialChange) + equipment + temporary;
+    return value * racialChange + equipment + temporary;
 }
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
