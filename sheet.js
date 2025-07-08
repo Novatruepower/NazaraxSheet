@@ -236,42 +236,35 @@ function calculateTotal(statName) {
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
     console.log(`getAppliedRacialChange called for ${statName}. Current charData.demiHumanStatChoices:`, JSON.parse(JSON.stringify(charData.demiHumanStatChoices)));
-    let totalRacialChange = charData[statName].racialChange;
+    let totalRacialChange = 0;
 
     if (charData.race === 'Demi-humans') {
         const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
         if (choice) {
             totalRacialChange += choice.modifier; // This is where the 0.25 is added.
-            console.log(`  Found Demi-human choice for ${statName}. Modifier: ${choice.modifier}. totalRacialChange now: ${totalRacialChange}`);
         }
         // Health and Magic are special cases and stored directly on charData object for Demi-humans
         if (statName === 'Health') {
             totalRacialChange += charData.healthRacialChange;
-            console.log(`  Adding healthRacialChange for Health. totalRacialChange now: ${totalRacialChange}`);
         }
         if (statName === 'Magic') { // Note: 'Magic' here refers to the stat, not magic points
             totalRacialChange += charData.magicRacialChange;
-            console.log(`  Adding magicRacialChange for Magic. totalRacialChange now: ${totalRacialChange}`);
         }
     } else if (charData.race === 'Mutant') {
         // Check for stat multiplier mutations
         const mutantStatMutation = charData.mutantMutations.find(m => m.statName === statName);
         if (mutantStatMutation) {
             totalRacialChange += mutantStatMutation.value; // This value is already a percentage change (e.g., 0.50)
-            console.log(`  Found Mutant mutation for ${statName}. Value: ${mutantStatMutation.value}. totalRacialChange now: ${totalRacialChange}`);
         }
         // Check for stat degeneration
         const mutantDegeneration = charData.mutantDegenerations.find(d => d.statName === statName);
         if (mutantDegeneration) {
             totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
-            console.log(`  Found Mutant degeneration for ${statName}. Value: ${mutantDegeneration.value}. totalRacialChange now: ${totalRacialChange}`);
         }
     } else {
         // For other races, get the racial change from ExternalDataManager
         totalRacialChange = ExternalDataManager.getRacialChange(charData.race, statName);
-        console.log(`  Fetching racial change from ExternalDataManager for ${charData.race}, ${statName}. Value: ${totalRacialChange}`);
     }
-    console.log(`getAppliedRacialChange returning: ${totalRacialChange} for ${statName}`);
     return totalRacialChange;
 }
 
