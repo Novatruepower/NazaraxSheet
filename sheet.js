@@ -6,7 +6,7 @@ const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 // IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
 const ORIGIN = window.location.origin;
 
-import { googleDriveFileFetcher } from './fetch.js';
+import { ExternalDataManager } from './externalDataManager.js';
 
 let tokenClient;
 let gapiInited = false;
@@ -30,63 +30,13 @@ const classSpecializationsMap = {
     "Martial artist": ["Apprentice", "Warrior", "Master", "Grand Master", "Lord", "King"],
 };
 
-// Race health multipliers
-const raceHealthMultipliers = {
-    "Architect": 0.70,
-    "Demi-humans": 1.00,
-    "Dimensional": 1.50,
-    "Dragonkin": 0.75,
-    "Dwarf": 1.20,
-    "Elf": 0.80,
-    "Gnome": 0.80,
-    "Human": 1.00,
-    "Mutant": 0.75,
-    "Noki": 0.90,
-    "Succubus": 0.75,
-    "": 1.00 // Default for no race selected
-};
-
 // List of data for easy iteration
-let fetchedData = {};
-
-async function externalData() {
-        await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
-
-        delete arr[0][0];
-        const head = arr[0];
-        fetchedData['Stats'] = [...arr[0]];
-        delete arr[0];
-        delete fetchedData['Stats'][0];
-        const health = head[1];
-        delete head[1];
-        fetchedData['Roll'] = head;
-
-        arr.forEach(value => {
-            let race = value[0];
-            fetchedData[race] = {
-                Stats: {
-                    Roll: {} 
-                }
-            };
-            
-            fetchedData[race]['Stats'][health] = value[1];
-            let index = 2;
-
-            head.forEach(statName => {
-                fetchedData[race]['Stats']['Roll'][statName] = value[index];
-                ++index;
-            });
-        });
-    });
-}
-
-await externalData();
-console.log(fetchedData);
+await ExternalDataManager.init();
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
-    const multiplier = raceHealthMultipliers[race] || 1.00; // Default to 1 if race not found
-    return Math.floor(100 * multiplier * level) + (healthBonus || 0); // Add healthBonus
+    const healthChange = ExternalDataManager.getRaceHealthChange(race) || 1.00; // Default to 1 if race not found
+    return Math.floor(100 * healthChange * level) + (healthBonus || 0); // Add healthBonus
 }
 
 // Function to calculate max magic based on level
@@ -109,7 +59,8 @@ const maxRollStat = 20;
 const minRollStat = 6;
 
 const defaultCharacterData = function() { 
-    const firstRace = Object.keys(fetchedData)[0];
+    const firstRace = Object.keys(ExternalDataManager._data)[0];
+    const raceHealthChange = ExternalDataManager.getRaceHealthChange(firstRace);
 
     let newCharacter = ({
         name: '',
@@ -119,8 +70,8 @@ const defaultCharacterData = function() {
         level: 1,
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
-        hp: 100,
-        maxHp: 100,
+        hp: 100 * raceHealthChange,
+        maxHp: 100 * raceHealthChange,
         healthBonus: 0,
         currentMagicPoints: 100,
         maxMagicPoints: 100,
@@ -146,9 +97,10 @@ const defaultCharacterData = function() {
         }
     })
 
-    fetchedData[firstRace]['Stats']['Roll'].forEach(statName => {
+    ExternalDataManager.rollStats.forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
-        newCharacter[statName] = { value: result, racialChange: 0, equipment: 0, temporary: 0, experience: 0, maxExperience: defaultStatMaxExperience, total: result };
+        newCharacter[statName] = { value: result, racialChange: ExternalDataManager.getRacialChange(newCharacter.race, statName), equipment: 0, temporary: 0,
+             experience: 0, maxExperience: defaultStatMaxExperience, total: result };
     });
 
     return newCharacter;
@@ -256,7 +208,7 @@ function saveCharacterToFile() {
 
     // Exclude maxExperience and total from each player stat for each character
     charactersToSave.forEach(char => {
-        fetchedData[char.race]['Stats']['Roll'].forEach(statName => {
+        ExternalDataManager.rollStats.forEach(statName => {
             if (char[statName]) {
                 const { maxExperience, total, ...rest } = char[statName];
                 char[statName] = rest; // Assign the object without maxExperience and total
@@ -481,7 +433,7 @@ function updateDOM() {
     const playerStatsContainer = document.getElementById('player-stats-container').querySelector('tbody');
     playerStatsContainer.innerHTML = ''; // Clear existing rows
 
-    fetchedData['Stats']['Roll'].forEach(statName => {
+    ExternalDataManager.rollStats.forEach(statName => {
         const statData = character[statName];
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700'; // Add hover effect to rows
@@ -648,7 +600,7 @@ function renderGeneralInventory() {
 
 // Function to perform a quick roll for all player stats
 function quickRollStats() {
-    fetchedData['stats']['roll'].forEach(statName => {
+    ExternalDataManager.rollStats.forEach(statName => {
         character[statName].value = roll(minRollStat, maxRollStat); // Assign to the 'value' property
 
         // Recalculate total for the updated stat
@@ -727,7 +679,7 @@ function handleChange(event) {
     let statName = '';
     let subProperty = '';
 
-    for (const stat of fetchedData['Stats']['roll']) {
+    for (const stat of ExternalDataManager.rollStats) {
         if (name.startsWith(`${stat}-`)) {
             isPlayerStatInput = true;
             statName = stat;
@@ -1330,7 +1282,7 @@ async function saveCharacterToGoogleDrive() {
     try {
         const charactersToSave = JSON.parse(JSON.stringify(characters));
         charactersToSave.forEach(char => {
-            fetchedData['Stats']['Roll'].forEach(statName => {
+            ExternalDataManager.rollStats.forEach(statName => {
                 if (char[statName]) {
                     const { maxExperience, total, ...rest } = char[statName];
                     char[statName] = rest;
