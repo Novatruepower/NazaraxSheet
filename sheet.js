@@ -1972,10 +1972,6 @@ function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
     confirmCancelBtn.addEventListener('click', handleCancel);
 }
 
-window.addEventListener("gapi-ready", () => {
-    gapiInited = true;
-});
-
 /**
  * Initializes Google Identity Services (GIS) client for authorization.
  */
@@ -2657,6 +2653,12 @@ function initPage() {
     // Save the initial state to history after everything is loaded and rendered
     saveCurrentStateToHistory();
 }
+
+
+window.addEventListener("gapi-ready", () => {
+    gapiInited = true;
+    maybeEnableGoogleDriveButtons();
+});
 
 // Initialize the application when the DOM is fully loaded
 window.onload = async function() {
