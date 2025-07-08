@@ -13,6 +13,12 @@ export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
     _data: { Races:{}, Stats:{}, Roll:{} },
 
+
+    parsePercent(numberString) {
+        let value = numberString.replace('%', '');
+        return parseFloat(value) / 100;
+    },
+
     /**
      * Fetches external data from Google Sheets and populates the internal `_data` object.
      * This method is asynchronous and should be awaited before using other methods
@@ -41,12 +47,12 @@ export const ExternalDataManager = {
                             }
                         };
 
-                        this._data['Races'][race]['Stats'][health] = value[1]; // Assign health multiplier
+                        this._data['Races'][race]['Stats'][health] = parsePercent(value[1]); // Assign health multiplier
                         let index = 2; // Start from the third column for stats
 
                         head.forEach(statName => {
                             // Assign stat roll value for the current race
-                            this._data['Races'][race]['Stats']['Roll'][statName] = value[index];
+                            this._data['Races'][race]['Stats']['Roll'][statName] = parsePercent(value[index]);
                             ++index;
                         });
                     }
