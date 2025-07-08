@@ -221,7 +221,7 @@ const statMapping = {
 
 // Function to calculate the total for a given stat
 function calculateTotal(statName) {
-    const stat = character[statName].racialChange;
+    const stat = character[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
     const value = parseFloat(stat.value) || 0;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
@@ -236,7 +236,7 @@ function calculateTotal(statName) {
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
     console.log(`getAppliedRacialChange called for ${statName}. Current charData.demiHumanStatChoices:`, JSON.parse(JSON.stringify(charData.demiHumanStatChoices)));
-    let totalRacialChange = charData[statName].value;
+    let totalRacialChange = charData[statName].racialChange;
 
     if (charData.race === 'Demi-humans') {
         const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
