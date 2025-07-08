@@ -78,6 +78,7 @@ async function externalData() {
 }
 
 await externalData();
+console.log(fetchedData);
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
