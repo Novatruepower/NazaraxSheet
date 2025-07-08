@@ -221,7 +221,7 @@ const statMapping = {
 
 // Function to calculate the total for a given stat
 function calculateTotal(statName) {
-    const stat = character[statName];
+    const stat = character[statName].racialChange;
     // Ensure values are treated as numbers, defaulting to 0 if NaN
     const value = parseFloat(stat.value) || 0;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
