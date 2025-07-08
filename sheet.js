@@ -89,8 +89,8 @@ const defaultCharacterData = function() {
         // New properties for Demi-human stat choices
         demiHumanStatChoices: [], // Stores { statName: 'Strength', modifier: 0.25, slotId: '...' }
         demiHumanStatsAffected: new Set(), // Stores names of stats already chosen by Demi-human modifiers
-        racialHealthChange: 1, // Initial racial change for health, will be set by Demi-human player choice
-        racilMagicChange: 1, // Initial racial change for magic, will be set by Demi-human player choice
+        healthRacialChange: 0, // Initial racial change for health, will be set by Demi-human player choice
+        magicRacialChange: 0, // Initial racial change for magic, will be set by Demi-human player choice
 
         // New properties for Mutant stat choices
         mutantMutations: [], // Stores { type: 'stat_multiplier_50', statName: 'Strength', level: 1, slotId: '...' }
@@ -235,7 +235,12 @@ function calculateTotal(statName) {
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-    let totalRacialChange = charData[statName].racialChange;
+    let totalRacialChange = 0; // Initialize to 0 for Demi-humans/Mutants as their base is 0 for rollStats
+
+    // For rollStats, get the racialChange from the stat object
+    if (ExternalDataManager.rollStats.includes(statName)) {
+        totalRacialChange = charData[statName].racialChange;
+    }
 
     if (charData.race === 'Demi-humans') {
         const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
@@ -243,10 +248,10 @@ function getAppliedRacialChange(charData, statName) {
             totalRacialChange += choice.modifier;
         }
         // Health and Magic are special cases and stored directly in charData object for Demi-humans
-        if (statName === 'Health' && charData.healthRacialChange !== undefined) {
+        if (statName === 'Health') {
             totalRacialChange += charData.healthRacialChange;
         }
-        if (statName === 'Magic' && charData.magicRacialChange !== undefined) {
+        if (statName === 'Magic') { // Note: 'Magic' here refers to the stat, not magic points
             totalRacialChange += charData.magicRacialChange;
         }
     } else if (charData.race === 'Mutant') {
@@ -260,6 +265,9 @@ function getAppliedRacialChange(charData, statName) {
         if (mutantDegeneration) {
             totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
         }
+    } else {
+        // For other races, get the racial change from ExternalDataManager
+        totalRacialChange = ExternalDataManager.getRacialChange(charData.race, statName);
     }
     
     return totalRacialChange;
@@ -339,75 +347,49 @@ function saveCharacterToFile() {
     hasUnsavedChanges = false; // Data is now saved
 }
 
-// Deep merge to preserve structure for new/missing sub-properties
-function mergeLoadCharacter(newChar, loadedChar, loadedData) {
+/**
+ * Initializes a new character object and merges loaded data into it.
+ * This function also handles recalculating derived stats and converting Sets.
+ * @param {object} loadedChar The character object loaded from a file or Google Drive.
+ * @returns {object} The fully initialized and merged character object.
+ */
+function initLoadCharacter(loadedChar) {
+    const newChar = defaultCharacterData(); // Start with a fresh default character
+
+    // Deep merge loaded properties into the new character
     for (const key in newChar) {
         if (loadedChar.hasOwnProperty(key)) {
-            if (key === 'class') {
-                newChar.class = Array.isArray(loadedChar.class) ? loadedChar.class : [];
-            } else if (key === 'specialization') {
-                newChar.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
-            } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
-                if (typeof loadedChar[key] === 'object' && loadedData[key] !== null) {
-                    newChar[key] = {
-                        ...newChar[key],
-                        ...loadedChar[key]
-                    };
-                    // Recalculate total for loaded stats
-                    if (ExternalDataManager.rollStats.includes(key)) {
-                        newChar[key].total = calculateTotal(key);
-                    }
-                    if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
-                        newChar[key].maxExperience = defaultStatMaxExperience;
-                    }
-                } else {
-                    newChar[key] = {
-                        ...newChar[key],
-                        value: parseFloat(loadedChar[key]) || newChar[key].value
-                    };
-                    if (ExternalDataManager.rollStats.includes(key)) {
-                        newChar[key].total = calculateTotal(key);
-                    }
+            if (key === 'class' || key === 'specialization' || key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
+                // Ensure these are arrays, even if loaded data has non-array
+                newChar[key] = Array.isArray(loadedChar[key]) ? loadedChar[key] : [];
+            } else if (typeof newChar[key] === 'object' && newChar[key] !== null && !Array.isArray(newChar[key]) && !(newChar[key] instanceof Set)) {
+                // Handle nested objects (like stat objects)
+                if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
+                    Object.assign(newChar[key], loadedChar[key]);
                 }
+                // Ensure maxExperience is set for stats, if it was excluded during saving or missing
+                if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
+                    newChar[key].maxExperience = defaultStatMaxExperience;
+                }
+            } else if (key === 'demiHumanStatsAffected' || key === 'mutantAffectedStats') {
+                // Convert arrays back to Sets for these properties
+                newChar[key] = new Set(Array.isArray(loadedChar[key]) ? loadedChar[key] : []);
             } else {
-                newChar[key] = loadedData[key];
+                newChar[key] = loadedChar[key];
             }
         }
     }
-}
 
-function initLoadCharacter(loadedChar, loadedData) {
-    const newChar = defaultCharacterData();
-    mergeLoadCharacter(newChar, loadedChar, loadedData);
+    // Handle section visibility - ensure all default sections are present
+    newChar.sectionVisibility = { ...defaultCharacterData().sectionVisibility, ...loadedChar.sectionVisibility };
 
-    // Handle new inventory arrays, providing defaults if missing
-    newChar.weaponInventory = loadedChar.weaponInventory || [];
-    newChar.armorInventory = loadedChar.armorInventory || [];
-    newChar.generalInventory = loadedChar.generalInventory || [];
-    // Handle section visibility - UPDATED
-    newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
-
-    // Load Demi-human specific properties
-    newChar.demiHumanStatChoices = loadedChar.demiHumanStatChoices || [];
-    newChar.demiHumanStatsAffected = new Set(loadedChar.demiHumanStatsAffected || []);
-
-    // Load Mutant specific properties
-    newChar.mutantMutations = loadedChar.mutantMutations || [];
-    newChar.mutantDegenerations = loadedChar.mutantDegenerations || [];
-    newChar.mutantAffectedStats = new Set(loadedChar.mutantAffectedStats || []);
-    newChar.baseMaxHealthDoubled = loadedChar.baseMaxHealthDoubled || false;
-    newChar.naturalHealthRegenActive = loadedChar.naturalHealthRegenActive || false;
-    newChar.naturalManaRegenActive = loadedChar.naturalManaRegenActive || false;
-    newChar.healthRegenDoubled = loadedChar.healthRegenDoubled || false;
-    newChar.manaRegenDoubled = loadedChar.manaRegenDoubled || false;
-
-    // Initialize originalDamage/originalMagicDamage if not present in loaded data
+    // Initialize originalDamage/originalMagicDamage for weapons if not present
     newChar.weaponInventory.forEach(weapon => {
         if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
         if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
     });
 
-    // Recalculate derived properties
+    // Recalculate derived properties based on the loaded and merged data
     newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
     newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
     newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
@@ -417,6 +399,13 @@ function initLoadCharacter(loadedChar, loadedData) {
     newChar.Health = Math.min(newChar.Health, newChar.maxHealth);
     newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
     newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
+
+    // Recalculate totals for rollStats after loading to ensure consistency
+    ExternalDataManager.rollStats.forEach(statName => {
+        if (newChar[statName]) {
+            newChar[statName].total = calculateTotal(statName);
+        }
+    });
 
     return newChar;
 }
@@ -433,15 +422,11 @@ function loadCharacterFromFile(event) {
         try {
             const loadedData = JSON.parse(e.target.result);
             if (Array.isArray(loadedData)) {
-                characters = loadedData.map(loadedChar => {
-                    return initLoadCharacter(loadedChar, loadedData);
-                });
+                characters = loadedData.map(loadedChar => initLoadCharacter(loadedChar));
                 currentCharacterIndex = 0; // Select the first loaded character
             } else {
                 // If a single character object was loaded (old format), convert it to an array
-                const newChar = initLoadCharacter(loadedData, loadedData);
-
-                characters = [newChar];
+                characters = [initLoadCharacter(loadedData)];
                 currentCharacterIndex = 0;
             }
             updateDOM(); // Update the UI with loaded data
@@ -710,8 +695,8 @@ function handleChangeRace() {
     // Reset all manual passive choices and flags
     character.demiHumanStatChoices = [];
     character.demiHumanStatsAffected = new Set();
-    character.healthRacialChange = getAppliedRacialChange(character, 'Health');
-    character.magicRacialChange = 1;
+    character.healthRacialChange = 0; // Reset Demi-human specific health change
+    character.magicRacialChange = 0; // Reset Demi-human specific magic change
 
     character.mutantMutations = [];
     character.mutantDegenerations = [];
@@ -830,16 +815,15 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     const previousChoiceIndex = character.demiHumanStatChoices.findIndex(c => c.slotId === slotId);
     const previousChoice = previousChoiceIndex !== -1 ? character.demiHumanStatChoices[previousChoiceIndex] : null;
 
-    // If a stat was previously selected for this slot, remove it from affected list
+    // If a stat was previously selected for this slot, remove it from affected list and reset its racialChange
     if (previousChoice && previousChoice.statName) {
         character.demiHumanStatsAffected.delete(previousChoice.statName);
-        // Reset racialChange for the previously chosen stat (if it was a stat affected by this choice)
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-            character[previousChoice.statName].racialChange -= getAppliedRacialChange(character, previousChoice.statName); // Reset to 0 for Demi-humans
+            character[previousChoice.statName].racialChange = 0; // Reset to 0 for Demi-humans
         } else if (previousChoice.statName === 'Health') {
-            character.healthRacialChange -= getAppliedRacialChange(character, previousChoice.statName);
+            character.healthRacialChange = 0; // Reset to 0
         } else if (previousChoice.statName === 'Magic') {
-            character.magicRacialChange -= getAppliedRacialChange(character, previousChoice.statName);
+            character.magicRacialChange = 0; // Reset to 0
         }
     }
 
@@ -964,7 +948,7 @@ function renderMutantChoiceUI() {
                         ${mutationOptions.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${opt.type === 'skill_choice' || opt.type === 'natural_regen_active' || opt.type === 'regen_doubled' ? 'disabled' : ''}>${opt.label}</option>`).join('')}
                     </select>
                 </div>
-                <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' ? '' : 'hidden'}">
+                <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50' ? '' : 'hidden'}">
                     <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
                     <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">-- Select a Stat --</option>
@@ -1086,7 +1070,7 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
         if (previousChoice.statName) {
             character.mutantAffectedStats.delete(previousChoice.statName);
             if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-                character[previousChoice.statName].racialChange -= getAppliedRacialChange(character, previousChoice.statName);
+                character[previousChoice.statName].racialChange = 0; // Reset to 0 for Mutants
             }
         }
         if (previousChoice.type === 'double_base_health') {
@@ -2140,142 +2124,10 @@ async function loadGoogleDriveFileContent(fileId) {
         const loadedData = JSON.parse(res.body);
 
         if (Array.isArray(loadedData)) {
-            characters = loadedData.map(loadedChar => {
-                const newChar = defaultCharacterData();
-                for (const key in newChar) {
-                    if (loadedChar.hasOwnProperty(key)) {
-                        if (key === 'class') {
-                            newChar.class = Array.isArray(loadedChar.class) ? loadedChar.class : [];
-                        } else if (key === 'specialization') {
-                            newChar.specialization = Array.isArray(loadedChar.specialization) ? loadedChar.specialization : [];
-                        } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
-                            if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
-                                newChar[key] = {
-                                    ...newChar[key],
-                                    ...loadedChar[key]
-                                };
-                                if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(key);
-                                }
-                                if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
-                                    newChar[key].maxExperience = defaultStatMaxExperience;
-                                }
-                            } else {
-                                newChar[key] = {
-                                    ...newChar[key],
-                                    value: parseFloat(loadedChar[key]) || newChar[key].value
-                                };
-                                if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(key);
-                                }
-                            }
-                        } else {
-                            newChar[key] = loadedChar[key];
-                        }
-                    }
-                }
-                newChar.weaponInventory = loadedChar.weaponInventory || [];
-                newChar.armorInventory = loadedChar.armorInventory || [];
-                newChar.generalInventory = loadedChar.generalInventory || [];
-                newChar.sectionVisibility = loadedChar.sectionVisibility || defaultCharacterData().sectionVisibility;
-
-                newChar.demiHumanStatChoices = loadedChar.demiHumanStatChoices || [];
-                newChar.demiHumanStatsAffected = new Set(loadedChar.demiHumanStatsAffected || []); // Convert back to Set
-                newChar.healthRacialChange = loadedChar.healthRacialChange !== undefined ? loadedChar.healthRacialChange : 0;
-                newChar.magicRacialChange = loadedChar.magicRacialChange !== undefined ? loadedChar.magicRacialChange : 0;
-
-                newChar.mutantMutations = loadedChar.mutantMutations || [];
-                newChar.mutantDegenerations = loadedChar.mutantDegenerations || [];
-                newChar.mutantAffectedStats = new Set(loadedChar.mutantAffectedStats || []);
-                newChar.baseMaxHealthDoubled = loadedChar.baseMaxHealthDoubled || false;
-                newChar.naturalHealthRegenActive = loadedChar.naturalHealthRegenActive || false;
-                newChar.naturalManaRegenActive = loadedChar.naturalManaRegenActive || false;
-                newChar.healthRegenDoubled = loadedChar.healthRegenDoubled || false;
-                newChar.manaRegenDoubled = loadedChar.manaRegenDoubled || false;
-
-                newChar.weaponInventory.forEach(weapon => {
-                    if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
-                    if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
-                });
-
-                newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
-                newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
-                newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
-                newChar.ac = newChar.armorBonus;
-                newChar.Health = Math.min(newChar.Health, newChar.maxHealth);
-                newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
-                newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
-
-                return newChar;
-            });
+            characters = loadedData.map(loadedChar => initLoadCharacter(loadedChar));
             currentCharacterIndex = 0;
         } else {
-            const newChar = defaultCharacterData();
-            for (const key in newChar) {
-                if (loadedData.hasOwnProperty(key)) {
-                    if (key === 'class') {
-                        newChar.class = Array.isArray(loadedData.class) ? loadedData.class : [];
-                    } else if (key === 'specialization') {
-                        newChar.specialization = Array.isArray(loadedData.specialization) ? loadedData.specialization : [];
-                    } else if (typeof newChar[key] === 'object' && newChar[key] !== null) {
-                        if (typeof loadedData[key] === 'object' && loadedData[key] !== null) {
-                            newChar[key] = {
-                                ...newChar[key],
-                                ...loadedData[key]
-                            };
-                            if (ExternalDataManager.rollStats.includes(key)) {
-                                newChar[key].total = calculateTotal(key);
-                            }
-                            if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
-                                newChar[key].maxExperience = defaultStatMaxExperience;
-                            }
-                        } else {
-                            newChar[key] = {
-                                ...newChar[key],
-                                value: parseFloat(loadedData[key]) || newChar[key].value
-                            };
-                            if (ExternalDataManager.rollStats.includes(key)) {
-                                newChar[key].total = calculateTotal(key);
-                            }
-                        }
-                    } else {
-                        newChar[key] = loadedData[key];
-                    }
-                }
-            }
-            newChar.weaponInventory = loadedData.weaponInventory || [];
-            newChar.armorInventory = loadedData.armorInventory || [];
-            newChar.generalInventory = loadedData.generalInventory || [];
-            newChar.sectionVisibility = loadedData.sectionVisibility || defaultCharacterData().sectionVisibility;
-
-            newChar.demiHumanStatChoices = loadedData.demiHumanStatChoices || [];
-            newChar.demiHumanStatsAffected = new Set(loadedData.demiHumanStatsAffected || []);
-            newChar.healthRacialChange = loadedData.healthRacialChange !== undefined ? loadedData.healthRacialChange : 0;
-            newChar.magicRacialChange = loadedData.magicRacialChange !== undefined ? loadedData.magicRacialChange : 0;
-
-            newChar.mutantMutations = loadedData.mutantMutations || [];
-            newChar.mutantDegenerations = loadedData.mutantDegenerations || [];
-            newChar.mutantAffectedStats = new Set(loadedData.mutantAffectedStats || []);
-            newChar.baseMaxHealthDoubled = loadedData.baseMaxHealthDoubled || false;
-            newChar.naturalHealthRegenActive = loadedData.naturalHealthRegenActive || false;
-            newChar.naturalManaRegenActive = loadedData.naturalManaRegenActive || false;
-            newChar.healthRegenDoubled = loadedData.healthRegenDoubled || false;
-            newChar.manaRegenDoubled = loadedData.manaRegenDoubled || false;
-
-            newChar.weaponInventory.forEach(weapon => {
-                if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
-                if (typeof weapon.originalMagicDamage === 'undefined') originalMagicDamage = weapon.magicDamage;
-            });
-
-            newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
-            newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
-            newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
-            newChar.ac = newChar.armorBonus;
-            newChar.Health = Math.min(newChar.Health, newChar.maxHealth);
-            newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
-            newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
-
-            characters = [newChar];
+            characters = [initLoadCharacter(loadedData)];
             currentCharacterIndex = 0;
         }
         currentGoogleDriveFileId = fileId; // Set the current file ID
