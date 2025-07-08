@@ -1,10 +1,3 @@
-const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
-
-const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
-
-// IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
-const ORIGIN = window.location.origin;
-
 import { ExternalDataManager } from './externalDataManager.js';
 
 let tokenClient;
@@ -1973,20 +1966,6 @@ function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
 }
 
 /**
- * Initializes Google Identity Services (GIS) client for authorization.
- */
-function gisLoaded() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: Auth_CLIENT_ID,
-        scope: SCOPES,
-        callback: '', // Will be set dynamically before request
-        redirect_uri: ORIGIN
-    });
-    gisInited = true;
-    maybeEnableGoogleDriveButtons();
-}
-
-/**
  * Enables Google Drive buttons if both GAPI and GIS are initialized.
  * Also updates the UI based on current authorization status and local storage.
  */
@@ -2654,6 +2633,11 @@ function initPage() {
     saveCurrentStateToHistory();
 }
 
+
+window.addEventListener("gis-ready", () => {
+    gapiInited = true;
+    maybeEnableGoogleDriveButtons();
+});
 
 window.addEventListener("gapi-ready", () => {
     gapiInited = true;

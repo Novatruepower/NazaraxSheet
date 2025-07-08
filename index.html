@@ -543,11 +543,7 @@
         </div>
     </div>
 
-    <!-- Google API Scripts -->
-    <script src="https://apis.google.com/js/api.js" async defer></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-    <script async defer>
+    <script>
         /**
          * Initializes Google API client libraries.
          */
@@ -569,8 +565,31 @@
             });
         }
 
-        gapiLoaded();
+        /**
+         * Initializes Google Identity Services (GIS) client for authorization.
+         */
+        function gisLoaded() {
+            const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
+
+            const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
+
+            // IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
+            const ORIGIN = window.location.origin;
+
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: Auth_CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // Will be set dynamically before request
+                redirect_uri: ORIGIN
+            });
+            gisInited = true;
+            maybeEnableGoogleDriveButtons();
+        }
     </script>
+
+    <!-- Google API Scripts -->
+    <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded"></script>
     
     <script type="module" src="fetch.js" async defer></script>
     <script type="module" src="externalDataManager.js" async defer></script>
