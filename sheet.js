@@ -54,13 +54,14 @@ async function externalData() {
         googleDriveFileFetcher.My_Sheet.Races.gid,
         googleDriveFileFetcher.My_Sheet.Races.range
     ).then(arr => {
+        arr.splice(0, 1);                            // remove the header row from array
+
         // Clone the first row to avoid reference issues
         const head = [...arr[0]];                    // shallow copy
         const statsCopy = [...arr[0]];               // another shallow copy
 
         const health = head[1];
         delete head[1];                              // remove health column from head
-        arr.splice(0, 1);                            // remove the header row from array
 
         fetchedData['Stats'] = statsCopy;
         fetchedData['Roll'] = head;
