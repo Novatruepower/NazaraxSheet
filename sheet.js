@@ -1799,30 +1799,6 @@ function attachEventListeners() {
     });
 }
 
-function initPage() {
-    // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
-    characters[0].maxHp = calculateMaxHealth(characters[0].race, characters[0].level, characters[0].healthBonus);
-    characters[0].maxMagicPoints = calculateMaxMagic(characters[0].level);
-    characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
-    // Initialize AC based on armorBonus for the first character
-    characters[0].ac = characters[0].armorBonus;
-
-    populateCharacterSelector(); // Populate the selector on load
-    updateDOM();
-    attachEventListeners(); // Attach event listeners after DOM is updated
-
-    // Make the personal notes panel draggable
-    const personalNotesPanel = document.getElementById('personal-notes-panel');
-    const personalNotesHeader = document.querySelector('.personal-notes-header');
-    makeDraggable(personalNotesPanel, personalNotesHeader);
-
-    // Initialize Google API libraries
-    gapiLoaded();
-    gisLoaded();
-    // Initial UI update for Google Drive buttons based on local storage and current token
-    maybeEnableGoogleDriveButtons();
-}
-
 async function externalData() {
         await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
 
@@ -1848,13 +1824,36 @@ async function externalData() {
                 ++index;
             });
         });
-
-        characters = [defaultCharacterData()];
-        initPage();
     });
+}
+
+function initPage() {
+    characters = [defaultCharacterData()];
+    // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
+    characters[0].maxHp = calculateMaxHealth(characters[0].race, characters[0].level, characters[0].healthBonus);
+    characters[0].maxMagicPoints = calculateMaxMagic(characters[0].level);
+    characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
+    // Initialize AC based on armorBonus for the first character
+    characters[0].ac = characters[0].armorBonus;
+
+    populateCharacterSelector(); // Populate the selector on load
+    updateDOM();
+    attachEventListeners(); // Attach event listeners after DOM is updated
+
+    // Make the personal notes panel draggable
+    const personalNotesPanel = document.getElementById('personal-notes-panel');
+    const personalNotesHeader = document.querySelector('.personal-notes-header');
+    makeDraggable(personalNotesPanel, personalNotesHeader);
+
+    // Initialize Google API libraries
+    gapiLoaded();
+    gisLoaded();
+    // Initial UI update for Google Drive buttons based on local storage and current token
+    maybeEnableGoogleDriveButtons();
 }
 
 // Initialize the application when the DOM is fully loaded
 window.onload = async function() {
     await externalData();
+    initPage();
 };
