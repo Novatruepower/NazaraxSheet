@@ -549,21 +549,15 @@
         window.tokenClient = null;
 
         function gapiLoaded() {
-            const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqgqCN4cjTGg';
-            const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-
             gapi.load('client', async () => {
-                try {
-                    await gapi.client.init({
-                        apiKey: GOOGLE_API_KEY,
-                        discoveryDocs: [DISCOVERY_DOC],
-                    });
-                    window.gapiInited = true;
-                    console.log("✅ GAPI Initialized");
-                    document.dispatchEvent(new Event("gapi-ready"));
-                } catch (err) {
-                    console.error("❌ GAPI Init Failed:", err);
-                }
+            try {
+                await gapi.client.load('drive', 'v3'); // ✅ Use manual API load instead of discovery doc
+                window.gapiInited = true;
+                console.log("✅ GAPI Client Loaded via .load('drive', 'v3')");
+                document.dispatchEvent(new Event("gapi-ready"));
+            } catch (err) {
+                console.error("❌ GAPI Manual Load Failed:", err);
+            }
             });
         }
 
@@ -594,6 +588,6 @@
     <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded"></script>
     <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded"></script>
     
-    <script src="./sheet.js" type="module"></script>
+    <script src="sheet.js" type="module"></script>
 </body>
 </html>
