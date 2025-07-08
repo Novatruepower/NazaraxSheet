@@ -62,8 +62,8 @@ const defaultCharacterData = function() {
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
         baseHealth: 100, // Will be used to Calculate calculateBaseMaxHealth
-        hp: 0, // Will be calculated dynamically
-        maxHp: 0, // Will be calculated dynamically
+        Health: 0, // Will be calculated dynamically
+        maxHealth: 0, // Will be calculated dynamically
         healthBonus: 0,
         currentMagicPoints: 0, // Will be calculated dynamically
         maxMagicPoints: 0, // Will be calculated dynamically
@@ -120,9 +120,9 @@ const defaultCharacterData = function() {
         };
     });
 
-    // Calculate initial HP and Magic based on the default race
-    newCharacter.maxHp = calculateMaxHealth(newCharacter, newCharacter.race, newCharacter.level, newCharacter.healthBonus);
-    newCharacter.hp = newCharacter.maxHp;
+    // Calculate initial Health and Magic based on the default race
+    newCharacter.maxHealth = calculateMaxHealth(newCharacter, newCharacter.race, newCharacter.level, newCharacter.healthBonus);
+    newCharacter.Health = newCharacter.maxHealth;
     newCharacter.maxMagicPoints = calculateMaxMagic(newCharacter, newCharacter.level);
     newCharacter.currentMagicPoints = newCharacter.maxMagicPoints;
 
@@ -206,10 +206,10 @@ const statMapping = {
     "Intimidation": "intimidation-total",
     "Charisma": "charisma-total",
     "Negotiation": "negotiation-total",
-    "HP": "hp",
-    "Health": "hp",
-    "MaxHP": "maxHp",
-    "MaxHealth": "maxHp",
+    "hp": "Health",
+    "Health": "Health",
+    "MaxHp": "maxHealth",
+    "MaxHealth": "maxHealth",
     "MagicPoints": "currentMagicPoints",
     "MaxMagicPoints": "maxMagicPoints",
     "RacialPower": "racialPower",
@@ -316,8 +316,8 @@ function saveCharacterToFile() {
         if (char.mutantAffectedStats instanceof Set) {
             char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
         }
-        // Exclude calculated properties (maxHp, maxMagicPoints, maxRacialPower, ac) from the saved data
-        delete char.maxHp;
+        // Exclude calculated properties (maxHealth, maxMagicPoints, maxRacialPower, ac) from the saved data
+        delete char.maxHealth;
         delete char.maxMagicPoints;
         delete char.maxRacialPower;
         delete char.ac;
@@ -408,13 +408,13 @@ function initLoadCharacter(loadedChar, loadedData) {
     });
 
     // Recalculate derived properties
-    newChar.maxHp = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
+    newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
     newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
     newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
     newChar.ac = newChar.armorBonus;
 
-    // Ensure current HP, Magic, and Racial Power don't exceed new max values
-    newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+    // Ensure current Health, Magic, and Racial Power don't exceed new max values
+    newChar.Health = Math.min(newChar.Health, newChar.maxHealth);
     newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
     newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
 
@@ -469,7 +469,7 @@ function updateDOM() {
     document.getElementById('levelExperience').value = character.levelExperience;
     document.getElementById('levelMaxExperience').value = character.levelMaxExperience; // This is readonly
 
-    // Handle race selector placeholder color and update max HP
+    // Handle race selector placeholder color and update max Health
     const raceSelect = document.getElementById('race');
     raceSelect.value = character.race; // Set the selected race
     if (character.race === '') {
@@ -477,10 +477,10 @@ function updateDOM() {
     } else {
         raceSelect.classList.remove('select-placeholder-text');
     }
-    // Recalculate maxHp when race is updated in DOM
-    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    // Ensure current HP doesn't exceed new max HP when race changes
-    character.hp = Math.min(character.hp, character.maxHp);
+    // Recalculate maxHealth when race is updated in DOM
+    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+    // Ensure current Health doesn't exceed new max Health when race changes
+    character.Health = Math.min(character.Health, character.maxHealth);
 
 
     // Handle custom multi-select for class
@@ -555,8 +555,8 @@ function updateDOM() {
 
 
     // Health & Combat
-    document.getElementById('hp').value = character.hp;
-    document.getElementById('maxHp').value = character.maxHp; // This now includes healthBonus
+    document.getElementById('Health').value = character.Health;
+    document.getElementById('maxHealth').value = character.maxHealth; // This now includes healthBonus
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
     document.getElementById('racialPower').value = character.racialPower; // Populate racialPower
     document.getElementById('maxRacialPower').value = character.maxRacialPower; // Populate maxRacialPower
@@ -733,11 +733,11 @@ function handleChangeRace() {
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
 
-    // Update maxHp, maxMagicPoints and maxRacialPower when race changes
-    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
-    document.getElementById('maxHp').value = character.maxHp;
-    document.getElementById('hp').value = character.hp;
+    // Update maxHealth, maxMagicPoints and maxRacialPower when race changes
+    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+    character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
+    document.getElementById('maxHealth').value = character.maxHealth;
+    document.getElementById('Health').value = character.Health;
 
     character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
@@ -879,8 +879,8 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     }
 
     // Recalculate derived properties that depend on racial changes
-    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    character.hp = Math.min(character.hp, character.maxHp);
+    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+    character.Health = Math.min(character.Health, character.maxHealth);
     character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
 
@@ -1141,8 +1141,8 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
     }
 
     // Recalculate derived properties that depend on racial changes
-    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    character.hp = Math.min(character.hp, character.maxHp);
+    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+    character.Health = Math.min(character.Health, character.maxHealth);
     character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
 
@@ -1183,8 +1183,8 @@ function attachClearMutantChoiceListeners() {
             }
 
             // Recalculate derived properties and update UI
-            character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-            character.hp = Math.min(character.hp, character.maxHp);
+            character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+            character.Health = Math.min(character.Health, character.maxHealth);
             character.maxMagicPoints = calculateMaxMagic(character, character.level);
             character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
 
@@ -1357,7 +1357,7 @@ function handleChange(event) {
         renderWeaponInventory();
 
     } else {
-        // For other non-stat inputs (name, level, hp, ac, skills, inventory, race, healthBonus, currentMagicPoints, racialPower, personalNotes)
+        // For other non-stat inputs (name, level, Health, ac, skills, inventory, race, healthBonus, currentMagicPoints, racialPower, personalNotes)
         // The 'class-display' input is read-only and handled by custom logic, so it's excluded here.
         if (id === 'levelExperience') {
             character.levelExperience = newValue;
@@ -1375,11 +1375,11 @@ function handleChange(event) {
             character.level = newValue;
             character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
-            // Also update maxHp, maxMagicPoints and maxRacialPower when level changes
-            character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-            character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
-            document.getElementById('maxHp').value = character.maxHp;
-            document.getElementById('hp').value = character.hp;
+            // Also update maxHealth, maxMagicPoints and maxRacialPower when level changes
+            character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+            character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
+            document.getElementById('maxHealth').value = character.maxHealth;
+            document.getElementById('Health').value = character.Health;
 
             character.maxMagicPoints = calculateMaxMagic(character, character.level);
             character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
@@ -1400,9 +1400,9 @@ function handleChange(event) {
                 raceSelect.classList.remove('select-placeholder-text');
             }
             handleChangeRace(); // Call handleChangeRace to update racial characteristics
-        } else if (id === 'hp') { // Handle current HP input
-            character.hp = Math.min(newValue, character.maxHp); // Ensure current HP doesn't exceed max HP
-            document.getElementById('hp').value = character.hp;
+        } else if (id === 'Health') { // Handle current Health input
+            character.Health = Math.min(newValue, character.maxHealth); // Ensure current Health doesn't exceed max Health
+            document.getElementById('Health').value = character.Health;
         } else if (id === 'currentMagicPoints') { // Handle current Magic input (renamed)
             character.currentMagicPoints = Math.min(newValue, character.maxMagicPoints); // Ensure current Magic doesn't exceed max Magic
             document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
@@ -1411,11 +1411,11 @@ function handleChange(event) {
             document.getElementById('racialPower').value = character.racialPower;
         } else if (id === 'healthBonus') { // Handle healthBonus input
             character.healthBonus = newValue;
-            // Recalculate maxHp when healthBonus changes
-            character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-            character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
-            document.getElementById('maxHp').value = character.maxHp;
-            document.getElementById('hp').value = character.hp;
+            // Recalculate maxHealth when healthBonus changes
+            character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+            character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
+            document.getElementById('maxHealth').value = character.maxHealth;
+            document.getElementById('Health').value = character.Health;
         } else if (id === 'armorBonus') { // Handle armorBonus input
             character.armorBonus = newValue;
             character.ac = character.armorBonus; // Update AC based on armorBonus
@@ -1592,7 +1592,7 @@ function makeDraggable(element, handle) {
 }
 
 function populateRaceSelector() {
-    // Handle race selector placeholder color and update max HP
+    // Handle race selector placeholder color and update max Health
     const raceSelect = document.getElementById('race');
     raceSelect.innerHTML = `<option value="" disabled selected class="defaultOption">Select a Race</option>`;
 
@@ -2007,7 +2007,7 @@ async function saveCharacterToGoogleDrive() {
             if (char.mutantAffectedStats instanceof Set) {
                 char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
             }
-            delete char.maxHp;
+            delete char.maxHealth;
             delete char.maxMagicPoints;
             delete char.maxRacialPower;
             delete char.ac;
@@ -2198,11 +2198,11 @@ async function loadGoogleDriveFileContent(fileId) {
                     if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
                 });
 
-                newChar.maxHp = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
+                newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
                 newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
                 newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
                 newChar.ac = newChar.armorBonus;
-                newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+                newChar.Health = Math.min(newChar.Health, newChar.maxHealth);
                 newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
                 newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
 
@@ -2267,11 +2267,11 @@ async function loadGoogleDriveFileContent(fileId) {
                 if (typeof weapon.originalMagicDamage === 'undefined') originalMagicDamage = weapon.magicDamage;
             });
 
-            newChar.maxHp = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
+            newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
             newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
             newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
             newChar.ac = newChar.armorBonus;
-            newChar.hp = Math.min(newChar.hp, newChar.maxHp);
+            newChar.Health = Math.min(newChar.Health, newChar.maxHealth);
             newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
             newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
 
@@ -2386,7 +2386,7 @@ function toggleSidebar() {
 function attachEventListeners() {
     // Attach listeners for standard inputs and the race selector
     const inputs = document.querySelectorAll(
-        '#name, #level, #levelExperience, #race, #hp, #currentMagicPoints, #racialPower, #skills, #healthBonus, #armorBonus, #personalNotes'
+        '#name, #level, #levelExperience, #race, #Health, #currentMagicPoints, #racialPower, #skills, #healthBonus, #armorBonus, #personalNotes'
     );
     inputs.forEach(input => {
         if (!input.readOnly) {
@@ -2551,8 +2551,8 @@ function attachEventListeners() {
 
 function initPage() {
     characters = [defaultCharacterData()];
-    // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
-    characters[0].maxHp = calculateMaxHealth(characters[0], characters[0].race, characters[0].level, characters[0].healthBonus);
+    // Initialize maxHealth, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
+    characters[0].maxHealth = calculateMaxHealth(characters[0], characters[0].race, characters[0].level, characters[0].healthBonus);
     characters[0].maxMagicPoints = calculateMaxMagic(characters[0], characters[0].level);
     characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
     // Initialize AC based on armorBonus for the first character
