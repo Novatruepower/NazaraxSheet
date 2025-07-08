@@ -732,13 +732,15 @@ function handleChange(event) {
         // The 'class-display' input is read-only and handled by custom logic, so it's excluded here.
         if (id === 'levelExperience') {
             character.levelExperience = newValue;
-            if (character.levelExperience >= character.levelMaxExperience) {
+
+            while (character.levelExperience >= character.levelMaxExperience) {
                 character.level++;
                 character.levelExperience -= character.levelMaxExperience;
                 character.levelMaxExperience = calculateLevelMaxExperience(character.level);
-                document.getElementById('level').value = character.level;
-                document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             }
+
+            document.getElementById('level').value = character.level;
+            document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             document.getElementById('levelExperience').value = character.levelExperience;
         } else if (id === 'level') {
             character.level = newValue;
