@@ -426,8 +426,8 @@ function updateDOM() {
 
     // Populate and update checkboxes in the dropdown options
     classDropdownOptions.innerHTML = ''; // Clear existing options
-    console.log(ExternalDataManager._data.Classes);
-    ExternalDataManager._data.Classes.forEach(className => {
+    const classes = Object.keys(ExternalDataManager._data.Classes);
+    classes.forEach(className => {
         const checkboxDiv = document.createElement('div');
         checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
         checkboxDiv.innerHTML = `
