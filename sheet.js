@@ -30,9 +30,6 @@ const classSpecializationsMap = {
     "Martial artist": ["Apprentice", "Warrior", "Master", "Grand Master", "Lord", "King"],
 };
 
-// List of data for easy iteration
-await ExternalDataManager.init();
-
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
     const healthChange = ExternalDataManager.getRaceHealthChange(race) || 1.00; // Default to 1 if race not found
@@ -105,8 +102,6 @@ const defaultCharacterData = function() {
 
     return newCharacter;
 };
-
-console.log("nice");
 
 // Array to hold all character sheets
 let characters = [];
@@ -1815,9 +1810,7 @@ function initPage() {
 }
 
 // Initialize the application when the DOM is fully loaded
-window.onload = function() {
+window.onload = async function() {
+    await ExternalDataManager.init();
     initPage();
-    console.log("load");
 };
-
-console.log("end");
