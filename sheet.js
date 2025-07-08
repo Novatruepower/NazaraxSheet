@@ -236,7 +236,7 @@ function calculateTotal(statName) {
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
     console.log(`getAppliedRacialChange called for ${statName}. Current charData.demiHumanStatChoices:`, JSON.parse(JSON.stringify(charData.demiHumanStatChoices)));
-    let totalRacialChange = 0;
+    let totalRacialChange = charData[statName].value;
 
     if (charData.race === 'Demi-humans') {
         const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
