@@ -1815,6 +1815,6 @@ function initPage() {
 }
 
 // Initialize the application when the DOM is fully loaded
-window.onload = async function() {
+window.onload = function() {
     initPage();
 };
