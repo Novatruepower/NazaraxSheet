@@ -15,7 +15,7 @@ function calculateBaseMaxHealth(charData, race) {
     if (race === 'Mutant' && charData && charData.baseMaxHealthDoubled)
         baseHealthMultiplier *= 2; // Double the base value for Mutants
 
-    return charData.baseHealth * baseHealthMultiplier * healthRacialChange;
+    return charData.baseHealth * baseHealthMultiplier;
 }
 
 // Function to calculate max health based on race, level, and bonus
