@@ -11,7 +11,7 @@ import { googleDriveFileFetcher } from './fetch.js';
 
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
-    _data: { Races:{}, Stats:{} },
+    _data: { Races:{}, Stats:{}, Roll: {} },
 
     /**
      * Fetches external data from Google Sheets and populates the internal `_data` object.
