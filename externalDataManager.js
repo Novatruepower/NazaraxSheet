@@ -11,7 +11,7 @@ import { googleDriveFileFetcher } from './fetch.js';
 
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
-    _data: { Races:{}, Stats:{}, Roll: {} },
+    _data: { Races:{}, Stats:{}, Roll:{} },
 
     /**
      * Fetches external data from Google Sheets and populates the internal `_data` object.
@@ -41,7 +41,7 @@ export const ExternalDataManager = {
                             }
                         };
 
-                        this._data[race]['Stats'][health] = value[1]; // Assign health multiplier
+                        this._data['Races'][race]['Stats'][health] = value[1]; // Assign health multiplier
                         let index = 2; // Start from the third column for stats
 
                         head.forEach(statName => {
