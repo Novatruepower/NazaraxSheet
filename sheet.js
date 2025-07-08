@@ -235,38 +235,33 @@ function calculateTotal(statName) {
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-    console.log(`getAppliedRacialChange called for ${statName}. Current charData.demiHumanStatChoices:`, JSON.parse(JSON.stringify(charData.demiHumanStatChoices)));
-    let totalRacialChange = charData[statName].racialChange;
+    console.log(`getAppliedRacialChange called for ${statName}.`);
 
-    if (charData.race === 'Demi-humans') {
-        const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
-        if (choice) {
-            totalRacialChange += choice.modifier; // This is where the 0.25 is added.
-        }
-        // Health and Magic are special cases and stored directly on charData object for Demi-humans
-        if (statName === 'Health') {
-            totalRacialChange += charData.healthRacialChange;
-        }
-        if (statName === 'Magic') { // Note: 'Magic' here refers to the stat, not magic points
-            totalRacialChange += charData.magicRacialChange;
-        }
-    } else if (charData.race === 'Mutant') {
-        // Check for stat multiplier mutations
-        const mutantStatMutation = charData.mutantMutations.find(m => m.statName === statName);
-        if (mutantStatMutation) {
-            totalRacialChange += mutantStatMutation.value; // This value is already a percentage change (e.g., 0.50)
-        }
-        // Check for stat degeneration
-        const mutantDegeneration = charData.mutantDegenerations.find(d => d.statName === statName);
-        if (mutantDegeneration) {
-            totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
-        }
-    } else {
-        // For other races, get the racial change from ExternalDataManager
-        totalRacialChange = ExternalDataManager.getRacialChange(charData.race, statName);
+    // For standard rollStats, the racialChange is directly stored on the stat object.
+    if (ExternalDataManager.rollStats.includes(statName)) {
+        const racialChange = charData[statName].racialChange;
+        console.log(`  Returning character.${statName}.racialChange: ${racialChange}`);
+        return racialChange;
     }
 
-    return totalRacialChange;
+    // For Health, the racialChange is stored in healthRacialChange.
+    if (statName === 'Health') {
+        const racialChange = charData.healthRacialChange;
+        console.log(`  Returning character.healthRacialChange: ${racialChange}`);
+        return racialChange;
+    }
+
+    // For Magic (referring to Magic Points/Stat), the racialChange is stored in magicRacialChange.
+    if (statName === 'Magic') {
+        const racialChange = charData.magicRacialChange;
+        console.log(`  Returning character.magicRacialChange: ${racialChange}`);
+        return racialChange;
+    }
+
+    // If for some reason a statName is passed that isn't a rollStat, Health, or Magic,
+    // and it's not explicitly handled by the above, return 0 or a default.
+    console.warn(`getAppliedRacialChange: Unhandled statName '${statName}'. Returning 0.`);
+    return 0;
 }
 
 
@@ -523,7 +518,7 @@ function updateDOM() {
             <td class="px-2 py-1 whitespace-nowrap">
                 <div class="flex items-center justify-center exp-inputs-wrapper">
                     <input type="number" id="${statName}-experience" name="${statName}-experience" min="0" value="${statData.experience}" class="stat-input rounded-r-none" />
-                    <span class="px-1 py-1 border-y border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">/</span>
+                    <span class="px-1 py-1 border-y border-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">/</span>
                     <input type="number" id="${statName}-maxExperience" name="${statName}-maxExperience" min="1" value="${statData.maxExperience}" readonly class="stat-input rounded-l-none" />
                 </div>
             </td>
@@ -823,13 +818,13 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
 
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
             character[previousChoice.statName].racialChange -= previousChoice.modifier;
-            console.log(`  Reset character.${previousChoice.statName}.racialChange to 0.`);
+            console.log(`  Subtracted ${previousChoice.modifier} from character.${previousChoice.statName}.racialChange. New value: ${character[previousChoice.statName].racialChange}`);
         } else if (previousChoice.statName === 'Health') {
             character.healthRacialChange -= previousChoice.modifier;
-            console.log(`  Reset character.healthRacialChange to 0.`);
+            console.log(`  Subtracted ${previousChoice.modifier} from character.healthRacialChange. New value: ${character.healthRacialChange}`);
         } else if (previousChoice.statName === 'Magic') {
             character.magicRacialChange -= previousChoice.modifier;
-            console.log(`  Reset character.magicRacialChange to 0.`);
+            console.log(`  Subtracted ${previousChoice.modifier} from character.magicRacialChange. New value: ${character.magicRacialChange}`);
         }
     }
 
@@ -862,13 +857,13 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         // Apply the modifier to the chosen stat
         if (ExternalDataManager.rollStats.includes(selectedStatName)) {
             character[selectedStatName].racialChange += modifierValue;
-            console.log(`  Set character.${selectedStatName}.racialChange to ${modifierValue}.`);
+            console.log(`  Added ${modifierValue} to character.${selectedStatName}.racialChange. New value: ${character[selectedStatName].racialChange}`);
         } else if (selectedStatName === 'Health') {
             character.healthRacialChange += modifierValue;
-            console.log(`  Set character.healthRacialChange to ${modifierValue}.`);
+            console.log(`  Added ${modifierValue} to character.healthRacialChange. New value: ${character.healthRacialChange}`);
         } else if (selectedStatName === 'Magic') {
             character.magicRacialChange += modifierValue;
-            console.log(`  Set character.magicRacialChange to ${modifierValue}.`);
+            console.log(`  Added ${modifierValue} to character.magicRacialChange. New value: ${character.magicRacialChange}`);
         }
     } else {
         // If the selected option is empty, remove the choice
