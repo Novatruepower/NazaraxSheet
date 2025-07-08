@@ -49,6 +49,36 @@ const raceHealthMultipliers = {
 // List of data for easy iteration
 let fetchedData = {};
 
+async function externalData() {
+        await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
+
+        delete arr[0][0];
+        const head = arr[0];
+        delete arr[0];
+        const health = head[1];
+        delete head[1];
+
+        arr.forEach(value => {
+            let race = value[0];
+            fetchedData[race] = {
+                Stats: {
+                    Roll: {} 
+                }
+            };
+            
+            fetchedData[race]['Stats'][health] = value[1];
+            let index = 2;
+
+            head.forEach(statName => {
+                fetchedData[race]['Stats']['Roll'][statName] = value[index];
+                ++index;
+            });
+        });
+    });
+}
+
+await externalData();
+
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
     const multiplier = raceHealthMultipliers[race] || 1.00; // Default to 1 if race not found
@@ -1799,34 +1829,6 @@ function attachEventListeners() {
     });
 }
 
-async function externalData() {
-        await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
-
-        delete arr[0][0];
-        const head = arr[0];
-        delete arr[0];
-        const health = head[1];
-        delete head[1];
-
-        arr.forEach(value => {
-            let race = value[0];
-            fetchedData[race] = {
-                Stats: {
-                    Roll: {} 
-                }
-            };
-            
-            fetchedData[race]['Stats'][health] = value[1];
-            let index = 2;
-
-            head.forEach(statName => {
-                fetchedData[race]['Stats']['Roll'][statName] = value[index];
-                ++index;
-            });
-        });
-    });
-}
-
 function initPage() {
     characters = [defaultCharacterData()];
     // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
@@ -1854,6 +1856,5 @@ function initPage() {
 
 // Initialize the application when the DOM is fully loaded
 window.onload = async function() {
-    await externalData();
     initPage();
 };
