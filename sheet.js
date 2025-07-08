@@ -116,7 +116,7 @@ let historyStack = [];
 const MAX_HISTORY_LENGTH = 10; // Store last 10 states
 
 // Function to push the current character's state to the history stack
-function pushCurrentCharacterStateToHistory() {
+function saveCurrentStateToHistory() {
     // Deep copy the entire characters array to save its state
     const currentState = JSON.parse(JSON.stringify(characters));
     // Only push if the current state is different from the last saved state
@@ -139,7 +139,7 @@ const character = new Proxy({}, {
         if (characters[currentCharacterIndex][prop] !== value) {
             characters[currentCharacterIndex][prop] = value;
             hasUnsavedChanges = true; // Mark that there are unsaved changes
-            pushCurrentCharacterStateToHistory(); // Save state after modification
+            // Removed: pushCurrentCharacterStateToHistory(); // This was too granular
         }
         
         // If the character name changes, update the selector
@@ -385,7 +385,7 @@ function loadCharacterFromFile(event) {
             showStatusMessage(`Character data loaded from JSON file!`);
             console.log(`Character data loaded from JSON file!`);
             historyStack = []; // Clear previous history
-            pushCurrentCharacterStateToHistory(); // Save the newly loaded state as the first history entry
+            saveCurrentStateToHistory(); // Save the newly loaded state as the first history entry
             hasUnsavedChanges = false; // Data is now loaded and considered "saved"
         } catch (e) {
             showStatusMessage("Error parsing JSON file.", true);
@@ -631,7 +631,7 @@ function quickRollStats() {
     // Re-render weapon inventory to update calculated damage values
     renderWeaponInventory();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to perform a quick roll for all player stats
@@ -655,7 +655,7 @@ function handleChangeRace() {
     });
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Event listener for all input changes (excluding the custom class multi-select)
@@ -707,7 +707,7 @@ function handleChange(event) {
             }
         }
         hasUnsavedChanges = true; // Mark that there are unsaved changes
-        pushCurrentCharacterStateToHistory(); // Save state after modification
+        saveCurrentStateToHistory(); // Save state after modification
         return; // Exit as inventory change is handled
     }
 
@@ -846,7 +846,7 @@ function handleChange(event) {
         renderWeaponInventory();
     }
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to toggle the visibility of the class dropdown options
@@ -878,7 +878,7 @@ function handleClassCheckboxChange(event) {
     // After class changes, update specialization dropdown
     updateSpecializationDropdownAndData();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to handle changes in the specialization checkboxes
@@ -895,7 +895,7 @@ function handleSpecializationCheckboxChange(event) {
     // Update the displayed value in the input field
     document.getElementById('specialization-display').value = character.specialization.join(', ');
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to update the specialization dropdown options and filter selected specializations
@@ -956,7 +956,7 @@ function togglePersonalNotesPanel() {
         character.personalNotes = personalNotesTextarea.value;
         notesPanel.classList.add('hidden');
         hasUnsavedChanges = true; // Mark that there are unsaved changes
-        pushCurrentCharacterStateToHistory(); // Save state after modification
+        saveCurrentStateToHistory(); // Save state after modification
     }
 }
 
@@ -1031,7 +1031,7 @@ function switchCharacter(event) {
             currentCharacterIndex = parseInt(event.target.value);
             updateDOM(); // Update the UI with the new character's data
             historyStack = []; // Clear previous history
-            pushCurrentCharacterStateToHistory(); // Save the new character's state as the first history entry
+            saveCurrentStateToHistory(); // Save the new character's state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after switching
         }, () => {
             // If user cancels, revert the dropdown selection
@@ -1041,7 +1041,7 @@ function switchCharacter(event) {
         currentCharacterIndex = parseInt(event.target.value);
         updateDOM(); // Update the UI with the new character's data
         historyStack = []; // Clear previous history
-        pushCurrentCharacterStateToHistory(); // Save the new character's state as the first history entry
+        saveCurrentStateToHistory(); // Save the new character's state as the first history entry
     }
 }
 
@@ -1060,7 +1060,7 @@ function addNewCharacter() {
             showStatusMessage(`Added new character: ${newChar.name}`);
             console.log(`Added new character: ${newChar.name}`);
             historyStack = []; // Clear previous history
-            pushCurrentCharacterStateToHistory(); // Save the new character's state as the first history entry
+            saveCurrentStateToHistory(); // Save the new character's state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after adding
         });
     } else {
@@ -1074,7 +1074,7 @@ function addNewCharacter() {
         showStatusMessage(`Added new character: ${newChar.name}`);
         console.log(`Added new character: ${newChar.name}`);
         historyStack = []; // Clear previous history
-        pushCurrentCharacterStateToHistory(); // Save the new character's state as the first history entry
+        saveCurrentStateToHistory(); // Save the new character's state as the first history entry
     }
 }
 
@@ -1083,21 +1083,21 @@ function addWeapon() {
     character.weaponInventory.push({ name: '', type: '', material: '', requirement: '', requiredStat: '', accuracy: 100, damage: '', magicDamage: '', magicType: '', effect: '', value: 0, use: false }); // 'use' is now boolean
     renderWeaponInventory();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 function addArmor() {
     character.armorInventory.push({ name: '', location: '', material: '', requirement: '', requiredStat: '', defense: 0, magicDefense: 0, magicType: '', effect: '', value: 0, equipped: false });
     renderArmorInventory();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 function addGeneralItem() {
     character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 0, valuePerUnit: 0 });
     renderGeneralInventory();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to remove an item from inventory
@@ -1116,7 +1116,7 @@ function removeItem(event) {
         renderGeneralInventory();
     }
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    pushCurrentCharacterStateToHistory(); // Save state after modification
+    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to reset the current character to default data
@@ -1127,7 +1127,7 @@ function resetCurrentCharacter() {
         updateDOM();
         showStatusMessage("Current character reset successfully!");
         historyStack = []; // Clear history after a full reset
-        pushCurrentCharacterStateToHistory(); // Save the reset state as the first history entry
+        saveCurrentStateToHistory(); // Save the reset state as the first history entry
         hasUnsavedChanges = false; // Reset unsaved changes flag after reset
     });
 }
@@ -1155,7 +1155,7 @@ function deleteCurrentCharacter() {
         populateCharacterSelector(); // Re-populate selector after deletion
         showStatusMessage("Character deleted successfully!");
         historyStack = []; // Clear history after deletion
-        pushCurrentCharacterStateToHistory(); // Save the new state as the first history entry
+        saveCurrentStateToHistory(); // Save the new state as the first history entry
         hasUnsavedChanges = false; // Reset unsaved changes flag after deletion
     });
 }
@@ -1612,7 +1612,7 @@ async function loadGoogleDriveFileContent(fileId) {
         showStatusMessage("Character data loaded from Google Drive!");
         console.log("Character data loaded from Google Drive!");
         historyStack = []; // Clear previous history
-        pushCurrentCharacterStateToHistory(); // Save the newly loaded state as the first history entry
+        saveCurrentStateToHistory(); // Save the newly loaded state as the first history entry
         hasUnsavedChanges = false; // Data is now loaded and considered "saved"
     } catch (error) {
         console.error('Error loading Google Drive file content:', error);
@@ -1640,7 +1640,7 @@ function toggleSection(sectionId) {
             character.sectionVisibility[sectionId] = false;
         }
         hasUnsavedChanges = true; // Mark that there are unsaved changes
-        pushCurrentCharacterStateToHistory(); // Save state after modification
+        saveCurrentStateToHistory(); // Save state after modification
     }
 }
 
@@ -1899,7 +1899,7 @@ function initPage() {
     maybeEnableGoogleDriveButtons();
 
     // Save the initial state to history after everything is loaded and rendered
-    pushCurrentCharacterStateToHistory();
+    saveCurrentStateToHistory();
 }
 
 // Initialize the application when the DOM is fully loaded
