@@ -229,5 +229,5 @@ export const ExternalDataManager = {
             return classData.manualPassives;
         }
         return null;
-    }
+    },
 };

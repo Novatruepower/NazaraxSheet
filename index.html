@@ -546,9 +546,37 @@
     <!-- Google API Scripts -->
     <script src="https://apis.google.com/js/api.js" async defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <script async defer>
+        /**
+         * Initializes Google API client libraries.
+         */
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+
+        /**
+         * Initializes the Google Drive API client.
+         */
+        async function initializeGapiClient() {
+
+            const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqgqCN4cjTGg';
+            const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+
+            await gapi.client.init({
+                apiKey: GOOGLE_API_KEY,
+                discoveryDocs: [DISCOVERY_DOC],
+            });
+            maybeEnableGoogleDriveButtons();
+        }
+
+        gapiLoaded();
+    </script>
     
     <script type="module" src="fetch.js" async defer></script>
     <script type="module" src="externalDataManager.js" async defer></script>
-    <script type="module" src="sheet.js" defer></script>
+
+
+    <script type="module" src="sheet.js" async defer></script>
 </body>
 </html>

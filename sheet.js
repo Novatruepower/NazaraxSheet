@@ -1,8 +1,7 @@
 const Auth_CLIENT_ID = '527331500399-1kmgdnjjlbkv7jtkmrsqh1mlbga6fomf.apps.googleusercontent.com';
-const GOOGLE_API_KEY = 'AIzaSyBLG6Y30t5fZ-jWSeRbR0tKqgqCN4cjTGg';
 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // Scope for accessing files created/opened by this app
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+
 // IMPORTANT: Replace with the actual origin where your app is hosted (e.g., 'https://your-username.github.io/your-repo-name')
 const ORIGIN = window.location.origin;
 
@@ -1973,24 +1972,9 @@ function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
     confirmCancelBtn.addEventListener('click', handleCancel);
 }
 
-/**
- * Initializes Google API client libraries.
- */
-function gapiLoaded() {
-    gapi.load('client', initializeGapiClient);
-}
-
-/**
- * Initializes the Google Drive API client.
- */
-async function initializeGapiClient() {
-    await gapi.client.init({
-        apiKey: GOOGLE_API_KEY,
-        discoveryDocs: [DISCOVERY_DOC],
-    });
+window.addEventListener("gapi-ready", () => {
     gapiInited = true;
-    maybeEnableGoogleDriveButtons();
-}
+});
 
 /**
  * Initializes Google Identity Services (GIS) client for authorization.
