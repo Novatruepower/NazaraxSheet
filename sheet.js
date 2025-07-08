@@ -21,24 +21,19 @@ const APPLICABLE_STATS = [
     'Strength', 'Agility', 'Magic', 'Luck', 'Crafting', 'Intelligence', 'Intimidation', 'Charisma', 'Negotiation'
 ];
 
-// Function to calculate max experience for a given level
-function calculateLevelMaxExperience(level) {
-    return 100;
-}
-
 // Function to calculate max health based on race, level, and bonus
-function calculateMaxHealth(race, level, healthBonus) {
+function calculateMaxHealth(charData, race, level, healthBonus) {
     let baseHealth = 100;
 
     // Apply Mutant's "Doubling your base max health" if active
-    if (race === 'Mutant' && character && character.baseMaxHealthDoubled) {
+    if (race === 'Mutant' && charData && charData.baseMaxHealthDoubled) {
         baseHealth = 150; // Doubling the base 75 value mentioned in the doc (75 * 2 = 150)
     }
 
     // Get the racial health change from manual passives (for Demi-humans) or ExternalDataManager (for others)
     let racialHealthChange = 0;
-    if (race === 'Demi-humans' && character && character.healthRacialChange !== undefined) {
-        racialHealthChange = character.healthRacialChange;
+    if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
+        racialHealthChange = charData.healthRacialChange;
     } else {
         racialHealthChange = ExternalDataManager.getRaceHealthChange(race) || 0; // ExternalDataManager returns a percentage change (e.g., 0.25)
     }
@@ -47,9 +42,9 @@ function calculateMaxHealth(race, level, healthBonus) {
 }
 
 // Function to calculate max magic based on level
-function calculateMaxMagic(level) {
+function calculateMaxMagic(charData, level) {
     // Get the racial magic change from manual passives (for Demi-humans)
-    const magicChange = (character && character.magicRacialChange !== undefined) ? character.magicRacialChange : 0; // Default to 0 if not Demi-human or not set
+    const magicChange = (charData && charData.magicRacialChange !== undefined) ? charData.magicRacialChange : 0; // Default to 0 if not Demi-human or not set
     return Math.floor(level * 100 * (1 + magicChange)); // Apply magicChange as a multiplier
 }
 
@@ -137,9 +132,9 @@ const defaultCharacterData = function() {
     });
 
     // Calculate initial HP and Magic based on the default race
-    newCharacter.maxHp = calculateMaxHealth(newCharacter.race, newCharacter.level, newCharacter.healthBonus);
+    newCharacter.maxHp = calculateMaxHealth(newCharacter, newCharacter.race, newCharacter.level, newCharacter.healthBonus);
     newCharacter.hp = newCharacter.maxHp;
-    newCharacter.maxMagicPoints = calculateMaxMagic(newCharacter.level);
+    newCharacter.maxMagicPoints = calculateMaxMagic(newCharacter, newCharacter.level);
     newCharacter.currentMagicPoints = newCharacter.maxMagicPoints;
 
     return newCharacter;
@@ -236,12 +231,12 @@ const statMapping = {
 
 
 // Function to calculate the total for a given stat
-function calculateTotal(statName) {
-    const stat = character[statName];
+function calculateTotal(charData, statName) {
+    const stat = charData[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
     const value = parseFloat(stat.value) || 0;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
-    const racialChange = getAppliedRacialChange(statName);
+    const racialChange = getAppliedRacialChange(charData, statName);
     const equipment = parseFloat(stat.equipment) || 0;
     const temporary = parseFloat(stat.temporary) || 0;
 
@@ -250,36 +245,36 @@ function calculateTotal(statName) {
 }
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
-function getAppliedRacialChange(statName) {
+function getAppliedRacialChange(charData, statName) {
     let totalRacialChange = 0;
 
-    if (character.race === 'Demi-humans') {
-        const choice = character.demiHumanStatChoices.find(c => c.statName === statName);
+    if (charData.race === 'Demi-humans') {
+        const choice = charData.demiHumanStatChoices.find(c => c.statName === statName);
         if (choice) {
             totalRacialChange += choice.modifier;
         }
-        // Health and Magic are special cases and stored directly in character object for Demi-humans
-        if (statName === 'Health' && character.healthRacialChange !== undefined) {
-            totalRacialChange += character.healthRacialChange;
+        // Health and Magic are special cases and stored directly in charData object for Demi-humans
+        if (statName === 'Health' && charData.healthRacialChange !== undefined) {
+            totalRacialChange += charData.healthRacialChange;
         }
-        if (statName === 'Magic' && character.magicRacialChange !== undefined) {
-            totalRacialChange += character.magicRacialChange;
+        if (statName === 'Magic' && charData.magicRacialChange !== undefined) {
+            totalRacialChange += charData.magicRacialChange;
         }
-    } else if (character.race === 'Mutant') {
+    } else if (charData.race === 'Mutant') {
         // Check for stat multiplier mutations
-        const mutantStatMutation = character.mutantMutations.find(m => m.type === 'stat_multiplier_set_50' && m.statName === statName);
+        const mutantStatMutation = charData.mutantMutations.find(m => m.type === 'stat_multiplier_set_50' && m.statName === statName);
         if (mutantStatMutation) {
             totalRacialChange += mutantStatMutation.value; // This value is already a percentage change (e.g., 0.50)
         }
         // Check for stat degeneration
-        const mutantDegeneration = character.mutantDegenerations.find(d => d.statName === statName);
+        const mutantDegeneration = charData.mutantDegenerations.find(d => d.statName === statName);
         if (mutantDegeneration) {
             totalRacialChange += mutantDegeneration.value; // This value is already a percentage change (e.g., -0.50)
         }
     } else {
         // For other races, get the racial change from ExternalDataManager
         // ExternalDataManager.getRacialChange returns the percentage change (e.g., 0.25 for +25%)
-        totalRacialChange = character[statName] ? character[statName].racialChange : 0;
+        totalRacialChange = charData[statName] ? charData[statName].racialChange : 0;
     }
     return totalRacialChange;
 }
@@ -387,7 +382,7 @@ function loadCharacterFromFile(event) {
                                     };
                                     // Recalculate total for loaded stats
                                     if (ExternalDataManager.rollStats.includes(key)) {
-                                        newChar[key].total = calculateTotal(key);
+                                        newChar[key].total = calculateTotal(newChar, key);
                                     }
                                     if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                         newChar[key].maxExperience = defaultStatMaxExperience;
@@ -398,7 +393,7 @@ function loadCharacterFromFile(event) {
                                         value: parseFloat(loadedChar[key]) || newChar[key].value
                                     };
                                     if (ExternalDataManager.rollStats.includes(key)) {
-                                        newChar[key].total = calculateTotal(key);
+                                        newChar[key].total = calculateTotal(newChar, key);
                                     }
                                 }
                             } else {
@@ -437,8 +432,8 @@ function loadCharacterFromFile(event) {
                     });
 
                     // Recalculate derived properties
-                    newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
-                    newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                    newChar.maxHp = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
+                    newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
                     newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
                     newChar.ac = newChar.armorBonus;
 
@@ -466,7 +461,7 @@ function loadCharacterFromFile(event) {
                                     ...loadedData[key]
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(key);
+                                    newChar[key].total = calculateTotal(newChar, key);
                                 }
                                 if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                     newChar[key].maxExperience = defaultStatMaxExperience;
@@ -477,7 +472,7 @@ function loadCharacterFromFile(event) {
                                     value: parseFloat(loadedData[key]) || newChar[key].value
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(key);
+                                    newChar[key].total = calculateTotal(newChar, key);
                                 }
                             }
                         } else {
@@ -513,8 +508,8 @@ function loadCharacterFromFile(event) {
                     if (typeof weapon.originalMagicDamage === 'undefined') weapon.magicDamage = weapon.magicDamage;
                 });
 
-                newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
-                newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                newChar.maxHp = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
+                newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
                 newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
                 newChar.ac = newChar.armorBonus;
                 newChar.hp = Math.min(newChar.hp, newChar.maxHp);
@@ -558,7 +553,7 @@ function updateDOM() {
         raceSelect.classList.remove('select-placeholder-text');
     }
     // Recalculate maxHp when race is updated in DOM
-    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     // Ensure current HP doesn't exceed new max HP when race changes
     character.hp = Math.min(character.hp, character.maxHp);
 
@@ -611,7 +606,7 @@ function updateDOM() {
                 <input type="number" id="${statName}-value" name="${statName}-value" min="0" value="${statData.value}" class="stat-input" />
             </td>
             <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(statName)}" readonly class="stat-input" />
+                <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(character, statName)}" readonly class="stat-input" />
             </td>
             <td class="px-2 py-1 whitespace-nowrap">
                 <input type="number" id="${statName}-equipment" name="${statName}-equipment" value="${statData.equipment}" class="stat-input" />
@@ -627,7 +622,7 @@ function updateDOM() {
                 </div>
             </td>
             <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(statName)}" readonly class="stat-input" />
+                <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(character, statName)}" readonly class="stat-input" />
             </td>
         `;
         playerStatsContainer.appendChild(row);
@@ -773,7 +768,7 @@ function quickRollStats() {
         character[statName].value = roll(minRollStat, maxRollStat); // Assign to the 'value' property
 
         // Recalculate total for the updated stat
-        character[statName].total = calculateTotal(statName);
+        character[statName].total = calculateTotal(character, statName);
 
         // Update the DOM for value and total immediately
         document.getElementById(`${statName}-value`).value = character[statName].value;
@@ -808,18 +803,18 @@ function handleChangeRace() {
         // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
         const initialRacialChange = (character.race === 'Demi-humans' || character.race === 'Mutant') ? 0 : ExternalDataManager.getRacialChange(character.race, statName);
         character[statName].racialChange = initialRacialChange;
-        character[statName].total = calculateTotal(statName);
-        document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(statName); // Use getAppliedRacialChange for display
+        character[statName].total = calculateTotal(character, statName);
+        document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Use getAppliedRacialChange for display
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
 
     // Update maxHp, maxMagicPoints and maxRacialPower when race changes
-    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
     document.getElementById('maxHp').value = character.maxHp;
     document.getElementById('hp').value = character.hp;
 
-    character.maxMagicPoints = calculateMaxMagic(character.level);
+    character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
     document.getElementById('maxMagicPoints').value = character.maxMagicPoints;
     document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
@@ -959,9 +954,9 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     }
 
     // Recalculate derived properties that depend on racial changes
-    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.hp = Math.min(character.hp, character.maxHp);
-    character.maxMagicPoints = calculateMaxMagic(character.level);
+    character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
 
     // Update the UI to reflect changes (e.g., disable/enable options)
@@ -1221,9 +1216,9 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
     }
 
     // Recalculate derived properties that depend on racial changes
-    character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+    character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.hp = Math.min(character.hp, character.maxHp);
-    character.maxMagicPoints = calculateMaxMagic(character.level);
+    character.maxMagicPoints = calculateMaxMagic(character, character.level);
     character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
 
     // Update the UI to reflect changes
@@ -1263,9 +1258,9 @@ function attachClearMutantChoiceListeners() {
             }
 
             // Recalculate derived properties and update UI
-            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+            character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.hp = Math.min(character.hp, character.maxHp);
-            character.maxMagicPoints = calculateMaxMagic(character.level);
+            character.maxMagicPoints = calculateMaxMagic(character, character.level);
             character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
 
             updateDOM();
@@ -1429,7 +1424,7 @@ function handleChange(event) {
         }
 
         // Recalculate the total for this stat after any change in its sub-properties
-        character[statName].total = calculateTotal(statName);
+        character[statName].total = calculateTotal(character, statName);
         // Update the total display in the DOM immediately
         document.getElementById(`${statName}-total`).value = character[statName].total;
 
@@ -1456,12 +1451,12 @@ function handleChange(event) {
             character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             // Also update maxHp, maxMagicPoints and maxRacialPower when level changes
-            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+            character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
             document.getElementById('maxHp').value = character.maxHp;
             document.getElementById('hp').value = character.hp;
 
-            character.maxMagicPoints = calculateMaxMagic(character.level);
+            character.maxMagicPoints = calculateMaxMagic(character, character.level);
             character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
             document.getElementById('maxMagicPoints').value = character.maxMagicPoints;
             document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
@@ -1492,7 +1487,7 @@ function handleChange(event) {
         } else if (id === 'healthBonus') { // Handle healthBonus input
             character.healthBonus = newValue;
             // Recalculate maxHp when healthBonus changes
-            character.maxHp = calculateMaxHealth(character.race, character.level, character.healthBonus);
+            character.maxHp = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.hp = Math.min(character.hp, character.maxHp); // Adjust current HP if it exceeds new max
             document.getElementById('maxHp').value = character.maxHp;
             document.getElementById('hp').value = character.hp;
@@ -2248,7 +2243,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                     ...loadedChar[key]
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(key);
+                                    newChar[key].total = calculateTotal(newChar, key);
                                 }
                                 if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                     newChar[key].maxExperience = defaultStatMaxExperience;
@@ -2259,7 +2254,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                     value: parseFloat(loadedChar[key]) || newChar[key].value
                                 };
                                 if (ExternalDataManager.rollStats.includes(key)) {
-                                    newChar[key].total = calculateTotal(key);
+                                    newChar[key].total = calculateTotal(newChar, key);
                                 }
                             }
                         } else {
@@ -2292,8 +2287,8 @@ async function loadGoogleDriveFileContent(fileId) {
                     if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
                 });
 
-                newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
-                newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+                newChar.maxHp = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
+                newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
                 newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
                 newChar.ac = newChar.armorBonus;
                 newChar.hp = Math.min(newChar.hp, newChar.maxHp);
@@ -2318,7 +2313,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                 ...loadedData[key]
                             };
                             if (ExternalDataManager.rollStats.includes(key)) {
-                                newChar[key].total = calculateTotal(key);
+                                newChar[key].total = calculateTotal(newChar, key);
                             }
                             if (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null) {
                                 newChar[key].maxExperience = defaultStatMaxExperience;
@@ -2329,7 +2324,7 @@ async function loadGoogleDriveFileContent(fileId) {
                                 value: parseFloat(loadedData[key]) || newChar[key].value
                             };
                             if (ExternalDataManager.rollStats.includes(key)) {
-                                newChar[key].total = calculateTotal(key);
+                                newChar[key].total = calculateTotal(newChar, key);
                             }
                         }
                     } else {
@@ -2361,8 +2356,8 @@ async function loadGoogleDriveFileContent(fileId) {
                 if (typeof weapon.originalMagicDamage === 'undefined') originalMagicDamage = weapon.magicDamage;
             });
 
-            newChar.maxHp = calculateMaxHealth(newChar.race, newChar.level, newChar.healthBonus);
-            newChar.maxMagicPoints = calculateMaxMagic(newChar.level);
+            newChar.maxHp = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
+            newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
             newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
             newChar.ac = newChar.armorBonus;
             newChar.hp = Math.min(newChar.hp, newChar.maxHp);
@@ -2646,8 +2641,8 @@ function attachEventListeners() {
 function initPage() {
     characters = [defaultCharacterData()];
     // Initialize maxHp, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
-    characters[0].maxHp = calculateMaxHealth(characters[0].race, characters[0].level, characters[0].healthBonus);
-    characters[0].maxMagicPoints = calculateMaxMagic(characters[0].level);
+    characters[0].maxHp = calculateMaxHealth(characters[0], characters[0].race, characters[0].level, characters[0].healthBonus);
+    characters[0].maxMagicPoints = calculateMaxMagic(characters[0], characters[0].level);
     characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
     // Initialize AC based on armorBonus for the first character
     characters[0].ac = characters[0].armorBonus;
