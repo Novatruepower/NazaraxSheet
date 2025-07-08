@@ -1810,6 +1810,8 @@ function initPage() {
     gisLoaded();
     // Initial UI update for Google Drive buttons based on local storage and current token
     maybeEnableGoogleDriveButtons();
+
+    console.log(characters)
 }
 
 // Initialize the application when the DOM is fully loaded
