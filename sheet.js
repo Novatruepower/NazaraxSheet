@@ -861,13 +861,13 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
 
         // Apply the modifier to the chosen stat
         if (ExternalDataManager.rollStats.includes(selectedStatName)) {
-            character[selectedStatName].racialChange = modifierValue;
+            character[selectedStatName].racialChange += modifierValue;
             console.log(`  Set character.${selectedStatName}.racialChange to ${modifierValue}.`);
         } else if (selectedStatName === 'Health') {
-            character.healthRacialChange = modifierValue;
+            character.healthRacialChange += modifierValue;
             console.log(`  Set character.healthRacialChange to ${modifierValue}.`);
         } else if (selectedStatName === 'Magic') {
-            character.magicRacialChange = modifierValue;
+            character.magicRacialChange += modifierValue;
             console.log(`  Set character.magicRacialChange to ${modifierValue}.`);
         }
     } else {
