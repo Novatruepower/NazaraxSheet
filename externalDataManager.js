@@ -15,8 +15,7 @@ export const ExternalDataManager = {
 
 
     parsePercent(numberString) {
-        let value = numberString.replace('%', '');
-        return parseFloat(value) / 100;
+        return parseFloat(numberString.replace('%', '')) / 100;
     },
 
     /**
@@ -47,12 +46,12 @@ export const ExternalDataManager = {
                             }
                         };
 
-                        this._data['Races'][race]['Stats'][health] = parsePercent(value[1]); // Assign health multiplier
+                        this._data['Races'][race]['Stats'][health] = this.parsePercent(value[1]); // Assign health multiplier
                         let index = 2; // Start from the third column for stats
 
                         head.forEach(statName => {
                             // Assign stat roll value for the current race
-                            this._data['Races'][race]['Stats']['Roll'][statName] = parsePercent(value[index]);
+                            this._data['Races'][race]['Stats']['Roll'][statName] = this.parsePercent(value[index]);
                             ++index;
                         });
                     }
