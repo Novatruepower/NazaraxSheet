@@ -32,7 +32,6 @@ const classSpecializationsMap = {
 
 // List of data for easy iteration
 await ExternalDataManager.init();
-console.log("nice");
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(race, level, healthBonus) {
@@ -96,7 +95,7 @@ const defaultCharacterData = function() {
             'armor-inventory-content': true,
             'general-inventory-content': true,
         }
-    })
+    });
 
     ExternalDataManager.rollStats.forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
