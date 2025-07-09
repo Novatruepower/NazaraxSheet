@@ -30,9 +30,9 @@ function calculateMaxHealth(charData, race, level, healthBonus) {
 }
 
 // Function to calculate max magic based on level
-function calculateMaxMagic(charData, level) {
+function calculateMaxMana(charData, level) {
     // Get the racial magic change from manual passives (for Demi-humans)
-    const magicChange = (charData && charData.magicRacialChange !== undefined) ? charData.magicRacialChange : 0; // Default to 0 if not Demi-human or not set
+    const magicChange = (charData && charData.manaRacialChange !== undefined) ? charData.manaRacialChange : 0; // Default to 0 if not Demi-human or not set
     return Math.floor(level * 100 * (1 + magicChange)); // Apply magicChange as a multiplier
 }
 
@@ -65,8 +65,8 @@ const defaultCharacterData = function() {
         Health: 0, // Will be calculated dynamically
         maxHealth: 0, // Will be calculated dynamically
         healthBonus: 0,
-        currentMagicPoints: 0, // Will be calculated dynamically
-        maxMagicPoints: 0, // Will be calculated dynamically
+        Mana: 0, // Will be calculated dynamically
+        maxMana: 0, // Will be calculated dynamically
         racialPower: 100,
         maxRacialPower: 100,
         ac: 0,
@@ -90,7 +90,7 @@ const defaultCharacterData = function() {
         demiHumanStatChoices: [], // Stores { statName: 'Strength', modifier: 0.25, slotId: '...' }
         demiHumanStatsAffected: new Set(), // Stores names of stats already chosen by Demi-human modifiers
         healthRacialChange: 0, // Initial racial change for health, will be set by Demi-human player choice
-        magicRacialChange: 0, // Initial racial change for magic, will be set by Demi-human player choice
+        manaRacialChange: 0, // Initial racial change for Mana, will be set by Demi-human player choice
 
         // New properties for Mutant stat choices
         mutantMutations: [], // Stores { type: 'stat_multiplier_50', statName: 'Strength', level: 1, slotId: '...' }
@@ -123,8 +123,8 @@ const defaultCharacterData = function() {
     // Calculate initial Health and Magic based on the default race
     newCharacter.maxHealth = calculateMaxHealth(newCharacter, newCharacter.race, newCharacter.level, newCharacter.healthBonus);
     newCharacter.Health = newCharacter.maxHealth;
-    newCharacter.maxMagicPoints = calculateMaxMagic(newCharacter, newCharacter.level);
-    newCharacter.currentMagicPoints = newCharacter.maxMagicPoints;
+    newCharacter.maxMana = calculateMaxMana(newCharacter, newCharacter.level);
+    newCharacter.Mana = newCharacter.maxMana;
 
     return newCharacter;
 };
@@ -210,8 +210,8 @@ const statMapping = {
     "Health": "Health",
     "MaxHp": "maxHealth",
     "MaxHealth": "maxHealth",
-    "MagicPoints": "currentMagicPoints",
-    "MaxMagicPoints": "maxMagicPoints",
+    "MagicPoints": "Mana",
+    "maxMana": "maxMana",
     "RacialPower": "racialPower",
     "MaxRacialPower": "maxRacialPower",
     "AC": "ac",
@@ -234,30 +234,25 @@ function calculateTotal(statName) {
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-    console.log(`getAppliedRacialChange called for ${statName}.`);
-
     // For standard rollStats, the racialChange is directly stored on the stat object.
     if (ExternalDataManager.rollStats.includes(statName)) {
         const racialChange = charData[statName].racialChange;
-        console.log(`  Returning character.${statName}.racialChange: ${racialChange}`);
         return racialChange;
     }
 
     // For Health, the racialChange is stored in healthRacialChange.
     if (statName === 'Health') {
         const racialChange = charData.healthRacialChange;
-        console.log(`  Returning character.healthRacialChange: ${racialChange}`);
         return racialChange;
     }
 
-    // For Magic (referring to Magic Points/Stat), the racialChange is stored in magicRacialChange.
+    // For Mana, the racialChange is stored in manaRacialChange.
     if (statName === 'Magic') {
-        const racialChange = charData.magicRacialChange;
-        console.log(`  Returning character.magicRacialChange: ${racialChange}`);
+        const racialChange = charData.manaRacialChange;
         return racialChange;
     }
 
-    // If for some reason a statName is passed that isn't a rollStat, Health, or Magic,
+    // If for some reason a statName is passed that isn't a rollStat, Health, or Mana,
     // and it's not explicitly handled by the above, return 0 or a default.
     console.warn(`getAppliedRacialChange: Unhandled statName '${statName}'. Returning 0.`);
     return 0;
@@ -314,9 +309,9 @@ function saveCharacterToFile() {
         if (char.mutantAffectedStats instanceof Set) {
             char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
         }
-        // Exclude calculated properties (maxHealth, maxMagicPoints, maxRacialPower, ac) from the saved data
+        // Exclude calculated properties (maxHealth, maxMana, maxRacialPower, ac) from the saved data
         delete char.maxHealth;
-        delete char.maxMagicPoints;
+        delete char.maxMana;
         delete char.maxRacialPower;
         delete char.ac;
     });
@@ -381,13 +376,13 @@ function initLoadCharacter(loadedChar) {
 
     // Recalculate derived properties based on the loaded and merged data
     newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
-    newChar.maxMagicPoints = calculateMaxMagic(newChar, newChar.level);
+    newChar.maxMana = calculateMaxMana(newChar, newChar.level);
     newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
     newChar.ac = newChar.armorBonus;
 
     // Ensure current Health, Magic, and Racial Power don't exceed new max values
     newChar.Health = Math.min(newChar.Health, newChar.maxHealth);
-    newChar.currentMagicPoints = Math.min(newChar.currentMagicPoints, newChar.maxMagicPoints);
+    newChar.Mana = Math.min(newChar.Mana, newChar.maxMana);
     newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
 
     // Recalculate totals for rollStats after loading to ensure consistency
@@ -535,8 +530,8 @@ function updateDOM() {
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
     document.getElementById('racialPower').value = character.racialPower; // Populate racialPower
     document.getElementById('maxRacialPower').value = character.maxRacialPower; // Populate maxRacialPower
-    document.getElementById('currentMagicPoints').value = character.currentMagicPoints; // Populate currentMagicPoints
-    document.getElementById('maxMagicPoints').value = character.maxMagicPoints; // Populate maxMagicPoints
+    document.getElementById('Mana').value = character.Mana; // Populate Mana
+    document.getElementById('maxMana').value = character.maxMana; // Populate maxMana
     document.getElementById('ac').value = character.ac; // Populate total armor (readonly)
     document.getElementById('armorBonus').value = character.armorBonus; // Populate armor bonus
 
@@ -686,7 +681,7 @@ function handleChangeRace() {
     character.demiHumanStatChoices = [];
     character.demiHumanStatsAffected = new Set();
     character.healthRacialChange = 0; // Reset Demi-human specific health change
-    character.magicRacialChange = 0; // Reset Demi-human specific magic change
+    character.manaRacialChange = 0; // Reset Demi-human specific magic change
 
     character.mutantMutations = [];
     character.mutantDegenerations = [];
@@ -708,16 +703,16 @@ function handleChangeRace() {
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
 
-    // Update maxHealth, maxMagicPoints and maxRacialPower when race changes
+    // Update maxHealth, maxMana and maxRacialPower when race changes
     character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
     document.getElementById('maxHealth').value = character.maxHealth;
     document.getElementById('Health').value = character.Health;
 
-    character.maxMagicPoints = calculateMaxMagic(character, character.level);
-    character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
-    document.getElementById('maxMagicPoints').value = character.maxMagicPoints;
-    document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
+    character.maxMana = calculateMaxMana(character, character.level);
+    character.Mana = Math.min(character.Mana, character.maxMana); // Adjust current Magic if it exceeds new max
+    document.getElementById('maxMana').value = character.maxMana;
+    document.getElementById('Mana').value = character.Mana;
 
     character.maxRacialPower = calculateMaxRacialPower(character.level);
     character.racialPower = Math.min(character.racialPower, character.maxRacialPower); // Adjust current Racial Power if it exceeds new max
@@ -795,6 +790,16 @@ function renderDemiHumanStatChoiceUI() {
     attachClearDemiHumanChoiceListeners(); // Attach listeners for clear buttons
 }
 
+function handleStatsRevertOperation(character, statName, modifier) {
+    if (ExternalDataManager.rollStats.includes(statName)) {
+        character[statName].racialChange -= modifier;
+    } else if (statName === 'Health') {
+        character.healthRacialChange -= modifier;
+    } else if (statName === 'Mana') {
+        character.manaRacialChange -= modifier;
+    }
+}
+
 /**
  * Handles the selection of a stat for a Demi-human racial modifier.
  * @param {string} slotId The unique ID of the choice slot.
@@ -815,15 +820,14 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         character.demiHumanStatsAffected.delete(previousChoice.statName);
         console.log(`  Cleared previous stat '${previousChoice.statName}' from demiHumanStatsAffected.`);
 
+        handleStatsRevertOperation(character, previousChoice.statName, previousChoice.modifier);
+
         if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
             character[previousChoice.statName].racialChange -= previousChoice.modifier;
-            console.log(`  Subtracted ${previousChoice.modifier} from character.${previousChoice.statName}.racialChange. New value: ${character[previousChoice.statName].racialChange}`);
         } else if (previousChoice.statName === 'Health') {
             character.healthRacialChange -= previousChoice.modifier;
-            console.log(`  Subtracted ${previousChoice.modifier} from character.healthRacialChange. New value: ${character.healthRacialChange}`);
-        } else if (previousChoice.statName === 'Magic') {
-            character.magicRacialChange -= previousChoice.modifier;
-            console.log(`  Subtracted ${previousChoice.modifier} from character.magicRacialChange. New value: ${character.magicRacialChange}`);
+        } else if (previousChoice.statName === 'Mana') {
+            character.manaRacialChange -= previousChoice.modifier;
         }
     }
 
@@ -845,10 +849,8 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         const newChoice = { slotId, statName: selectedStatName, modifier: modifierValue };
         if (previousChoice) {
             Object.assign(previousChoice, newChoice); // Update existing choice
-            console.log(`  Updated existing choice for slot ${slotId} to:`, newChoice);
         } else {
             character.demiHumanStatChoices.push(newChoice); // Add new choice
-            console.log(`  Added new choice for slot ${slotId}:`, newChoice);
         }
         character.demiHumanStatsAffected.add(selectedStatName);
         console.log(`  Added '${selectedStatName}' to demiHumanStatsAffected.`);
@@ -856,13 +858,10 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         // Apply the modifier to the chosen stat
         if (ExternalDataManager.rollStats.includes(selectedStatName)) {
             character[selectedStatName].racialChange += modifierValue;
-            console.log(`  Added ${modifierValue} to character.${selectedStatName}.racialChange. New value: ${character[selectedStatName].racialChange}`);
         } else if (selectedStatName === 'Health') {
             character.healthRacialChange += modifierValue;
-            console.log(`  Added ${modifierValue} to character.healthRacialChange. New value: ${character.healthRacialChange}`);
-        } else if (selectedStatName === 'Magic') {
-            character.magicRacialChange += modifierValue;
-            console.log(`  Added ${modifierValue} to character.magicRacialChange. New value: ${character.magicRacialChange}`);
+        } else if (selectedStatName === 'Mana') {
+            character.manaRacialChange += modifierValue;
         }
     } else {
         // If the selected option is empty, remove the choice
@@ -873,8 +872,8 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     // Recalculate derived properties that depend on racial changes
     character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.Health = Math.min(character.Health, character.maxHealth);
-    character.maxMagicPoints = calculateMaxMagic(character, character.level);
-    character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
+    character.maxMana = calculateMaxMana(character, character.level);
+    character.Mana = Math.min(character.Mana, character.maxMana);
 
     console.log("Updated demiHumanStatChoices (after update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
     console.log("Updated demiHumanStatsAffected (after update):", Array.from(character.demiHumanStatsAffected));
@@ -1140,8 +1139,8 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
     // Recalculate derived properties that depend on racial changes
     character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
     character.Health = Math.min(character.Health, character.maxHealth);
-    character.maxMagicPoints = calculateMaxMagic(character, character.level);
-    character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
+    character.maxMana = calculateMaxMana(character, character.level);
+    character.Mana = Math.min(character.Mana, character.maxMana);
 
     // Update the UI to reflect changes
     updateDOM();
@@ -1182,8 +1181,8 @@ function attachClearMutantChoiceListeners() {
             // Recalculate derived properties and update UI
             character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.Health = Math.min(character.Health, character.maxHealth);
-            character.maxMagicPoints = calculateMaxMagic(character, character.level);
-            character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints);
+            character.maxMana = calculateMaxMana(character, character.level);
+            character.Mana = Math.min(character.Mana, character.maxMana);
 
             updateDOM();
             hasUnsavedChanges = true;
@@ -1354,7 +1353,7 @@ function handleChange(event) {
         renderWeaponInventory();
 
     } else {
-        // For other non-stat inputs (name, level, Health, ac, skills, inventory, race, healthBonus, currentMagicPoints, racialPower, personalNotes)
+        // For other non-stat inputs (name, level, Health, ac, skills, inventory, race, healthBonus, Mana, racialPower, personalNotes)
         // The 'class-display' input is read-only and handled by custom logic, so it's excluded here.
         if (id === 'levelExperience') {
             character.levelExperience = newValue;
@@ -1372,16 +1371,16 @@ function handleChange(event) {
             character.level = newValue;
             character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
-            // Also update maxHealth, maxMagicPoints and maxRacialPower when level changes
+            // Also update maxHealth, maxMana and maxRacialPower when level changes
             character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
             character.Health = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
             document.getElementById('maxHealth').value = character.maxHealth;
             document.getElementById('Health').value = character.Health;
 
-            character.maxMagicPoints = calculateMaxMagic(character, character.level);
-            character.currentMagicPoints = Math.min(character.currentMagicPoints, character.maxMagicPoints); // Adjust current Magic if it exceeds new max
-            document.getElementById('maxMagicPoints').value = character.maxMagicPoints;
-            document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
+            character.maxMana = calculateMaxMana(character, character.level);
+            character.Mana = Math.min(character.Mana, character.maxMana); // Adjust current Magic if it exceeds new max
+            document.getElementById('maxMana').value = character.maxMana;
+            document.getElementById('Mana').value = character.Mana;
 
             character.maxRacialPower = calculateMaxRacialPower(character.level);
             character.racialPower = Math.min(character.racialPower, character.maxRacialPower); // Adjust current Racial Power if it exceeds new max
@@ -1400,9 +1399,9 @@ function handleChange(event) {
         } else if (id === 'Health') { // Handle current Health input
             character.Health = Math.min(newValue, character.maxHealth); // Ensure current Health doesn't exceed max Health
             document.getElementById('Health').value = character.Health;
-        } else if (id === 'currentMagicPoints') { // Handle current Magic input (renamed)
-            character.currentMagicPoints = Math.min(newValue, character.maxMagicPoints); // Ensure current Magic doesn't exceed max Magic
-            document.getElementById('currentMagicPoints').value = character.currentMagicPoints;
+        } else if (id === 'Mana') { // Handle current Magic input (renamed)
+            character.Mana = Math.min(newValue, character.maxMana); // Ensure current Magic doesn't exceed max Magic
+            document.getElementById('Mana').value = character.Mana;
         } else if (id === 'racialPower') { // Handle current Racial Power input
             character.racialPower = Math.min(newValue, character.maxRacialPower); // Ensure current Racial Power doesn't exceed max Racial Power
             document.getElementById('racialPower').value = character.racialPower;
@@ -2005,7 +2004,7 @@ async function saveCharacterToGoogleDrive() {
                 char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
             }
             delete char.maxHealth;
-            delete char.maxMagicPoints;
+            delete char.maxMana;
             delete char.maxRacialPower;
             delete char.ac;
         });
@@ -2251,7 +2250,7 @@ function toggleSidebar() {
 function attachEventListeners() {
     // Attach listeners for standard inputs and the race selector
     const inputs = document.querySelectorAll(
-        '#name, #level, #levelExperience, #race, #Health, #currentMagicPoints, #racialPower, #skills, #healthBonus, #armorBonus, #personalNotes'
+        '#name, #level, #levelExperience, #race, #Health, #Mana, #racialPower, #skills, #healthBonus, #armorBonus, #personalNotes'
     );
     inputs.forEach(input => {
         if (!input.readOnly) {
@@ -2416,9 +2415,9 @@ function attachEventListeners() {
 
 function initPage() {
     characters = [defaultCharacterData()];
-    // Initialize maxHealth, maxMagicPoints and maxRacialPower based on default race, level, and healthBonus for the first character
+    // Initialize maxHealth, maxMana and maxRacialPower based on default race, level, and healthBonus for the first character
     characters[0].maxHealth = calculateMaxHealth(characters[0], characters[0].race, characters[0].level, characters[0].healthBonus);
-    characters[0].maxMagicPoints = calculateMaxMagic(characters[0], characters[0].level);
+    characters[0].maxMana = calculateMaxMana(characters[0], characters[0].level);
     characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
     // Initialize AC based on armorBonus for the first character
     characters[0].ac = characters[0].armorBonus;

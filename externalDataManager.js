@@ -29,7 +29,7 @@ export const ExternalDataManager = {
                 // Remove the first element (empty string from the sheet)
                 delete arr[0][0];
                 const head = arr[0]; // The header row (e.g., ["", "Health", "Strength", "Agility", ...])
-                this._data['Stats'] = [...arr[0]]; // Copy header for 'Stats'
+                this._data['Stats'] = [...arr[0], 'Mana']; // Copy header for 'Stats'
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name

@@ -9,28 +9,28 @@
             "type": "stat_increase",
             "value": 0.25,
             "count": 1,
-            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health"]
+            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
           },
           {
             "label": "+50% to any stat",
             "type": "stat_increase",
             "value": 0.50,
             "count": 2,
-            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health"]
+            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
           },
           {
             "label": "-25% to any stat",
             "type": "stat_reduction",
             "value": -0.25,
             "count": 1,
-            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health"]
+            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
           },
           {
             "label": "-50% to any stat",
             "type": "stat_reduction",
             "value": -0.50,
             "count": 2,
-            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health"]
+            "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
           }
         ]
       }
