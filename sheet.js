@@ -51,7 +51,7 @@ const maxRollStat = 20;
 const minRollStat = 6;
 
 function adjustValue(oldMaxValue, value, newMaxValue) {
-    return newMaxValue;
+    return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
 }
 
 // Recalculate derived properties
@@ -712,8 +712,8 @@ function handleRevertChoices(char, category, passiveName) {
                 if (char.StatChoices[category] && char.StatChoices[category][passiveName] && char.StatChoices[category][passiveName][slotId]) {
                     const choice = char.StatChoices[category][passiveName][slotId];
                     // Revert stat changes
-                    if (choice.type === 'stat_increase' || choice.type === 'stat_reduction' || choice.type === 'stat_multiplier_set_50' || choice.type === 'stat_multiplier_reduce_50') {
-                        if (ExternalDataManager.rollStats.includes(statName)) {
+                    if (choice.type === 'stat_increase' || choice.type === 'stat_reduction' || choice.type === 'stat_multiplier_set' || choice.type === 'stat_multiplier_reduce') {
+                        if (ExternalDataManager._data.Stats.includes(statName)) {
                             // For additive changes, subtract the value to revert
                             char[statName].racialChange -= choice.value;
                         }
@@ -880,7 +880,7 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, mo
         console.log(`  Cleared previous stat '${prevStatName}' from StatsAffected.`);
 
         // Revert the racial change
-        if (ExternalDataManager.rollStats.includes(prevStatName)) {
+        if (ExternalDataManager._data.Stats.includes(prevStatName)) {
             character[prevStatName].racialChange -= previousChoice.value;
             console.log(`  Reverted racialChange for ${prevStatName} by ${previousChoice.value}. New value: ${character[prevStatName].racialChange}`);
         }
@@ -914,7 +914,7 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, mo
         console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
 
         // Apply the modifier to the chosen stat
-        if (ExternalDataManager.rollStats.includes(selectedStatName)) {
+        if (ExternalDataManager._data.Stats.includes(selectedStatName)) {
             character[selectedStatName].racialChange += modifierValue;
             console.log(`  Applied racialChange for ${selectedStatName} by ${modifierValue}. New value: ${character[selectedStatName].racialChange}`);
         }
@@ -1019,9 +1019,9 @@ function renderMutantChoiceUI() {
                 choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
 
                 let statSelectionHtml = '';
-                if (options.some(opt => (opt.type === 'stat_multiplier_set_50' || opt.type === 'stat_multiplier_reduce_50') && opt.applicableStats)) {
+                if (options.some(opt => (opt.type === 'stat_multiplier_set' || opt.type === 'stat_multiplier_reduce') && opt.applicableStats)) {
                     statSelectionHtml = `
-                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50' ? '' : 'hidden'}">
+                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set' || selectedOptionType === 'stat_multiplier_reduce' ? '' : 'hidden'}">
                             <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
                             <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">-- Select a Stat --</option>
@@ -1048,7 +1048,7 @@ function renderMutantChoiceUI() {
                 const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
                 // Populate stat dropdown if a stat-affecting type is selected
-                if (statSelect && (selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50')) {
+                if (statSelect && (selectedOptionType === 'stat_multiplier_set' || selectedOptionType === 'stat_multiplier_reduce')) {
                     const applicableStats = options.find(opt => opt.type === selectedOptionType).applicableStats;
                     applicableStats.forEach(statName => {
                         const option = document.createElement('option');
@@ -1067,7 +1067,7 @@ function renderMutantChoiceUI() {
                     typeSelect.addEventListener('change', (e) => {
                         const newType = e.target.value;
                         if (statSelectionDiv) {
-                            if (newType === 'stat_multiplier_set_50' || newType === 'stat_multiplier_reduce_50') {
+                            if (newType === 'stat_multiplier_set' || newType === 'stat_multiplier_reduce') {
                                 statSelectionDiv.classList.remove('hidden');
                                 // Repopulate stat dropdown for this specific select
                                 statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
@@ -1113,7 +1113,7 @@ function renderMutantChoiceUI() {
  * @param {string} category The category (e.g., 'Mutant').
  * @param {string} passiveName The name of the passive (e.g., 'Mutation', 'Degeneration').
  * @param {string} slotId The unique ID of the choice slot.
- * @param {string} optionType The type from options (e.g., 'stat_multiplier_set_50', 'double_base_health').
+ * @param {string} optionType The type from options (e.g., 'stat_multiplier_set', 'double_base_health').
  * @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
  * @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
  * @param {string} label The display label of the choice.
@@ -1140,7 +1140,7 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
                 }
             }
             // Revert racialChange for the previously affected stat to its base value for the current race
-            if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
+            if (ExternalDataManager._data.Stats.includes(previousChoice.statName)) {
                 // If the previous change was additive/subtractive, revert it by subtracting
                 character[previousChoice.statName].racialChange -= previousChoice.value;
                 console.log(`  Reverted racialChange for ${previousChoice.statName} by ${previousChoice.value}. New value: ${character[previousChoice.statName].racialChange}`);
@@ -1154,7 +1154,7 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
     // Apply new choice if a valid optionType is selected
     if (optionType) {
         // Handle stat-specific choices
-        if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
+        if (optionType === 'stat_multiplier_set' || optionType === 'stat_multiplier_reduce') {
             if (!selectedStatName) {
                 // User selected a stat mutation type but no stat, just update DOM and return
                 updateDOM();
@@ -1183,7 +1183,7 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             };
 
             // Apply stat change: Add/Subtract the optionValue
-            if (ExternalDataManager.rollStats.includes(selectedStatName)) {
+            if (ExternalDataManager._data.Stats.includes(selectedStatName)) {
                 character[selectedStatName].racialChange += optionValue; // Add/Subtract the multiplier
                 console.log(`  Applied racialChange for ${selectedStatName} by adding ${optionValue}. New value: ${character[selectedStatName].racialChange}`);
             }
@@ -1241,7 +1241,7 @@ function attachClearMutantChoiceListeners() {
                             delete character.StatsAffected[category][passiveName][choiceToClear.statName];
                         }
                     }
-                    if (ExternalDataManager.rollStats.includes(choiceToClear.statName)) {
+                    if (ExternalDataManager._data.Stats.includes(choiceToClear.statName)) {
                         // Revert by subtracting the value
                         character[choiceToClear.statName].racialChange -= choiceToClear.value;
                     }
