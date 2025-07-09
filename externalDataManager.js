@@ -11,7 +11,7 @@ import { googleDriveFileFetcher } from './fetch.js';
 
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
-    _data: { Races:{}, Stats:{}, Roll:{}, Classes:{} },
+    _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
     parsePercent(numberString) {
         return parseFloat(numberString.replace('%', '')) / 100;
@@ -33,6 +33,7 @@ export const ExternalDataManager = {
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
+                this._data['Other'] = [head[1], 'Mana'];
                 delete head[1]; // Remove 'Health' from the head array
                 this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll'
 
@@ -41,6 +42,7 @@ export const ExternalDataManager = {
                     if (race) { // Ensure race name is not empty
                         this._data['Races'][race] = {
                             Stats: {
+                                Other: {},
                                 Roll: {}
                             }
                         };
