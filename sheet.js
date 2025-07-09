@@ -50,6 +50,14 @@ function roll(min, max) {
 const maxRollStat = 20;
 const minRollStat = 6;
 
+function initStatWithRacialChange(newCharacter, statName) {
+    const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
+    newCharacter[statName] = {
+        value: result,
+        racialChange: initialRacialChange
+    };
+}
+
 const defaultCharacterData = function() {
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
 
@@ -104,18 +112,12 @@ const defaultCharacterData = function() {
     // Initialize each stat with its rolled value, racial change, and calculated total
     ExternalDataManager.rollStats.forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
-        // For Demi-humans and Mutants, initial racialChange is 0, as they gain changes via choices
-        // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
-        const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
-        newCharacter[statName] = {
-            value: result,
-            racialChange: initialRacialChange, // This will be 0 for Demi-humans initially, or the fixed percentage for others
-            equipment: 0,
-            temporary: 0,
-            experience: 0,
-            maxExperience: defaultStatMaxExperience,
-            total: result * initialRacialChange
-        };
+        initStatWithRacialChange(newCharacter, statName);
+        newCharacter['equipment'] = 0;
+        newCharacter['temporary'] = 0;
+        newCharacter['experience'] = 0;
+        newCharacter['maxExperience'] = 0;
+        newCharacter['total'] = newCharacter['value'] * newCharacter['racialChange'];
     });
 
     ExternalDataManager.otherStats.forEach(statName => {
