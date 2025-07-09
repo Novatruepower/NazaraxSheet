@@ -809,8 +809,8 @@ function handleStatsRevertOperation(character, statName, modifier) {
 function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     console.log("--- handleDemiHumanStatChoice called ---");
     console.log("Input parameters:", { slotId, modifierValue, selectedStatName });
-    console.log("Current demiHumanStatChoices (before update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
-    console.log("Current demiHumanStatsAffected (before update):", Array.from(character.demiHumanStatsAffected));
+    console.log("Current demiHumansStatChoices (before update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
+    console.log("Current demiHumansStatsAffected (before update):", Array.from(character.demiHumanStatsAffected));
 
     const previousChoiceIndex = character.demiHumanStatChoices.findIndex(c => c.slotId === slotId);
     const previousChoice = previousChoiceIndex !== -1 ? character.demiHumanStatChoices[previousChoiceIndex] : null;

@@ -33,6 +33,7 @@ export const ExternalDataManager = {
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
+                this._data['Other'] = [head[1], 'Mana'];
                 delete head[1]; // Remove 'Health' from the head array
                 this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll'
 
