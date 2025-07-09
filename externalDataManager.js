@@ -7,6 +7,7 @@
 
 // Assuming googleDriveFileFetcher is imported or globally available
 // Example: import { googleDriveFileFetcher } from './fetch.js';
+import { stat } from 'fs';
 import { googleDriveFileFetcher } from './fetch.js';
 
 export const ExternalDataManager = {
@@ -179,11 +180,11 @@ export const ExternalDataManager = {
      */
     getRacialChange(raceName, statName) {
         const raceData = this.getRaceData(raceName);
+        let statValue = null;
 
         if (raceData && raceData.Stats) {
-            const stats = raceData.Stats;
-
-            let statValue = null;
+            const stats = Object.values(raceData.Stats);
+            console.log(stats);
 
             for (const category of stats) {
                 if (category.hasOwnProperty(statName)) {
@@ -193,7 +194,7 @@ export const ExternalDataManager = {
             }
         }
 
-        return null;
+        return statValue;
     },
 
     /**
