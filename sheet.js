@@ -55,7 +55,7 @@ function recalculateUpdate(char) {
     char.maxRacialPower = calculateMaxRacialPower(char.level);
     char.racialPower = Math.min(char.racialPower, char.maxRacialPower); // Adjust current Racial Power if it exceeds new max
 
-    if (characters.length > 0 && char === character) {
+    if (characters.length > 0) {
         document.getElementById('maxHealth').value = character.maxHealth;
         document.getElementById('Health').value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
