@@ -46,6 +46,25 @@ function roll(min, max) {
 const maxRollStat = 20;
 const minRollStat = 6;
 
+// Recalculate derived properties
+function recalculateUpdate(char) {
+    char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
+    char.Health.value = Math.min(char.Health.value, char.maxHealth);
+    char.maxMana = calculateMaxMana(char, char.level);
+    char.Mana.value = Math.min(char.Mana, char.maxMana);
+    char.maxRacialPower = calculateMaxRacialPower(char.level);
+    char.racialPower = Math.min(char.racialPower, char.maxRacialPower); // Adjust current Racial Power if it exceeds new max
+
+    if (char === character) {
+        document.getElementById('maxHealth').value = character.maxHealth;
+        document.getElementById('Health').value = character.Health.value;
+        document.getElementById('maxMana').value = character.maxMana;
+        document.getElementById('Mana').value = character.Mana;
+        document.getElementById('maxRacialPower').value = character.maxRacialPower;
+        document.getElementById('racialPower').value = character.racialPower;
+    }
+}
+
 const defaultCharacterData = function() {
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
 
@@ -119,11 +138,7 @@ const defaultCharacterData = function() {
         }
     });
 
-    // Calculate initial Health and Magic based on the default race
-    newCharacter.maxHealth = calculateMaxHealth(newCharacter, newCharacter.race, newCharacter.level, newCharacter.healthBonus);
-    newCharacter.Health.value = newCharacter.maxHealth;
-    newCharacter.maxMana = calculateMaxMana(newCharacter, newCharacter.level);
-    newCharacter.Mana.value = newCharacter.maxMana;
+    recalculateUpdate(newCharacter);
 
     return newCharacter;
 };
@@ -360,16 +375,7 @@ function initLoadCharacter(loadedChar) {
         if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
     });
 
-    // Recalculate derived properties based on the loaded and merged data
-    newChar.maxHealth = calculateMaxHealth(newChar, newChar.race, newChar.level, newChar.healthBonus);
-    newChar.maxMana = calculateMaxMana(newChar, newChar.level);
-    newChar.maxRacialPower = calculateMaxRacialPower(newChar.level);
     newChar.ac = newChar.armorBonus;
-
-    // Ensure current Health, Magic, and Racial Power don't exceed new max values
-    newChar.Health.value = Math.min(newChar.Health, newChar.maxHealth);
-    newChar.Mana.value = Math.min(newChar.Mana, newChar.maxMana);
-    newChar.racialPower = Math.min(newChar.racialPower, newChar.maxRacialPower);
 
     // Recalculate totals for rollStats after loading to ensure consistency
     ExternalDataManager.rollStats.forEach(statName => {
@@ -433,11 +439,8 @@ function updateDOM() {
     } else {
         raceSelect.classList.remove('select-placeholder-text');
     }
-    // Recalculate maxHealth when race is updated in DOM
-    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    // Ensure current Health doesn't exceed new max Health when race changes
-    character.Health.value = Math.min(character.Health, character.maxHealth);
 
+    recalculateUpdate(character);
 
     // Handle custom multi-select for class
     const classDisplayInput = document.getElementById('class-display');
@@ -511,7 +514,7 @@ function updateDOM() {
 
 
     // Health & Combat
-    document.getElementById('Health').value = character.Health;
+    document.getElementById('Health').value = character.Health.value;
     document.getElementById('maxHealth').value = character.maxHealth; // This now includes healthBonus
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
     document.getElementById('racialPower').value = character.racialPower; // Populate racialPower
@@ -687,20 +690,7 @@ function handleChangeRace() {
     });
 
     // Update maxHealth, maxMana and maxRacialPower when race changes
-    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    character.Health.value = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-    document.getElementById('maxHealth').value = character.maxHealth;
-    document.getElementById('Health').value = character.Health;
-
-    character.maxMana = calculateMaxMana(character, character.level);
-    character.Mana.value = Math.min(character.Mana, character.maxMana); // Adjust current Magic if it exceeds new max
-    document.getElementById('maxMana').value = character.maxMana;
-    document.getElementById('Mana').value = character.Mana;
-
-    character.maxRacialPower = calculateMaxRacialPower(character.level);
-    character.racialPower = Math.min(character.racialPower, character.maxRacialPower); // Adjust current Racial Power if it exceeds new max
-    document.getElementById('maxRacialPower').value = character.maxRacialPower;
-    document.getElementById('racialPower').value = character.racialPower;
+    recalculateUpdate(character);
 
     // Re-render the racial passives UI
     renderRacialPassives();
@@ -835,10 +825,7 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
     }
 
     // Recalculate derived properties that depend on racial changes
-    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    character.Health.value = Math.min(character.Health, character.maxHealth);
-    character.maxMana = calculateMaxMana(character, character.level);
-    character.Mana.value = Math.min(character.Mana, character.maxMana);
+    recalculateUpdate(character);
 
     console.log("Updated demiHumanStatChoices (after update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
     console.log("Updated demiHumanStatsAffected (after update):", Array.from(character.demiHumanStatsAffected));
@@ -1101,12 +1088,6 @@ function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = 
         }
     }
 
-    // Recalculate derived properties that depend on racial changes
-    character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-    character.Health.value = Math.min(character.Health, character.maxHealth);
-    character.maxMana = calculateMaxMana(character, character.level);
-    character.Mana.value = Math.min(character.Mana, character.maxMana);
-
     // Update the UI to reflect changes
     updateDOM();
     hasUnsavedChanges = true;
@@ -1142,12 +1123,6 @@ function attachClearMutantChoiceListeners() {
                 // Remove the choice from the array
                 choicesArray.splice(choiceIndex, 1);
             }
-
-            // Recalculate derived properties and update UI
-            character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-            character.Health.value = Math.min(character.Health, character.maxHealth);
-            character.maxMana = calculateMaxMana(character, character.level);
-            character.Mana.value = Math.min(character.Mana, character.maxMana);
 
             updateDOM();
             hasUnsavedChanges = true;
@@ -1335,21 +1310,7 @@ function handleChange(event) {
             character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             // Also update maxHealth, maxMana and maxRacialPower when level changes
-            character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-            character.Health.value = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
-            document.getElementById('maxHealth').value = character.maxHealth;
-            document.getElementById('Health').value = character.Health;
-
-            character.maxMana = calculateMaxMana(character, character.level);
-            character.Mana.value = Math.min(character.Mana, character.maxMana); // Adjust current Magic if it exceeds new max
-            document.getElementById('maxMana').value = character.maxMana;
-            document.getElementById('Mana').value = character.Mana;
-
-            character.maxRacialPower = calculateMaxRacialPower(character.level);
-            character.racialPower = Math.min(character.racialPower, character.maxRacialPower); // Adjust current Racial Power if it exceeds new max
-            document.getElementById('maxRacialPower').value = character.maxRacialPower;
-            document.getElementById('racialPower').value = character.racialPower;
-
+            recalculateUpdate(character);
         } else if (id === 'race') {
             character.race = newValue;
             const raceSelect = document.getElementById('race');
@@ -1361,7 +1322,7 @@ function handleChange(event) {
             handleChangeRace(); // Call handleChangeRace to update racial characteristics
         } else if (id === 'Health') { // Handle current Health input
             character.Health.value = Math.min(newValue, character.maxHealth); // Ensure current Health doesn't exceed max Health
-            document.getElementById('Health').value = character.Health;
+            document.getElementById('Health').value = character.Health.value;
         } else if (id === 'Mana') { // Handle current Magic input (renamed)
             character.Mana.value = Math.min(newValue, character.maxMana); // Ensure current Magic doesn't exceed max Magic
             document.getElementById('Mana').value = character.Mana;
@@ -1372,9 +1333,9 @@ function handleChange(event) {
             character.healthBonus = newValue;
             // Recalculate maxHealth when healthBonus changes
             character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
-            character.Health.value = Math.min(character.Health, character.maxHealth); // Adjust current Health if it exceeds new max
+            character.Health.value = Math.min(character.Health.value, character.maxHealth); // Adjust current Health if it exceeds new max
             document.getElementById('maxHealth').value = character.maxHealth;
-            document.getElementById('Health').value = character.Health;
+            document.getElementById('Health').value = character.Health.value;
         } else if (id === 'armorBonus') { // Handle armorBonus input
             character.armorBonus = newValue;
             character.ac = character.armorBonus; // Update AC based on armorBonus
