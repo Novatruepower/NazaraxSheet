@@ -46,16 +46,23 @@ function roll(min, max) {
 const maxRollStat = 20;
 const minRollStat = 6;
 
+function adjustValue(oldMaxValue, value, newMaxValue) {
+    return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
+}
+
 // Recalculate derived properties
 function recalculateUpdate(char) {
+    let oldMaxValue = char.maxHealth;
     char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
-    char.Health.value = Math.min(char.Health.value, char.maxHealth);
+    char.Health.value = adjustValue(char.maxHealth, char.Health.value, oldMaxValue);
+    oldMaxValue = char.maxMana;
     char.maxMana = calculateMaxMana(char, char.level);
-    char.Mana.value = Math.min(char.Mana.value, char.maxMana);
+    char.Mana.value = adjustValue(char.maxMana, char.Mana.value, oldMaxValue);
+    oldMaxValue = char.maxMana;
     char.maxRacialPower = calculateMaxRacialPower(char.level);
-    char.racialPower = Math.min(char.racialPower, char.maxRacialPower); // Adjust current Racial Power if it exceeds new max
+    char.racialPower = adjustValue(char.maxRacialPower, char.racialPower, oldMaxValue);
 
-    if (characters[currentCharacterIndex]) {
+    if (characters.length > 0) {
         document.getElementById('maxHealth').value = character.maxHealth;
         document.getElementById('Health').value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
