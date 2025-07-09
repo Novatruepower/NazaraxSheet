@@ -731,7 +731,7 @@ function handleChangeRace() {
  * This function creates and updates the dropdowns for applying stat modifiers.
  */
 function renderDemiHumanStatChoiceUI() {
-    const demiHumanChoicesContainer = document.getElementById('demi-human-choices-container');
+    const demiHumanChoicesContainer = document.getElementById('racial-passives-container');
     if (!demiHumanChoicesContainer) return; // Ensure the container exists
 
     const demiHumanPassives = ExternalDataManager.getRaceManualPassives('Demi-humans');
@@ -907,7 +907,7 @@ function attachClearDemiHumanChoiceListeners() {
  * Renders the UI for Mutant specific stat choices (Mutation and Degeneration).
  */
 function renderMutantChoiceUI() {
-    const mutantChoicesContainer = document.getElementById('mutant-choices-container');
+    const mutantChoicesContainer = document.getElementById('racial-passives-container');
     if (!mutantChoicesContainer) return;
 
     const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
@@ -1196,7 +1196,7 @@ function attachClearMutantChoiceListeners() {
  * Renders the generic racial passives for races that don't have manual choices.
  */
 function renderGenericRacialPassives() {
-    const genericPassivesContainer = document.getElementById('generic-racial-passives-container');
+    const genericPassivesContainer = document.getElementById('racial-passives-container');
     if (!genericPassivesContainer) return;
 
     // Clear previous content
@@ -1223,9 +1223,7 @@ function renderGenericRacialPassives() {
  */
 function renderRacialPassives() {
     // Hide all specific containers first
-    document.getElementById('demi-human-choices-container').classList.add('hidden');
-    document.getElementById('mutant-choices-container').classList.add('hidden');
-    document.getElementById('generic-racial-passives-container').classList.add('hidden');
+    document.getElementById('racial-passives-container').classList.add('hidden');
 
     // Then render the appropriate one
     if (character.race === 'Demi-humans') {
