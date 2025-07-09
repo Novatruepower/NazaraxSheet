@@ -58,6 +58,7 @@ function recalculateUpdate(char) {
     console.log(char.Health.value);
     char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
     console.log("new max" + char.maxHealth);
+    console.log("old max" + oldMaxValue);
     char.Health.value = adjustValue(char.maxHealth, char.Health.value, oldMaxValue);
     console.log("new value" + char.Health.value);
     oldMaxValue = char.maxMana;
