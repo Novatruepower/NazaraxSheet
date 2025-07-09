@@ -20,7 +20,7 @@ function calculateBaseMaxHealth(charData, race) {
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(charData, race, level, healthBonus) {
-    let healthRacialChange = ExternalDataManager.getRaceHealthChange(race);
+    let healthRacialChange = ExternalDataManager.getRacialChange(race, 'Health');
 
     if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
         healthRacialChange += charData.healthRacialChange;

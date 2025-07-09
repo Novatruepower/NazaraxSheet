@@ -33,7 +33,6 @@ export const ExternalDataManager = {
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
-                this._data['Other'] = [head[1], 'Mana'];
                 delete head[1]; // Remove 'Health' from the head array
                 this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll'
 
@@ -46,7 +45,8 @@ export const ExternalDataManager = {
                             }
                         };
 
-                        this._data['Races'][race]['Stats'][health] = this.parsePercent(value[1]); // Assign health multiplier
+                        this._data['Races'][race]['Stats']['Other'][health] = this.parsePercent(value[1]); // Assign health multiplier
+                        this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
                         let index = 2; // Start from the third column for stats
 
                         head.forEach(statName => {
@@ -178,31 +178,19 @@ export const ExternalDataManager = {
     getRacialChange(raceName, statName) {
         const raceData = this.getRaceData(raceName);
 
-        if (raceData) {
-            if (statName == 'Health')
-                return this.getRaceHealthChange(raceName);
+        if (raceData && raceData.Stats) {
+            const stats = raceData.Stats;
 
-            if (raceData.Stats && raceData.Stats.Roll && raceData.Stats.Roll.hasOwnProperty(statName))
-                return raceData.Stats.Roll[statName];
+            let statValue = null;
 
-            console.warn(`ExternalDataManager: Stat roll for "${statName}" in race "${raceName}" not found.`);
+            for (const category of stats) {
+                if (category.hasOwnProperty(statName)) {
+                    statValue = category[statName];
+                    break;
+                }
+            }
         }
 
-        return null;
-    },
-
-    /**
-     * Retrieves the health multiplier for a specific race from the internal data.
-     * @param {string} raceName The name of the race.
-     * @returns {number|null} The health multiplier for the race, or null if not found.
-     */
-    getRaceHealthChange(raceName) {
-        const raceData = this.getRaceData(raceName);
-        // Assuming 'Health' is a fixed key under 'Stats' for the multiplier
-        if (raceData && raceData.Stats && raceData.Stats.hasOwnProperty('Health')) {
-            return raceData.Stats.Health;
-        }
-        console.warn(`ExternalDataManager: Health multiplier for race "${raceName}" not found.`);
         return null;
     },
 
