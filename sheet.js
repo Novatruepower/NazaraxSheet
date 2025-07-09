@@ -53,8 +53,11 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
 // Recalculate derived properties
 function recalculateUpdate(char) {
     let oldMaxValue = char.maxHealth;
+    console.log("old " + oldMaxValue);
+    console.log(char.Health.value);
     char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
     char.Health.value = adjustValue(char.maxHealth, char.Health.value, oldMaxValue);
+    console.log(char.Health.value);
     oldMaxValue = char.maxMana;
     char.maxMana = calculateMaxMana(char, char.level);
     char.Mana.value = adjustValue(char.maxMana, char.Mana.value, oldMaxValue);
@@ -63,6 +66,7 @@ function recalculateUpdate(char) {
     char.racialPower = adjustValue(char.maxRacialPower, char.racialPower, oldMaxValue);
 
     if (characters.length > 0) {
+        console.log('good');
         document.getElementById('maxHealth').value = character.maxHealth;
         document.getElementById('Health').value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
@@ -144,7 +148,7 @@ const defaultCharacterData = function() {
             racialChange: initialRacialChange
         }
     });
-
+    
     recalculateUpdate(newCharacter);
 
     return newCharacter;
