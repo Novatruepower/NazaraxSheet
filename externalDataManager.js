@@ -183,11 +183,11 @@ export const ExternalDataManager = {
 
         if (raceData && raceData.Stats) {
             console.log(raceData.Stats);
-            const stats = Object.values(raceData.Stats);
+            const stats = Object.keys(raceData.Stats);
 
             for (const category of stats) {
-                if (category.hasOwnProperty(statName)) {
-                    statValue = category[statName];
+                if (stats[category].hasOwnProperty(statName)) {
+                    statValue = stats[category][statName];
                     break;
                 }
             }
