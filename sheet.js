@@ -821,14 +821,6 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         console.log(`  Cleared previous stat '${previousChoice.statName}' from demiHumanStatsAffected.`);
 
         handleStatsRevertOperation(character, previousChoice.statName, previousChoice.modifier);
-
-        if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-            character[previousChoice.statName].racialChange -= previousChoice.modifier;
-        } else if (previousChoice.statName === 'Health') {
-            character.healthRacialChange -= previousChoice.modifier;
-        } else if (previousChoice.statName === 'Mana') {
-            character.manaRacialChange -= previousChoice.modifier;
-        }
     }
 
     // If a new stat is selected (not empty option)
@@ -856,13 +848,7 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
         console.log(`  Added '${selectedStatName}' to demiHumanStatsAffected.`);
 
         // Apply the modifier to the chosen stat
-        if (ExternalDataManager.rollStats.includes(selectedStatName)) {
-            character[selectedStatName].racialChange += modifierValue;
-        } else if (selectedStatName === 'Health') {
-            character.healthRacialChange += modifierValue;
-        } else if (selectedStatName === 'Mana') {
-            character.manaRacialChange += modifierValue;
-        }
+        handleStatsRevertOperation(character, selectedStatName, -modifierValue);
     } else {
         // If the selected option is empty, remove the choice
         character.demiHumanStatChoices = character.demiHumanStatChoices.filter(c => c.slotId !== slotId);
