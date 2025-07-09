@@ -23,7 +23,7 @@ function calculateMaxHealth(charData, race, level, healthBonus) {
    // if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
    //     healthRacialChange += charData.healthRacialChange;
    // }
-
+    console.log(charData.Health.racialChange);
     return Math.floor(calculateBaseMaxHealth(charData, race) * charData.Health.racialChange * level) + (healthBonus || 0);
 }
 
@@ -52,7 +52,6 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
 
 // Recalculate derived properties
 function recalculateUpdate(char) {
-    console.log(char.race);
     let oldMaxValue = char.maxHealth;
     char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
