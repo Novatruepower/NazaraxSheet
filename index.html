@@ -527,6 +527,20 @@
         </div>
     </div>
 
+    <div id="confirmation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <p id="confirm-message" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-ok-btn" class="px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    OK
+                </button>
+                <button id="confirm-cancel-btn" class="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-md shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         window.gapiInited = false;
         window.gisInited = false;

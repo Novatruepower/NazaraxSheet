@@ -1675,25 +1675,25 @@ function deleteCurrentCharacter() {
             resetCurrentCharacter();
             showStatusMessage("Cannot delete the last character. Character has been reset instead.", false);
         });
-        return;
     }
+    else {
+        showConfirmationModal(`Are you sure you want to delete "${character.name || `Character ${currentCharacterIndex + 1}`}?" This action cannot be undone.`, () => {
+            characters.splice(currentCharacterIndex, 1); // Remove the current character
 
-    showConfirmationModal(`Are you sure you want to delete "${character.name || `Character ${currentCharacterIndex + 1}`}?" This action cannot be undone.`, () => {
-        characters.splice(currentCharacterIndex, 1); // Remove the current character
+            // Adjust currentCharacterIndex if the last character was deleted
+            if (currentCharacterIndex >= characters.length) {
+                currentCharacterIndex = characters.length - 1;
+            }
 
-        // Adjust currentCharacterIndex if the last character was deleted
-        if (currentCharacterIndex >= characters.length) {
-            currentCharacterIndex = characters.length - 1;
-        }
-
-        updateDOM();
-        populateCharacterSelector(); // Re-populate selector after deletion
-        showStatusMessage("Character deleted successfully!");
-        historyStack = []; // Clear history after deletion
-        historyPointer = -1; // Reset history pointer
-        saveCurrentStateToHistory(); // Save the new state as the first history entry
-        hasUnsavedChanges = false; // Reset unsaved changes flag after deletion
-    });
+            updateDOM();
+            populateCharacterSelector(); // Re-populate selector after deletion
+            showStatusMessage("Character deleted successfully!");
+            historyStack = []; // Clear history after deletion
+            historyPointer = -1; // Reset history pointer
+            saveCurrentStateToHistory(); // Save the new state as the first history entry
+            hasUnsavedChanges = false; // Reset unsaved changes flag after deletion
+        });
+    }
 }
 
 /**
