@@ -1,5 +1,4 @@
 import { ExternalDataManager } from './externalDataManager.js';
-h
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
