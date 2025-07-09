@@ -51,7 +51,7 @@ function recalculateUpdate(char) {
     char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
     char.Health.value = Math.min(char.Health.value, char.maxHealth);
     char.maxMana = calculateMaxMana(char, char.level);
-    char.Mana.value = Math.min(char.Mana, char.maxMana);
+    char.Mana.value = Math.min(char.Mana.value, char.maxMana);
     char.maxRacialPower = calculateMaxRacialPower(char.level);
     char.racialPower = Math.min(char.racialPower, char.maxRacialPower); // Adjust current Racial Power if it exceeds new max
 
@@ -59,7 +59,7 @@ function recalculateUpdate(char) {
         document.getElementById('maxHealth').value = character.maxHealth;
         document.getElementById('Health').value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
-        document.getElementById('Mana').value = character.Mana;
+        document.getElementById('Mana').value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
         document.getElementById('racialPower').value = character.racialPower;
     }
@@ -514,13 +514,7 @@ function updateDOM() {
 
 
     // Health & Combat
-    document.getElementById('Health').value = character.Health.value;
-    document.getElementById('maxHealth').value = character.maxHealth; // This now includes healthBonus
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
-    document.getElementById('racialPower').value = character.racialPower; // Populate racialPower
-    document.getElementById('maxRacialPower').value = character.maxRacialPower; // Populate maxRacialPower
-    document.getElementById('Mana').value = character.Mana; // Populate Mana
-    document.getElementById('maxMana').value = character.maxMana; // Populate maxMana
     document.getElementById('ac').value = character.ac; // Populate total armor (readonly)
     document.getElementById('armorBonus').value = character.armorBonus; // Populate armor bonus
 
@@ -1325,7 +1319,7 @@ function handleChange(event) {
             document.getElementById('Health').value = character.Health.value;
         } else if (id === 'Mana') { // Handle current Magic input (renamed)
             character.Mana.value = Math.min(newValue, character.maxMana); // Ensure current Magic doesn't exceed max Magic
-            document.getElementById('Mana').value = character.Mana;
+            document.getElementById('Mana').value = character.Mana.value;
         } else if (id === 'racialPower') { // Handle current Racial Power input
             character.racialPower = Math.min(newValue, character.maxRacialPower); // Ensure current Racial Power doesn't exceed max Racial Power
             document.getElementById('racialPower').value = character.racialPower;
