@@ -52,23 +52,17 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
 
 // Recalculate derived properties
 function recalculateUpdate(char) {
-    console.log("old max" + char.maxHealth);
     let oldMaxValue = char.maxHealth;
-    console.log("old value" + char.Health.value);
     char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
-    console.log("new max" + char.maxHealth);
-    console.log("old max" + oldMaxValue);
-    char.Health.value = adjustValue(char.maxHealth, char.Health.value, oldMaxValue);
-    console.log("new value" + char.Health.value);
+    char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
     oldMaxValue = char.maxMana;
     char.maxMana = calculateMaxMana(char, char.level);
-    char.Mana.value = adjustValue(char.maxMana, char.Mana.value, oldMaxValue);
+    char.Mana.value = adjustValue(oldMaxValue, char.Mana.value, char.maxMana);
     oldMaxValue = char.maxMana;
     char.maxRacialPower = calculateMaxRacialPower(char.level);
-    char.racialPower = adjustValue(char.maxRacialPower, char.racialPower, oldMaxValue);
+    char.racialPower = adjustValue(oldMaxValue, char.racialPower, char.maxRacialPower);
 
     if (characters.length > 0) {
-        console.log('good');
         document.getElementById('maxHealth').value = character.maxHealth;
         document.getElementById('Health').value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
