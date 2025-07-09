@@ -1,5 +1,5 @@
 import { ExternalDataManager } from './externalDataManager.js';
-
+h
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
@@ -23,7 +23,6 @@ function calculateMaxHealth(charData, race, level, healthBonus) {
    // if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
    //     healthRacialChange += charData.healthRacialChange;
    // }
-    console.log(charData.Health.racialChange);
     return Math.floor(calculateBaseMaxHealth(charData, race) * charData.Health.racialChange * level) + (healthBonus || 0);
 }
 
@@ -665,8 +664,13 @@ function quickRollStats() {
     saveCurrentStateToHistory(); // Save state after modification
 }
 
+function updateRacialChange(oldRace, statName) {
+    character[statName].racialChange -= ExternalDataManager.getRacialChange(oldRace, statName);
+    character[statName].racialChange += ExternalDataManager.getRacialChange(character.race, statName);
+}
+
 // Function to handle race change, updating racial characteristics
-function handleChangeRace() {
+function handleChangeRace(oldRace) {
     // Reset all manual passive choices and flags
     character.demiHumanStatChoices = [];
     character.demiHumanStatsAffected = new Set();
@@ -681,13 +685,14 @@ function handleChangeRace() {
 
     // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
-        // For Demi-humans and Mutants, initial racialChange is 0, as they gain changes via choices
-        // For other races, it's pulled from ExternalDataManager (which returns a percentage change)
-        const initialRacialChange = ExternalDataManager.getRacialChange(character.race, statName);
-        character[statName].racialChange = initialRacialChange;
+        updateRacialChange(oldRace, statName);
         character[statName].total = calculateTotal(statName);
         document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Display raw number
         document.getElementById(`${statName}-total`).value = character[statName].total;
+    });
+
+    ExternalDataManager.otherStats.forEach(statName => {
+        updateRacialChange(oldRace, statName);
     });
 
     // Update maxHealth, maxMana and maxRacialPower when race changes
@@ -1313,6 +1318,7 @@ function handleChange(event) {
             // Also update maxHealth, maxMana and maxRacialPower when level changes
             recalculateUpdate(character);
         } else if (id === 'race') {
+            let oldRace = character.race;
             character.race = newValue;
             const raceSelect = document.getElementById('race');
             if (newValue === '') {
@@ -1320,7 +1326,7 @@ function handleChange(event) {
             } else {
                 raceSelect.classList.remove('select-placeholder-text');
             }
-            handleChangeRace(); // Call handleChangeRace to update racial characteristics
+            handleChangeRace(oldRace); // Call handleChangeRace to update racial characteristics
         } else if (id === 'Health') { // Handle current Health input
             character.Health.value = Math.min(newValue, character.maxHealth); // Ensure current Health doesn't exceed max Health
             document.getElementById('Health').value = character.Health.value;
