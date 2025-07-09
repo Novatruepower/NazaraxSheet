@@ -1777,17 +1777,17 @@ function toggleDropdown(menuId) {
     document.getElementById(menuId).classList.toggle('hidden');
 }
 
-const statusMessageElement = document.getElementById('status-message');
-const googleDriveAuthStatusSpan = document.getElementById('google-drive-auth-status');
-const authorizeGoogleDriveButton = document.getElementById('authorize_google_drive_button');
-const signoutGoogleDriveButton = document.getElementById('signout_google_drive_button');
-const googleDriveModal = document.getElementById('google-drive-modal');
-const googleDriveFileList = document.getElementById('google-drive-file-list');
-const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
-const confirmationModal = document.getElementById('confirmation-modal');
-const confirmMessage = document.getElementById('confirm-message');
-const confirmOkBtn = document.getElementById('confirm-ok-btn');
-const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+let statusMessageElement;
+let googleDriveAuthStatusSpan;
+let authorizeGoogleDriveButton;
+let signoutGoogleDriveButton;
+let googleDriveModal;
+let googleDriveFileList;
+let googleDriveModalStatus;
+let confirmationModal;
+let confirmMessage;
+let confirmOkBtn;
+let confirmCancelBtn;
 
 
 // Key for local storage to persist Google Drive authorization status
@@ -1814,6 +1814,18 @@ function showStatusMessage(message, isError = false) {
  * @param {function} onCancel Callback function to execute if user cancels (optional).
  */
 function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
+    // Ensure elements are available before trying to access them
+    if (!confirmationModal || !confirmMessage || !confirmOkBtn || !confirmCancelBtn) {
+        console.error("Confirmation modal elements not found. Cannot show modal.");
+        // Fallback to direct confirmation if modal elements are missing
+        if (window.confirm(message)) {
+            onConfirm();
+        } else {
+            onCancel();
+        }
+        return;
+    }
+
     confirmMessage.textContent = message;
     confirmationModal.classList.remove('hidden');
 
@@ -2344,6 +2356,20 @@ function attachEventListeners() {
 }
 
 function initPage() {
+    // Assign DOM elements to variables here, after the DOM is loaded
+    statusMessageElement = document.getElementById('status-message');
+    googleDriveAuthStatusSpan = document.getElementById('google-drive-auth-status');
+    authorizeGoogleDriveButton = document.getElementById('authorize_google_drive_button');
+    signoutGoogleDriveButton = document.getElementById('signout_google_drive_button');
+    googleDriveModal = document.getElementById('google-drive-modal');
+    googleDriveFileList = document.getElementById('google-drive-file-list');
+    googleDriveModalStatus = document.getElementById('google-drive-modal-status');
+    confirmationModal = document.getElementById('confirmation-modal');
+    confirmMessage = document.getElementById('confirm-message');
+    confirmOkBtn = document.getElementById('confirm-ok-btn');
+    confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+
+
     characters = [defaultCharacterData()];
     // Initialize maxHealth, maxMana and maxRacialPower based on default race, level, and healthBonus for the first character
     characters[0].maxHealth = calculateMaxHealth(characters[0], characters[0].race, characters[0].level, characters[0].healthBonus);
