@@ -52,6 +52,7 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
 
 // Recalculate derived properties
 function recalculateUpdate(char) {
+    console.log(char);
     let oldMaxValue = char.maxHealth;
     char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
