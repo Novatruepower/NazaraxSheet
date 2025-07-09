@@ -51,7 +51,7 @@ const maxRollStat = 20;
 const minRollStat = 6;
 
 function adjustValue(oldMaxValue, value, newMaxValue) {
-    return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
+    return newMaxValue;
 }
 
 // Recalculate derived properties
