@@ -11,23 +11,29 @@ function calculateLevelMaxExperience(level) {
 function calculateBaseMaxHealth(charData, race) {
     let baseHealthMultiplier = 1;
 
-    if (race === 'Mutant' && charData && charData.baseMaxHealthDoubled)
-        baseHealthMultiplier *= 2; // Double the base value for Mutants
+    // Check if the character has a 'double_base_health' mutation applied
+    // Iterate through StatChoices to find if 'double_base_health' is active for the 'Mutant' race
+    if (race === 'Mutant' && charData && charData.StatChoices['Mutant'] && charData.StatChoices['Mutant']['Mutation']) {
+        for (const slotId in charData.StatChoices['Mutant']['Mutation']) {
+            const choice = charData.StatChoices['Mutant']['Mutation'][slotId];
+            if (choice.type === 'double_base_health') {
+                baseHealthMultiplier *= 2;
+                break; // Found it, no need to check further
+            }
+        }
+    }
 
     return charData.baseHealth * baseHealthMultiplier;
 }
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(charData, race, level, healthBonus) {
-   // if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
-   //     healthRacialChange += charData.healthRacialChange;
-   // }
     return Math.floor(calculateBaseMaxHealth(charData, race) * charData.Health.racialChange * level) + (healthBonus || 0);
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
-    return Math.floor(100 * charData.Mana.racialChange * level); 
+    return Math.floor(100 * charData.Mana.racialChange * level);
 }
 
 // Function to calculate max racial power based on level
@@ -104,15 +110,18 @@ const defaultCharacterData = function() {
             'general-inventory-content': true,
             'racial-passives-content': true, // Make racial passives section visible by default
         },
-        // New properties for Demi-human stat choices
-        demiHumanStatChoices: [], // Stores { statName: 'Strength', modifier: 0.25, slotId: '...' }
-        demiHumanStatsAffected: new Set(), // Stores names of stats already chosen by Demi-human modifiers
 
-        // New properties for Mutant stat choices
-        mutantMutations: [], // Stores { type: 'stat_multiplier_50', statName: 'Strength', level: 1, slotId: '...' }
-        mutantDegenerations: [], // Stores { statName: 'Agility', level: 1, slotId: '...' }
-        mutantAffectedStats: new Set(), // Stores names of stats affected by Mutant mutations/degenerations
-        baseMaxHealthDoubled: false, // Flag for Mutant's "Doubling your base max health"
+        // Refactored properties for stat choices and affected stats
+        StatChoices: {}, // Stores chosen passive details: { category: { passiveName: { slotId: { type, value?, statName?, level?, label? } } } }
+        StatsAffected: {}, // Stores which stats are affected by which choices: { category: { passiveName: { statName: Set<string> } } }
+
+        // Old properties removed as per refactoring request
+        // demiHumanStatChoices: [],
+        // demiHumanStatsAffected: new Set(),
+        // mutantMutations: [],
+        // mutantDegenerations: [],
+        // mutantAffectedStats: new Set(),
+        // baseMaxHealthDoubled: false,
         naturalHealthRegenActive: false, // Placeholder for Mutant regen
         naturalManaRegenActive: false, // Placeholder for Mutant regen
         healthRegenDoubled: false, // Placeholder for Mutant regen
@@ -125,7 +134,7 @@ const defaultCharacterData = function() {
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
         newCharacter[statName] = {
             value: result,
-            racialChange: initialRacialChange, 
+            racialChange: initialRacialChange,
             equipment: 0,
             temporary: 0,
             experience: 0,
@@ -142,7 +151,7 @@ const defaultCharacterData = function() {
             racialChange: initialRacialChange
         }
     });
-    
+
     recalculateUpdate(newCharacter);
 
     return newCharacter;
@@ -166,13 +175,18 @@ function saveCurrentStateToHistory() {
     // Deep copy the entire characters array to save its state
     const currentState = JSON.parse(JSON.stringify(characters));
 
-    // Convert Sets to Arrays for saving
+    // Convert Sets to Arrays for saving within the new StatChoices/StatsAffected structure
     currentState.forEach(char => {
-        if (char.demiHumanStatsAffected instanceof Set) {
-            char.demiHumanStatsAffected = Array.from(char.demiHumanStatsAffected);
-        }
-        if (char.mutantAffectedStats instanceof Set) {
-            char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
+        if (char.StatsAffected) {
+            for (const category in char.StatsAffected) {
+                for (const passiveName in char.StatsAffected[category]) {
+                    for (const statName in char.StatsAffected[category][passiveName]) {
+                        if (char.StatsAffected[category][passiveName][statName] instanceof Set) {
+                            char.StatsAffected[category][passiveName][statName] = Array.from(char.StatsAffected[category][passiveName][statName]);
+                        }
+                    }
+                }
+            }
         }
     });
 
@@ -308,12 +322,17 @@ function saveCharacterToFile() {
                 char[statName] = rest; // Assign the object without maxExperience and total
             }
         });
-        // Convert Set to Array for saving
-        if (char.demiHumanStatsAffected instanceof Set) {
-            char.demiHumanStatsAffected = Array.from(char.demiHumanStatsAffected);
-        }
-        if (char.mutantAffectedStats instanceof Set) {
-            char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
+        // Convert Sets to Arrays for saving within the new StatChoices/StatsAffected structure
+        if (char.StatsAffected) {
+            for (const category in char.StatsAffected) {
+                for (const passiveName in char.StatsAffected[category]) {
+                    for (const statName in char.StatsAffected[category][passiveName]) {
+                        if (char.StatsAffected[category][passiveName][statName] instanceof Set) {
+                            char.StatsAffected[category][passiveName][statName] = Array.from(char.StatsAffected[category][passiveName][statName]);
+                        }
+                    }
+                }
+            }
         }
         // Exclude calculated properties (maxHealth, maxMana, maxRacialPower, ac) from the saved data
         delete char.maxHealth;
@@ -362,9 +381,20 @@ function initLoadCharacter(loadedChar) {
                 if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
                     newChar[key].maxExperience = defaultStatMaxExperience;
                 }
-            } else if (key === 'demiHumanStatsAffected' || key === 'mutantAffectedStats') {
-                // Convert arrays back to Sets for these properties
-                newChar[key] = new Set(Array.isArray(loadedChar[key]) ? loadedChar[key] : []);
+            } else if (key === 'StatsAffected') {
+                // Convert arrays back to Sets for StatsAffected
+                newChar[key] = {};
+                if (loadedChar[key]) {
+                    for (const category in loadedChar[key]) {
+                        newChar[key][category] = {};
+                        for (const passiveName in loadedChar[key][category]) {
+                            newChar[key][category][passiveName] = {};
+                            for (const statName in loadedChar[key][category][passiveName]) {
+                                newChar[key][category][passiveName][statName] = new Set(Array.isArray(loadedChar[key][category][passiveName][statName]) ? loadedChar[key][category][passiveName][statName] : []);
+                            }
+                        }
+                    }
+                }
             } else {
                 newChar[key] = loadedChar[key];
             }
@@ -668,19 +698,58 @@ function updateRacialChange(oldRace, statName) {
     character[statName].racialChange += ExternalDataManager.getRacialChange(character.race, statName);
 }
 
+/**
+ * Reverts the effects of all choices for a given category and passive name.
+ * @param {object} char The character object.
+ * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
+ * @param {string} passiveName The name of the passive (e.g., 'Demi-human Stat Adjustments', 'Mutation').
+ */
+function handleRevertChoices(char, category, passiveName) {
+    if (char.StatsAffected[category] && char.StatsAffected[category][passiveName]) {
+        for (const statName in char.StatsAffected[category][passiveName]) {
+            const slotIds = char.StatsAffected[category][passiveName][statName];
+            slotIds.forEach(slotId => {
+                if (char.StatChoices[category] && char.StatChoices[category][passiveName] && char.StatChoices[category][passiveName][slotId]) {
+                    const choice = char.StatChoices[category][passiveName][slotId];
+                    // Revert stat changes
+                    if (choice.type === 'stat_increase' || choice.type === 'stat_reduction' || choice.type === 'stat_multiplier_set_50' || choice.type === 'stat_multiplier_reduce_50') {
+                        if (ExternalDataManager.rollStats.includes(statName)) {
+                            // For additive changes, subtract the value to revert
+                            char[statName].racialChange -= choice.value;
+                        }
+                    }
+                    // Revert specific flags
+                    if (choice.type === 'double_base_health') {
+                        // This flag is now handled dynamically in calculateBaseMaxHealth
+                        // No direct char.baseMaxHealthDoubled flag needed
+                    }
+                    // Add other specific reverts here if needed (e.g., for regen, skills)
+                }
+            });
+        }
+    }
+    // Clear the choices and affected stats for this passive
+    if (char.StatChoices[category]) {
+        delete char.StatChoices[category][passiveName];
+    }
+    if (char.StatsAffected[category]) {
+        delete char.StatsAffected[category][passiveName];
+    }
+}
+
+
 // Function to handle race change, updating racial characteristics
 function handleChangeRace(oldRace) {
-    // Reset all manual passive choices and flags
-    character.demiHumanStatChoices = [];
-    character.demiHumanStatsAffected = new Set();
-    character.mutantMutations = [];
-    character.mutantDegenerations = [];
-    character.mutantAffectedStats = new Set();
-    character.baseMaxHealthDoubled = false;
-    character.naturalHealthRegenActive = false;
-    character.naturalManaRegenActive = false;
-    character.healthRegenDoubled = false;
-    character.manaRegenDoubled = false;
+    // Revert all previous manual passive choices for the old race
+    if (character.StatChoices[oldRace]) {
+        for (const passiveName in character.StatChoices[oldRace]) {
+            handleRevertChoices(character, oldRace, passiveName);
+        }
+        delete character.StatChoices[oldRace];
+    }
+    if (character.StatsAffected[oldRace]) {
+        delete character.StatsAffected[oldRace];
+    }
 
     // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
@@ -713,8 +782,10 @@ function renderDemiHumanStatChoiceUI() {
     if (!demiHumanChoicesContainer) return; // Ensure the container exists
 
     const demiHumanPassives = ExternalDataManager.getRaceManualPassives('Demi-humans');
+    const category = 'Demi-humans';
+    const passiveName = 'Stat Adjustments'; // Generic passive name for Demi-humans
 
-    if (character.race === 'Demi-humans' && demiHumanPassives && demiHumanPassives.choices) {
+    if (character.race === category && demiHumanPassives && demiHumanPassives.choices) {
         demiHumanChoicesContainer.classList.remove('hidden');
         demiHumanChoicesContainer.innerHTML = `
             <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Demi-human Stat Adjustments</h4>
@@ -726,10 +797,17 @@ function renderDemiHumanStatChoiceUI() {
 
         const modifiersList = document.getElementById('demi-human-modifiers-list');
 
+        // Ensure the nested structure exists for Demi-humans
+        character.StatChoices[category] = character.StatChoices[category] || {};
+        character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
+        character.StatsAffected[category] = character.StatsAffected[category] || {};
+        character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
+
+
         demiHumanPassives.choices.forEach((modifier, modIndex) => {
             for (let i = 0; i < modifier.count; i++) {
                 const slotId = `demihuman-${modifier.type}-${modIndex}-${i}`; // Unique ID for each choice slot
-                const currentChoice = character.demiHumanStatChoices.find(c => c.slotId === slotId); // Find by slotId
+                const currentChoice = character.StatChoices[category][passiveName][slotId];
                 const selectedStatName = currentChoice ? currentChoice.statName : '';
 
                 const choiceDiv = document.createElement('div');
@@ -749,7 +827,7 @@ function renderDemiHumanStatChoiceUI() {
                     option.value = statName;
                     option.textContent = statName;
                     // Disable if already chosen by another slot, or if this is not the currently selected stat for this slot
-                    const isAlreadyChosen = character.demiHumanStatsAffected.has(statName) && statName !== selectedStatName;
+                    const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
                     option.disabled = isAlreadyChosen;
                     selectElement.appendChild(option);
                 });
@@ -757,7 +835,7 @@ function renderDemiHumanStatChoiceUI() {
 
                 // Add event listener
                 selectElement.addEventListener('change', (e) => {
-                    handleDemiHumanStatChoice(slotId, modifier.value, e.target.value);
+                    handleDemiHumanStatChoice(category, passiveName, slotId, modifier.type, modifier.value, e.target.value, modifier.label);
                 });
             }
         });
@@ -768,39 +846,50 @@ function renderDemiHumanStatChoiceUI() {
     attachClearDemiHumanChoiceListeners(); // Attach listeners for clear buttons
 }
 
-function handleStatsRevertOperation(character, statName, modifier) {
-    if (ExternalDataManager._data.Stats.includes(statName)) {
-        character[statName].racialChange -= modifier;
-    }
-}
-
 /**
  * Handles the selection of a stat for a Demi-human racial modifier.
+ * @param {string} category The category (e.g., 'Demi-humans').
+ * @param {string} passiveName The name of the passive (e.g., 'Stat Adjustments').
  * @param {string} slotId The unique ID of the choice slot.
+ * @param {string} choiceType The type of the choice (e.g., 'stat_increase').
  * @param {number} modifierValue The numerical value of the modifier (e.g., 0.25).
  * @param {string} selectedStatName The name of the stat chosen by the player.
+ * @param {string} label The display label of the choice.
  */
-function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
+function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, modifierValue, selectedStatName, label) {
     console.log("--- handleDemiHumanStatChoice called ---");
-    console.log("Input parameters:", { slotId, modifierValue, selectedStatName });
-    console.log("Current demiHumansStatChoices (before update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
-    console.log("Current demiHumansStatsAffected (before update):", Array.from(character.demiHumanStatsAffected));
+    console.log("Input parameters:", { category, passiveName, slotId, choiceType, modifierValue, selectedStatName, label });
 
-    const previousChoiceIndex = character.demiHumanStatChoices.findIndex(c => c.slotId === slotId);
-    const previousChoice = previousChoiceIndex !== -1 ? character.demiHumanStatChoices[previousChoiceIndex] : null;
+    // Ensure the nested structures exist
+    character.StatChoices[category] = character.StatChoices[category] || {};
+    character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
+    character.StatsAffected[category] = character.StatsAffected[category] || {};
+    character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
 
-    // If a stat was previously selected for this slot, remove it from affected list and reset its racialChange
+    const previousChoice = character.StatChoices[category][passiveName][slotId];
+
+    // If a stat was previously selected for this slot, remove its effect
     if (previousChoice && previousChoice.statName) {
-        character.demiHumanStatsAffected.delete(previousChoice.statName);
-        console.log(`  Cleared previous stat '${previousChoice.statName}' from demiHumanStatsAffected.`);
+        const prevStatName = previousChoice.statName;
+        if (character.StatsAffected[category][passiveName][prevStatName]) {
+            character.StatsAffected[category][passiveName][prevStatName].delete(slotId);
+            if (character.StatsAffected[category][passiveName][prevStatName].size === 0) {
+                delete character.StatsAffected[category][passiveName][prevStatName]; // Clean up empty Set
+            }
+        }
+        console.log(`  Cleared previous stat '${prevStatName}' from StatsAffected.`);
 
-        handleStatsRevertOperation(character, previousChoice.statName, previousChoice.modifier);
+        // Revert the racial change
+        if (ExternalDataManager.rollStats.includes(prevStatName)) {
+            character[prevStatName].racialChange -= previousChoice.value;
+            console.log(`  Reverted racialChange for ${prevStatName} by ${previousChoice.value}. New value: ${character[prevStatName].racialChange}`);
+        }
     }
 
     // If a new stat is selected (not empty option)
     if (selectedStatName) {
-        // Check if the newly selected stat is already affected by another choice
-        if (character.demiHumanStatsAffected.has(selectedStatName)) {
+        // Check if the newly selected stat is already affected by another choice in this passive
+        if (character.StatsAffected[category][passiveName][selectedStatName] && character.StatsAffected[category][passiveName][selectedStatName].size > 0) {
             showStatusMessage(`'${selectedStatName}' has already been chosen for another racial modifier. Please select a different stat.`, true);
             // Revert the dropdown to its previous selection or empty
             const selectElement = document.getElementById(slotId);
@@ -811,30 +900,37 @@ function handleDemiHumanStatChoice(slotId, modifierValue, selectedStatName) {
             return;
         }
 
-        // Add the new choice
-        const newChoice = { slotId, statName: selectedStatName, modifier: modifierValue };
-        if (previousChoice) {
-            Object.assign(previousChoice, newChoice); // Update existing choice
-        } else {
-            character.demiHumanStatChoices.push(newChoice); // Add new choice
-        }
-        character.demiHumanStatsAffected.add(selectedStatName);
-        console.log(`  Added '${selectedStatName}' to demiHumanStatsAffected.`);
+        // Add the new choice to StatChoices
+        character.StatChoices[category][passiveName][slotId] = {
+            type: choiceType,
+            value: modifierValue,
+            statName: selectedStatName,
+            label: label
+        };
+
+        // Add to StatsAffected
+        character.StatsAffected[category][passiveName][selectedStatName] = character.StatsAffected[category][passiveName][selectedStatName] || new Set();
+        character.StatsAffected[category][passiveName][selectedStatName].add(slotId);
+        console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
 
         // Apply the modifier to the chosen stat
-        handleStatsRevertOperation(character, selectedStatName, -modifierValue);
+        if (ExternalDataManager.rollStats.includes(selectedStatName)) {
+            character[selectedStatName].racialChange += modifierValue;
+            console.log(`  Applied racialChange for ${selectedStatName} by ${modifierValue}. New value: ${character[selectedStatName].racialChange}`);
+        }
     } else {
-        // If the selected option is empty, remove the choice
-        character.demiHumanStatChoices = character.demiHumanStatChoices.filter(c => c.slotId !== slotId);
-        console.log(`  Cleared choice for slot ${slotId}.`);
+        // If the selected option is empty, remove the choice from StatChoices
+        if (character.StatChoices[category][passiveName][slotId]) {
+            delete character.StatChoices[category][passiveName][slotId];
+            console.log(`  Cleared choice for slot ${slotId}.`);
+        }
     }
 
     // Recalculate derived properties that depend on racial changes
     recalculateUpdate(character);
 
-    console.log("Updated demiHumanStatChoices (after update):", JSON.parse(JSON.stringify(character.demiHumanStatChoices)));
-    console.log("Updated demiHumanStatsAffected (after update):", Array.from(character.demiHumanStatsAffected));
-    console.log(`Final racialChange for ${selectedStatName} (from character object):`, character[selectedStatName]?.racialChange);
+    console.log("Updated StatChoices (after update):", JSON.parse(JSON.stringify(character.StatChoices)));
+    console.log("Updated StatsAffected (after update):", JSON.parse(JSON.stringify(character.StatsAffected), (key, value) => value instanceof Set ? Array.from(value) : value));
 
     // Update the UI to reflect changes (e.g., disable/enable options)
     updateDOM(); // Re-render the entire DOM to update all stat totals and choice dropdowns
@@ -868,8 +964,9 @@ function renderMutantChoiceUI() {
     if (!mutantChoicesContainer) return;
 
     const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
+    const category = 'Mutant';
 
-    if (character.race === 'Mutant' && mutantPassives && mutantPassives.abilities) {
+    if (character.race === category && mutantPassives && mutantPassives.abilities) {
         mutantChoicesContainer.classList.remove('hidden');
         mutantChoicesContainer.innerHTML = `
             <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Mutant Abilities: Mutation & Degeneration</h4>
@@ -881,6 +978,10 @@ function renderMutantChoiceUI() {
 
         const abilitiesList = document.getElementById('mutant-abilities-list');
         const currentLevel = character.level;
+
+        // Ensure the nested structure exists for Mutant
+        character.StatChoices[category] = character.StatChoices[category] || {};
+        character.StatsAffected[category] = character.StatsAffected[category] || {};
 
         // Helper to get available points for a type at current level
         const getAvailablePoints = (abilityType) => {
@@ -897,122 +998,107 @@ function renderMutantChoiceUI() {
             return points;
         };
 
-        // Render Mutation choices
-        const maxMutations = getAvailablePoints('Mutation');
-        const mutationOptions = mutantPassives.abilities.Mutation.options;
+        // Iterate over each ability (Mutation, Degeneration)
+        for (const abilityKey in mutantPassives.abilities) {
+            const abilityData = mutantPassives.abilities[abilityKey];
+            const maxChoices = getAvailablePoints(abilityKey);
+            const options = abilityData.options;
+            const passiveName = abilityKey; // e.g., "Mutation", "Degeneration"
 
-        for (let i = 0; i < maxMutations; i++) {
-            const slotId = `mutant-mutation-${i}`;
-            const currentMutation = character.mutantMutations.find(m => m.slotId === slotId);
-            const selectedOptionType = currentMutation ? currentMutation.type : '';
-            const selectedStatName = currentMutation && currentMutation.statName ? currentMutation.statName : '';
+            // Ensure nested structure for this passive name
+            character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
+            character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
 
-            const mutationDiv = document.createElement('div');
-            mutationDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
-            mutationDiv.innerHTML = `
-                <div class="flex items-center space-x-2">
-                    <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Mutation ${i + 1}:</label>
-                    <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Select Mutation Type --</option>
-                        ${mutationOptions.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${opt.type === 'skill_choice' || opt.type === 'natural_regen_active' || opt.type === 'regen_doubled' ? 'disabled' : ''}>${opt.label}</option>`).join('')}
-                    </select>
-                </div>
-                <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50' ? '' : 'hidden'}">
-                    <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
-                    <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Select a Stat --</option>
-                    </select>
-                </div>
-                ${currentMutation ? `<button type="button" data-slot-id="${slotId}" data-ability-type="Mutation" class="clear-mutant-choice-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
-            `;
-            abilitiesList.appendChild(mutationDiv);
+            for (let i = 0; i < maxChoices; i++) {
+                const slotId = `mutant-${abilityKey.toLowerCase()}-${i}`;
+                const currentChoice = character.StatChoices[category][passiveName][slotId];
+                const selectedOptionType = currentChoice ? currentChoice.type : '';
+                const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
 
-            const typeSelect = mutationDiv.querySelector(`#${slotId}-type`);
-            const statSelectionDiv = mutationDiv.querySelector(`#${slotId}-stat-selection`);
-            const statSelect = mutationDiv.querySelector(`#${slotId}-stat`);
+                const choiceDiv = document.createElement('div');
+                choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
 
-            // Populate stat dropdown if type is 'stat_multiplier_set_50'
-            if (selectedOptionType === 'stat_multiplier_set_50') {
-                const applicableStats = mutationOptions.find(opt => opt.type === 'stat_multiplier_set_50').applicableStats;
-                applicableStats.forEach(statName => {
-                    const option = document.createElement('option');
-                    option.value = statName;
-                    option.textContent = statName;
-                    const isAlreadyChosen = character.mutantAffectedStats.has(statName) && statName !== selectedStatName;
-                    option.disabled = isAlreadyChosen;
-                    statSelect.appendChild(option);
-                });
-                statSelect.value = selectedStatName;
-            }
+                let statSelectionHtml = '';
+                if (options.some(opt => (opt.type === 'stat_multiplier_set_50' || opt.type === 'stat_multiplier_reduce_50') && opt.applicableStats)) {
+                    statSelectionHtml = `
+                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50' ? '' : 'hidden'}">
+                            <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                            <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">-- Select a Stat --</option>
+                            </select>
+                        </div>
+                    `;
+                }
 
-            // Event listener for type change (to show/hide stat selection)
-            typeSelect.addEventListener('change', (e) => {
-                const newType = e.target.value;
-                if (newType === 'stat_multiplier_set_50') {
-                    statSelectionDiv.classList.remove('hidden');
-                    // Repopulate stat dropdown for this specific select
-                    statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
-                    const applicableStats = mutationOptions.find(opt => opt.type === 'stat_multiplier_set_50').applicableStats;
+                choiceDiv.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${i + 1}:</label>
+                        <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">-- Select ${abilityKey} Type --</option>
+                            ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${opt.type === 'skill_choice' || opt.type === 'natural_regen_active' || opt.type === 'regen_doubled' ? 'disabled' : ''}>${opt.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    ${statSelectionHtml}
+                    ${currentChoice ? `<button type="button" data-slot-id="${slotId}" data-category="${category}" data-passive-name="${passiveName}" class="clear-mutant-choice-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
+                `;
+                abilitiesList.appendChild(choiceDiv);
+
+                const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
+                const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
+                const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
+
+                // Populate stat dropdown if a stat-affecting type is selected
+                if (statSelect && (selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50')) {
+                    const applicableStats = options.find(opt => opt.type === selectedOptionType).applicableStats;
                     applicableStats.forEach(statName => {
                         const option = document.createElement('option');
                         option.value = statName;
                         option.textContent = statName;
-                        const isAlreadyChosen = character.mutantAffectedStats.has(statName) && statName !== statSelect.value; // Check against current value of *this* select
+                        // Disable if already chosen by another slot, or if this is not the currently selected stat for this slot
+                        const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
                         option.disabled = isAlreadyChosen;
                         statSelect.appendChild(option);
                     });
-                    statSelect.value = selectedStatName; // Keep current selection if valid
-                } else {
-                    statSelectionDiv.classList.add('hidden');
-                    statSelect.value = ''; // Clear stat selection if type changes away from stat
+                    statSelect.value = selectedStatName;
                 }
-                handleMutantChoice(slotId, 'Mutation', newType, statSelect.value);
-            });
 
-            // Event listener for stat change
-            statSelect.addEventListener('change', (e) => {
-                handleMutantChoice(slotId, 'Mutation', typeSelect.value, e.target.value);
-            });
-        }
+                // Event listener for type change (to show/hide stat selection)
+                if (typeSelect) {
+                    typeSelect.addEventListener('change', (e) => {
+                        const newType = e.target.value;
+                        if (statSelectionDiv) {
+                            if (newType === 'stat_multiplier_set_50' || newType === 'stat_multiplier_reduce_50') {
+                                statSelectionDiv.classList.remove('hidden');
+                                // Repopulate stat dropdown for this specific select
+                                statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
+                                const applicableStats = options.find(opt => opt.type === newType).applicableStats;
+                                applicableStats.forEach(statName => {
+                                    const option = document.createElement('option');
+                                    option.value = statName;
+                                    option.textContent = statName;
+                                    const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
+                                    option.disabled = isAlreadyChosen;
+                                    statSelect.appendChild(option);
+                                });
+                                // Keep current selection if valid, otherwise clear
+                                statSelect.value = selectedStatName && applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                            } else {
+                                statSelectionDiv.classList.add('hidden');
+                                if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
+                            }
+                        }
+                        handleMutantChoice(category, passiveName, slotId, newType, statSelect ? statSelect.value : null, options.find(opt => opt.type === newType)?.value, options.find(opt => opt.type === newType)?.label);
+                    });
+                }
 
-        // Render Degeneration choices
-        const maxDegenerations = getAvailablePoints('Degeneration');
-        const degenerationOptions = mutantPassives.abilities.Degeneration.options;
 
-        for (let i = 0; i < maxDegenerations; i++) {
-            const slotId = `mutant-degeneration-${i}`;
-            const currentDegeneration = character.mutantDegenerations.find(d => d.slotId === slotId);
-            const selectedStatName = currentDegeneration ? currentDegeneration.statName : '';
-
-            const degenerationDiv = document.createElement('div');
-            degenerationDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
-            degenerationDiv.innerHTML = `
-                <div class="flex items-center space-x-2">
-                    <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Degeneration ${i + 1}:</label>
-                    <select id="${slotId}-stat" class="mutant-degeneration-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Select a Stat --</option>
-                    </select>
-                </div>
-                ${selectedStatName ? `<button type="button" data-slot-id="${slotId}" data-ability-type="Degeneration" class="clear-mutant-choice-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
-            `;
-            abilitiesList.appendChild(degenerationDiv);
-
-            const statSelect = degenerationDiv.querySelector(`#${slotId}-stat`);
-            const applicableStats = degenerationOptions.find(opt => opt.type === 'stat_multiplier_reduce_50').applicableStats;
-            applicableStats.forEach(statName => {
-                const option = document.createElement('option');
-                option.value = statName;
-                option.textContent = statName;
-                const isAlreadyChosen = character.mutantAffectedStats.has(statName) && statName !== selectedStatName;
-                option.disabled = isAlreadyChosen;
-                statSelect.appendChild(option);
-            });
-            statSelect.value = selectedStatName;
-
-            // Event listener for stat change
-            statSelect.addEventListener('change', (e) => {
-                handleMutantChoice(slotId, 'Degeneration', 'stat_multiplier_reduce_50', e.target.value);
-            });
+                // Event listener for stat change
+                if (statSelect) {
+                    statSelect.addEventListener('change', (e) => {
+                        handleMutantChoice(category, passiveName, slotId, typeSelect.value, e.target.value, options.find(opt => opt.type === typeSelect.value)?.value, options.find(opt => opt.type === typeSelect.value)?.label);
+                    });
+                }
+            }
         }
 
     } else {
@@ -1024,79 +1110,113 @@ function renderMutantChoiceUI() {
 
 /**
  * Handles the selection of a stat for a Mutant mutation or degeneration.
+ * @param {string} category The category (e.g., 'Mutant').
+ * @param {string} passiveName The name of the passive (e.g., 'Mutation', 'Degeneration').
  * @param {string} slotId The unique ID of the choice slot.
- * @param {string} abilityType 'Mutation' or 'Degeneration'.
- * @param {string} optionType The type from MUTANT_CHOICES.options (e.g., 'stat_multiplier_set_50').
+ * @param {string} optionType The type from options (e.g., 'stat_multiplier_set_50', 'double_base_health').
  * @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
+ * @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
+ * @param {string} label The display label of the choice.
  */
-function handleMutantChoice(slotId, abilityType, optionType, selectedStatName = null) {
-    const choicesArray = abilityType === 'Mutation' ? character.mutantMutations : character.mutantDegenerations;
-    const previousChoiceIndex = choicesArray.findIndex(c => c.slotId === slotId);
-    const previousChoice = previousChoiceIndex !== -1 ? choicesArray[previousChoiceIndex] : null;
+function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, optionValue = null, label = '') {
+    console.log("--- handleMutantChoice called ---");
+    console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, optionValue, label });
 
-    // Remove previous effect from affected stats and reset any previous stat changes
+    // Ensure the nested structures exist
+    character.StatChoices[category] = character.StatChoices[category] || {};
+    character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
+    character.StatsAffected[category] = character.StatsAffected[category] || {};
+    character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
+
+    const previousChoice = character.StatChoices[category][passiveName][slotId];
+
+    // Revert previous effect if any
     if (previousChoice) {
         if (previousChoice.statName) {
-            character.mutantAffectedStats.delete(previousChoice.statName);
+            if (character.StatsAffected[category][passiveName][previousChoice.statName]) {
+                character.StatsAffected[category][passiveName][previousChoice.statName].delete(slotId);
+                if (character.StatsAffected[category][passiveName][previousChoice.statName].size === 0) {
+                    delete character.StatsAffected[category][passiveName][previousChoice.statName];
+                }
+            }
+            // Revert racialChange for the previously affected stat to its base value for the current race
             if (ExternalDataManager.rollStats.includes(previousChoice.statName)) {
-                character[previousChoice.statName].racialChange = 0; // Reset to 0 for Mutants
+                // If the previous change was additive/subtractive, revert it by subtracting
+                character[previousChoice.statName].racialChange -= previousChoice.value;
+                console.log(`  Reverted racialChange for ${previousChoice.statName} by ${previousChoice.value}. New value: ${character[previousChoice.statName].racialChange}`);
             }
         }
-        if (previousChoice.type === 'double_base_health') {
-            character.baseMaxHealthDoubled = false;
-        }
-        // Remove the previous choice from the array
-        choicesArray.splice(previousChoiceIndex, 1);
+        // No need to handle 'double_base_health' flag here, as it's now dynamic in calculateBaseMaxHealth
+        delete character.StatChoices[category][passiveName][slotId]; // Remove previous choice
+        console.log(`  Removed previous choice for slot ${slotId}.`);
     }
 
-    // If a new option is selected (not empty option for type/stat)
+    // Apply new choice if a valid optionType is selected
     if (optionType) {
-        const optionDetails = ExternalDataManager.getRaceManualPassives('Mutant').abilities[abilityType].options.find(opt => opt.type === optionType);
-
         // Handle stat-specific choices
-        if (optionDetails.type === 'stat_multiplier_set_50' || optionDetails.type === 'stat_multiplier_reduce_50') {
+        if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
             if (!selectedStatName) {
-                // User selected a stat mutation type but no stat, so just clear the previous and return
+                // User selected a stat mutation type but no stat, just update DOM and return
                 updateDOM();
                 hasUnsavedChanges = true;
                 saveCurrentStateToHistory();
                 return;
             }
-            if (character.mutantAffectedStats.has(selectedStatName)) {
+            // Check for conflicts with other choices in the same passive
+            if (character.StatsAffected[category][passiveName][selectedStatName] && character.StatsAffected[category][passiveName][selectedStatName].size > 0) {
                 showStatusMessage(`'${selectedStatName}' has already been affected by a mutation or degeneration. Please select a different stat.`, true);
                 // Revert the dropdown to its previous selection or empty
-                const selectElement = document.getElementById(slotId + (optionDetails.type === 'stat_multiplier_set_50' ? '-stat' : '-type'));
-                if (selectElement) {
-                    selectElement.value = previousChoice ? (previousChoice.statName || '') : '';
-                }
+                const typeSelectElement = document.getElementById(slotId + '-type');
+                const statSelectElement = document.getElementById(slotId + '-stat');
+                if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
+                if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
                 return;
             }
-            // Apply stat change
-            const newChoice = { slotId, type: optionDetails.type, statName: selectedStatName, value: optionDetails.value, level: character.level };
-            choicesArray.push(newChoice);
-            character.mutantAffectedStats.add(selectedStatName);
 
+            // Store the new choice
+            character.StatChoices[category][passiveName][slotId] = {
+                type: optionType,
+                value: optionValue,
+                statName: selectedStatName,
+                level: character.level,
+                label: label
+            };
+
+            // Apply stat change: Add/Subtract the optionValue
             if (ExternalDataManager.rollStats.includes(selectedStatName)) {
-                character[selectedStatName].racialChange = optionDetails.value;
+                character[selectedStatName].racialChange += optionValue; // Add/Subtract the multiplier
+                console.log(`  Applied racialChange for ${selectedStatName} by adding ${optionValue}. New value: ${character[selectedStatName].racialChange}`);
             }
 
-        } else if (optionDetails.type === 'double_base_health') {
-            // Apply double base health
-            const newChoice = { slotId, type: optionDetails.type, level: character.level };
-            choicesArray.push(newChoice);
-            character.baseMaxHealthDoubled = true;
-        } else if (optionDetails.type === 'skill_choice' || optionDetails.type === 'natural_regen_active' || optionDetails.type === 'regen_doubled') {
-            // Placeholder for skill/regen choices
-            const newChoice = { slotId, type: optionDetails.type, level: character.level };
-            choicesArray.push(newChoice);
-            showStatusMessage(`'${optionDetails.label}' is not fully implemented yet.`, false);
+            // Add to StatsAffected
+            character.StatsAffected[category][passiveName][selectedStatName] = character.StatsAffected[category][passiveName][selectedStatName] || new Set();
+            character.StatsAffected[category][passiveName][selectedStatName].add(slotId);
+            console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
+
+        } else {
+            // For other types (double_base_health, skill_choice, natural_regen_active, regen_doubled)
+            character.StatChoices[category][passiveName][slotId] = {
+                type: optionType,
+                level: character.level,
+                label: label
+            };
+            if (optionType === 'skill_choice' || optionType === 'natural_regen_active' || optionType === 'regen_doubled') {
+                showStatusMessage(`'${label}' is not fully implemented yet.`, false);
+            }
         }
     }
+
+    // Recalculate derived properties
+    recalculateUpdate(character);
+
+    console.log("Updated StatChoices (after update):", JSON.parse(JSON.stringify(character.StatChoices)));
+    console.log("Updated StatsAffected (after update):", JSON.parse(JSON.stringify(character.StatsAffected), (key, value) => value instanceof Set ? Array.from(value) : value));
 
     // Update the UI to reflect changes
     updateDOM();
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
+    console.log("--- handleMutantChoice finished ---");
 }
 
 /**
@@ -1106,29 +1226,38 @@ function attachClearMutantChoiceListeners() {
     document.querySelectorAll('.clear-mutant-choice-btn').forEach(button => {
         button.onclick = (event) => {
             const slotId = event.target.dataset.slotId;
-            const abilityType = event.target.dataset.abilityType; // 'Mutation' or 'Degeneration'
+            const category = event.target.dataset.category;
+            const passiveName = event.target.dataset.passiveName;
 
-            const choicesArray = abilityType === 'Mutation' ? character.mutantMutations : character.mutantDegenerations;
-            const choiceIndex = choicesArray.findIndex(c => c.slotId === slotId);
+            // Retrieve the choice before clearing
+            const choiceToClear = character.StatChoices[category]?.[passiveName]?.[slotId];
 
-            if (choiceIndex !== -1) {
-                const choiceToClear = choicesArray[choiceIndex];
-
-                // Remove from affected stats
+            if (choiceToClear) {
+                // Revert stat changes if applicable
                 if (choiceToClear.statName) {
-                    character.mutantAffectedStats.delete(choiceToClear.statName);
+                    if (character.StatsAffected[category][passiveName][choiceToClear.statName]) {
+                        character.StatsAffected[category][passiveName][choiceToClear.statName].delete(slotId);
+                        if (character.StatsAffected[category][passiveName][choiceToClear.statName].size === 0) {
+                            delete character.StatsAffected[category][passiveName][choiceToClear.statName];
+                        }
+                    }
                     if (ExternalDataManager.rollStats.includes(choiceToClear.statName)) {
-                        character[choiceToClear.statName].racialChange = 0; // Reset to 0 for Mutants
+                        // Revert by subtracting the value
+                        character[choiceToClear.statName].racialChange -= choiceToClear.value;
                     }
                 }
-                // Reset specific flags
-                if (choiceToClear.type === 'double_base_health') {
-                    character.baseMaxHealthDoubled = false;
-                }
-                // Remove the choice from the array
-                choicesArray.splice(choiceIndex, 1);
+                // Remove the choice from StatChoices
+                delete character.StatChoices[category][passiveName][slotId];
             }
 
+            // Reset dropdowns in UI
+            const typeSelect = document.getElementById(`${slotId}-type`);
+            const statSelect = document.getElementById(`${slotId}-stat`);
+            if (typeSelect) typeSelect.value = '';
+            if (statSelect) statSelect.value = '';
+
+            // Recalculate and update DOM
+            recalculateUpdate(character);
             updateDOM();
             hasUnsavedChanges = true;
             saveCurrentStateToHistory();
@@ -1704,11 +1833,16 @@ function applyHistoryState(state) {
     characters = JSON.parse(JSON.stringify(state)); // Deep copy the state
     // Convert Sets back to Set after loading from history
     characters.forEach(char => {
-        if (Array.isArray(char.demiHumanStatsAffected)) {
-            char.demiHumanStatsAffected = new Set(char.demiHumanStatsAffected);
-        }
-        if (Array.isArray(char.mutantAffectedStats)) {
-            char.mutantAffectedStats = new Set(char.mutantAffectedStats);
+        if (char.StatsAffected) {
+            for (const category in char.StatsAffected) {
+                for (const passiveName in char.StatsAffected[category]) {
+                    for (const statName in char.StatsAffected[category][passiveName]) {
+                        if (Array.isArray(char.StatsAffected[category][passiveName][statName])) {
+                            char.StatsAffected[category][passiveName][statName] = new Set(char.StatsAffected[category][passiveName][statName]);
+                        }
+                    }
+                }
+            }
         }
     });
 
@@ -1938,12 +2072,17 @@ async function saveCharacterToGoogleDrive() {
                     char[statName] = rest;
                 }
             });
-            // Convert Set to Array for saving
-            if (char.demiHumanStatsAffected instanceof Set) {
-                char.demiHumanStatsAffected = Array.from(char.demiHumanStatsAffected);
-            }
-            if (char.mutantAffectedStats instanceof Set) {
-                char.mutantAffectedStats = Array.from(char.mutantAffectedStats);
+            // Convert Sets to Arrays for saving within the new StatChoices/StatsAffected structure
+            if (char.StatsAffected) {
+                for (const category in char.StatsAffected) {
+                    for (const passiveName in char.StatsAffected[category]) {
+                        for (const statName in char.StatsAffected[category][passiveName]) {
+                            if (char.StatsAffected[category][passiveName][statName] instanceof Set) {
+                                char.StatsAffected[category][passiveName][statName] = Array.from(char.StatsAffected[category][passiveName][statName]);
+                            }
+                        }
+                    }
+                }
             }
             delete char.maxHealth;
             delete char.maxMana;
