@@ -62,10 +62,8 @@ const defaultCharacterData = function() {
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
         baseHealth: 100, // Will be used to Calculate calculateBaseMaxHealth
-        Health: 0, // Will be calculated dynamically
         maxHealth: 0, // Will be calculated dynamically
         healthBonus: 0,
-        Mana: 0, // Will be calculated dynamically
         maxMana: 0, // Will be calculated dynamically
         racialPower: 100,
         maxRacialPower: 100,
@@ -116,8 +114,12 @@ const defaultCharacterData = function() {
             temporary: 0,
             experience: 0,
             maxExperience: defaultStatMaxExperience,
-            total: result * (1 + initialRacialChange) // Initial total calculation
+            total: result * initialRacialChange
         };
+    });
+
+    ExternalDataManager.otherStats.forEach(statName => {
+        newCharacter[statName] = 0;
     });
 
     // Calculate initial Health and Magic based on the default race

@@ -130,6 +130,20 @@ export const ExternalDataManager = {
     },
 
     /**
+     * Provides direct access to the 'Roll' array from the internal data,
+     * which typically contains the names of the stats that can be rolled.
+     * @returns {Array<string>} An array of stat names.
+     */
+    get otherStats() {
+        // Ensure _data and _data.Other exist before accessing
+        if (typeof this._data === 'undefined' || !this._data.hasOwnProperty('Other')) {
+            console.warn("ExternalDataManager: Data or 'Other' property not yet available. Call init() first.");
+            return [];
+        }
+        return this._data['Other'];
+    },
+
+    /**
      * Retrieves all data associated with a specific class from the internal data.
      * @param {string} className The name of the class (e.g., "Brawler").
      * @returns {Object|null} An object containing all data for the specified class,
