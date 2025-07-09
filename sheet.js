@@ -20,20 +20,16 @@ function calculateBaseMaxHealth(charData, race) {
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(charData, race, level, healthBonus) {
-    let healthRacialChange = ExternalDataManager.getRacialChange(race, 'Health');
+   // if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
+   //     healthRacialChange += charData.healthRacialChange;
+   // }
 
-    if (race === 'Demi-humans' && charData && charData.healthRacialChange !== undefined) {
-        healthRacialChange += charData.healthRacialChange;
-    }
-
-    return Math.floor(calculateBaseMaxHealth(charData, race) * healthRacialChange * level) + (healthBonus || 0);
+    return Math.floor(calculateBaseMaxHealth(charData, race) * charData.Health.racialChange * level) + (healthBonus || 0);
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
-    // Get the racial magic change from manual passives (for Demi-humans)
-    const magicChange = (charData && charData.manaRacialChange !== undefined) ? charData.manaRacialChange : 0; // Default to 0 if not Demi-human or not set
-    return Math.floor(level * 100 * (1 + magicChange)); // Apply magicChange as a multiplier
+    return Math.floor(100 * charData.Mana.racialChange * level); 
 }
 
 // Function to calculate max racial power based on level
@@ -49,14 +45,6 @@ function roll(min, max) {
 // Default character data for creating new characters
 const maxRollStat = 20;
 const minRollStat = 6;
-
-function initStatWithRacialChange(newCharacter, statName) {
-    const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
-    newCharacter[statName] = {
-        value: result,
-        racialChange: initialRacialChange
-    };
-}
 
 const defaultCharacterData = function() {
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
@@ -95,8 +83,6 @@ const defaultCharacterData = function() {
         // New properties for Demi-human stat choices
         demiHumanStatChoices: [], // Stores { statName: 'Strength', modifier: 0.25, slotId: '...' }
         demiHumanStatsAffected: new Set(), // Stores names of stats already chosen by Demi-human modifiers
-        healthRacialChange: 0, // Initial racial change for health, will be set by Demi-human player choice
-        manaRacialChange: 0, // Initial racial change for Mana, will be set by Demi-human player choice
 
         // New properties for Mutant stat choices
         mutantMutations: [], // Stores { type: 'stat_multiplier_50', statName: 'Strength', level: 1, slotId: '...' }
@@ -112,23 +98,32 @@ const defaultCharacterData = function() {
     // Initialize each stat with its rolled value, racial change, and calculated total
     ExternalDataManager.rollStats.forEach(statName => {
         const result = roll(minRollStat, maxRollStat);
-        initStatWithRacialChange(newCharacter, statName);
-        newCharacter['equipment'] = 0;
-        newCharacter['temporary'] = 0;
-        newCharacter['experience'] = 0;
-        newCharacter['maxExperience'] = 0;
-        newCharacter['total'] = newCharacter['value'] * newCharacter['racialChange'];
+        const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
+        newCharacter[statName] = {
+            value: result,
+            racialChange: initialRacialChange, 
+            equipment: 0,
+            temporary: 0,
+            experience: 0,
+            maxExperience: defaultStatMaxExperience,
+            total: result * initialRacialChange
+        };
     });
 
     ExternalDataManager.otherStats.forEach(statName => {
-        newCharacter[statName] = 0;
+        const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
+
+        newCharacter[statName] = {
+            value: 0,
+            racialChange: initialRacialChange
+        }
     });
 
     // Calculate initial Health and Magic based on the default race
     newCharacter.maxHealth = calculateMaxHealth(newCharacter, newCharacter.race, newCharacter.level, newCharacter.healthBonus);
-    newCharacter.Health = newCharacter.maxHealth;
+    newCharacter.Health.value = newCharacter.maxHealth;
     newCharacter.maxMana = calculateMaxMana(newCharacter, newCharacter.level);
-    newCharacter.Mana = newCharacter.maxMana;
+    newCharacter.Mana.value = newCharacter.maxMana;
 
     return newCharacter;
 };
@@ -238,22 +233,9 @@ function calculateTotal(statName) {
 
 // Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-    // For standard rollStats, the racialChange is directly stored on the stat object.
-    if (ExternalDataManager.rollStats.includes(statName)) {
-        const racialChange = charData[statName].racialChange;
-        return racialChange;
-    }
-
-    // For Health, the racialChange is stored in healthRacialChange.
-    if (statName === 'Health') {
-        const racialChange = charData.healthRacialChange;
-        return racialChange;
-    }
-
-    // For Mana, the racialChange is stored in manaRacialChange.
-    if (statName === 'Magic') {
-        const racialChange = charData.manaRacialChange;
-        return racialChange;
+    // For standard most stats, the racialChange is directly stored on the stat object.
+    if (ExternalDataManager._data.Stats.includes(statName)) {
+        return charData[statName].racialChange;
     }
 
     // If for some reason a statName is passed that isn't a rollStat, Health, or Mana,
@@ -684,9 +666,6 @@ function handleChangeRace() {
     // Reset all manual passive choices and flags
     character.demiHumanStatChoices = [];
     character.demiHumanStatsAffected = new Set();
-    character.healthRacialChange = 0; // Reset Demi-human specific health change
-    character.manaRacialChange = 0; // Reset Demi-human specific magic change
-
     character.mutantMutations = [];
     character.mutantDegenerations = [];
     character.mutantAffectedStats = new Set();
@@ -795,12 +774,8 @@ function renderDemiHumanStatChoiceUI() {
 }
 
 function handleStatsRevertOperation(character, statName, modifier) {
-    if (ExternalDataManager.rollStats.includes(statName)) {
+    if (ExternalDataManager._data.Stats.includes(statName)) {
         character[statName].racialChange -= modifier;
-    } else if (statName === 'Health') {
-        character.healthRacialChange -= modifier;
-    } else if (statName === 'Mana') {
-        character.manaRacialChange -= modifier;
     }
 }
 
