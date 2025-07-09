@@ -7,7 +7,6 @@
 
 // Assuming googleDriveFileFetcher is imported or globally available
 // Example: import { googleDriveFileFetcher } from './fetch.js';
-import { stat } from 'fs';
 import { googleDriveFileFetcher } from './fetch.js';
 
 export const ExternalDataManager = {
