@@ -1089,8 +1089,7 @@ function renderMutantChoiceUI() {
                                     statSelect.appendChild(option);
                                 });
 
-                                console.log("length" + applicableStatsLength);
-                                if (applicableStatsLength == 1) {
+                                if (newSelectedOptionData.applicableStats == 1) {
                                     statSelect.value = newSelectedOptionData.applicableStats[0];
                                     console.log(statSelect.value);
                                 }
