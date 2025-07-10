@@ -1070,11 +1070,12 @@ function renderMutantChoiceUI() {
                     typeSelect.addEventListener('change', (e) => {
                         const newType = e.target.value;
                         const newSelectedOptionData = options.find(opt => opt.type === newType);
-                        const newNeedsStatSelection = newSelectedOptionData && newSelectedOptionData.applicableStats && newSelectedOptionData.applicableStats.length > 0;
+                        const newApplicableStatsLength = newSelectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
+                        const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
 
                         if (statSelectionDiv) {
                             if (newNeedsStatSelection) {
-                                if (newSelectedOptionData.applicableStats.length > 1) {
+                                if (newApplicableStatsLength > 1) {
                                     statSelectionDiv.classList.remove('hidden');
                                 }
 
@@ -1089,7 +1090,7 @@ function renderMutantChoiceUI() {
                                     statSelect.appendChild(option);
                                 });
 
-                                if (newSelectedOptionData.applicableStats == 1) {
+                                if (newApplicableStatsLength == 1) {
                                     statSelect.value = newSelectedOptionData.applicableStats[0];
                                     console.log(statSelect.value);
                                 }
