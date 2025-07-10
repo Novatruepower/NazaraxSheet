@@ -1092,11 +1092,17 @@ function renderMutantChoiceUI() {
                                 });
                                 // Keep current selection if valid, otherwise clear
                                 statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                                console.log('rip');
                             } else {
                                 statSelectionDiv.classList.add('hidden');
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
                             }
                         }
+
+                     //   if (applicableStatsLength == 1) {
+                    //        statSelect.value = selectedOptionData.applicableStats[0];
+                    //    }
+
                         handleMutantChoice(
                             category,
                             passiveName,
@@ -1126,11 +1132,6 @@ function renderMutantChoiceUI() {
                             currentSelectedOptionData ? currentSelectedOptionData.label : ''
                         );
                     });
-
-                    if (applicableStatsLength == 1) {
-                        statSelect.value = selectedOptionData.applicableStats[0];
-                        statSelect.dispatchEvent(new Event('change'));
-                    }
                 }
             }
         }
