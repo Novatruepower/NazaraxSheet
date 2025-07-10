@@ -1230,13 +1230,12 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             }
 
             // If a stat is selected for a stat-affecting type, ensure it's not empty
-            if (!selectedStatName) {
-                // User selected a stat mutation type but no stat, just update DOM and return
-                updateDOM();
-                hasUnsavedChanges = true;
-                saveCurrentStateToHistory();
-                return;
-            }
+            //if (!selectedStatName) {
+            //    updateDOM();
+            //    hasUnsavedChanges = true;
+            //    saveCurrentStateToHistory();
+            //    return;
+            //}
 
             // Add statToAffect to newChoiceData if it's a stat-modifying type
             newChoiceData.statName = statToAffect;
