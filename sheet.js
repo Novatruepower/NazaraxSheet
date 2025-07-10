@@ -735,7 +735,6 @@ function handleRevertChoices(char, category, passiveName) {
     }
 }
 
-
 // Function to handle race change, updating racial characteristics
 function handleChangeRace(oldRace) {
     // Revert all previous manual passive choices for the old race
@@ -769,6 +768,23 @@ function handleChangeRace(oldRace) {
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
+}
+
+/**
+* Attaches event listeners to the dynamically created clear buttons for stat choices.
+*/
+function attachClearChoiceListeners(query) {
+    document.querySelectorAll(query).forEach(button => {
+        button.onclick = (event) => {
+            const choiceId = event.target.dataset.choiceId;
+            const selectElement = document.getElementById(choiceId);
+            if (selectElement) {
+                selectElement.value = ''; // Set dropdown to empty
+                // Manually trigger the change event to clear the choice
+                selectElement.dispatchEvent(new Event('change'));
+            }
+        };
+    });
 }
 
 /**
@@ -841,7 +857,7 @@ function renderDemiHumanStatChoiceUI() {
         demiHumanChoicesContainer.classList.add('hidden');
         demiHumanChoicesContainer.innerHTML = ''; // Clear content when hidden
     }
-    attachClearDemiHumanChoiceListeners(); // Attach listeners for clear buttons
+    attachClearChoiceListeners('.clear-demi-human-choice-btn'); // Attach listeners for clear buttons
 }
 
 /**
@@ -936,23 +952,6 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
     console.log("--- handleDemiHumanStatChoice finished ---");
-}
-
-/**
-* Attaches event listeners to the dynamically created clear buttons for Demi-human stat choices.
-*/
-function attachClearDemiHumanChoiceListeners() {
-    document.querySelectorAll('.clear-demi-human-choice-btn').forEach(button => {
-        button.onclick = (event) => {
-            const choiceId = event.target.dataset.choiceId;
-            const selectElement = document.getElementById(choiceId);
-            if (selectElement) {
-                selectElement.value = ''; // Set dropdown to empty
-                // Manually trigger the change event to clear the choice
-                selectElement.dispatchEvent(new Event('change'));
-            }
-        };
-    });
 }
 
 /**
@@ -1135,7 +1134,7 @@ function renderMutantOptionUI() {
         MutantOptionsContainer.classList.add('hidden');
         MutantOptionsContainer.innerHTML = ''; // Clear content when hidden
     }
-    attachClearMutantOptionListeners(); // Attach listeners for clear buttons
+    attachClearChoiceListeners('.clear-mutant-choice-btn'); // Attach listeners for clear buttons
 }
 
 /**
@@ -1262,23 +1261,6 @@ function handleMutantOption(category, passiveName, slotId, optionType, selectedS
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
     console.log("--- handleMutantOption finished ---");
-}
-
-/**
-* Attaches event listeners to the dynamically created clear buttons for Demi-human stat choices.
-*/
-function attachClearMutantOptionListeners() {
-    document.querySelectorAll('.clear-mutant-choice-btn').forEach(button => {
-        button.onclick = (event) => {
-            const choiceId = event.target.dataset.choiceId;
-            const selectElement = document.getElementById(choiceId);
-            if (selectElement) {
-                selectElement.value = ''; // Set dropdown to empty
-                // Manually trigger the change event to clear the choice
-                selectElement.dispatchEvent(new Event('change'));
-            }
-        };
-    });
 }
 
 /**
