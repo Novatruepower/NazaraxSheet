@@ -1016,7 +1016,8 @@ function renderMutantChoiceUI() {
 
                 // Find the full data for the currently selected option type
                 const selectedOptionData = options.find(opt => opt.type === selectedOptionType);
-                const needsStatSelection = selectedOptionData && selectedOptionData.applicableStats && selectedOptionData.applicableStats.length > 0;
+                let applicableStatsLength = selectedOptionData.applicableStats.length;
+                const needsStatSelection = selectedOptionData && selectedOptionData.applicableStats && applicableStatsLength > 0;
 
 
                 const choiceDiv = document.createElement('div');
@@ -1028,7 +1029,7 @@ function renderMutantChoiceUI() {
                         <div id="${slotId}-stat-selection" class="flex items-center space-x-2">
                             <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
                             <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">-- Select a Stat --</option>
+                                <option value="${applicableStatsLength == 1 ? applicableStatsLength[0] : ''}">-- Select a Stat --</option>
                             </select>
                         </div>
                     `;
