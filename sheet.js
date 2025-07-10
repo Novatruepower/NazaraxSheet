@@ -1012,16 +1012,12 @@ function renderMutantChoiceUI() {
                 const slotId = `mutant-${abilityKey.toLowerCase()}-${i}`;
                 const currentChoice = character.StatChoices[category][passiveName][slotId];
                 const selectedOptionType = currentChoice ? currentChoice.type : '';
-                const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
-
                 // Find the full data for the currently selected option type
                 const selectedOptionData = options.find(opt => opt.type === selectedOptionType);
                 const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
                 const needsStatSelection = applicableStatsLength > 0;
 
-                if (applicableStatsLength == 1) {
-                    selectedStatName = selectedOptionData.applicableStats[0];
-                }
+                const selectedStatName = applicableStatsLength ? selectedOptionData.applicableStats[0] : currentChoice && currentChoice.statName ? currentChoice.statName : '';
 
 
 
