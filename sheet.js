@@ -893,11 +893,7 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
         }
         console.log(`  Cleared previous stat '${prevStatName}' from StatsAffected.`);
 
-        // Revert the racial change
-        if (ExternalDataManager._data.Stats.includes(prevStatName)) {
-            character[prevStatName].racialChange -= previousChoice.value;
-            console.log(`  Reverted racialChange for ${prevStatName} by ${previousChoice.value}. New value: ${character[prevStatName].racialChange}`);
-        }
+        revertChoiceRacialChange(character, prevStatName, previousChoice);
     }
 
     // If a new stat is selected (not empty option)
@@ -928,11 +924,7 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
         character.StatsAffected[category][passiveName][selectedStatName].add(slotId);
         console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
 
-        // Apply the modifier to the chosen stat
-        if (ExternalDataManager._data.Stats.includes(selectedStatName)) {
-            character[selectedStatName].racialChange += modifierValue;
-            console.log(`  Applied racialChange for ${selectedStatName} by ${modifierValue}. New value: ${character[selectedStatName].racialChange}`);
-        }
+        applyChoiceRacialChange(character, selectedStatName, modifierValue, calc);
     } else {
         // If the selected option is empty, remove the choice from StatChoices
         if (character.StatChoices[category][passiveName][slotId]) {
