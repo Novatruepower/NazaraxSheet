@@ -950,9 +950,9 @@ function attachClearChoiceListeners(query) {
             const category = event.target.dataset.category;
             const uniqueIdentifier = event.target.dataset.uniqueIdentifier; // Changed from passiveName
 
-            console.log("unique " + uniqueIdentifier);
-
             const selectElement = document.getElementById(choiceId);
+
+            console.log("element " + selectElement);
             if (selectElement) {
                 selectElement.value = ''; // Set dropdown to empty
                 // Manually trigger the change event to clear the choice
