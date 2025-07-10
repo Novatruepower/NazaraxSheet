@@ -1016,8 +1016,8 @@ function renderMutantChoiceUI() {
 
                 // Find the full data for the currently selected option type
                 const selectedOptionData = options.find(opt => opt.type === selectedOptionType);
-                let applicableStatsLength = selectedOptionData.applicableStats.length;
-                const needsStatSelection = selectedOptionData && selectedOptionData.applicableStats && applicableStatsLength > 0;
+                const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats && selectedOptionData.applicableStats.length ? selectedOptionData.applicableStats.length : 0;
+                const needsStatSelection = applicableStatsLength > 0;
 
 
                 const choiceDiv = document.createElement('div');
