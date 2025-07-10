@@ -304,6 +304,20 @@ export function toggleDropdown(menuId) {
 }
 
 /**
+ * Toggles the visibility of the class dropdown menu.
+ */
+export function toggleClassDropdown() {
+    toggleDropdown('class-dropdown-options');
+}
+
+/**
+ * Toggles the visibility of the specialization dropdown menu.
+ */
+export function toggleSpecializationDropdown() {
+    toggleDropdown('specialization-dropdown-options');
+}
+
+/**
  * Helper function to create table data (<td>) elements for inventory tables.
  * @param {string} element The HTML element tag (e.g., 'input', 'textarea', 'button').
  * @param {string|null} type The input type (e.g., 'text', 'number', 'checkbox').
@@ -968,4 +982,4 @@ export function maybeEnableGoogleDriveButtons(gapiInited, gisInited, gapiClientT
     }
 }
 
-export { googleDriveModal, googleDriveFileList, googleDriveModalStatus, authorizeGoogleDriveButton, signoutGoogleDriveButton };
+export { googleDriveModal, googleDriveFileList, googleDriveModalStatus, showConfirmationModal, authorizeGoogleDriveButton, signoutGoogleDriveButton, toggleClassDropdown, toggleSpecializationDropdown };
