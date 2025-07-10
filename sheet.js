@@ -1205,6 +1205,8 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 
             if (applicableStatsLength == 1)
                 statToAffect = selectedOptionData.applicableStats[0];
+
+            console.log(statToAffect);
         }
         else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
             statToAffect = selectedStatName;
