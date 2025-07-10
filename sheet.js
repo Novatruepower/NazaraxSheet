@@ -1064,7 +1064,13 @@ function renderMutantChoiceUI() {
                         option.disabled = isAlreadyChosen;
                         statSelect.appendChild(option);
                     });
-                    statSelect.value = selectedStatName;
+
+                    if (applicableStatsLength == 1) {
+                        statSelect.value = selectedOptionData.applicableStats[0];
+                        handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
+                    }
+                    else 
+                        statSelect.value = selectedStatName;
                 }
 
                 // Event listener for type change (to show/hide stat selection)
@@ -1127,11 +1133,6 @@ function renderMutantChoiceUI() {
                             currentSelectedOptionData ? currentSelectedOptionData.label : ''
                         );
                     });
-
-                    if (applicableStatsLength == 1) {
-                        statSelect.value = selectedOptionData.applicableStats[0];
-                        statSelect.dispatchEvent(new Event('change'));
-                    }
                 }
             }
         }
