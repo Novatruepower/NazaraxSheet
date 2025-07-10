@@ -1123,8 +1123,10 @@ function renderMutantChoiceUI() {
                         );
                     });
 
-                    if (applicableStatsLength == 1) 
+                    if (applicableStatsLength == 1) {
                         statSelect.value = selectedOptionData.applicableStats[0];
+                        statSelect.dispatchEvent(new Event('change'));
+                    }
                 }
             }
         }
