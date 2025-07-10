@@ -1099,7 +1099,7 @@ function renderMutantChoiceUI() {
                         }
                         else if (newApplicableStatsLength == 1) {
                             newSelectedOptionData.value = newSelectedOptionData.applicableStats[0];
-                            console.log(statSelect.value);
+                            console.log(newSelectedOptionData.value);
                         }
 
                         handleMutantChoice(
