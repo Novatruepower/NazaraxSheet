@@ -1092,6 +1092,11 @@ function renderMutantChoiceUI() {
                                 });
                                 // Keep current selection if valid, otherwise clear
                                 statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                                if (!statSelect.value) {
+                                    const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
+                                    if (newApplicableStatsLength.length == 1)
+                                        statSelect.value = newSelectedOptionData.applicableStats[0];
+                                }
                             } else {
                                 statSelectionDiv.classList.add('hidden');
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
