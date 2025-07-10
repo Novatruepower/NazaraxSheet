@@ -135,10 +135,9 @@ const defaultCharacterData = function() {
             value: 0,
             racialChange: initialRacialChange
         }
-
-        newCharacter['BaseHealth'].value = 100;
     });
 
+    newCharacter['BaseHealth'].value = 100;
     recalculateUpdate(newCharacter);
 
     return newCharacter;
