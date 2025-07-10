@@ -1097,9 +1097,6 @@ function renderMutantChoiceUI() {
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
                             }
                         }
-                       // else if (newApplicableStatsLength == 1) {
-                          //  statSelect.value = newSelectedOptionData.applicableStats[0];
-                     //   }
 
                         handleMutantChoice(
                             category,
@@ -1291,6 +1288,7 @@ function attachClearMutantChoiceListeners() {
                     }
                     if (ExternalDataManager._data.Stats.includes(choiceToClear.statName)) {
                         // Revert by subtracting the value
+                        console.log(choiceToClear.value);
                         character[choiceToClear.statName].racialChange -= choiceToClear.value;
                     }
                 }
