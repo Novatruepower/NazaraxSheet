@@ -1042,7 +1042,7 @@ function renderMutantOptionUI() {
                            <option value="">-- Select ${abilityKey} Type --</option>
                            ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''}>${opt.label}</option>`).join('')}
                        </select>
-                       <button type="button" data-slot-id="${slotId}" data-category="${category}" data-passive-name="${passiveName}" class="clear-mutant-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+                       <button type="button" data-choice-id="${slotId}" data-category="${category}" data-passive-name="${passiveName}" class="clear-mutant-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
                    </div>
                    ${statSelectionHtml}
                `;
@@ -1272,7 +1272,6 @@ function attachClearMutantOptionListeners() {
         button.onclick = (event) => {
             const choiceId = event.target.dataset.choiceId;
             const selectElement = document.getElementById(choiceId);
-            console.log(event.target.dataset);
             if (selectElement) {
                 selectElement.value = ''; // Set dropdown to empty
                 // Manually trigger the change event to clear the choice
@@ -1281,7 +1280,6 @@ function attachClearMutantOptionListeners() {
         };
     });
 }
-
 
 /**
 * Renders the generic racial passives for races that don't have manual choices.
