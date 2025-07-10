@@ -1,7 +1,7 @@
 // sheet.js
 // This is the main application file that orchestrates the character sheet functionality.
 
-import { ExternalDataManager } from './externalDataManager.js';
+import { ExternalDataManager } from './ExternalDataManager.js';
 import {
     calculateMaxHealth,
     calculateMaxMana,

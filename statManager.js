@@ -1,7 +1,7 @@
 // StatManager.js
 // This module encapsulates all stat-related calculations and logic.
 
-import { ExternalDataManager } from './externalDataManager.js'; // Assuming ExternalDataManager is already defined and accessible
+import { ExternalDataManager } from './ExternalDataManager.js'; // Assuming ExternalDataManager is already defined and accessible
 
 const defaultStatMaxExperience = 7;
 const maxRollStat = 20;

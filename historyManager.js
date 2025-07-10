@@ -3,7 +3,7 @@
 
 import { initLoadCharacter, recalculateUpdate } from './StatManager.js';
 import { updateDOM, populateCharacterSelector, showStatusMessage } from './UIManager.js';
-import { ExternalDataManager } from './externalDataManager.js'; // Assuming ExternalDataManager is already defined
+import { ExternalDataManager } from './ExternalDataManager.js'; // Assuming ExternalDataManager is already defined
 
 let historyStack = [];
 let historyPointer = -1;

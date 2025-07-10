@@ -1,7 +1,7 @@
 // UIManager.js
 // This module handles all DOM manipulation and UI updates.
 
-import { ExternalDataManager } from './externalDataManager.js';
+import { ExternalDataManager } from './ExternalDataManager.js';
 import { calculateTotal, calculateFormula, getAppliedRacialChange, handleDemiHumanStatChoice, handleMutantOption, recalculateUpdate } from './StatManager.js';
 
 let statusMessageElement;
