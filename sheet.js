@@ -1272,6 +1272,7 @@ function attachClearMutantOptionListeners() {
         button.onclick = (event) => {
             const choiceId = event.target.dataset.choiceId;
             const selectElement = document.getElementById(choiceId);
+            console.log(event.target.dataset);
             if (selectElement) {
                 selectElement.value = ''; // Set dropdown to empty
                 // Manually trigger the change event to clear the choice
