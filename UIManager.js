@@ -1,7 +1,7 @@
 // UIManager.js
 // This module handles all DOM manipulation and UI updates.
 
-import { ExternalDataManager } from './ExternalDataManager.js';
+import { ExternalDataManager } from './externalDataManager.js';
 import { calculateTotal, calculateFormula, getAppliedRacialChange, handleDemiHumanStatChoice, handleMutantOption, recalculateUpdate } from './StatManager.js';
 
 let statusMessageElement;
@@ -968,4 +968,4 @@ export function maybeEnableGoogleDriveButtons(gapiInited, gisInited, gapiClientT
     }
 }
 
-export { googleDriveModal, googleDriveFileList, googleDriveModalStatus, showConfirmationModal, showStatusMessage, authorizeGoogleDriveButton, signoutGoogleDriveButton };
+export { googleDriveModal, googleDriveFileList, googleDriveModalStatus, showConfirmationModal, authorizeGoogleDriveButton, signoutGoogleDriveButton };
