@@ -1012,14 +1012,11 @@ function renderMutantChoiceUI() {
                 const slotId = `mutant-${abilityKey.toLowerCase()}-${i}`;
                 const currentChoice = character.StatChoices[category][passiveName][slotId];
                 const selectedOptionType = currentChoice ? currentChoice.type : '';
+                const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
                 // Find the full data for the currently selected option type
                 const selectedOptionData = options.find(opt => opt.type === selectedOptionType);
                 const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
                 const needsStatSelection = applicableStatsLength > 0;
-
-                const selectedStatName = applicableStatsLength ? selectedOptionData.applicableStats[0] : currentChoice && currentChoice.statName ? currentChoice.statName : '';
-
-
 
                 const choiceDiv = document.createElement('div');
                 choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
@@ -1091,8 +1088,15 @@ function renderMutantChoiceUI() {
                                     option.disabled = isAlreadyChosen;
                                     statSelect.appendChild(option);
                                 });
-                                // Keep current selection if valid, otherwise clear
-                                statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+
+                                if (applicableStatsLength == 1) {
+                                    statSelect.value = newSelectedOptionData.applicableStats[0];
+                                    console.log(statSelect.value);
+                                }
+                                else {
+                                    // Keep current selection if valid, otherwise clear
+                                    statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                                }
                             } else {
                                 statSelectionDiv.classList.add('hidden');
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
