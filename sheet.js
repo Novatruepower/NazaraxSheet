@@ -1052,8 +1052,6 @@ function renderMutantChoiceUI() {
                 const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
                 const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
-                console.log("stat select  " + statSelect);
-
                 // Populate stat dropdown if needed on initial render
                 if (statSelect && needsStatSelection) {
                     selectedOptionData.applicableStats.forEach(statName => {
@@ -1099,16 +1097,16 @@ function renderMutantChoiceUI() {
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
                             }
                         }
-                        else if (newApplicableStatsLength == 1) {
-                            newSelectedOptionData.value = newSelectedOptionData.applicableStats[0];
-                        }
+                       // else if (newApplicableStatsLength == 1) {
+                          //  statSelect.value = newSelectedOptionData.applicableStats[0];
+                     //   }
 
                         handleMutantChoice(
                             category,
                             passiveName,
                             slotId,
                             newType,
-                            statSelect ? statSelect.value : null,
+                            newApplicableStatsLength == 1 ? newSelectedOptionData.applicableStats[0]: statSelect ? statSelect.value : null,
                             newSelectedOptionData ? newSelectedOptionData.calc : null,
                             newSelectedOptionData ? newSelectedOptionData.value : null,
                             newSelectedOptionData ? newSelectedOptionData.label : '');
