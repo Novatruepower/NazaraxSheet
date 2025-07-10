@@ -65,7 +65,7 @@ function recalculateCharacterDerivedProperties(char) {
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
         if (char[statName]) {
-            char[statName].total = calculateTotal(statName);
+            char[statName].total = calculateTotal(char, statName);
         }
     });
 }
@@ -270,12 +270,12 @@ const statMapping = {
 
 
 // Function to calculate the total for a given stat
-function calculateTotal(statName) {
-    const stat = character[statName];
+function calculateTotal(char, statName) {
+    const stat = char[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
     const value = parseFloat(stat.value) || 0;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
-    const racialChange = getAppliedRacialChange(character, statName);
+    const racialChange = getAppliedRacialChange(char, statName);
     const equipment = parseFloat(stat.equipment) || 0;
     const temporary = parseFloat(stat.temporary) || 0;
 
@@ -543,7 +543,7 @@ function updateDOM() {
                </div>
            </td>
            <td class="px-2 py-1 whitespace-nowrap">
-               <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(statName)}" readonly class="stat-input" />
+               <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(character, statName)}" readonly class="stat-input" />
            </td>
        `;
         playerStatsContainer.appendChild(row);
@@ -695,7 +695,7 @@ function quickRollStats() {
         character[statName].value = roll(minRollStat, maxRollStat); // Assign to the 'value' property
 
         // Recalculate total for the updated stat
-        character[statName].total = calculateTotal(statName);
+        character[statName].total = calculateTotal(character, statName);
 
         // Update the DOM for value and total immediately
         document.getElementById(`${statName}-value`).value = character[statName].value;
@@ -883,7 +883,7 @@ function handleChangeRace(oldRace) {
     // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
         updateRacialChange(oldRace, statName);
-        character[statName].total = calculateTotal(statName);
+        character[statName].total = calculateTotal(character, statName);
         document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Display raw number
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
@@ -1326,7 +1326,7 @@ function handlePlayerStatInputChange(event) {
         character[statName][subProperty] = newValue;
     }
 
-    character[statName].total = calculateTotal(statName);
+    character[statName].total = calculateTotal(character, statName);
     document.getElementById(`${statName}-total`).value = character[statName].total;
     renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
         { field: 'name', type: 'text', class: 'w-full' },
