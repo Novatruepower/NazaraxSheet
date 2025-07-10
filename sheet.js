@@ -1186,8 +1186,6 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 
     // Apply new choice if a valid optionType is selected
     if (optionType) {
-        const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
-        const abilityData = mutantPassives.abilities[passiveName];
 
         let newChoiceData = {
             type: optionType,
@@ -1199,14 +1197,6 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 
         // Determine the stat name to affect based on optionType
         let statToAffect = selectedStatName;
-
-        if (!selectedStatName) {
-            const selectedOptionData = abilityData.options.find(opt => opt.type == optionType);
-            const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
-            console.log(applicableStatsLength);
-            if (applicableStatsLength == 1)
-                statToAffect = selectedOptionData.applicableStats[0];
-        }
 
       //  else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
       //      statToAffect = selectedStatName;
@@ -1230,12 +1220,12 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             }
 
             // If a stat is selected for a stat-affecting type, ensure it's not empty
-            //if (!selectedStatName) {
-            //    updateDOM();
-            //    hasUnsavedChanges = true;
-            //    saveCurrentStateToHistory();
-            //    return;
-            //}
+            if (!selectedStatName) {
+                updateDOM();
+                hasUnsavedChanges = true;
+                saveCurrentStateToHistory();
+                return;
+            }
 
             // Add statToAffect to newChoiceData if it's a stat-modifying type
             newChoiceData.statName = statToAffect;
