@@ -1054,23 +1054,25 @@ function renderMutantChoiceUI() {
                 const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
                 const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
-                // Populate stat dropdown if needed on initial render
-                if (statSelect && needsStatSelection) {
-                    selectedOptionData.applicableStats.forEach(statName => {
-                        const option = document.createElement('option');
-                        option.value = statName;
-                        option.textContent = statName;
-                        const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
-                        option.disabled = isAlreadyChosen;
-                        statSelect.appendChild(option);
-                    });
-                    statSelect.value = selectedStatName;
-                }
-                else if (applicableStatsLength == 1 && !currentChoice) {
-                    statSelect.value = selectedOptionData.applicableStats[0];
-                    console.log(statSelect.value);
-                    handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
-                    console.log(selectedOptionData.applicableStats[0]);
+                if (needsStatSelection) {
+                    // Populate stat dropdown if needed on initial render
+                    if (statSelect) {
+                        selectedOptionData.applicableStats.forEach(statName => {
+                            const option = document.createElement('option');
+                            option.value = statName;
+                            option.textContent = statName;
+                            const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
+                            option.disabled = isAlreadyChosen;
+                            statSelect.appendChild(option);
+                        });
+                        statSelect.value = selectedStatName;
+                    }
+                    else if (applicableStatsLength == 1 && !currentChoice) {
+                        statSelect.value = selectedOptionData.applicableStats[0];
+                        console.log(statSelect.value);
+                        handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
+                        console.log(selectedOptionData.applicableStats[0]);
+                    }
                 }
 
                 // Event listener for type change (to show/hide stat selection)
