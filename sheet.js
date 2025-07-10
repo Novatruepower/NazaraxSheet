@@ -1091,6 +1091,7 @@ function renderMutantChoiceUI() {
                                     statSelect.appendChild(option);
                                 });
                                 // Keep current selection if valid, otherwise clear
+                                console.log('test');
                                 statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
                                 if (!statSelect.value) {
                                     const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
@@ -1267,6 +1268,7 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
                 showStatusMessage(`'${label}' (Regeneration Doubled) applied.`, false);
             }
         }
+        console.log(statToAffect);
         character.StatChoices[category][passiveName][slotId] = newChoiceData;
     }
 
