@@ -1092,20 +1092,16 @@ function renderMutantChoiceUI() {
                                     statSelect.appendChild(option);
                                 });
                                 
-                                console.log('selected ' + newSelectedOptionData);
-                                console.log("length " + newApplicableStatsLength);
-                                if (newApplicableStatsLength == 1) {
-                                    statSelect.value = newSelectedOptionData.applicableStats[0];
-                                    console.log(statSelect.value);
-                                }
-                                else {
-                                    // Keep current selection if valid, otherwise clear
-                                    statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
-                                }
+                                // Keep current selection if valid, otherwise clear
+                                statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
                             } else {
                                 statSelectionDiv.classList.add('hidden');
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
                             }
+                        }
+                        else if (newApplicableStatsLength == 1) {
+                            statSelect.value = newSelectedOptionData.applicableStats[0];
+                            console.log(statSelect.value);
                         }
 
                         handleMutantChoice(
