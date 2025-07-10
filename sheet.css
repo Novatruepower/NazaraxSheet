@@ -399,3 +399,7 @@ body {
 .dark .modal-list-item:hover {
     background-color: #4b5563;
 }
+
+.hidden {
+    display: none;
+}
