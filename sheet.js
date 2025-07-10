@@ -1052,6 +1052,8 @@ function renderMutantChoiceUI() {
                 const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
                 const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
+                console.log("stat select  " + statSelect);
+
                 // Populate stat dropdown if needed on initial render
                 if (statSelect && needsStatSelection) {
                     selectedOptionData.applicableStats.forEach(statName => {
@@ -1099,7 +1101,6 @@ function renderMutantChoiceUI() {
                         }
                         else if (newApplicableStatsLength == 1) {
                             newSelectedOptionData.value = newSelectedOptionData.applicableStats[0];
-                            console.log(newSelectedOptionData.value);
                         }
 
                         handleMutantChoice(
