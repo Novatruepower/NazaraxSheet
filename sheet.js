@@ -693,55 +693,19 @@ function revertChoiceRacialChange(char, statName, choice) {
             char[statName].racialChange -= choice.value;
     }
 
-    // Revert other specific flags
-    if (choice.type === 'natural_regen_active') {
-        char.naturalHealthRegenActive = false;
-        char.naturalManaRegenActive = false;
-    } else if (choice.type === 'regen_doubled') {
-        char.healthRegenDoubled = false;
-        char.manaRegenDoubled = false;
-    }
-
     // Add other specific reverts here if needed (e.g., for regen, skills)
 }
-
 
 // Revert stat changes
-function applyChoiceRacialChange(char, statName, choice) {
+function applyChoiceRacialChange(char, statName, value, calc) {
     if (ExternalDataManager._data.Stats.includes(statName)) {
-        if (choice.calc == "mult")
-            char[statName].racialChange *= choice.value;
+        if (calc == "mult")
+            char[statName].racialChange *= value;
         else
-            char[statName].racialChange += choice.value;
-    }
-}
-
-function handleRevertChoice(char, choice, category, passiveName, slotId) {
-    // Revert stat-specific changes
-    if (choice && choice.statName) {
-        const prevStatName = choice.statName;
-        if (char.StatsAffected[category][passiveName][prevStatName]) {
-            char.StatsAffected[category][passiveName][prevStatName].delete(slotId);
-            if (char.StatsAffected[category][passiveName][prevStatName].size === 0) {
-                delete char.StatsAffected[category][passiveName][prevStatName]; // Clean up empty Set
-            }
-        }
-
-        revertChoiceRacialChange(char, prevStatName, choice);
+            char[statName].racialChange += value;
     }
 
     // Add other specific reverts here if needed (e.g., for regen, skills)
-    if (choice.type === 'natural_regen_active') {
-        char.naturalHealthRegenActive = true;
-        char.naturalManaRegenActive = true;
-    } else if (choice.type === 'regen_doubled') {
-        char.healthRegenDoubled = true;
-        char.manaRegenDoubled = true;
-    }
-
-    if (char.StatChoices[category] && char.StatChoices[category][passiveName]) {
-        delete char.StatChoices[category][passiveName][slotId];
-    }
 }
 
 /**
@@ -757,7 +721,7 @@ function handleRevertChoices(char, category, passiveName) {
             slotIds.forEach(slotId => {
                 if (char.StatChoices[category] && char.StatChoices[category][passiveName] && char.StatChoices[category][passiveName][slotId]) {
                     const choice = char.StatChoices[category][passiveName][slotId];
-                    handleRevertChoice(char, statName, choice, passiveName, slotId);
+                    revertChoiceRacialChange(char, statName, choice);
                 }
             });
         }
@@ -920,10 +884,20 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
 
     // If a stat was previously selected for this slot, remove its effect
     if (previousChoice && previousChoice.statName) {
+        const prevStatName = previousChoice.statName;
+        if (character.StatsAffected[category][passiveName][prevStatName]) {
+            character.StatsAffected[category][passiveName][prevStatName].delete(slotId);
+            if (character.StatsAffected[category][passiveName][prevStatName].size === 0) {
+                delete character.StatsAffected[category][passiveName][prevStatName]; // Clean up empty Set
+            }
+        }
         console.log(`  Cleared previous stat '${prevStatName}' from StatsAffected.`);
 
         // Revert the racial change
-        handleRevertChoice(character, previousChoice, category, passiveName, slotId);
+        if (ExternalDataManager._data.Stats.includes(prevStatName)) {
+            character[prevStatName].racialChange -= previousChoice.value;
+            console.log(`  Reverted racialChange for ${prevStatName} by ${previousChoice.value}. New value: ${character[prevStatName].racialChange}`);
+        }
     }
 
     // If a new stat is selected (not empty option)
@@ -941,7 +915,7 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
         }
 
         // Add the new choice to StatChoices
-        let newOption = {
+        character.StatChoices[category][passiveName][slotId] = {
             type: choiceType,
             calc: calc,
             value: modifierValue,
@@ -949,19 +923,21 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
             label: label
         };
 
-        character.StatChoices[category][passiveName][slotId] = newOption;
-
         // Add to StatsAffected
         character.StatsAffected[category][passiveName][selectedStatName] = character.StatsAffected[category][passiveName][selectedStatName] || new Set();
         character.StatsAffected[category][passiveName][selectedStatName].add(slotId);
         console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
 
-        applyChoiceRacialChange(character, selectedStatName, newOption);
-
         // Apply the modifier to the chosen stat
         if (ExternalDataManager._data.Stats.includes(selectedStatName)) {
             character[selectedStatName].racialChange += modifierValue;
             console.log(`  Applied racialChange for ${selectedStatName} by ${modifierValue}. New value: ${character[selectedStatName].racialChange}`);
+        }
+    } else {
+        // If the selected option is empty, remove the choice from StatChoices
+        if (character.StatChoices[category][passiveName][slotId]) {
+            delete character.StatChoices[category][passiveName][slotId];
+            console.log(`  Cleared choice for slot ${slotId}.`);
         }
     }
 
@@ -1185,8 +1161,26 @@ function handleMutantOption(category, passiveName, slotId, optionType, selectedS
 
     // Revert previous effect if any
     if (previousChoice) {
+        // Revert stat-specific changes
+        if (previousChoice.statName) {
+            if (character.StatsAffected[category][passiveName][previousChoice.statName]) {
+                character.StatsAffected[category][passiveName][previousChoice.statName].delete(slotId);
+                if (character.StatsAffected[category][passiveName][previousChoice.statName].size === 0) {
+                    delete character.StatsAffected[category][passiveName][previousChoice.statName];
+                }
+            }
+            revertChoiceRacialChange(character, previousChoice.statName, previousChoice);
+        }
+        // Revert other specific flags if they were set by the previous choice
+        if (previousChoice.type === 'natural_regen_active') {
+            character.naturalHealthRegenActive = false;
+            character.naturalManaRegenActive = false;
+        } else if (previousChoice.type === 'regen_doubled') {
+            character.healthRegenDoubled = false;
+            character.manaRegenDoubled = false;
+        }
+        delete character.StatChoices[category][passiveName][slotId];
         console.log(`  Removed previous choice for slot ${slotId}.`);
-        handleRevertChoice(character, previousChoice, category, passiveName, slotId);
     }
 
     // Apply new choice if a valid optionType is selected
@@ -1201,6 +1195,14 @@ function handleMutantOption(category, passiveName, slotId, optionType, selectedS
 
         // Determine the stat name to affect based on optionType
         let statToAffect = selectedStatName;
+        //if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
+       //     statToAffect = selectedStatName;
+       // } else if (optionType === 'natural_regen_active') {
+       //     statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
+       // } else if (optionType === 'regen_doubled') {
+       //     statToAffect = "healthRegenDoubled"; // Placeholder for flags
+       // }
+        // For skill_choice, no stat is directly affected in this way.
 
         if (statToAffect) {
             // Check for conflicts only if a stat is being affected and it's not the same slot re-selecting itself
@@ -1227,7 +1229,7 @@ function handleMutantOption(category, passiveName, slotId, optionType, selectedS
             newChoiceData.statName = statToAffect;
 
             // Apply the change
-            applyChoiceRacialChange(character, statToAffect, newChoiceData);
+            applyChoiceRacialChange(character, statToAffect, optionValue, calc);
 
             // Add to StatsAffected
             character.StatsAffected[category][passiveName][statToAffect] = character.StatsAffected[category][passiveName][statToAffect] || new Set();
