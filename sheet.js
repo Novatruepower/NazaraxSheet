@@ -958,16 +958,16 @@ function attachClearDemiHumanChoiceListeners() {
 /**
 * Renders the UI for Mutant specific stat choices
 */
-function renderMutantChoiceUI() {
-    const mutantChoicesContainer = document.getElementById('racial-passives-container');
-    if (!mutantChoicesContainer) return;
+function renderMutantOptionUI() {
+    const MutantOptionsContainer = document.getElementById('racial-passives-container');
+    if (!MutantOptionsContainer) return;
 
     const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
     const category = 'Mutant';
 
     if (character.race === category && mutantPassives && mutantPassives.abilities) {
-        mutantChoicesContainer.classList.remove('hidden');
-        mutantChoicesContainer.innerHTML = `
+        MutantOptionsContainer.classList.remove('hidden');
+        MutantOptionsContainer.innerHTML = `
            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Mutant Abilities: Mutation & Degeneration</h4>
            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${mutantPassives.description}</p>
            <div id="mutant-abilities-list" class="space-y-4">
@@ -1098,7 +1098,7 @@ function renderMutantChoiceUI() {
                             }
                         }
 
-                        handleMutantChoice(
+                        handleMutantOption(
                             category,
                             passiveName,
                             slotId,
@@ -1116,7 +1116,7 @@ function renderMutantChoiceUI() {
                     statSelect.addEventListener('change', (e) => {
                         const currentType = typeSelect.value;
                         const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
-                        handleMutantChoice(
+                        handleMutantOption(
                             category,
                             passiveName,
                             slotId,
@@ -1132,10 +1132,10 @@ function renderMutantChoiceUI() {
         }
 
     } else {
-        mutantChoicesContainer.classList.add('hidden');
-        mutantChoicesContainer.innerHTML = ''; // Clear content when hidden
+        MutantOptionsContainer.classList.add('hidden');
+        MutantOptionsContainer.innerHTML = ''; // Clear content when hidden
     }
-    attachClearMutantChoiceListeners(); // Attach listeners for clear buttons
+    attachClearMutantOptionListeners(); // Attach listeners for clear buttons
 }
 
 /**
@@ -1149,8 +1149,8 @@ function renderMutantChoiceUI() {
 * @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
 * @param {string} label The display label of the choice.
 */
-function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
-    console.log("--- handleMutantChoice called ---");
+function handleMutantOption(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
+    console.log("--- handleMutantOption called ---");
     console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, calc, optionValue, label });
 
     character.StatChoices[category] = character.StatChoices[category] || {};
@@ -1261,52 +1261,22 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
     updateDOM();
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
-    console.log("--- handleMutantChoice finished ---");
+    console.log("--- handleMutantOption finished ---");
 }
 
 /**
-* Attaches event listeners to the dynamically created clear buttons for Mutant choices.
+* Attaches event listeners to the dynamically created clear buttons for Demi-human stat choices.
 */
-function attachClearMutantChoiceListeners() {
+function attachClearMutantOptionListeners() {
     document.querySelectorAll('.clear-mutant-choice-btn').forEach(button => {
         button.onclick = (event) => {
-            const slotId = event.target.dataset.slotId;
-            const category = event.target.dataset.category;
-            const passiveName = event.target.dataset.passiveName;
-
-            // Retrieve the choice before clearing
-            const choiceToClear = character.StatChoices[category]?.[passiveName]?.[slotId];
-
-            if (choiceToClear) {
-                // Revert stat changes if applicable
-                if (choiceToClear.statName) {
-                    if (character.StatsAffected[category][passiveName][choiceToClear.statName]) {
-                        character.StatsAffected[category][passiveName][choiceToClear.statName].delete(slotId);
-                        if (character.StatsAffected[category][passiveName][choiceToClear.statName].size === 0) {
-                            delete character.StatsAffected[category][passiveName][choiceToClear.statName];
-                        }
-                    }
-                    if (ExternalDataManager._data.Stats.includes(choiceToClear.statName)) {
-                        // Revert by subtracting the value
-                        console.log(choiceToClear.value);
-                        character[choiceToClear.statName].racialChange -= choiceToClear.value;
-                    }
-                }
-                // Remove the choice from StatChoices
-                delete character.StatChoices[category][passiveName][slotId];
+            const choiceId = event.target.dataset.choiceId;
+            const selectElement = document.getElementById(choiceId);
+            if (selectElement) {
+                selectElement.value = ''; // Set dropdown to empty
+                // Manually trigger the change event to clear the choice
+                selectElement.dispatchEvent(new Event('change'));
             }
-
-            // Reset dropdowns in UI
-            const typeSelect = document.getElementById(`${slotId}-type`);
-            const statSelect = document.getElementById(`${slotId}-stat`);
-            if (typeSelect) typeSelect.value = '';
-            if (statSelect) statSelect.value = '';
-
-            // Recalculate and update DOM
-            recalculateUpdate(character);
-            updateDOM();
-            hasUnsavedChanges = true;
-            saveCurrentStateToHistory();
         };
     });
 }
@@ -1349,7 +1319,7 @@ function renderRacialPassives() {
     if (character.race === 'Demi-humans') {
         renderDemiHumanStatChoiceUI();
     } else if (character.race === 'Mutant') {
-        renderMutantChoiceUI();
+        renderMutantOptionUI();
     } else {
         renderGenericRacialPassives();
     }
