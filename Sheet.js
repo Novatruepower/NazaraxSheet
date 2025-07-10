@@ -886,6 +886,8 @@ function processRacialChoiceChange(category, passiveName, slotId, newChoiceData)
 
 // Function to handle race change, updating racial characteristics
 function handleChangeRace(oldRace) {
+    console.log(character.BaseHealth);
+
     // Revert all previous manual passive choices for the old race
     if (character.StatChoices[oldRace]) {
         for (const passiveName in character.StatChoices[oldRace]) {
@@ -904,10 +906,13 @@ function handleChangeRace(oldRace) {
         document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Display raw number
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
+    
 
     ExternalDataManager.otherStats.forEach(statName => {
         updateRacialChange(oldRace, statName);
     });
+
+    console.log(character.BaseHealth);
 
     // Update maxHealth, maxMana and maxRacialPower when race changes
     recalculateSmallUpdateCharacter(character, true);
