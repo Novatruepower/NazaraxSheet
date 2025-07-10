@@ -851,14 +851,21 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
             const uniqueGroup = newChoiceData.unique;
             // Check all slots within this unique group to see if the stat is already affected by a different slot
             let conflict = false;
-            if (character.StatChoices[category] && character.StatChoices[category][uniqueGroup]) {
-                for (const existingSlotId in character.StatChoices[category][uniqueGroup]) {
-                    const existingChoice = character.StatChoices[category][uniqueGroup][existingSlotId];
-                    if (existingChoice.statName === newChoiceData.statName && existingSlotId !== slotId) {
-                        conflict = true;
-                        break;
+            // Iterate through all unique identifiers within the category
+            for (const uId in character.StatChoices[category]) {
+                // Check if the current unique identifier is the one we're trying to apply (uniqueGroup)
+                // and if it's not the current slot we're processing.
+                if (character.StatChoices[category][uId]) {
+                    for (const existingSlotId in character.StatChoices[category][uId]) {
+                        const existingChoice = character.StatChoices[category][uId][existingSlotId];
+                        // Conflict if the statName matches and it's from a different slot
+                        if (existingChoice.statName === newChoiceData.statName && existingSlotId !== slotId) {
+                            conflict = true;
+                            break;
+                        }
                     }
                 }
+                if (conflict) break;
             }
 
             if (conflict) {
@@ -946,18 +953,46 @@ function handleChangeRace(oldRace) {
 function attachClearChoiceListeners(query) {
     document.querySelectorAll(query).forEach(button => {
         button.onclick = (event) => {
-            const choiceId = event.target.dataset.choiceId;
+            const choiceId = event.target.dataset.choiceId; // This will be like "demihuman-type-0-0" or "mutant-mutation-0-type"
             const category = event.target.dataset.category;
-            const uniqueIdentifier = event.target.dataset.uniqueIdentifier; // Changed from passiveName
+            let uniqueIdentifier = event.target.dataset.uniqueIdentifier; // This is the unique group for the choice
 
-            const selectElement = document.getElementById(choiceId);
-            if (selectElement) {
-                selectElement.value = ''; // Set dropdown to empty
-                // Manually trigger the change event to clear the choice
-                selectElement.dispatchEvent(new Event('change'));
+            // For mutant clear buttons, the choiceId is for the type select, we need the base slotId
+            const slotId = choiceId.replace('-type', '');
+
+            // If uniqueIdentifier is empty, it means no choice was previously made or it's a new slot.
+            // In this case, we need to find the uniqueIdentifier from the current StatChoices if available.
+            // This handles cases where the button was rendered without a choice initially,
+            // or if the uniqueIdentifier was not correctly propagated.
+            if (!uniqueIdentifier && character.StatChoices[category]) {
+                 for (const uId in character.StatChoices[category]) {
+                    if (character.StatChoices[category][uId] && character.StatChoices[category][uId][slotId]) {
+                        uniqueIdentifier = uId;
+                        break;
+                    }
+                }
+            }
+            
+            // If uniqueIdentifier is still not found, we cannot proceed with clearing a specific choice.
+            if (!uniqueIdentifier) {
+                console.warn(`Cannot clear choice for slot ${slotId}: uniqueIdentifier not found.`);
+                return;
+            }
+
+            const typeSelectElement = document.getElementById(slotId + '-type');
+            const statSelectElement = document.getElementById(slotId + '-stat');
+
+            // Clear the dropdowns
+            if (typeSelectElement) typeSelectElement.value = '';
+            if (statSelectElement) statSelectElement.value = ''; // Also clear stat select
+
+            // Manually trigger the change event on the type select to clear the choice
+            // This will call processRacialChoiceChange with newChoiceData = null
+            if (typeSelectElement) {
+                typeSelectElement.dispatchEvent(new Event('change'));
             } else {
-                // For cases where there's no select element (e.g., just a button for a fixed choice)
-                processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
+                // Fallback for cases where there's no select element (e.g., just a button for a fixed choice)
+                processRacialChoiceChange(category, uniqueIdentifier, slotId, null);
             }
         };
     });
@@ -976,7 +1011,6 @@ function renderDemiHumanStatChoiceUI() {
 
     if (character.race === category && demiHumanPassives && demiHumanPassives['Stat Adjustments'] && demiHumanPassives['Stat Adjustments'].choices) {
         const statAdjustmentsData = demiHumanPassives['Stat Adjustments'];
-        const uniqueIdentifier = statAdjustmentsData.choices[0].unique; // Assuming all demi-human choices have the same 'unique' value
 
         demiHumanChoicesContainer.classList.remove('hidden');
         demiHumanChoicesContainer.innerHTML = `
@@ -991,12 +1025,13 @@ function renderDemiHumanStatChoiceUI() {
 
         // Ensure the nested structure exists for Demi-humans
         character.StatChoices[category] = character.StatChoices[category] || {};
-        character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
-        character.StatsAffected[category] = character.StatsAffected[category] || {};
-        character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
-
 
         statAdjustmentsData.choices.forEach((modifier, modIndex) => {
+            const uniqueIdentifier = modifier.unique;
+            character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
+            character.StatsAffected[category] = character.StatsAffected[category] || {};
+            character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
+
             for (let i = 0; i < modifier.count; i++) {
                 const slotId = `demihuman-${modifier.type}-${modIndex}-${i}`; // Unique ID for each choice slot
                 const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
@@ -1109,6 +1144,7 @@ function renderMutantOptionUI() {
 
                     // Iterate through all possible unique identifiers to find if this slot has a choice
                     for (const uId in character.StatChoices[category]) {
+                        // Corrected logic for finding currentUniqueIdentifier
                         if (character.StatChoices[category][uId] && character.StatChoices[category][uId][slotId]) {
                             currentChoice = character.StatChoices[category][uId][slotId];
                             currentUniqueIdentifier = uId;
@@ -1139,6 +1175,7 @@ function renderMutantOptionUI() {
                        `;
                     }
 
+                    // Pass currentUniqueIdentifier to the clear button
                     choiceDiv.innerHTML = `
                        <div class="flex items-center space-x-2">
                            <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${i + 1}:</label>
@@ -1193,6 +1230,8 @@ function renderMutantOptionUI() {
                                         const option = document.createElement('option');
                                         option.value = statName;
                                         option.textContent = statName;
+                                        // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
+                                        // Use newUniqueIdentifier for the check
                                         const isAlreadyChosen = character.StatsAffected[category][newUniqueIdentifier] && character.StatsAffected[category][newUniqueIdentifier][statName] && character.StatsAffected[category][newUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][newUniqueIdentifier][statName].has(slotId);
                                         option.disabled = isAlreadyChosen;
                                         statSelect.appendChild(option);
