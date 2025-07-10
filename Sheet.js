@@ -869,6 +869,8 @@ function processRacialChoiceChange(category, passiveName, slotId, newChoiceData)
 
 // Function to handle race change, updating racial characteristics
 function handleChangeRace(oldRace) {
+    console.log(character.race);
+    console.log(character.BaseHealth);
     // Revert all previous manual passive choices for the old race
     if (character.StatChoices[oldRace]) {
         for (const passiveName in character.StatChoices[oldRace]) {
@@ -900,8 +902,7 @@ function handleChangeRace(oldRace) {
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
-
-    console.log(character);
+    console.log(character.BaseHealth);
 }
 
 /**
