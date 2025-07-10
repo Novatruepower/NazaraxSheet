@@ -1065,7 +1065,7 @@ function renderMutantChoiceUI() {
                         statSelect.appendChild(option);
                     });
 
-                    if (applicableStatsLength == 1) {
+                    if (applicableStatsLength == 1 && !currentChoice) {
                         statSelect.value = selectedOptionData.applicableStats[0];
                         handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
                     }
