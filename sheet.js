@@ -1026,8 +1026,9 @@ function renderMutantChoiceUI() {
                 let statSelectionHtml = '';
 
                 if (needsStatSelection) {
+                    const hide = applicableStatsLength == 1 ? 'hidden' : '';
                     statSelectionHtml = `
-                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2">
+                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
                             <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
                             <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">-- Select a Stat --</option>
@@ -1089,14 +1090,8 @@ function renderMutantChoiceUI() {
                                     option.disabled = isAlreadyChosen;
                                     statSelect.appendChild(option);
                                 });
-                                console.log('test');
                                 // Keep current selection if valid, otherwise clear
                                 statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
-                                if (!statSelect.value) {
-                                    const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
-                                    if (newApplicableStatsLength.length == 1)
-                                        statSelect.value = newSelectedOptionData.applicableStats[0];
-                                }
                             } else {
                                 statSelectionDiv.classList.add('hidden');
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
@@ -1203,16 +1198,16 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
         };
 
         // Determine the stat name to affect based on optionType
-        let statToAffect = null;
+        let statToAffect = selectedStatName;
 
         if (!selectedStatName) {
             const selectedOptionData = abilityData.options.find(opt => opt.type == optionType);
             const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
-
+            console.log(applicableStatsLength);
             if (applicableStatsLength == 1)
                 statToAffect = selectedOptionData.applicableStats[0];
         }
-        statToAffect = selectedStatName;
+
       //  else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
       //      statToAffect = selectedStatName;
       //  } else if (optionType === 'natural_regen_active') {
@@ -1267,7 +1262,7 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
                 showStatusMessage(`'${label}' (Regeneration Doubled) applied.`, false);
             }
         }
-        console.log(statToAffect);
+
         character.StatChoices[category][passiveName][slotId] = newChoiceData;
     }
 
