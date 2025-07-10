@@ -950,6 +950,8 @@ function attachClearChoiceListeners(query) {
             const category = event.target.dataset.category;
             const uniqueIdentifier = event.target.dataset.uniqueIdentifier; // Changed from passiveName
 
+            console.log("unique " + uniqueIdentifier);
+
             const selectElement = document.getElementById(choiceId);
             if (selectElement) {
                 selectElement.value = ''; // Set dropdown to empty
