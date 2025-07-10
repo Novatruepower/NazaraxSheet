@@ -40,26 +40,34 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
     return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
 }
 
-// Recalculate derived properties
-function recalculateUpdate(char) {
+/**
+ * Recalculates derived properties for a character.
+ * This function updates the character's internal data, but does not directly update the DOM.
+ * DOM updates should be handled by calling `updateDOM()` separately.
+ * @param {object} char The character object to recalculate properties for.
+ */
+function recalculateCharacterDerivedProperties(char) {
     let oldMaxValue = char.maxHealth;
     char.maxHealth = calculateMaxHealth(char, char.level, char.healthBonus);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
+
     oldMaxValue = char.maxMana;
     char.maxMana = calculateMaxMana(char, char.level);
     char.Mana.value = adjustValue(oldMaxValue, char.Mana.value, char.maxMana);
-    oldMaxValue = char.maxMana;
+
+    oldMaxValue = char.maxRacialPower;
     char.maxRacialPower = calculateMaxRacialPower(char.level);
     char.racialPower = adjustValue(oldMaxValue, char.racialPower, char.maxRacialPower);
 
-    if (characters.length > 0) {
-        document.getElementById('maxHealth').value = character.maxHealth;
-        document.getElementById('Health').value = character.Health.value;
-        document.getElementById('maxMana').value = character.maxMana;
-        document.getElementById('Mana').value = character.Mana.value;
-        document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        document.getElementById('racialPower').value = character.racialPower;
-    }
+    // Update AC based on armorBonus
+    char.ac = char.armorBonus;
+
+    // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
+    ExternalDataManager.rollStats.forEach(statName => {
+        if (char[statName]) {
+            char[statName].total = calculateTotal(statName);
+        }
+    });
 }
 
 const defaultCharacterData = function () {
@@ -100,17 +108,10 @@ const defaultCharacterData = function () {
         StatChoices: {}, // Stores chosen passive details: { category: { passiveName: { slotId: { type, value?, statName?, level?, label? } } } }
         StatsAffected: {}, // Stores which stats are affected by which choices: { category: { passiveName: { statName: Set<string> } } }
 
-        // Old properties removed as per refactoring request
-        // demiHumanStatChoices: [],
-        // demiHumanStatsAffected: new Set(),
-        // mutantMutations: [],
-        // mutantDegenerations: [],
-        // mutantAffectedStats: new Set(),
-        // baseMaxHealthDoubled: false,
-        naturalHealthRegenActive: false, // Placeholder for Mutant regen
-        naturalManaRegenActive: false, // Placeholder for Mutant regen
-        healthRegenDoubled: false, // Placeholder for Mutant regen
-        manaRegenDoubled: false, // Placeholder for Mutant regen
+        naturalHealthRegenActive: false,
+        naturalManaRegenActive: false,
+        healthRegenDoubled: false,
+        manaRegenDoubled: false,
     });
 
     // Initialize each stat with its rolled value, racial change, and calculated total
@@ -138,7 +139,7 @@ const defaultCharacterData = function () {
     });
 
     newCharacter['BaseHealth'].value = 100;
-    recalculateUpdate(newCharacter);
+    recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
     return newCharacter;
 };
@@ -156,13 +157,15 @@ let historyStack = [];
 let historyPointer = -1; // Pointer to the current state in the historyStack
 const MAX_HISTORY_LENGTH = 10; // Store last 10 states
 
-// Function to push the current character's state to the history stack
-function saveCurrentStateToHistory() {
-    // Deep copy the entire characters array to save its state
-    const currentState = JSON.parse(JSON.stringify(characters));
-
-    // Convert Sets to Arrays for saving within the new StatChoices/StatsAffected structure
-    currentState.forEach(char => {
+/**
+ * Converts Sets within the character object to Arrays for serialization (e.g., for history or saving).
+ * This function creates a deep copy and modifies the copy.
+ * @param {Array<object>} chars The array of character objects to process.
+ * @returns {Array<object>} A deep copy of the characters with Sets converted to Arrays.
+ */
+function convertSetsToArraysForSave(chars) {
+    const charactersCopy = JSON.parse(JSON.stringify(chars));
+    charactersCopy.forEach(char => {
         if (char.StatsAffected) {
             for (const category in char.StatsAffected) {
                 for (const passiveName in char.StatsAffected[category]) {
@@ -175,6 +178,34 @@ function saveCurrentStateToHistory() {
             }
         }
     });
+    return charactersCopy;
+}
+
+/**
+ * Converts Arrays back to Sets within the character object after loading (e.g., from history or file).
+ * This function modifies the provided character object in place.
+ * @param {Array<object>} chars The array of character objects to process.
+ */
+function convertArraysToSetsAfterLoad(chars) {
+    chars.forEach(char => {
+        if (char.StatsAffected) {
+            for (const category in char.StatsAffected) {
+                for (const passiveName in char.StatsAffected[category]) {
+                    for (const statName in char.StatsAffected[category][passiveName]) {
+                        if (Array.isArray(char.StatsAffected[category][passiveName][statName])) {
+                            char.StatsAffected[category][passiveName][statName] = new Set(char.StatsAffected[category][passiveName][statName]);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Function to push the current character's state to the history stack
+function saveCurrentStateToHistory() {
+    // Deep copy the entire characters array and convert Sets to Arrays for saving its state
+    const currentState = convertSetsToArraysForSave(characters);
 
     // If the history pointer is not at the end, it means we reverted and are now making a new change.
     // In this case, discard all "future" states from the current pointer onwards.
@@ -295,12 +326,13 @@ function calculateFormula(formulaString) {
 }
 
 
-// Function to save all character data to a JSON file (download)
-function saveCharacterToFile() {
-    // Create a deep copy of the characters array to modify for saving
-    const charactersToSave = JSON.parse(JSON.stringify(characters));
-
-    // Exclude maxExperience and total from each player stat for each character
+/**
+ * Prepares character data for saving by creating a deep copy and excluding calculated properties.
+ * @param {Array<object>} chars The array of character objects to prepare.
+ * @returns {Array<object>} A deep copy of the characters with calculated properties removed.
+ */
+function prepareCharactersForSaving(chars) {
+    const charactersToSave = convertSetsToArraysForSave(chars); // Convert Sets to Arrays first
     charactersToSave.forEach(char => {
         ExternalDataManager.rollStats.forEach(statName => {
             if (char[statName]) {
@@ -308,24 +340,18 @@ function saveCharacterToFile() {
                 char[statName] = rest; // Assign the object without maxExperience and total
             }
         });
-        // Convert Sets to Arrays for saving within the new StatChoices/StatsAffected structure
-        if (char.StatsAffected) {
-            for (const category in char.StatsAffected) {
-                for (const passiveName in char.StatsAffected[category]) {
-                    for (const statName in char.StatsAffected[category][passiveName]) {
-                        if (char.StatsAffected[category][passiveName][statName] instanceof Set) {
-                            char.StatsAffected[category][passiveName][statName] = Array.from(char.StatsAffected[category][passiveName][statName]);
-                        }
-                    }
-                }
-            }
-        }
         // Exclude calculated properties (maxHealth, maxMana, maxRacialPower, ac) from the saved data
         delete char.maxHealth;
         delete char.maxMana;
         delete char.maxRacialPower;
         delete char.ac;
     });
+    return charactersToSave;
+}
+
+// Function to save all character data to a JSON file (download)
+function saveCharacterToFile() {
+    const charactersToSave = prepareCharactersForSaving(characters);
 
     const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() + '_sheet' : 'character_sheets') + '.json';
     const dataStr = JSON.stringify(charactersToSave, null, 2); // Pretty print JSON
@@ -367,20 +393,6 @@ function initLoadCharacter(loadedChar) {
                 if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
                     newChar[key].maxExperience = defaultStatMaxExperience;
                 }
-            } else if (key === 'StatsAffected') {
-                // Convert arrays back to Sets for StatsAffected
-                newChar[key] = {};
-                if (loadedChar[key]) {
-                    for (const category in loadedChar[key]) {
-                        newChar[key][category] = {};
-                        for (const passiveName in loadedChar[key][category]) {
-                            newChar[key][category][passiveName] = {};
-                            for (const statName in loadedChar[key][category][passiveName]) {
-                                newChar[key][category][passiveName][statName] = new Set(Array.isArray(loadedChar[key][category][passiveName][statName]) ? loadedChar[key][category][passiveName][statName] : []);
-                            }
-                        }
-                    }
-                }
             } else {
                 newChar[key] = loadedChar[key];
             }
@@ -396,14 +408,10 @@ function initLoadCharacter(loadedChar) {
         if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
     });
 
-    newChar.ac = newChar.armorBonus;
+    // Convert arrays within StatsAffected back to Sets
+    convertArraysToSetsAfterLoad([newChar]);
 
-    // Recalculate totals for rollStats after loading to ensure consistency
-    ExternalDataManager.rollStats.forEach(statName => {
-        if (newChar[statName]) {
-            newChar[statName].total = calculateTotal(statName);
-        }
-    });
+    recalculateCharacterDerivedProperties(newChar); // Recalculate all derived properties after loading
 
     return newChar;
 }
@@ -461,7 +469,15 @@ function updateDOM() {
         raceSelect.classList.remove('select-placeholder-text');
     }
 
-    recalculateUpdate(character);
+    // Update derived properties and then update their DOM elements
+    recalculateCharacterDerivedProperties(character);
+    document.getElementById('maxHealth').value = character.maxHealth;
+    document.getElementById('Health').value = character.Health.value;
+    document.getElementById('maxMana').value = character.maxMana;
+    document.getElementById('Mana').value = character.Mana.value;
+    document.getElementById('maxRacialPower').value = character.maxRacialPower;
+    document.getElementById('racialPower').value = character.racialPower;
+
 
     // Handle custom multi-select for class
     const classDisplayInput = document.getElementById('class-display');
@@ -544,9 +560,42 @@ function updateDOM() {
     document.getElementById('skills').value = character.skills;
 
     // Render new inventory tables
-    renderWeaponInventory();
-    renderArmorInventory();
-    renderGeneralInventory();
+    renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'type', type: 'text', class: 'w-full' },
+        { field: 'material', type: 'text', class: 'w-full' },
+        { field: 'requirement', type: 'text', class: 'w-full' },
+        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        { field: 'accuracy', type: 'number', class: 'w-full' },
+        { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.damage) : item.damage },
+        { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.magicDamage) : item.magicDamage },
+        { field: 'magicType', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'value', type: 'number', class: 'w-full' },
+        { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
+    ]);
+    renderInventoryTable('armor', character.armorInventory, '#armor-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'location', type: 'text', class: 'w-full' },
+        { field: 'material', type: 'text', class: 'w-full' },
+        { field: 'requirement', type: 'text', class: 'w-full' },
+        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        { field: 'defense', type: 'number', class: 'w-full' },
+        { field: 'magicDefense', type: 'number', class: 'w-full' },
+        { field: 'magicType', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'value', type: 'number', class: 'w-full' },
+        { field: 'equipped', type: 'checkbox', class: null, checked: (item) => item.equipped }
+    ]);
+    renderInventoryTable('general', character.generalInventory, '#general-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'type', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'accuracy', type: 'number', class: 'w-full' },
+        { field: 'amount', type: 'number', class: 'w-full' },
+        { field: 'valuePerUnit', type: 'number', class: 'w-full' }
+    ]);
+
 
     // Update section visibility - NEW
     updateSectionVisibility();
@@ -554,9 +603,20 @@ function updateDOM() {
     updateHistoryButtonsState(); // Update history button states after DOM update
 }
 
-// Helper function to create table data (<td>) elements
-function quickTd(element, type, isClosed, dataInventoryType, dataField, dataIndex, value, cssClass) {
-    let string = `<td><${element}`;
+/**
+ * Helper function to create table data (<td>) elements for inventory tables.
+ * @param {string} elementTag The HTML tag name for the input element (e.g., 'input', 'textarea').
+ * @param {string|null} type The type attribute for input elements (e.g., 'text', 'number', 'checkbox').
+ * @param {boolean} isClosed If true, the element is self-closing (e.g., <input>). If false, it has content (e.g., <textarea>value</textarea>).
+ * @param {string} dataInventoryType The type of inventory ('weapon', 'armor', 'general').
+ * @param {string} dataField The field name in the item object.
+ * @param {number} dataIndex The index of the item in the inventory array.
+ * @param {any} value The value to set for the input or content for textarea.
+ * @param {string|null} cssClass CSS classes to apply to the element.
+ * @returns {string} The HTML string for the table data cell.
+ */
+function quickTd(elementTag, type, isClosed, dataInventoryType, dataField, dataIndex, value, cssClass) {
+    let string = `<td><${elementTag}`;
 
     if (type != null)
         string += ` type="${type}"`;
@@ -570,94 +630,62 @@ function quickTd(element, type, isClosed, dataInventoryType, dataField, dataInde
         if (type != 'checkbox')
             string += ` value="${value}">`;
         else
-            string += ` ${value}>`;
-    } else
-        string += `>${value}</${element}>`
+            string += ` ${value}>`; // For checkboxes, value is 'checked' or ''
+    } else {
+        string += `>${value}`; // For textareas, content is inside
+    }
 
-
-    return string + '</td>';
+    return string + `</${elementTag}></td>`;
 }
 
-// Function to render the Weapon Inventory table
-function renderWeaponInventory() {
-    const tbody = document.querySelector('#weapon-inventory-table tbody');
+/**
+ * Renders a generic inventory table.
+ * @param {string} inventoryType The type of inventory ('weapon', 'armor', 'general').
+ * @param {Array<object>} inventoryArray The array of inventory items (e.g., character.weaponInventory).
+ * @param {string} tbodySelector The CSS selector for the tbody element of the table.
+ * @param {Array<object>} columns An array defining the columns to render:
+ * - { field: string, type: string, class: string, getter?: function, checked?: function }
+ */
+function renderInventoryTable(inventoryType, inventoryArray, tbodySelector, columns) {
+    const tbody = document.querySelector(tbodySelector);
     tbody.innerHTML = ''; // Clear existing rows
 
-    character.weaponInventory.forEach((weapon, index) => {
-        const row = tbody.insertRow(); // Changed from insertCell() to insertRow()
-        // Determine the displayed damage values based on the 'use' checkbox
-        const displayDamage = weapon.use ? calculateFormula(weapon.damage) : weapon.damage;
-        const displayMagicDamage = weapon.use ? calculateFormula(weapon.magicDamage) : weapon.magicDamage;
+    inventoryArray.forEach((item, index) => {
+        const row = tbody.insertRow();
+        let rowHtml = '';
 
-        row.innerHTML = `
-           ${quickTd('input', 'text', false, 'weapon', 'name', index, weapon.name, 'w-full')}
-           ${quickTd('input', 'text', false, 'weapon', 'type', index, weapon.type, 'w-full')}
-           ${quickTd('input', 'text', false, 'weapon', 'material', index, weapon.material, 'w-full')}
-           ${quickTd('input', 'text', false, 'weapon', 'requirement', index, weapon.requirement, 'w-full')}
-           ${quickTd('input', 'text', false, 'weapon', 'requiredStat', index, weapon.requiredStat, 'w-full')}
-           ${quickTd('input', 'number', false, 'weapon', 'accuracy', index, weapon.accuracy, 'w-full')}
-           ${quickTd('textarea', null, true, 'weapon', 'damage', index, displayDamage, 'w-full inventory-effect-textarea')}
-           ${quickTd('textarea', null, true, 'weapon', 'magicDamage', index, displayMagicDamage, 'w-full inventory-effect-textarea')}
-           ${quickTd('input', 'text', false, 'weapon', 'magicType', index, weapon.magicType, 'w-full')}
-           ${quickTd('textarea', null, true, 'weapon', 'effect', index, weapon.effect, 'w-full inventory-effect-textarea')}
-           ${quickTd('input', 'number', false, 'weapon', 'value', index, weapon.value, 'w-full')}
-           ${quickTd('input', 'checkbox', false, 'weapon', 'use', index, weapon.use ? 'checked' : '', null)}
-           ${quickTd('button', null, true, 'weapon', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
-       `;
+        columns.forEach(col => {
+            let value = item[col.field];
+            let checkedAttr = '';
+
+            if (col.getter) {
+                value = col.getter(item);
+            }
+            if (col.checked) {
+                checkedAttr = col.checked(item) ? 'checked' : '';
+            }
+
+            if (col.type === 'textarea') {
+                rowHtml += quickTd('textarea', null, true, inventoryType, col.field, index, value, col.class);
+            } else if (col.type === 'checkbox') {
+                rowHtml += quickTd('input', 'checkbox', false, inventoryType, col.field, index, checkedAttr, col.class);
+            } else {
+                rowHtml += quickTd('input', col.type, false, inventoryType, col.field, index, value, col.class);
+            }
+        });
+
+        // Add the remove button
+        rowHtml += `<td><button type="button" data-inventory-type="${inventoryType}" data-index="${index}" class="remove-item-btn bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button></td>`;
+
+        row.innerHTML = rowHtml;
 
         // Set textarea values after they are in the DOM
-        row.querySelector('textarea[data-field="damage"]').value = displayDamage;
-        row.querySelector('textarea[data-field="magicDamage"]').value = displayMagicDamage;
-        row.querySelector('textarea[data-field="effect"]').value = weapon.effect;
-    });
-}
-
-// Function to render the Armor Inventory table
-function renderArmorInventory() {
-    const tbody = document.querySelector('#armor-inventory-table tbody');
-    tbody.innerHTML = ''; // Clear existing rows
-
-    character.armorInventory.forEach((armor, index) => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-           ${quickTd('input', 'text', false, 'armor', 'name', index, armor.name, 'w-full')}
-           ${quickTd('input', 'text', false, 'armor', 'location', index, armor.location, 'w-full')}
-           ${quickTd('input', 'text', false, 'armor', 'material', index, armor.material, 'w-full')}
-           ${quickTd('input', 'text', false, 'armor', 'requirement', index, armor.requirement, 'w-full')}
-           ${quickTd('input', 'text', false, 'armor', 'requiredStat', index, armor.requiredStat, 'w-full')}
-           ${quickTd('input', 'number', false, 'armor', 'defense', index, armor.defense, 'w-full')}
-           ${quickTd('input', 'number', false, 'armor', 'magicDefense', index, armor.magicDefense, 'w-full')}
-           ${quickTd('input', 'text', false, 'armor', 'magicType', index, armor.magicType, 'w-full')}
-           ${quickTd('textarea', null, true, 'armor', 'effect', index, armor.effect, 'w-full inventory-effect-textarea')}
-           ${quickTd('input', 'number', false, 'armor', 'value', index, armor.value, 'w-full')}
-           ${quickTd('input', 'checkbox', false, 'armor', 'equipped', index, armor.equipped ? 'checked' : '', null)}
-           ${quickTd('button', null, true, 'armor', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
-       `;
-
-        // Set textarea value after it's in the DOM
-        row.querySelector('textarea[data-field="effect"]').value = armor.effect;
-    });
-}
-
-// Function to render the General Inventory table
-function renderGeneralInventory() {
-    const tbody = document.querySelector('#general-inventory-table tbody');
-    tbody.innerHTML = ''; // Clear existing rows
-
-    character.generalInventory.forEach((item, index) => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-           ${quickTd('input', 'text', false, 'general', 'name', index, item.name, 'w-full')}
-           ${quickTd('input', 'text', false, 'general', 'type', index, item.type, 'w-full')}
-           ${quickTd('textarea', null, true, 'general', 'effect', index, item.effect, 'w-full inventory-effect-textarea')}
-           ${quickTd('input', 'number', false, 'general', 'accuracy', index, item.accuracy, 'w-full')}
-           ${quickTd('input', 'number', false, 'general', 'amount', index, item.amount, 'w-full')}
-           ${quickTd('input', 'number', false, 'general', 'valuePerUnit', index, item.valuePerUnit, 'w-full')}
-           ${quickTd('button', null, true, 'general', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
-       `;
-
-        // Set textarea value after it's in the DOM
-        row.querySelector('textarea[data-field="effect"]').value = item.effect;
+        columns.filter(col => col.type === 'textarea').forEach(col => {
+            const textarea = row.querySelector(`textarea[data-field="${col.field}"]`);
+            if (textarea) {
+                textarea.value = col.getter ? col.getter(item) : item[col.field];
+            }
+        });
     });
 }
 
@@ -674,7 +702,20 @@ function quickRollStats() {
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
     // Re-render weapon inventory to update calculated damage values
-    renderWeaponInventory();
+    renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'type', type: 'text', class: 'w-full' },
+        { field: 'material', type: 'text', class: 'w-full' },
+        { field: 'requirement', type: 'text', class: 'w-full' },
+        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        { field: 'accuracy', type: 'number', class: 'w-full' },
+        { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalDamage) : item.originalDamage },
+        { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalMagicDamage) : item.originalMagicDamage },
+        { field: 'magicType', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'value', type: 'number', class: 'w-full' },
+        { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
+    ]);
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
@@ -692,11 +733,9 @@ function revertChoiceRacialChange(char, statName, choice) {
         else
             char[statName].racialChange -= choice.value;
     }
-
-    // Add other specific reverts here if needed (e.g., for regen, skills)
 }
 
-// Revert stat changes
+// Apply stat changes
 function applyChoiceRacialChange(char, statName, value, calc) {
     if (ExternalDataManager._data.Stats.includes(statName)) {
         if (calc == "mult")
@@ -704,36 +743,129 @@ function applyChoiceRacialChange(char, statName, value, calc) {
         else
             char[statName].racialChange += value;
     }
-
-    // Add other specific reverts here if needed (e.g., for regen, skills)
 }
 
 /**
-* Reverts the effects of all choices for a given category and passive name.
-* @param {object} char The character object.
-* @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
-* @param {string} passiveName The name of the passive (e.g., 'Demi-human Stat Adjustments', 'Mutation').
-*/
+ * Reverts the effects of all choices for a given category and passive name.
+ * @param {object} char The character object.
+ * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
+ * @param {string} passiveName The name of the passive (e.g., 'Demi-human Stat Adjustments', 'Mutation').
+ */
 function handleRevertChoices(char, category, passiveName) {
-    if (char.StatsAffected[category] && char.StatsAffected[category][passiveName]) {
-        for (const statName in char.StatsAffected[category][passiveName]) {
-            const slotIds = char.StatsAffected[category][passiveName][statName];
-            slotIds.forEach(slotId => {
-                if (char.StatChoices[category] && char.StatChoices[category][passiveName] && char.StatChoices[category][passiveName][slotId]) {
-                    const choice = char.StatChoices[category][passiveName][slotId];
-                    revertChoiceRacialChange(char, statName, choice);
+    if (char.StatChoices[category] && char.StatChoices[category][passiveName]) {
+        for (const slotId in char.StatChoices[category][passiveName]) {
+            const choice = char.StatChoices[category][passiveName][slotId];
+            if (choice.statName) {
+                revertChoiceRacialChange(char, choice.statName, choice);
+                if (char.StatsAffected[category] && char.StatsAffected[category][passiveName] && char.StatsAffected[category][passiveName][choice.statName]) {
+                    char.StatsAffected[category][passiveName][choice.statName].delete(slotId);
+                    if (char.StatsAffected[category][passiveName][choice.statName].size === 0) {
+                        delete char.StatsAffected[category][passiveName][choice.statName];
+                    }
                 }
-            });
+            }
+            // Revert other specific flags if they were set by the previous choice
+            if (choice.type === 'natural_regen_active') {
+                char.naturalHealthRegenActive = false;
+                char.naturalManaRegenActive = false;
+            } else if (choice.type === 'regen_doubled') {
+                char.healthRegenDoubled = false;
+                char.manaRegenDoubled = false;
+            }
         }
-    }
-    // Clear the choices and affected stats for this passive
-    if (char.StatChoices[category]) {
         delete char.StatChoices[category][passiveName];
     }
     if (char.StatsAffected[category]) {
         delete char.StatsAffected[category][passiveName];
     }
 }
+
+/**
+ * Handles the application or removal of a racial passive choice, including stat effects and flags.
+ * This function centralizes the logic for both Demi-human and Mutant choices.
+ * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
+ * @param {string} passiveName The name of the passive (e.g., 'Stat Adjustments', 'Mutation', 'Degeneration').
+ * @param {string} slotId The unique ID of the choice slot.
+ * @param {object} newChoiceData The data for the new choice to be applied (or null/undefined to clear).
+ * Expected properties: { type, calc?, value?, statName?, label?, level? }
+ */
+function processRacialChoiceChange(category, passiveName, slotId, newChoiceData) {
+    console.log("--- processRacialChoiceChange called ---");
+    console.log("Input parameters:", { category, passiveName, slotId, newChoiceData });
+
+    character.StatChoices[category] = character.StatChoices[category] || {};
+    character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
+    character.StatsAffected[category] = character.StatsAffected[category] || {};
+    character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
+
+    const previousChoice = character.StatChoices[category][passiveName][slotId];
+
+    // 1. Revert previous effect if any
+    if (previousChoice) {
+        if (previousChoice.statName) {
+            revertChoiceRacialChange(character, previousChoice.statName, previousChoice);
+            if (character.StatsAffected[category][passiveName][previousChoice.statName]) {
+                character.StatsAffected[category][passiveName][previousChoice.statName].delete(slotId);
+                if (character.StatsAffected[category][passiveName][previousChoice.statName].size === 0) {
+                    delete character.StatsAffected[category][passiveName][previousChoice.statName];
+                }
+            }
+        }
+        // Revert other specific flags if they were set by the previous choice
+        if (previousChoice.type === 'natural_regen_active') {
+            character.naturalHealthRegenActive = false;
+            character.naturalManaRegenActive = false;
+        } else if (previousChoice.type === 'regen_doubled') {
+            character.healthRegenDoubled = false;
+            character.manaRegenDoubled = false;
+        }
+        delete character.StatChoices[category][passiveName][slotId];
+        console.log(`  Removed previous choice for slot ${slotId}.`);
+    }
+
+    // 2. Apply new choice if a valid newChoiceData is provided
+    if (newChoiceData && newChoiceData.type) {
+        // Check for conflicts only if a stat is being affected and it's not the same slot re-selecting itself
+        if (newChoiceData.statName && character.StatsAffected[category][passiveName][newChoiceData.statName] && character.StatsAffected[category][passiveName][newChoiceData.statName].size > 0 && !character.StatsAffected[category][passiveName][newChoiceData.statName].has(slotId)) {
+            showStatusMessage(`'${newChoiceData.statName}' has already been affected by another choice in this category. Please select a different stat.`, true);
+            // Revert the dropdowns to previous state (if possible)
+            const typeSelectElement = document.getElementById(slotId + '-type');
+            const statSelectElement = document.getElementById(slotId + '-stat');
+            if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
+            if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
+            return; // Stop processing this choice
+        }
+
+        // Apply stat-modifying changes
+        if (newChoiceData.statName) {
+            applyChoiceRacialChange(character, newChoiceData.statName, newChoiceData.value, newChoiceData.calc);
+            character.StatsAffected[category][passiveName][newChoiceData.statName] = character.StatsAffected[category][passiveName][newChoiceData.statName] || new Set();
+            character.StatsAffected[category][passiveName][newChoiceData.statName].add(slotId);
+            console.log(`  Added '${newChoiceData.statName}' to StatsAffected for slot ${slotId}.`);
+        } else {
+            // Handle non-stat affecting choices (e.g., skill_choice, natural_regen_active, regen_doubled)
+            if (newChoiceData.type === 'skill_choice') {
+                showStatusMessage(`'${newChoiceData.label}' (Skill Choice) is not fully implemented yet.`, false);
+            } else if (newChoiceData.type === 'natural_regen_active') {
+                character.naturalHealthRegenActive = true;
+                character.naturalManaRegenActive = true;
+                showStatusMessage(`'${newChoiceData.label}' (Natural Regeneration Active) applied.`, false);
+            } else if (newChoiceData.type === 'regen_doubled') {
+                character.healthRegenDoubled = true;
+                character.manaRegenDoubled = true;
+                showStatusMessage(`'${newChoiceData.label}' (Regeneration Doubled) applied.`, false);
+            }
+        }
+        character.StatChoices[category][passiveName][slotId] = newChoiceData;
+    }
+
+    recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
+    updateDOM(); // Update the UI to reflect changes
+    hasUnsavedChanges = true;
+    saveCurrentStateToHistory();
+    console.log("--- processRacialChoiceChange finished ---");
+}
+
 
 // Function to handle race change, updating racial characteristics
 function handleChangeRace(oldRace) {
@@ -761,7 +893,7 @@ function handleChangeRace(oldRace) {
     });
 
     // Update maxHealth, maxMana and maxRacialPower when race changes
-    recalculateUpdate(character);
+    recalculateCharacterDerivedProperties(character);
 
     // Re-render the racial passives UI
     renderRacialPassives();
@@ -777,11 +909,17 @@ function attachClearChoiceListeners(query) {
     document.querySelectorAll(query).forEach(button => {
         button.onclick = (event) => {
             const choiceId = event.target.dataset.choiceId;
+            const category = event.target.dataset.category;
+            const passiveName = event.target.dataset.passiveName;
+
             const selectElement = document.getElementById(choiceId);
             if (selectElement) {
                 selectElement.value = ''; // Set dropdown to empty
                 // Manually trigger the change event to clear the choice
                 selectElement.dispatchEvent(new Event('change'));
+            } else {
+                // For cases where there's no select element (e.g., just a button for a fixed choice)
+                processRacialChoiceChange(category, passiveName, choiceId.replace('-type', ''), null);
             }
         };
     });
@@ -831,7 +969,7 @@ function renderDemiHumanStatChoiceUI() {
                    <select id="${slotId}" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                        <option value="">-- Select a Stat --</option>
                    </select>
-                   ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
+                   ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-passive-name="${passiveName}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
                `;
                 modifiersList.appendChild(choiceDiv);
 
@@ -849,7 +987,15 @@ function renderDemiHumanStatChoiceUI() {
 
                 // Add event listener
                 selectElement.addEventListener('change', (e) => {
-                    handleDemiHumanStatChoice(category, passiveName, slotId, modifier.type, modifier.calc, modifier.value, e.target.value, modifier.label);
+                    const newSelectedStatName = e.target.value;
+                    const newChoiceData = newSelectedStatName ? {
+                        type: modifier.type,
+                        calc: modifier.calc,
+                        value: modifier.value,
+                        statName: newSelectedStatName,
+                        label: modifier.label
+                    } : null;
+                    processRacialChoiceChange(category, passiveName, slotId, newChoiceData);
                 });
             }
         });
@@ -858,92 +1004,6 @@ function renderDemiHumanStatChoiceUI() {
         demiHumanChoicesContainer.innerHTML = ''; // Clear content when hidden
     }
     attachClearChoiceListeners('.clear-demi-human-choice-btn'); // Attach listeners for clear buttons
-}
-
-/**
-* Handles the selection of a stat for a Demi-human racial modifier.
-* @param {string} category The category (e.g., 'Demi-humans').
-* @param {string} passiveName The name of the passive (e.g., 'Stat Adjustments').
-* @param {string} slotId The unique ID of the choice slot.
-* @param {string} choiceType The type of the choice (e.g., 'stat_increase').
-* @param {number} modifierValue The numerical value of the modifier (e.g., 0.25).
-* @param {string} selectedStatName The name of the stat chosen by the player.
-* @param {string} label The display label of the choice.
-*/
-function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, calc, modifierValue, selectedStatName, label) {
-    console.log("--- handleDemiHumanStatChoice called ---");
-    console.log("Input parameters:", { category, passiveName, slotId, choiceType, modifierValue, selectedStatName, label });
-
-    // Ensure the nested structures exist
-    character.StatChoices[category] = character.StatChoices[category] || {};
-    character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
-    character.StatsAffected[category] = character.StatsAffected[category] || {};
-    character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
-
-    const previousChoice = character.StatChoices[category][passiveName][slotId];
-
-    // If a stat was previously selected for this slot, remove its effect
-    if (previousChoice && previousChoice.statName) {
-        const prevStatName = previousChoice.statName;
-        if (character.StatsAffected[category][passiveName][prevStatName]) {
-            character.StatsAffected[category][passiveName][prevStatName].delete(slotId);
-            if (character.StatsAffected[category][passiveName][prevStatName].size === 0) {
-                delete character.StatsAffected[category][passiveName][prevStatName]; // Clean up empty Set
-            }
-        }
-        console.log(`  Cleared previous stat '${prevStatName}' from StatsAffected.`);
-
-        revertChoiceRacialChange(character, prevStatName, previousChoice);
-    }
-
-    // If a new stat is selected (not empty option)
-    if (selectedStatName) {
-        // Check if the newly selected stat is already affected by another choice in this passive
-        if (character.StatsAffected[category][passiveName][selectedStatName] && character.StatsAffected[category][passiveName][selectedStatName].size > 0) {
-            showStatusMessage(`'${selectedStatName}' has already been chosen for another racial modifier. Please select a different stat.`, true);
-            // Revert the dropdown to its previous selection or empty
-            const selectElement = document.getElementById(slotId);
-            if (selectElement) {
-                selectElement.value = previousChoice ? previousChoice.statName : '';
-            }
-            console.log(`  Stat '${selectedStatName}' already chosen. Reverting dropdown.`);
-            return;
-        }
-
-        // Add the new choice to StatChoices
-        character.StatChoices[category][passiveName][slotId] = {
-            type: choiceType,
-            calc: calc,
-            value: modifierValue,
-            statName: selectedStatName,
-            label: label
-        };
-
-        // Add to StatsAffected
-        character.StatsAffected[category][passiveName][selectedStatName] = character.StatsAffected[category][passiveName][selectedStatName] || new Set();
-        character.StatsAffected[category][passiveName][selectedStatName].add(slotId);
-        console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
-
-        applyChoiceRacialChange(character, selectedStatName, modifierValue, calc);
-    } else {
-        // If the selected option is empty, remove the choice from StatChoices
-        if (character.StatChoices[category][passiveName][slotId]) {
-            delete character.StatChoices[category][passiveName][slotId];
-            console.log(`  Cleared choice for slot ${slotId}.`);
-        }
-    }
-
-    // Recalculate derived properties that depend on racial changes
-    recalculateUpdate(character);
-
-    console.log("Updated StatChoices (after update):", JSON.parse(JSON.stringify(character.StatChoices)));
-    console.log("Updated StatsAffected (after update):", JSON.parse(JSON.stringify(character.StatsAffected), (key, value) => value instanceof Set ? Array.from(value) : value));
-
-    // Update the UI to reflect changes (e.g., disable/enable options)
-    updateDOM(); // Re-render the entire DOM to update all stat totals and choice dropdowns
-    hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
-    console.log("--- handleDemiHumanStatChoice finished ---");
 }
 
 /**
@@ -1080,7 +1140,7 @@ function renderMutantOptionUI() {
                                     option.disabled = isAlreadyChosen;
                                     statSelect.appendChild(option);
                                 });
-                                
+
                                 // Keep current selection if valid, otherwise clear
                                 statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
                             } else {
@@ -1089,15 +1149,16 @@ function renderMutantOptionUI() {
                             }
                         }
 
-                        handleMutantOption(
-                            category,
-                            passiveName,
-                            slotId,
-                            newType,
-                            newApplicableStatsLength == 1 ? newSelectedOptionData.applicableStats[0]: statSelect ? statSelect.value : null,
-                            newSelectedOptionData ? newSelectedOptionData.calc : null,
-                            newSelectedOptionData ? newSelectedOptionData.value : null,
-                            newSelectedOptionData ? newSelectedOptionData.label : '');
+                        const statToAffect = newApplicableStatsLength == 1 ? newSelectedOptionData.applicableStats[0] : (statSelect ? statSelect.value : null);
+                        const newChoiceData = newType ? {
+                            type: newType,
+                            level: character.level,
+                            calc: newSelectedOptionData ? newSelectedOptionData.calc : null,
+                            value: newSelectedOptionData ? newSelectedOptionData.value : null,
+                            label: newSelectedOptionData ? newSelectedOptionData.label : '',
+                            statName: statToAffect
+                        } : null;
+                        processRacialChoiceChange(category, passiveName, slotId, newChoiceData);
                     });
                 }
 
@@ -1107,16 +1168,15 @@ function renderMutantOptionUI() {
                     statSelect.addEventListener('change', (e) => {
                         const currentType = typeSelect.value;
                         const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
-                        handleMutantOption(
-                            category,
-                            passiveName,
-                            slotId,
-                            currentType,
-                            e.target.value,
-                            currentSelectedOptionData ? currentSelectedOptionData.calc : null,
-                            currentSelectedOptionData ? currentSelectedOptionData.value : null,
-                            currentSelectedOptionData ? currentSelectedOptionData.label : ''
-                        );
+                        const newChoiceData = currentType ? {
+                            type: currentType,
+                            level: character.level,
+                            calc: currentSelectedOptionData ? currentSelectedOptionData.calc : null,
+                            value: currentSelectedOptionData ? currentSelectedOptionData.value : null,
+                            label: currentSelectedOptionData ? currentSelectedOptionData.label : '',
+                            statName: e.target.value // The newly selected stat
+                        } : null;
+                        processRacialChoiceChange(category, passiveName, slotId, newChoiceData);
                     });
                 }
             }
@@ -1127,132 +1187,6 @@ function renderMutantOptionUI() {
         MutantOptionsContainer.innerHTML = ''; // Clear content when hidden
     }
     attachClearChoiceListeners('.clear-mutant-choice-btn'); // Attach listeners for clear buttons
-}
-
-/**
-* Handles the selection of a stat for a Mutant mutation or degeneration.
-* @param {string} category The category (e.g., 'Mutant').
-* @param {string} passiveName The name of the passive (e.g., 'Mutation', 'Degeneration').
-* @param {string} slotId The unique ID of the choice slot.
-* @param {string} optionType The type from options (e.g., 'stat_multiplier_set_50', 'double_base_health').
-* @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
-* @param {string} calc The calculation type ("add" or "mult").
-* @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
-* @param {string} label The display label of the choice.
-*/
-function handleMutantOption(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
-    console.log("--- handleMutantOption called ---");
-    console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, calc, optionValue, label });
-
-    character.StatChoices[category] = character.StatChoices[category] || {};
-    character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
-    character.StatsAffected[category] = character.StatsAffected[category] || {};
-    character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
-
-    const previousChoice = character.StatChoices[category][passiveName][slotId];
-
-    // Revert previous effect if any
-    if (previousChoice) {
-        // Revert stat-specific changes
-        if (previousChoice.statName) {
-            if (character.StatsAffected[category][passiveName][previousChoice.statName]) {
-                character.StatsAffected[category][passiveName][previousChoice.statName].delete(slotId);
-                if (character.StatsAffected[category][passiveName][previousChoice.statName].size === 0) {
-                    delete character.StatsAffected[category][passiveName][previousChoice.statName];
-                }
-            }
-            revertChoiceRacialChange(character, previousChoice.statName, previousChoice);
-        }
-        // Revert other specific flags if they were set by the previous choice
-        if (previousChoice.type === 'natural_regen_active') {
-            character.naturalHealthRegenActive = false;
-            character.naturalManaRegenActive = false;
-        } else if (previousChoice.type === 'regen_doubled') {
-            character.healthRegenDoubled = false;
-            character.manaRegenDoubled = false;
-        }
-        delete character.StatChoices[category][passiveName][slotId];
-        console.log(`  Removed previous choice for slot ${slotId}.`);
-    }
-
-    // Apply new choice if a valid optionType is selected
-    if (optionType) {
-        let newChoiceData = {
-            type: optionType,
-            level: character.level,
-            calc: calc,
-            value: optionValue, // Store the optionValue directly
-            label: label
-        };
-
-        // Determine the stat name to affect based on optionType
-        let statToAffect = selectedStatName;
-        //if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
-       //     statToAffect = selectedStatName;
-       // } else if (optionType === 'natural_regen_active') {
-       //     statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
-       // } else if (optionType === 'regen_doubled') {
-       //     statToAffect = "healthRegenDoubled"; // Placeholder for flags
-       // }
-        // For skill_choice, no stat is directly affected in this way.
-
-        if (statToAffect) {
-            // Check for conflicts only if a stat is being affected and it's not the same slot re-selecting itself
-            if (selectedStatName && character.StatsAffected[category][passiveName][statToAffect] && character.StatsAffected[category][passiveName][statToAffect].size > 0 && !character.StatsAffected[category][passiveName][statToAffect].has(slotId)) {
-                showStatusMessage(`'${statToAffect}' has already been affected by another choice in this category. Please select a different stat.`, true);
-                // Revert the dropdowns to previous state
-                const typeSelectElement = document.getElementById(slotId + '-type');
-                const statSelectElement = document.getElementById(slotId + '-stat');
-                if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
-                if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
-                return; // Stop processing this choice
-            }
-
-            // If a stat is selected for a stat-affecting type, ensure it's not empty
-            if ((optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') && !selectedStatName) {
-                // User selected a stat mutation type but no stat, just update DOM and return
-                updateDOM();
-                hasUnsavedChanges = true;
-                saveCurrentStateToHistory();
-                return;
-            }
-
-            // Add statToAffect to newChoiceData if it's a stat-modifying type
-            newChoiceData.statName = statToAffect;
-
-            // Apply the change
-            applyChoiceRacialChange(character, statToAffect, optionValue, calc);
-
-            // Add to StatsAffected
-            character.StatsAffected[category][passiveName][statToAffect] = character.StatsAffected[category][passiveName][statToAffect] || new Set();
-            character.StatsAffected[category][passiveName][statToAffect].add(slotId);
-            console.log(`  Added '${statToAffect}' to StatsAffected for slot ${slotId}.`);
-        } else {
-            // Handle non-stat affecting choices (e.g., skill_choice, natural_regen_active, regen_doubled)
-            if (optionType === 'skill_choice') {
-                showStatusMessage(`'${label}' (Skill Choice) is not fully implemented yet.`, false);
-            } else if (optionType === 'natural_regen_active') {
-                character.naturalHealthRegenActive = true;
-                character.naturalManaRegenActive = true;
-                showStatusMessage(`'${label}' (Natural Regeneration Active) applied.`, false);
-            } else if (optionType === 'regen_doubled') {
-                character.healthRegenDoubled = true;
-                character.manaRegenDoubled = true;
-                showStatusMessage(`'${label}' (Regeneration Doubled) applied.`, false);
-            }
-        }
-        character.StatChoices[category][passiveName][slotId] = newChoiceData;
-    }
-
-    recalculateUpdate(character);
-
-    console.log("Updated StatChoices (after update):", JSON.parse(JSON.stringify(character.StatChoices)));
-    console.log("Updated StatsAffected (after update):", JSON.parse(JSON.stringify(character.StatsAffected), (key, value) => value instanceof Set ? Array.from(value) : value));
-
-    updateDOM();
-    hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
-    console.log("--- handleMutantOption finished ---");
 }
 
 /**
@@ -1298,133 +1232,138 @@ function renderRacialPassives() {
     }
 }
 
+/**
+ * Handles input changes for inventory items.
+ * @param {Event} event The input event.
+ */
+function handleInventoryInputChange(event) {
+    const { value, type, dataset, checked } = event.target;
+    const inventoryType = dataset.inventoryType;
+    const itemIndex = parseInt(dataset.index);
+    const field = dataset.field;
 
-// Event listener for all input changes (excluding the custom class multi-select)
-function handleChange(event) {
-    const { name, id, value, type, dataset, checked } = event.target;
-    let newValue;
+    const inventory = character[`${inventoryType}Inventory`];
+    if (!inventory || !inventory[itemIndex]) return;
 
-    // Check if the input is part of an inventory table
-    if (dataset.inventoryType) {
-        const inventoryType = dataset.inventoryType;
-        const itemIndex = parseInt(dataset.index);
-        const field = dataset.field;
-
-        if (inventoryType === 'weapon') {
-            if (field === 'use') { // Handle checkbox for 'use'
-                character.weaponInventory[itemIndex][field] = checked;
-                if (checked) {
-                    // Store original values before applying formula
-                    character.weaponInventory[itemIndex].originalDamage = character.weaponInventory[itemIndex].damage;
-                    character.weaponInventory[itemIndex].originalMagicDamage = character.weaponInventory[itemIndex].magicDamage;
-                    // Apply default formulas (can be customized)
-                    character.weaponInventory[itemIndex].damage = calculateFormula(character.weaponInventory[itemIndex].originalDamage); // Use original for calculation
-                    character.weaponInventory[itemIndex].magicDamage = calculateFormula(character.weaponInventory[itemIndex].originalMagicDamage); // Use original for calculation
-                } else {
-                    // Restore original values
-                    character.weaponInventory[itemIndex].damage = character.weaponInventory[itemIndex].originalDamage;
-                    character.weaponInventory[itemIndex].magicDamage = character.weaponInventory[itemIndex].originalMagicDamage;
-                }
-                renderWeaponInventory(); // Re-render to show calculated/restored values
-            } else if (type === 'number' && field !== 'damage' && field !== 'magicDamage') { // Exclude damage/magicDamage from number parsing
-                character.weaponInventory[itemIndex][field] = parseFloat(value) || 0;
+    if (field === 'use' || field === 'equipped') { // Handle checkboxes
+        inventory[itemIndex][field] = checked;
+        if (inventoryType === 'weapon' && field === 'use') {
+            if (checked) {
+                // Store original values before applying formula
+                inventory[itemIndex].originalDamage = inventory[itemIndex].originalDamage || inventory[itemIndex].damage;
+                inventory[itemIndex].originalMagicDamage = inventory[itemIndex].originalMagicDamage || inventory[itemIndex].magicDamage;
+                // Apply default formulas (can be customized)
+                inventory[itemIndex].damage = calculateFormula(inventory[itemIndex].originalDamage);
+                inventory[itemIndex].magicDamage = calculateFormula(inventory[itemIndex].originalMagicDamage);
             } else {
-                // For text fields like damage/magicDamage, store the string directly
-                character.weaponInventory[itemIndex][field] = value;
+                // Restore original values
+                inventory[itemIndex].damage = inventory[itemIndex].originalDamage;
+                inventory[itemIndex].magicDamage = inventory[itemIndex].originalMagicDamage;
             }
-        } else if (inventoryType === 'armor') {
-            if (field === 'equipped') { // Handle checkbox for 'equipped'
-                character.armorInventory[itemIndex][field] = checked;
-            } else if (type === 'number') {
-                character.armorInventory[itemIndex][field] = parseFloat(value) || 0;
-            } else {
-                character.armorInventory[itemIndex][field] = value;
-            }
-        } else if (inventoryType === 'general') {
-            if (type === 'number') {
-                character.generalInventory[itemIndex][field] = parseFloat(value) || 0;
-            } else {
-                character.generalInventory[itemIndex][field] = value;
-            }
+            // Re-render weapon inventory to show calculated/restored values
+            renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
+                { field: 'name', type: 'text', class: 'w-full' },
+                { field: 'type', type: 'text', class: 'w-full' },
+                { field: 'material', type: 'text', class: 'w-full' },
+                { field: 'requirement', type: 'text', class: 'w-full' },
+                { field: 'requiredStat', type: 'text', class: 'w-full' },
+                { field: 'accuracy', type: 'number', class: 'w-full' },
+                { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalDamage) : item.originalDamage },
+                { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalMagicDamage) : item.originalMagicDamage },
+                { field: 'magicType', type: 'text', class: 'w-full' },
+                { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+                { field: 'value', type: 'number', class: 'w-full' },
+                { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
+            ]);
         }
-        hasUnsavedChanges = true; // Mark that there are unsaved changes
-        saveCurrentStateToHistory(); // Save state after modification
-        return; // Exit as inventory change is handled
-    }
-
-    // This handleChange will now only handle non-class inputs and the race selector
-    if (type === 'number') {
-        newValue = parseFloat(value) || 0;
+    } else if (type === 'number' && field !== 'damage' && field !== 'magicDamage') { // Exclude damage/magicDamage from number parsing for weapons
+        inventory[itemIndex][field] = parseFloat(value) || 0;
     } else {
-        newValue = value;
+        // For text fields (including damage/magicDamage which can be formulas)
+        inventory[itemIndex][field] = value;
     }
+}
 
-    // Check if the changed input belongs to a player stat
-    let isPlayerStatInput = false;
+/**
+ * Handles input changes for player stats.
+ * @param {Event} event The input event.
+ */
+function handlePlayerStatInputChange(event) {
+    const { name, value, type } = event.target;
+    let newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
+
     let statName = '';
     let subProperty = '';
 
     for (const stat of ExternalDataManager.rollStats) {
         if (name.startsWith(`${stat}-`)) {
-            isPlayerStatInput = true;
             statName = stat;
-            subProperty = name.substring(stat.length + 1); // e.g., 'value', 'racialChange', 'experience', 'maxExperience'
+            subProperty = name.substring(stat.length + 1);
             break;
         }
     }
 
-    if (isPlayerStatInput) {
-        if (subProperty === 'experience') {
-            // Update the experience value directly first
-            character[statName].experience = newValue;
+    if (!statName) return; // Not a player stat input
 
-            // Check if experience has reached or exceeded maxExperience
-            while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
-                character[statName].value++; // Increment the stat's value
-                character[statName].experience -= character[statName].maxExperience; // Reset experience
-            }
-            // Always update the displayed experience, even if it didn't trigger a level up
-            document.getElementById(`${statName}-value`).value = character[statName].value;
-            document.getElementById(`${statName}-experience`).value = character[statName].experience;
-
-        } else if (subProperty === 'maxExperience') {
-            // Ensure maxExperience is at least 1
-            character[statName].maxExperience = Math.max(1, newValue);
-            // Update the DOM for maxExperience immediately
-            document.getElementById(`${statName}-maxExperience`).value = character[statName].maxExperience;
-            // Re-evaluate experience if maxExperience changed and current experience is sufficient
-            while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
-                character[statName].value++;
-                character[statName].experience -= character[statName].maxExperience;
-            }
-            document.getElementById(`${statName}-value`).value = character[statName].value;
-            document.getElementById(`${statName}-experience`).value = character[statName].experience;
-
-        } else {
-            // For other sub-properties (value, racialChange, equipment, temporary)
-            character[statName][subProperty] = newValue;
+    if (subProperty === 'experience') {
+        character[statName].experience = newValue;
+        while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
+            character[statName].value++;
+            character[statName].experience -= character[statName].maxExperience;
         }
-
-        // Recalculate the total for this stat after any change in its sub-properties
-        character[statName].total = calculateTotal(statName);
-        // Update the total display in the DOM immediately
-        document.getElementById(`${statName}-total`).value = character[statName].total;
-
-        // If a stat changes, re-render weapon inventory to update calculated damage values
-        renderWeaponInventory();
-
+        document.getElementById(`${statName}-value`).value = character[statName].value;
+        document.getElementById(`${statName}-experience`).value = character[statName].experience;
+    } else if (subProperty === 'maxExperience') {
+        character[statName].maxExperience = Math.max(1, newValue);
+        document.getElementById(`${statName}-maxExperience`).value = character[statName].maxExperience;
+        while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
+            character[statName].value++;
+            character[statName].experience -= character[statName].maxExperience;
+        }
+        document.getElementById(`${statName}-value`).value = character[statName].value;
+        document.getElementById(`${statName}-experience`).value = character[statName].experience;
     } else {
-        // For other non-stat inputs (name, level, Health, ac, skills, inventory, race, healthBonus, Mana, racialPower, personalNotes)
-        // The 'class-display' input is read-only and handled by custom logic, so it's excluded here.
+        character[statName][subProperty] = newValue;
+    }
+
+    character[statName].total = calculateTotal(statName);
+    document.getElementById(`${statName}-total`).value = character[statName].total;
+    renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'type', type: 'text', class: 'w-full' },
+        { field: 'material', type: 'text', class: 'w-full' },
+        { field: 'requirement', type: 'text', class: 'w-full' },
+        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        { field: 'accuracy', type: 'number', class: 'w-full' },
+        { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalDamage) : item.originalDamage },
+        { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalMagicDamage) : item.originalMagicDamage },
+        { field: 'magicType', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'value', type: 'number', class: 'w-full' },
+        { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
+    ]);
+}
+
+
+// Event listener for all input changes
+function handleChange(event) {
+    const { name, id, value, type, dataset, checked } = event.target;
+    let newValue;
+
+    if (dataset.inventoryType) {
+        handleInventoryInputChange(event);
+    } else if (event.target.classList.contains('stat-input')) {
+        handlePlayerStatInputChange(event);
+    } else {
+        newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
+
         if (id === 'levelExperience') {
             character.levelExperience = newValue;
-
             while (character.levelExperience >= character.levelMaxExperience) {
                 character.level++;
                 character.levelExperience -= character.levelMaxExperience;
                 character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             }
-
             document.getElementById('level').value = character.level;
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             document.getElementById('levelExperience').value = character.levelExperience;
@@ -1432,8 +1371,7 @@ function handleChange(event) {
             character.level = newValue;
             character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
-            // Also update maxHealth, maxMana and maxRacialPower when level changes
-            recalculateUpdate(character);
+            recalculateCharacterDerivedProperties(character);
         } else if (id === 'race') {
             let oldRace = character.race;
             character.race = newValue;
@@ -1443,37 +1381,33 @@ function handleChange(event) {
             } else {
                 raceSelect.classList.remove('select-placeholder-text');
             }
-            handleChangeRace(oldRace); // Call handleChangeRace to update racial characteristics
-        } else if (id === 'Health') { // Handle current Health input
-            character.Health.value = Math.min(newValue, character.maxHealth); // Ensure current Health doesn't exceed max Health
+            handleChangeRace(oldRace);
+        } else if (id === 'Health') {
+            character.Health.value = Math.min(newValue, character.maxHealth);
             document.getElementById('Health').value = character.Health.value;
-        } else if (id === 'Mana') { // Handle current Magic input (renamed)
-            character.Mana.value = Math.min(newValue, character.maxMana); // Ensure current Magic doesn't exceed max Magic
+        } else if (id === 'Mana') {
+            character.Mana.value = Math.min(newValue, character.maxMana);
             document.getElementById('Mana').value = character.Mana.value;
-        } else if (id === 'racialPower') { // Handle current Racial Power input
-            character.racialPower = Math.min(newValue, character.maxRacialPower); // Ensure current Racial Power doesn't exceed max Racial Power
+        } else if (id === 'racialPower') {
+            character.racialPower = Math.min(newValue, character.maxRacialPower);
             document.getElementById('racialPower').value = character.racialPower;
-        } else if (id === 'healthBonus') { // Handle healthBonus input
+        } else if (id === 'healthBonus') {
             character.healthBonus = newValue;
-            // Recalculate maxHealth when healthBonus changes
-            character.maxHealth = calculateMaxHealth(character, character.level, character.healthBonus);
-            character.Health.value = Math.min(character.Health.value, character.maxHealth); // Adjust current Health if it exceeds new max
+            recalculateCharacterDerivedProperties(character);
             document.getElementById('maxHealth').value = character.maxHealth;
             document.getElementById('Health').value = character.Health.value;
-        } else if (id === 'armorBonus') { // Handle armorBonus input
+        } else if (id === 'armorBonus') {
             character.armorBonus = newValue;
-            character.ac = character.armorBonus; // Update AC based on armorBonus
-            document.getElementById('ac').value = character.ac; // Update readonly AC input
-        } else if (id === 'personalNotes') { // Handle personalNotes input
+            recalculateCharacterDerivedProperties(character);
+            document.getElementById('ac').value = character.ac;
+        } else if (id === 'personalNotes') {
             character.personalNotes = newValue;
-        } else if (id !== 'class-display' && id !== 'specialization-display') { // Exclude specialization-display
+        } else if (id !== 'class-display' && id !== 'specialization-display') {
             character[name || id] = newValue;
         }
-        // If any of these core stats change, re-render weapon inventory to update calculated damage values
-        renderWeaponInventory();
     }
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
+    hasUnsavedChanges = true;
+    saveCurrentStateToHistory();
 }
 
 // Function to toggle the visibility of the class dropdown options
@@ -1732,22 +1666,22 @@ function addNewCharacter() {
 
 // Functions to add new items to inventories
 function addWeapon() {
-    character.weaponInventory.push({ name: '', type: '', material: '', requirement: '', requiredStat: '', accuracy: 100, damage: '', magicDamage: '', magicType: '', effect: '', value: 0, use: false }); // 'use' is now boolean
-    renderWeaponInventory();
+    character.weaponInventory.push({ name: '', type: '', material: '', requirement: '', requiredStat: '', accuracy: 100, damage: '', magicDamage: '', magicType: '', effect: '', value: 0, use: false, originalDamage: '', originalMagicDamage: '' }); // 'use' is now boolean
+    updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
 
 function addArmor() {
     character.armorInventory.push({ name: '', location: '', material: '', requirement: '', requiredStat: '', defense: 0, magicDefense: 0, magicType: '', effect: '', value: 0, equipped: false });
-    renderArmorInventory();
+    updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
 
 function addGeneralItem() {
     character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 0, valuePerUnit: 0 });
-    renderGeneralInventory();
+    updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
@@ -1759,14 +1693,12 @@ function removeItem(event) {
 
     if (inventoryType === 'weapon') {
         character.weaponInventory.splice(index, 1);
-        renderWeaponInventory();
     } else if (inventoryType === 'armor') {
         character.armorInventory.splice(index, 1);
-        renderArmorInventory();
     } else if (inventoryType === 'general') {
         character.generalInventory.splice(index, 1);
-        renderGeneralInventory();
     }
+    updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
@@ -1821,19 +1753,7 @@ function deleteCurrentCharacter() {
 function applyHistoryState(state) {
     characters = JSON.parse(JSON.stringify(state)); // Deep copy the state
     // Convert Sets back to Set after loading from history
-    characters.forEach(char => {
-        if (char.StatsAffected) {
-            for (const category in char.StatsAffected) {
-                for (const passiveName in char.StatsAffected[category]) {
-                    for (const statName in char.StatsAffected[category][passiveName]) {
-                        if (Array.isArray(char.StatsAffected[category][passiveName][statName])) {
-                            char.StatsAffected[category][passiveName][statName] = new Set(char.StatsAffected[category][passiveName][statName]);
-                        }
-                    }
-                }
-            }
-        }
-    });
+    convertArraysToSetsAfterLoad(characters);
 
     // Ensure currentCharacterIndex is valid after applying history, especially if characters were added/deleted
     if (currentCharacterIndex >= characters.length) {
@@ -2053,31 +1973,7 @@ async function saveCharacterToGoogleDrive() {
     showStatusMessage("Saving to Google Drive...");
 
     try {
-        const charactersToSave = JSON.parse(JSON.stringify(characters));
-        charactersToSave.forEach(char => {
-            ExternalDataManager.rollStats.forEach(statName => {
-                if (char[statName]) {
-                    const { maxExperience, total, ...rest } = char[statName];
-                    char[statName] = rest;
-                }
-            });
-            // Convert Sets to Arrays for saving within the new StatChoices/StatsAffected structure
-            if (char.StatsAffected) {
-                for (const category in char.StatsAffected) {
-                    for (const passiveName in char.StatsAffected[category]) {
-                        for (const statName in char.StatsAffected[category][passiveName]) {
-                            if (char.StatsAffected[category][passiveName][statName] instanceof Set) {
-                                char.StatsAffected[category][passiveName][statName] = Array.from(char.StatsAffected[category][passiveName][statName]);
-                            }
-                        }
-                    }
-                }
-            }
-            delete char.maxHealth;
-            delete char.maxMana;
-            delete char.maxRacialPower;
-            delete char.ac;
-        });
+        const charactersToSave = prepareCharactersForSaving(characters);
 
         const content = JSON.stringify(charactersToSave, null, 2);
         // Determine the file name based on the first character's name, or a default
@@ -2500,11 +2396,7 @@ function initPage() {
 
     characters = [defaultCharacterData()];
     // Initialize maxHealth, maxMana and maxRacialPower based on default race, level, and healthBonus for the first character
-    characters[0].maxHealth = calculateMaxHealth(characters[0], characters[0].level, characters[0].healthBonus);
-    characters[0].maxMana = calculateMaxMana(characters[0], characters[0].level);
-    characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
-    // Initialize AC based on armorBonus for the first character
-    characters[0].ac = characters[0].armorBonus;
+    recalculateCharacterDerivedProperties(characters[0]);
 
     populateRaceSelector();
     populateCharacterSelector(); // Populate the selector on load
