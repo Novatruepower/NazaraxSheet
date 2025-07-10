@@ -1089,7 +1089,9 @@ function renderMutantChoiceUI() {
                                     option.disabled = isAlreadyChosen;
                                     statSelect.appendChild(option);
                                 });
-
+                                
+                                console.log('selected ' + newSelectedOptionData);
+                                console.log("length " + newApplicableStatsLength);
                                 if (newApplicableStatsLength == 1) {
                                     statSelect.value = newSelectedOptionData.applicableStats[0];
                                     console.log(statSelect.value);
