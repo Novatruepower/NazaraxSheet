@@ -900,6 +900,8 @@ function handleChangeRace(oldRace) {
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
+
+    console.log(character);
 }
 
 /**
