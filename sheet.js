@@ -1054,25 +1054,17 @@ function renderMutantChoiceUI() {
                 const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
                 const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
-                if (needsStatSelection) {
-                    // Populate stat dropdown if needed on initial render
-                    if (statSelect) {
-                        selectedOptionData.applicableStats.forEach(statName => {
-                            const option = document.createElement('option');
-                            option.value = statName;
-                            option.textContent = statName;
-                            const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
-                            option.disabled = isAlreadyChosen;
-                            statSelect.appendChild(option);
-                        });
-                        statSelect.value = selectedStatName;
-                    }
-                    else if (applicableStatsLength == 1 && !currentChoice) {
-                        statSelect.value = selectedOptionData.applicableStats[0];
-                        console.log(statSelect.value);
-                        handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
-                        console.log(selectedOptionData.applicableStats[0]);
-                    }
+                // Populate stat dropdown if needed on initial render
+                if (statSelect && needsStatSelection) {
+                    selectedOptionData.applicableStats.forEach(statName => {
+                        const option = document.createElement('option');
+                        option.value = statName;
+                        option.textContent = statName;
+                        const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
+                        option.disabled = isAlreadyChosen;
+                        statSelect.appendChild(option);
+                    });
+                    statSelect.value = selectedStatName;
                 }
 
                 // Event listener for type change (to show/hide stat selection)
@@ -1160,6 +1152,8 @@ function renderMutantChoiceUI() {
 function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
     console.log("--- handleMutantChoice called ---");
     console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, calc, optionValue, label });
+    const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
+    const abilityData = mutantPassives.abilities[passiveName];
 
     character.StatChoices[category] = character.StatChoices[category] || {};
     character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
@@ -1204,7 +1198,15 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 
         // Determine the stat name to affect based on optionType
         let statToAffect = null;
-        if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
+
+        if (!selectedStatName) {
+            const selectedOptionData = abilityData.options.find(opt => opt.type == optionType);
+            const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
+
+            if (applicableStatsLength == 1)
+                statToAffect = selectedOptionData.applicableStats[0];
+        }
+        else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
             statToAffect = selectedStatName;
         } else if (optionType === 'natural_regen_active') {
             statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
@@ -1218,7 +1220,6 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             if (selectedStatName && character.StatsAffected[category][passiveName][statToAffect] && character.StatsAffected[category][passiveName][statToAffect].size > 0 && !character.StatsAffected[category][passiveName][statToAffect].has(slotId)) {
                 showStatusMessage(`'${statToAffect}' has already been affected by another choice in this category. Please select a different stat.`, true);
                 // Revert the dropdowns to previous state
-                const typeSelectElement = document.getElementById(slotId + '-type');
                 const statSelectElement = document.getElementById(slotId + '-stat');
                 if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
                 if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
