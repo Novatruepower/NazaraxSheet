@@ -29,11 +29,11 @@ export const ExternalDataManager = {
                 // Remove the first element (empty string from the sheet)
                 delete arr[0][0];
                 const head = arr[0]; // The header row (e.g., ["", "Health", "Strength", "Agility", ...])
-                this._data['Stats'] = [...arr[0], 'Mana']; // Copy header for 'Stats'
+                this._data['Stats'] = [...arr[0], 'Mana', 'BaseHealth']; // Copy header for 'Stats'
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
-                this._data['Other'] = [head[1], 'Mana'];
+                this._data['Other'] = [head[1], 'Mana', 'BaseHealth'];
                 delete head[1]; // Remove 'Health' from the head array
                 this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll'
 
@@ -49,6 +49,7 @@ export const ExternalDataManager = {
 
                         this._data['Races'][race]['Stats']['Other'][health] = this.parsePercent(value[1]); // Assign health multiplier
                         this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
+                        this._data['Races'][race]['Stats']['Other']['BaseHealth'] = 1;
                         let index = 2; // Start from the third column for stats
 
                         head.forEach(statName => {

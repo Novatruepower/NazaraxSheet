@@ -8,6 +8,7 @@
             "label": "+25% to any stat",
             "type": "stat_increase",
             "value": 0.25,
+            "calc": "add",
             "count": 1,
             "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
           },
@@ -15,12 +16,14 @@
             "label": "+50% to any stat",
             "type": "stat_increase",
             "value": 0.50,
+            "calc": "add",
             "count": 2,
             "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
           },
           {
             "label": "-25% to any stat",
             "type": "stat_reduction",
+            "calc": "add",
             "value": -0.25,
             "count": 1,
             "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
@@ -28,6 +31,7 @@
           {
             "label": "-50% to any stat",
             "type": "stat_reduction",
+            "calc": "add",
             "value": -0.50,
             "count": 2,
             "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"]
@@ -50,8 +54,8 @@
             },
             "options": [
               { "label": "One skill from any race", "type": "skill_choice" },
-              { "label": "A statistical multiplier to be set to 50%", "type": "stat_multiplier_set_50", "value": 0.50, "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"] },
-              { "label": "Doubling your base max health value", "type": "double_base_health" },
+              { "label": "A statistical multiplier to be set to 50%", "type": "stat_multiplier_set_50", "calc": "add", "value": -0.50, "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"] },
+              { "label": "Doubling your base max health value", "type": "double_base_health", "calc": "mult", "value": 2, "applicableStats": ["BaseHealth"]},
               { "label": "Natural mana or health regeneration become permanently active", "type": "natural_regen_active" },
               { "label": "Mana or health regeneration be doubled", "type": "regen_doubled" }
             ]
@@ -64,7 +68,7 @@
               "100": 4
             },
             "options": [
-              { "label": "Reduce a stat’s multiplier to -50%", "type": "stat_multiplier_reduce_50", "value": -0.50, "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"] }
+              { "label": "Reduce a stat’s multiplier to -50%", "type": "stat_multiplier_reduce_50", "calc": "add", "value": -0.50, "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"] }
             ]
           }
         }

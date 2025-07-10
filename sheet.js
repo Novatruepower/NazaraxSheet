@@ -8,27 +8,13 @@ function calculateLevelMaxExperience(level) {
     return 100;
 }
 
-function calculateBaseMaxHealth(charData, race) {
-    let baseHealthMultiplier = 1;
-
-    // Check if the character has a 'double_base_health' mutation applied
-    // Iterate through StatChoices to find if 'double_base_health' is active for the 'Mutant' race
-    if (race === 'Mutant' && charData && charData.StatChoices['Mutant'] && charData.StatChoices['Mutant']['Mutation']) {
-        for (const slotId in charData.StatChoices['Mutant']['Mutation']) {
-            const choice = charData.StatChoices['Mutant']['Mutation'][slotId];
-            if (choice.type === 'double_base_health') {
-                baseHealthMultiplier *= 2;
-                break; // Found it, no need to check further
-            }
-        }
-    }
-
-    return charData.baseHealth * baseHealthMultiplier;
+function calculateBaseMaxHealth(charData) {
+    return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
 }
 
 // Function to calculate max health based on race, level, and bonus
-function calculateMaxHealth(charData, race, level, healthBonus) {
-    return Math.floor(calculateBaseMaxHealth(charData, race) * charData.Health.racialChange * level) + (healthBonus || 0);
+function calculateMaxHealth(charData, level, healthBonus) {
+    return Math.floor(calculateBaseMaxHealth(charData) * level) + (healthBonus || 0);
 }
 
 // Function to calculate max magic based on level
@@ -57,7 +43,7 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
 // Recalculate derived properties
 function recalculateUpdate(char) {
     let oldMaxValue = char.maxHealth;
-    char.maxHealth = calculateMaxHealth(char, char.race, char.level, char.healthBonus);
+    char.maxHealth = calculateMaxHealth(char, char.level, char.healthBonus);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
     oldMaxValue = char.maxMana;
     char.maxMana = calculateMaxMana(char, char.level);
@@ -87,7 +73,6 @@ const defaultCharacterData = function() {
         level: 1,
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
-        baseHealth: 100, // Will be used to Calculate calculateBaseMaxHealth
         maxHealth: 0, // Will be calculated dynamically
         healthBonus: 0,
         maxMana: 0, // Will be calculated dynamically
@@ -150,6 +135,8 @@ const defaultCharacterData = function() {
             value: 0,
             racialChange: initialRacialChange
         }
+
+        newCharacter['BaseHealth'].value = 100;
     });
 
     recalculateUpdate(newCharacter);
@@ -698,6 +685,30 @@ function updateRacialChange(oldRace, statName) {
     character[statName].racialChange += ExternalDataManager.getRacialChange(character.race, statName);
 }
 
+// Revert stat changes
+function revertChoiceRacialChange(char, statName, choice) {
+    if (ExternalDataManager._data.Stats.includes(statName)) {
+        if (choice.calc == "mult")
+            char[statName].racialChange /= choice.value;
+        else
+            char[statName].racialChange -= choice.value;
+    }
+
+    // Add other specific reverts here if needed (e.g., for regen, skills)
+}
+
+// Revert stat changes
+function applyChoiceRacialChange(char, statName, value, calc) {
+    if (ExternalDataManager._data.Stats.includes(statName)) {
+        if (calc == "mult")
+            char[statName].racialChange *= value;
+        else
+            char[statName].racialChange += value;
+    }
+
+    // Add other specific reverts here if needed (e.g., for regen, skills)
+}
+
 /**
  * Reverts the effects of all choices for a given category and passive name.
  * @param {object} char The character object.
@@ -711,19 +722,8 @@ function handleRevertChoices(char, category, passiveName) {
             slotIds.forEach(slotId => {
                 if (char.StatChoices[category] && char.StatChoices[category][passiveName] && char.StatChoices[category][passiveName][slotId]) {
                     const choice = char.StatChoices[category][passiveName][slotId];
-                    // Revert stat changes
-                    if (choice.type === 'stat_increase' || choice.type === 'stat_reduction' || choice.type === 'stat_multiplier_set' || choice.type === 'stat_multiplier_reduce') {
-                        if (ExternalDataManager._data.Stats.includes(statName)) {
-                            // For additive changes, subtract the value to revert
-                            char[statName].racialChange -= choice.value;
-                        }
-                    }
-                    // Revert specific flags
-                    if (choice.type === 'double_base_health') {
-                        // This flag is now handled dynamically in calculateBaseMaxHealth
-                        // No direct char.baseMaxHealthDoubled flag needed
-                    }
-                    // Add other specific reverts here if needed (e.g., for regen, skills)
+
+                    revertChoiceRacialChange(char, statName, choice.value);
                 }
             });
         }
@@ -835,7 +835,7 @@ function renderDemiHumanStatChoiceUI() {
 
                 // Add event listener
                 selectElement.addEventListener('change', (e) => {
-                    handleDemiHumanStatChoice(category, passiveName, slotId, modifier.type, modifier.value, e.target.value, modifier.label);
+                    handleDemiHumanStatChoice(category, passiveName, slotId, modifier.type, modifier.calc, modifier.value, e.target.value, modifier.label);
                 });
             }
         });
@@ -856,7 +856,7 @@ function renderDemiHumanStatChoiceUI() {
  * @param {string} selectedStatName The name of the stat chosen by the player.
  * @param {string} label The display label of the choice.
  */
-function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, modifierValue, selectedStatName, label) {
+function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, calc, modifierValue, selectedStatName, label) {
     console.log("--- handleDemiHumanStatChoice called ---");
     console.log("Input parameters:", { category, passiveName, slotId, choiceType, modifierValue, selectedStatName, label });
 
@@ -903,6 +903,7 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, mo
         // Add the new choice to StatChoices
         character.StatChoices[category][passiveName][slotId] = {
             type: choiceType,
+            calc : calc,
             value: modifierValue,
             statName: selectedStatName,
             label: label
@@ -1019,9 +1020,9 @@ function renderMutantChoiceUI() {
                 choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
 
                 let statSelectionHtml = '';
-                if (options.some(opt => (opt.type === 'stat_multiplier_set' || opt.type === 'stat_multiplier_reduce') && opt.applicableStats)) {
+                if (options.some(opt => (opt.type === 'stat_multiplier_set_50' || opt.type === 'stat_multiplier_reduce_50') && opt.applicableStats)) {
                     statSelectionHtml = `
-                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set' || selectedOptionType === 'stat_multiplier_reduce' ? '' : 'hidden'}">
+                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50' ? '' : 'hidden'}">
                             <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
                             <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">-- Select a Stat --</option>
@@ -1048,7 +1049,7 @@ function renderMutantChoiceUI() {
                 const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
                 // Populate stat dropdown if a stat-affecting type is selected
-                if (statSelect && (selectedOptionType === 'stat_multiplier_set' || selectedOptionType === 'stat_multiplier_reduce')) {
+                if (statSelect && (selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50')) {
                     const applicableStats = options.find(opt => opt.type === selectedOptionType).applicableStats;
                     applicableStats.forEach(statName => {
                         const option = document.createElement('option');
@@ -1067,7 +1068,7 @@ function renderMutantChoiceUI() {
                     typeSelect.addEventListener('change', (e) => {
                         const newType = e.target.value;
                         if (statSelectionDiv) {
-                            if (newType === 'stat_multiplier_set' || newType === 'stat_multiplier_reduce') {
+                            if (newType === 'stat_multiplier_set_50' || newType === 'stat_multiplier_reduce_50') {
                                 statSelectionDiv.classList.remove('hidden');
                                 // Repopulate stat dropdown for this specific select
                                 statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
@@ -1087,7 +1088,7 @@ function renderMutantChoiceUI() {
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
                             }
                         }
-                        handleMutantChoice(category, passiveName, slotId, newType, statSelect ? statSelect.value : null, options.find(opt => opt.type === newType)?.value, options.find(opt => opt.type === newType)?.label);
+                        handleMutantChoice(category, passiveName, slotId, newType, statSelect ? statSelect.value : null, options.find(opt => opt.type === newType)?.calc, options.find(opt => opt.type === newType)?.value, options.find(opt => opt.type === newType)?.label);
                     });
                 }
 
@@ -1095,7 +1096,7 @@ function renderMutantChoiceUI() {
                 // Event listener for stat change
                 if (statSelect) {
                     statSelect.addEventListener('change', (e) => {
-                        handleMutantChoice(category, passiveName, slotId, typeSelect.value, e.target.value, options.find(opt => opt.type === typeSelect.value)?.value, options.find(opt => opt.type === typeSelect.value)?.label);
+                        handleMutantChoice(category, passiveName, slotId, typeSelect.value, e.target.value, options.find(opt => opt.type === newType)?.calc, options.find(opt => opt.type === typeSelect.value)?.value, options.find(opt => opt.type === typeSelect.value)?.label);
                     });
                 }
             }
@@ -1113,12 +1114,12 @@ function renderMutantChoiceUI() {
  * @param {string} category The category (e.g., 'Mutant').
  * @param {string} passiveName The name of the passive (e.g., 'Mutation', 'Degeneration').
  * @param {string} slotId The unique ID of the choice slot.
- * @param {string} optionType The type from options (e.g., 'stat_multiplier_set', 'double_base_health').
+ * @param {string} optionType The type from options (e.g., 'stat_multiplier_set_50', 'double_base_health').
  * @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
  * @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
  * @param {string} label The display label of the choice.
  */
-function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, optionValue = null, label = '') {
+function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
     console.log("--- handleMutantChoice called ---");
     console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, optionValue, label });
 
@@ -1140,13 +1141,9 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
                 }
             }
             // Revert racialChange for the previously affected stat to its base value for the current race
-            if (ExternalDataManager._data.Stats.includes(previousChoice.statName)) {
-                // If the previous change was additive/subtractive, revert it by subtracting
-                character[previousChoice.statName].racialChange -= previousChoice.value;
-                console.log(`  Reverted racialChange for ${previousChoice.statName} by ${previousChoice.value}. New value: ${character[previousChoice.statName].racialChange}`);
-            }
+            revertChoiceRacialChange(character, previousChoice.statName, previousChoice.value);
         }
-        // No need to handle 'double_base_health' flag here, as it's now dynamic in calculateBaseMaxHealth
+
         delete character.StatChoices[category][passiveName][slotId]; // Remove previous choice
         console.log(`  Removed previous choice for slot ${slotId}.`);
     }
@@ -1154,55 +1151,58 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
     // Apply new choice if a valid optionType is selected
     if (optionType) {
         // Handle stat-specific choices
-        if (optionType === 'stat_multiplier_set' || optionType === 'stat_multiplier_reduce') {
-            if (!selectedStatName) {
-                // User selected a stat mutation type but no stat, just update DOM and return
-                updateDOM();
-                hasUnsavedChanges = true;
-                saveCurrentStateToHistory();
-                return;
-            }
-            // Check for conflicts with other choices in the same passive
-            if (character.StatsAffected[category][passiveName][selectedStatName] && character.StatsAffected[category][passiveName][selectedStatName].size > 0) {
-                showStatusMessage(`'${selectedStatName}' has already been affected by a mutation or degeneration. Please select a different stat.`, true);
-                // Revert the dropdown to its previous selection or empty
-                const typeSelectElement = document.getElementById(slotId + '-type');
-                const statSelectElement = document.getElementById(slotId + '-stat');
-                if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
-                if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
-                return;
-            }
+        switch (optionType) {
+            case 'skill_choice':
+            case 'natural_regen_active':
+            case 'regen_doubled':
+                // For other types skill_choice, natural_regen_active, regen_doubled)
+                character.StatChoices[category][passiveName][slotId] = {
+                    type: optionType,
+                    level: character.level,
+                    calc : calc,
+                    label: label
+                };
+                if (optionType === 'skill_choice' || optionType === 'natural_regen_active' || optionType === 'regen_doubled') {
+                    showStatusMessage(`'${label}' is not fully implemented yet.`, false);
+                }
+            break;
+        
+            default:
+                if (!selectedStatName) {
+                    // User selected a stat mutation type but no stat, just update DOM and return
+                    updateDOM();
+                    hasUnsavedChanges = true;
+                    saveCurrentStateToHistory();
+                    return;
+                }
+                // Check for conflicts with other choices in the same passive
+                if (character.StatsAffected[category][passiveName][selectedStatName] && character.StatsAffected[category][passiveName][selectedStatName].size > 0) {
+                    //showStatusMessage(`'${selectedStatName}' has already been affected by a mutation or degeneration. Please select a different stat.`, true);
+                    // Revert the dropdown to its previous selection or empty
+                    const typeSelectElement = document.getElementById(slotId + '-type');
+                    const statSelectElement = document.getElementById(slotId + '-stat');
+                    if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
+                    if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
+                    return;
+                }
 
-            // Store the new choice
-            character.StatChoices[category][passiveName][slotId] = {
-                type: optionType,
-                value: optionValue,
-                statName: selectedStatName,
-                level: character.level,
-                label: label
-            };
+                // Store the new choice
+                character.StatChoices[category][passiveName][slotId] = {
+                    type: optionType,
+                    calc : calc,
+                    value: optionValue,
+                    statName: selectedStatName,
+                    level: character.level,
+                    label: label
+                };
 
-            // Apply stat change: Add/Subtract the optionValue
-            if (ExternalDataManager._data.Stats.includes(selectedStatName)) {
-                character[selectedStatName].racialChange += optionValue; // Add/Subtract the multiplier
-                console.log(`  Applied racialChange for ${selectedStatName} by adding ${optionValue}. New value: ${character[selectedStatName].racialChange}`);
-            }
+                applyChoiceRacialChange(character, selectedStatName, optionValue, calc);
 
-            // Add to StatsAffected
-            character.StatsAffected[category][passiveName][selectedStatName] = character.StatsAffected[category][passiveName][selectedStatName] || new Set();
-            character.StatsAffected[category][passiveName][selectedStatName].add(slotId);
-            console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
-
-        } else {
-            // For other types (double_base_health, skill_choice, natural_regen_active, regen_doubled)
-            character.StatChoices[category][passiveName][slotId] = {
-                type: optionType,
-                level: character.level,
-                label: label
-            };
-            if (optionType === 'skill_choice' || optionType === 'natural_regen_active' || optionType === 'regen_doubled') {
-                showStatusMessage(`'${label}' is not fully implemented yet.`, false);
-            }
+                // Add to StatsAffected
+                character.StatsAffected[category][passiveName][selectedStatName] = character.StatsAffected[category][passiveName][selectedStatName] || new Set();
+                character.StatsAffected[category][passiveName][selectedStatName].add(slotId);
+                console.log(`  Added '${selectedStatName}' to StatsAffected for slot ${slotId}.`);
+            break;
         }
     }
 
@@ -1467,7 +1467,7 @@ function handleChange(event) {
         } else if (id === 'healthBonus') { // Handle healthBonus input
             character.healthBonus = newValue;
             // Recalculate maxHealth when healthBonus changes
-            character.maxHealth = calculateMaxHealth(character, character.race, character.level, character.healthBonus);
+            character.maxHealth = calculateMaxHealth(character, character.level, character.healthBonus);
             character.Health.value = Math.min(character.Health.value, character.maxHealth); // Adjust current Health if it exceeds new max
             document.getElementById('maxHealth').value = character.maxHealth;
             document.getElementById('Health').value = character.Health.value;
@@ -2511,7 +2511,7 @@ function initPage() {
 
     characters = [defaultCharacterData()];
     // Initialize maxHealth, maxMana and maxRacialPower based on default race, level, and healthBonus for the first character
-    characters[0].maxHealth = calculateMaxHealth(characters[0], characters[0].race, characters[0].level, characters[0].healthBonus);
+    characters[0].maxHealth = calculateMaxHealth(characters[0], characters[0].level, characters[0].healthBonus);
     characters[0].maxMana = calculateMaxMana(characters[0], characters[0].level);
     characters[0].maxRacialPower = calculateMaxRacialPower(characters[0].level);
     // Initialize AC based on armorBonus for the first character
