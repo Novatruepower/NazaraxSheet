@@ -1110,9 +1110,24 @@ function renderMutantChoiceUI() {
                     });
                 }
 
-
+                if (applicableStatsLength.length == 1 && typeSelect) {
+                    typeSelect.addEventListener('change', (e) => {
+                        const currentType = typeSelect.value;
+                        const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
+                        handleMutantChoice(
+                            category,
+                            passiveName,
+                            slotId,
+                            currentType,
+                            e.target.value,
+                            currentSelectedOptionData ? currentSelectedOptionData.calc : null,
+                            currentSelectedOptionData ? currentSelectedOptionData.value : null,
+                            currentSelectedOptionData ? currentSelectedOptionData.label : ''
+                        );
+                    });
+                }
                 // Event listener for stat change
-                if (statSelect) {
+                else if (statSelect) {
                     statSelect.addEventListener('change', (e) => {
                         const currentType = typeSelect.value;
                         const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
