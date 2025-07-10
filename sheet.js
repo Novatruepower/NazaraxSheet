@@ -1092,6 +1092,11 @@ function renderMutantChoiceUI() {
                                 });
                                 // Keep current selection if valid, otherwise clear
                                 statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                                if (!statSelect.value) {
+                                    const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
+                                    if (newApplicableStatsLength.length == 1)
+                                        statSelect.value = newSelectedOptionData.applicableStats[0];
+                                }
                             } else {
                                 statSelectionDiv.classList.add('hidden');
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
@@ -1207,13 +1212,14 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             if (applicableStatsLength == 1)
                 statToAffect = selectedOptionData.applicableStats[0];
         }
-        else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
-            statToAffect = selectedStatName;
-        } else if (optionType === 'natural_regen_active') {
-            statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
+        statToAffect = selectedStatName;
+      //  else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
+      //      statToAffect = selectedStatName;
+      //  } else if (optionType === 'natural_regen_active') {
+      //      statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
       //  } else if (optionType === 'regen_doubled') {
-            statToAffect = "healthRegenDoubled"; // Placeholder for flags
-        }
+     //       statToAffect = "healthRegenDoubled"; // Placeholder for flags
+       // }
         // For skill_choice, no stat is directly affected in this way.
 
         if (statToAffect) {
@@ -1229,7 +1235,7 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             }
 
             // If a stat is selected for a stat-affecting type, ensure it's not empty
-            if ((optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') && !selectedStatName) {
+            if (!selectedStatName) {
                 // User selected a stat mutation type but no stat, just update DOM and return
                 updateDOM();
                 hasUnsavedChanges = true;
