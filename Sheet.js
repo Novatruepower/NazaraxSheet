@@ -948,18 +948,8 @@ function attachClearChoiceListeners(query) {
         button.onclick = (event) => {
             const choiceId = event.target.dataset.choiceId;
             const category = event.target.dataset.category;
-            const uniqueIdentifier = event.target.dataset.uniqueIdentifier; // Changed from passiveName
-            const selectElement = document.getElementById(choiceId);
-
-            if (selectElement) {
-                processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
-                //selectElement.value = ''; // Set dropdown to empty
-                // Manually trigger the change event to clear the choice
-                //selectElement.dispatchEvent(new Event('change'));
-            } else {
-                // For cases where there's no select element (e.g., just a button for a fixed choice)
-                processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
-            }
+            const uniqueIdentifier = event.target.dataset.uniqueIdentifier;
+            processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
         };
     });
 }
