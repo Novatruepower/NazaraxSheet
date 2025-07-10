@@ -40,7 +40,7 @@ import {
     renderGenericRacialPassives,
     updateSpecializationDropdownAndData,
     updateDOM,
-    maybeEnableGoogleDriveButtonsWrapper as maybeEnableGoogleDriveButtons // Rename for clarity
+    maybeEnableGoogleDriveButtons // Rename for clarity
 } from './UIManager.js';
 import {
     attachEventListeners
