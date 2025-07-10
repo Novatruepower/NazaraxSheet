@@ -1070,7 +1070,7 @@ function renderMutantChoiceUI() {
                     typeSelect.addEventListener('change', (e) => {
                         const newType = e.target.value;
                         const newSelectedOptionData = options.find(opt => opt.type === newType);
-                        const newApplicableStatsLength = newSelectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
+                        const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
                         const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
 
                         if (statSelectionDiv) {

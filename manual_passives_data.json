@@ -41,9 +41,9 @@
     },
     "Mutant": {
       "manualPassives": {
-        "description": "Mutants gain Mutation and Degeneration choices at specific levels.",
         "abilities": {
           "Mutation": {
+            "description": "Mutants gain Mutation choices at specific levels.",
             "levels": {
               "1": 1,
               "10": 2,
@@ -61,6 +61,7 @@
             ]
           },
           "Degeneration": {
+            "description": "Mutants gain Degeneration choices at specific levels.",
             "levels": {
               "1": 1,
               "10": 2,
