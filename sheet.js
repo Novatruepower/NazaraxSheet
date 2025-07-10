@@ -1110,24 +1110,9 @@ function renderMutantChoiceUI() {
                     });
                 }
 
-                if (applicableStatsLength.length == 1 && typeSelect) {
-                    typeSelect.addEventListener('change', (e) => {
-                        const currentType = typeSelect.value;
-                        const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
-                        handleMutantChoice(
-                            category,
-                            passiveName,
-                            slotId,
-                            currentType,
-                            e.target.value,
-                            currentSelectedOptionData ? currentSelectedOptionData.calc : null,
-                            currentSelectedOptionData ? currentSelectedOptionData.value : null,
-                            currentSelectedOptionData ? currentSelectedOptionData.label : ''
-                        );
-                    });
-                }
+
                 // Event listener for stat change
-                else if (statSelect) {
+                if (statSelect) {
                     statSelect.addEventListener('change', (e) => {
                         const currentType = typeSelect.value;
                         const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
@@ -1201,6 +1186,9 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 
     // Apply new choice if a valid optionType is selected
     if (optionType) {
+        const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
+        const abilityData = mutantPassives.abilities[passiveName];
+
         let newChoiceData = {
             type: optionType,
             level: character.level,
@@ -1212,7 +1200,14 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
         // Determine the stat name to affect based on optionType
         let statToAffect = null;
 
-        if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
+        if (!selectedStatName) {
+            const selectedOptionData = abilityData.options.find(opt => opt.type == optionType);
+            const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
+
+            if (applicableStatsLength == 1)
+                statToAffect = selectedOptionData.applicableStats[0];
+        }
+        else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
             statToAffect = selectedStatName;
         } else if (optionType === 'natural_regen_active') {
             statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
@@ -1234,7 +1229,7 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             }
 
             // If a stat is selected for a stat-affecting type, ensure it's not empty
-            if ((optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') && !selectedStatName) {
+            if ((optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') && !selectedStatName) {
                 // User selected a stat mutation type but no stat, just update DOM and return
                 updateDOM();
                 hasUnsavedChanges = true;
