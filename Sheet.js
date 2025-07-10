@@ -41,12 +41,13 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
 }
 
 /**
- * Recalculates derived properties for a character.
- * This function updates the character's internal data, but does not directly update the DOM.
+ * Recalculates fews derived properties for a character.
+ * This function updates the character's internal data and can directly update the DOM.
  * DOM updates should be handled by calling `updateDOM()` separately.
  * @param {object} char The character object to recalculate properties for.
+ * @param {boolean} char The character object to update the DOM.
  */
-function recalculateCharacterDerivedProperties(char) {
+function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     let oldMaxValue = char.maxHealth;
     char.maxHealth = calculateMaxHealth(char, char.level, char.healthBonus);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
@@ -59,8 +60,24 @@ function recalculateCharacterDerivedProperties(char) {
     char.maxRacialPower = calculateMaxRacialPower(char.level);
     char.racialPower = adjustValue(oldMaxValue, char.racialPower, char.maxRacialPower);
 
-    // Update AC based on armorBonus
-    char.ac = char.armorBonus;
+    if (isDisplay) {
+        document.getElementById('maxHealth').value = character.maxHealth;
+        document.getElementById('Health').value = character.Health.value;
+        document.getElementById('maxMana').value = character.maxMana;
+        document.getElementById('Mana').value = character.Mana.value;
+        document.getElementById('maxRacialPower').value = character.maxRacialPower;
+        document.getElementById('racialPower').value = character.racialPower;
+    }
+}
+
+/**
+ * Recalculates derived properties for a character.
+ * This function updates the character's internal data, but does not directly update the DOM.
+ * DOM updates should be handled by calling `updateDOM()` separately.
+ * @param {object} char The character object to recalculate properties for.
+ */
+function recalculateCharacterDerivedProperties(char) {
+    recalculateSmallUpdateCharacter(char, false);
 
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
@@ -869,8 +886,6 @@ function processRacialChoiceChange(category, passiveName, slotId, newChoiceData)
 
 // Function to handle race change, updating racial characteristics
 function handleChangeRace(oldRace) {
-    console.log(character.race);
-    console.log(character.BaseHealth);
     // Revert all previous manual passive choices for the old race
     if (character.StatChoices[oldRace]) {
         for (const passiveName in character.StatChoices[oldRace]) {
@@ -895,14 +910,13 @@ function handleChangeRace(oldRace) {
     });
 
     // Update maxHealth, maxMana and maxRacialPower when race changes
-    recalculateCharacterDerivedProperties(character);
+    recalculateSmallUpdateCharacter(character, true);
 
     // Re-render the racial passives UI
     renderRacialPassives();
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
-    console.log(character.BaseHealth);
 }
 
 /**
