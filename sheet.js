@@ -62,7 +62,7 @@ function recalculateUpdate(char) {
     }
 }
 
-const defaultCharacterData = function() {
+const defaultCharacterData = function () {
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
 
     let newCharacter = ({
@@ -196,10 +196,10 @@ function saveCurrentStateToHistory() {
 
 // Getter to easily access the current character
 const character = new Proxy({}, {
-    get: function(target, prop) {
+    get: function (target, prop) {
         return characters[currentCharacterIndex][prop];
     },
-    set: function(target, prop, value) {
+    set: function (target, prop, value) {
         // Only set hasUnsavedChanges to true if the value actually changes
         if (characters[currentCharacterIndex][prop] !== value) {
             characters[currentCharacterIndex][prop] = value;
@@ -344,11 +344,11 @@ function saveCharacterToFile() {
 }
 
 /**
- * Initializes a new character object and merges loaded data into it.
- * This function also handles recalculating derived stats and converting Sets.
- * @param {object} loadedChar The character object loaded from a file or Google Drive.
- * @returns {object} The fully initialized and merged character object.
- */
+* Initializes a new character object and merges loaded data into it.
+* This function also handles recalculating derived stats and converting Sets.
+* @param {object} loadedChar The character object loaded from a file or Google Drive.
+* @returns {object} The fully initialized and merged character object.
+*/
 function initLoadCharacter(loadedChar) {
     const newChar = defaultCharacterData(); // Start with a fresh default character
 
@@ -477,16 +477,16 @@ function updateDOM() {
         const checkboxDiv = document.createElement('div');
         checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
         checkboxDiv.innerHTML = `
-            <input
-                type="checkbox"
-                id="class-${className.replace(/\s/g, '-')}"
-                name="class-option"
-                value="${className}"
-                class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-                ${character.class.includes(className) ? 'checked' : ''}
-            />
-            <label for="class-${className.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${className}</label>
-        `;
+           <input
+               type="checkbox"
+               id="class-${className.replace(/\s/g, '-')}"
+               name="class-option"
+               value="${className}"
+               class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
+               ${character.class.includes(className) ? 'checked' : ''}
+           />
+           <label for="class-${className.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${className}</label>
+       `;
         classDropdownOptions.appendChild(checkboxDiv);
     });
 
@@ -506,30 +506,30 @@ function updateDOM() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700'; // Add hover effect to rows
         row.innerHTML = `
-            <td class="px-2 py-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">${statName}</td>
-            <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-value" name="${statName}-value" min="0" value="${statData.value}" class="stat-input" />
-            </td>
-            <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(character, statName)}" readonly class="stat-input" />
-            </td>
-            <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-equipment" name="${statName}-equipment" value="${statData.equipment}" class="stat-input" />
-            </td>
-            <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-temporary" name="${statName}-temporary" value="${statData.temporary}" class="stat-input" />
-            </td>
-            <td class="px-2 py-1 whitespace-nowrap">
-                <div class="flex items-center justify-center exp-inputs-wrapper">
-                    <input type="number" id="${statName}-experience" name="${statName}-experience" min="0" value="${statData.experience}" class="stat-input rounded-r-none" />
-                    <span class="px-1 py-1 border-y border-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">/</span>
-                    <input type="number" id="${statName}-maxExperience" name="${statName}-maxExperience" min="1" value="${statData.maxExperience}" readonly class="stat-input rounded-l-none" />
-                </div>
-            </td>
-            <td class="px-2 py-1 whitespace-nowrap">
-                <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(statName)}" readonly class="stat-input" />
-            </td>
-        `;
+           <td class="px-2 py-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">${statName}</td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-value" name="${statName}-value" min="0" value="${statData.value}" class="stat-input" />
+           </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(character, statName)}" readonly class="stat-input" />
+           </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-equipment" name="${statName}-equipment" value="${statData.equipment}" class="stat-input" />
+           </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-temporary" name="${statName}-temporary" value="${statData.temporary}" class="stat-input" />
+           </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <div class="flex items-center justify-center exp-inputs-wrapper">
+                   <input type="number" id="${statName}-experience" name="${statName}-experience" min="0" value="${statData.experience}" class="stat-input rounded-r-none" />
+                   <span class="px-1 py-1 border-y border-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">/</span>
+                   <input type="number" id="${statName}-maxExperience" name="${statName}-maxExperience" min="1" value="${statData.maxExperience}" readonly class="stat-input rounded-l-none" />
+               </div>
+           </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(statName)}" readonly class="stat-input" />
+           </td>
+       `;
         playerStatsContainer.appendChild(row);
     });
 
@@ -590,20 +590,20 @@ function renderWeaponInventory() {
         const displayMagicDamage = weapon.use ? calculateFormula(weapon.magicDamage) : weapon.magicDamage;
 
         row.innerHTML = `
-            ${quickTd('input', 'text', false, 'weapon', 'name', index, weapon.name, 'w-full')}
-            ${quickTd('input', 'text', false, 'weapon', 'type', index, weapon.type, 'w-full')}
-            ${quickTd('input', 'text', false, 'weapon', 'material', index, weapon.material, 'w-full')}
-            ${quickTd('input', 'text', false, 'weapon', 'requirement', index, weapon.requirement, 'w-full')}
-            ${quickTd('input', 'text', false, 'weapon', 'requiredStat', index, weapon.requiredStat, 'w-full')}
-            ${quickTd('input', 'number', false, 'weapon', 'accuracy', index, weapon.accuracy, 'w-full')}
-            ${quickTd('textarea', null, true, 'weapon', 'damage', index, displayDamage, 'w-full inventory-effect-textarea')}
-            ${quickTd('textarea', null, true, 'weapon', 'magicDamage', index, displayMagicDamage, 'w-full inventory-effect-textarea')}
-            ${quickTd('input', 'text', false, 'weapon', 'magicType', index, weapon.magicType, 'w-full')}
-            ${quickTd('textarea', null, true, 'weapon', 'effect', index, weapon.effect, 'w-full inventory-effect-textarea')}
-            ${quickTd('input', 'number', false, 'weapon', 'value', index, weapon.value, 'w-full')}
-            ${quickTd('input', 'checkbox', false, 'weapon', 'use', index, weapon.use ? 'checked' : '', null)}
-            ${quickTd('button', null, true, 'weapon', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
-        `;
+           ${quickTd('input', 'text', false, 'weapon', 'name', index, weapon.name, 'w-full')}
+           ${quickTd('input', 'text', false, 'weapon', 'type', index, weapon.type, 'w-full')}
+           ${quickTd('input', 'text', false, 'weapon', 'material', index, weapon.material, 'w-full')}
+           ${quickTd('input', 'text', false, 'weapon', 'requirement', index, weapon.requirement, 'w-full')}
+           ${quickTd('input', 'text', false, 'weapon', 'requiredStat', index, weapon.requiredStat, 'w-full')}
+           ${quickTd('input', 'number', false, 'weapon', 'accuracy', index, weapon.accuracy, 'w-full')}
+           ${quickTd('textarea', null, true, 'weapon', 'damage', index, displayDamage, 'w-full inventory-effect-textarea')}
+           ${quickTd('textarea', null, true, 'weapon', 'magicDamage', index, displayMagicDamage, 'w-full inventory-effect-textarea')}
+           ${quickTd('input', 'text', false, 'weapon', 'magicType', index, weapon.magicType, 'w-full')}
+           ${quickTd('textarea', null, true, 'weapon', 'effect', index, weapon.effect, 'w-full inventory-effect-textarea')}
+           ${quickTd('input', 'number', false, 'weapon', 'value', index, weapon.value, 'w-full')}
+           ${quickTd('input', 'checkbox', false, 'weapon', 'use', index, weapon.use ? 'checked' : '', null)}
+           ${quickTd('button', null, true, 'weapon', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
+       `;
 
         // Set textarea values after they are in the DOM
         row.querySelector('textarea[data-field="damage"]').value = displayDamage;
@@ -620,19 +620,19 @@ function renderArmorInventory() {
     character.armorInventory.forEach((armor, index) => {
         const row = tbody.insertRow();
         row.innerHTML = `
-            ${quickTd('input', 'text', false, 'armor', 'name', index, armor.name, 'w-full')}
-            ${quickTd('input', 'text', false, 'armor', 'location', index, armor.location, 'w-full')}
-            ${quickTd('input', 'text', false, 'armor', 'material', index, armor.material, 'w-full')}
-            ${quickTd('input', 'text', false, 'armor', 'requirement', index, armor.requirement, 'w-full')}
-            ${quickTd('input', 'text', false, 'armor', 'requiredStat', index, armor.requiredStat, 'w-full')}
-            ${quickTd('input', 'number', false, 'armor', 'defense', index, armor.defense, 'w-full')}
-            ${quickTd('input', 'number', false, 'armor', 'magicDefense', index, armor.magicDefense, 'w-full')}
-            ${quickTd('input', 'text', false, 'armor', 'magicType', index, armor.magicType, 'w-full')}
-            ${quickTd('textarea', null, true, 'armor', 'effect', index, armor.effect, 'w-full inventory-effect-textarea')}
-            ${quickTd('input', 'number', false, 'armor', 'value', index, armor.value, 'w-full')}
-            ${quickTd('input', 'checkbox', false, 'armor', 'equipped', index, armor.equipped ? 'checked' : '', null)}
-            ${quickTd('button', null, true, 'armor', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
-        `;
+           ${quickTd('input', 'text', false, 'armor', 'name', index, armor.name, 'w-full')}
+           ${quickTd('input', 'text', false, 'armor', 'location', index, armor.location, 'w-full')}
+           ${quickTd('input', 'text', false, 'armor', 'material', index, armor.material, 'w-full')}
+           ${quickTd('input', 'text', false, 'armor', 'requirement', index, armor.requirement, 'w-full')}
+           ${quickTd('input', 'text', false, 'armor', 'requiredStat', index, armor.requiredStat, 'w-full')}
+           ${quickTd('input', 'number', false, 'armor', 'defense', index, armor.defense, 'w-full')}
+           ${quickTd('input', 'number', false, 'armor', 'magicDefense', index, armor.magicDefense, 'w-full')}
+           ${quickTd('input', 'text', false, 'armor', 'magicType', index, armor.magicType, 'w-full')}
+           ${quickTd('textarea', null, true, 'armor', 'effect', index, armor.effect, 'w-full inventory-effect-textarea')}
+           ${quickTd('input', 'number', false, 'armor', 'value', index, armor.value, 'w-full')}
+           ${quickTd('input', 'checkbox', false, 'armor', 'equipped', index, armor.equipped ? 'checked' : '', null)}
+           ${quickTd('button', null, true, 'armor', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
+       `;
 
         // Set textarea value after it's in the DOM
         row.querySelector('textarea[data-field="effect"]').value = armor.effect;
@@ -647,14 +647,14 @@ function renderGeneralInventory() {
     character.generalInventory.forEach((item, index) => {
         const row = tbody.insertRow();
         row.innerHTML = `
-            ${quickTd('input', 'text', false, 'general', 'name', index, item.name, 'w-full')}
-            ${quickTd('input', 'text', false, 'general', 'type', index, item.type, 'w-full')}
-            ${quickTd('textarea', null, true, 'general', 'effect', index, item.effect, 'w-full inventory-effect-textarea')}
-            ${quickTd('input', 'number', false, 'general', 'accuracy', index, item.accuracy, 'w-full')}
-            ${quickTd('input', 'number', false, 'general', 'amount', index, item.amount, 'w-full')}
-            ${quickTd('input', 'number', false, 'general', 'valuePerUnit', index, item.valuePerUnit, 'w-full')}
-            ${quickTd('button', null, true, 'general', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
-        `;
+           ${quickTd('input', 'text', false, 'general', 'name', index, item.name, 'w-full')}
+           ${quickTd('input', 'text', false, 'general', 'type', index, item.type, 'w-full')}
+           ${quickTd('textarea', null, true, 'general', 'effect', index, item.effect, 'w-full inventory-effect-textarea')}
+           ${quickTd('input', 'number', false, 'general', 'accuracy', index, item.accuracy, 'w-full')}
+           ${quickTd('input', 'number', false, 'general', 'amount', index, item.amount, 'w-full')}
+           ${quickTd('input', 'number', false, 'general', 'valuePerUnit', index, item.valuePerUnit, 'w-full')}
+           ${quickTd('button', null, true, 'general', null, index, 'Remove', 'remove-item-btn bg-red-500 hover:bg-red-600')}
+       `;
 
         // Set textarea value after it's in the DOM
         row.querySelector('textarea[data-field="effect"]').value = item.effect;
@@ -709,11 +709,11 @@ function applyChoiceRacialChange(char, statName, value, calc) {
 }
 
 /**
- * Reverts the effects of all choices for a given category and passive name.
- * @param {object} char The character object.
- * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
- * @param {string} passiveName The name of the passive (e.g., 'Demi-human Stat Adjustments', 'Mutation').
- */
+* Reverts the effects of all choices for a given category and passive name.
+* @param {object} char The character object.
+* @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
+* @param {string} passiveName The name of the passive (e.g., 'Demi-human Stat Adjustments', 'Mutation').
+*/
 function handleRevertChoices(char, category, passiveName) {
     if (char.StatsAffected[category] && char.StatsAffected[category][passiveName]) {
         for (const statName in char.StatsAffected[category][passiveName]) {
@@ -772,9 +772,9 @@ function handleChangeRace(oldRace) {
 }
 
 /**
- * Renders the UI for Demi-human specific stat choices.
- * This function creates and updates the dropdowns for applying stat modifiers.
- */
+* Renders the UI for Demi-human specific stat choices.
+* This function creates and updates the dropdowns for applying stat modifiers.
+*/
 function renderDemiHumanStatChoiceUI() {
     const demiHumanChoicesContainer = document.getElementById('racial-passives-container');
     if (!demiHumanChoicesContainer) return; // Ensure the container exists
@@ -786,12 +786,12 @@ function renderDemiHumanStatChoiceUI() {
     if (character.race === category && demiHumanPassives && demiHumanPassives.choices) {
         demiHumanChoicesContainer.classList.remove('hidden');
         demiHumanChoicesContainer.innerHTML = `
-            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Demi-human Stat Adjustments</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${demiHumanPassives.description}</p>
-            <div id="demi-human-modifiers-list" class="space-y-3">
-                <!-- Modifiers will be dynamically added here -->
-            </div>
-        `;
+           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Demi-human Stat Adjustments</h4>
+           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${demiHumanPassives.description}</p>
+           <div id="demi-human-modifiers-list" class="space-y-3">
+               <!-- Modifiers will be dynamically added here -->
+           </div>
+       `;
 
         const modifiersList = document.getElementById('demi-human-modifiers-list');
 
@@ -811,12 +811,12 @@ function renderDemiHumanStatChoiceUI() {
                 const choiceDiv = document.createElement('div');
                 choiceDiv.className = 'flex items-center space-x-2';
                 choiceDiv.innerHTML = `
-                    <label for="${slotId}" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-36">${modifier.label}</label>
-                    <select id="${slotId}" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Select a Stat --</option>
-                    </select>
-                    ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
-                `;
+                   <label for="${slotId}" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-36">${modifier.label}</label>
+                   <select id="${slotId}" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                       <option value="">-- Select a Stat --</option>
+                   </select>
+                   ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
+               `;
                 modifiersList.appendChild(choiceDiv);
 
                 const selectElement = choiceDiv.querySelector(`#${slotId}`);
@@ -845,15 +845,15 @@ function renderDemiHumanStatChoiceUI() {
 }
 
 /**
- * Handles the selection of a stat for a Demi-human racial modifier.
- * @param {string} category The category (e.g., 'Demi-humans').
- * @param {string} passiveName The name of the passive (e.g., 'Stat Adjustments').
- * @param {string} slotId The unique ID of the choice slot.
- * @param {string} choiceType The type of the choice (e.g., 'stat_increase').
- * @param {number} modifierValue The numerical value of the modifier (e.g., 0.25).
- * @param {string} selectedStatName The name of the stat chosen by the player.
- * @param {string} label The display label of the choice.
- */
+* Handles the selection of a stat for a Demi-human racial modifier.
+* @param {string} category The category (e.g., 'Demi-humans').
+* @param {string} passiveName The name of the passive (e.g., 'Stat Adjustments').
+* @param {string} slotId The unique ID of the choice slot.
+* @param {string} choiceType The type of the choice (e.g., 'stat_increase').
+* @param {number} modifierValue The numerical value of the modifier (e.g., 0.25).
+* @param {string} selectedStatName The name of the stat chosen by the player.
+* @param {string} label The display label of the choice.
+*/
 function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, calc, modifierValue, selectedStatName, label) {
     console.log("--- handleDemiHumanStatChoice called ---");
     console.log("Input parameters:", { category, passiveName, slotId, choiceType, modifierValue, selectedStatName, label });
@@ -901,7 +901,7 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
         // Add the new choice to StatChoices
         character.StatChoices[category][passiveName][slotId] = {
             type: choiceType,
-            calc : calc,
+            calc: calc,
             value: modifierValue,
             statName: selectedStatName,
             label: label
@@ -939,8 +939,8 @@ function handleDemiHumanStatChoice(category, passiveName, slotId, choiceType, ca
 }
 
 /**
- * Attaches event listeners to the dynamically created clear buttons for Demi-human stat choices.
- */
+* Attaches event listeners to the dynamically created clear buttons for Demi-human stat choices.
+*/
 function attachClearDemiHumanChoiceListeners() {
     document.querySelectorAll('.clear-demi-human-choice-btn').forEach(button => {
         button.onclick = (event) => {
@@ -956,8 +956,8 @@ function attachClearDemiHumanChoiceListeners() {
 }
 
 /**
- * Renders the UI for Mutant specific stat choices
- */
+* Renders the UI for Mutant specific stat choices
+*/
 function renderMutantChoiceUI() {
     const mutantChoicesContainer = document.getElementById('racial-passives-container');
     if (!mutantChoicesContainer) return;
@@ -968,12 +968,12 @@ function renderMutantChoiceUI() {
     if (character.race === category && mutantPassives && mutantPassives.abilities) {
         mutantChoicesContainer.classList.remove('hidden');
         mutantChoicesContainer.innerHTML = `
-            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Mutant Abilities: Mutation & Degeneration</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${mutantPassives.description}</p>
-            <div id="mutant-abilities-list" class="space-y-4">
-                <!-- Mutation and Degeneration choices will be dynamically added here -->
-            </div>
-        `;
+           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Mutant Abilities: Mutation & Degeneration</h4>
+           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${mutantPassives.description}</p>
+           <div id="mutant-abilities-list" class="space-y-4">
+               <!-- Mutation and Degeneration choices will be dynamically added here -->
+           </div>
+       `;
 
         const abilitiesList = document.getElementById('mutant-abilities-list');
         const currentLevel = character.level;
@@ -1022,32 +1022,32 @@ function renderMutantChoiceUI() {
 
                 const choiceDiv = document.createElement('div');
                 choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
-                
+
                 let statSelectionHtml = '';
 
                 if (needsStatSelection) {
                     const hide = applicableStatsLength == 1 ? 'hidden' : '';
                     statSelectionHtml = `
-                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
-                            <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
-                            <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">-- Select a Stat --</option>
-                            </select>
-                        </div>
-                    `;
+                       <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
+                           <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                           <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                               <option value="">-- Select a Stat --</option>
+                           </select>
+                       </div>
+                   `;
                 }
 
                 choiceDiv.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${i + 1}:</label>
-                        <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">-- Select ${abilityKey} Type --</option>
-                            ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''}>${opt.label}</option>`).join('')}
-                        </select>
-                        <button type="button" data-slot-id="${slotId}" data-category="${category}" data-passive-name="${passiveName}" class="clear-mutant-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
-                    </div>
-                    ${statSelectionHtml}
-                `;
+                   <div class="flex items-center space-x-2">
+                       <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${i + 1}:</label>
+                       <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                           <option value="">-- Select ${abilityKey} Type --</option>
+                           ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                       </select>
+                       <button type="button" data-slot-id="${slotId}" data-category="${category}" data-passive-name="${passiveName}" class="clear-mutant-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+                   </div>
+                   ${statSelectionHtml}
+               `;
                 abilitiesList.appendChild(choiceDiv);
 
                 const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
@@ -1064,11 +1064,11 @@ function renderMutantChoiceUI() {
                         option.disabled = isAlreadyChosen;
                         statSelect.appendChild(option);
                     });
-
-                    statSelect.value = applicableStatsLength.length != 1 ? selectedStatName : selectedOptionData.applicableStats[0];
+                    statSelect.value = selectedStatName;
                 }
+
                 // Event listener for type change (to show/hide stat selection)
-                else if (typeSelect) {
+                if (typeSelect) {
                     typeSelect.addEventListener('change', (e) => {
                         const newType = e.target.value;
                         const newSelectedOptionData = options.find(opt => opt.type === newType);
@@ -1105,8 +1105,7 @@ function renderMutantChoiceUI() {
                             statSelect ? statSelect.value : null,
                             newSelectedOptionData ? newSelectedOptionData.calc : null,
                             newSelectedOptionData ? newSelectedOptionData.value : null,
-                            newSelectedOptionData ? newSelectedOptionData.label : ''
-                        );
+                            newSelectedOptionData ? newSelectedOptionData.label : '');
                     });
                 }
 
@@ -1127,6 +1126,11 @@ function renderMutantChoiceUI() {
                             currentSelectedOptionData ? currentSelectedOptionData.label : ''
                         );
                     });
+
+                    if (applicableStatsLength == 1) {
+                        statSelect.value = selectedOptionData.applicableStats[0];
+                        statSelect.dispatchEvent(new Event('change'));
+                    }
                 }
             }
         }
@@ -1139,16 +1143,16 @@ function renderMutantChoiceUI() {
 }
 
 /**
- * Handles the selection of a stat for a Mutant mutation or degeneration.
- * @param {string} category The category (e.g., 'Mutant').
- * @param {string} passiveName The name of the passive (e.g., 'Mutation', 'Degeneration').
- * @param {string} slotId The unique ID of the choice slot.
- * @param {string} optionType The type from options (e.g., 'stat_multiplier_set_50', 'double_base_health').
- * @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
- * @param {string} calc The calculation type ("add" or "mult").
- * @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
- * @param {string} label The display label of the choice.
- */
+* Handles the selection of a stat for a Mutant mutation or degeneration.
+* @param {string} category The category (e.g., 'Mutant').
+* @param {string} passiveName The name of the passive (e.g., 'Mutation', 'Degeneration').
+* @param {string} slotId The unique ID of the choice slot.
+* @param {string} optionType The type from options (e.g., 'stat_multiplier_set_50', 'double_base_health').
+* @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
+* @param {string} calc The calculation type ("add" or "mult").
+* @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
+* @param {string} label The display label of the choice.
+*/
 function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
     console.log("--- handleMutantChoice called ---");
     console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, calc, optionValue, label });
@@ -1186,7 +1190,6 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 
     // Apply new choice if a valid optionType is selected
     if (optionType) {
-
         let newChoiceData = {
             type: optionType,
             level: character.level,
@@ -1197,13 +1200,12 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 
         // Determine the stat name to affect based on optionType
         let statToAffect = selectedStatName;
-
-      //  else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50') {
-      //      statToAffect = selectedStatName;
-      //  } else if (optionType === 'natural_regen_active') {
-      //      statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
-      //  } else if (optionType === 'regen_doubled') {
-     //       statToAffect = "healthRegenDoubled"; // Placeholder for flags
+        //if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
+       //     statToAffect = selectedStatName;
+       // } else if (optionType === 'natural_regen_active') {
+       //     statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
+       // } else if (optionType === 'regen_doubled') {
+       //     statToAffect = "healthRegenDoubled"; // Placeholder for flags
        // }
         // For skill_choice, no stat is directly affected in this way.
 
@@ -1220,7 +1222,8 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
             }
 
             // If a stat is selected for a stat-affecting type, ensure it's not empty
-            if (!selectedStatName) {
+            if ((optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') && !selectedStatName) {
+                // User selected a stat mutation type but no stat, just update DOM and return
                 updateDOM();
                 hasUnsavedChanges = true;
                 saveCurrentStateToHistory();
@@ -1251,7 +1254,6 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
                 showStatusMessage(`'${label}' (Regeneration Doubled) applied.`, false);
             }
         }
-
         character.StatChoices[category][passiveName][slotId] = newChoiceData;
     }
 
@@ -1267,8 +1269,8 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
 }
 
 /**
- * Attaches event listeners to the dynamically created clear buttons for Mutant choices.
- */
+* Attaches event listeners to the dynamically created clear buttons for Mutant choices.
+*/
 function attachClearMutantChoiceListeners() {
     document.querySelectorAll('.clear-mutant-choice-btn').forEach(button => {
         button.onclick = (event) => {
@@ -1314,8 +1316,8 @@ function attachClearMutantChoiceListeners() {
 
 
 /**
- * Renders the generic racial passives for races that don't have manual choices.
- */
+* Renders the generic racial passives for races that don't have manual choices.
+*/
 function renderGenericRacialPassives() {
     const genericPassivesContainer = document.getElementById('racial-passives-container');
     if (!genericPassivesContainer) return;
@@ -1340,8 +1342,8 @@ function renderGenericRacialPassives() {
 }
 
 /**
- * Orchestrates the rendering of all racial passive sections based on the current race.
- */
+* Orchestrates the rendering of all racial passive sections based on the current race.
+*/
 function renderRacialPassives() {
     // Hide all specific containers first
     document.getElementById('racial-passives-container').classList.add('hidden');
@@ -1613,16 +1615,16 @@ function updateSpecializationDropdownAndData() {
             const checkboxDiv = document.createElement('div');
             checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
             checkboxDiv.innerHTML = `
-                <input
-                    type="checkbox"
-                    id="specialization-${specName.replace(/\s/g, '-')}"
-                    name="specialization-option"
-                    value="${specName}"
-                    class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-                    ${character.specialization.includes(specName) ? 'checked' : ''}
-                />
-                <label for="specialization-${specName.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
-            `;
+               <input
+                   type="checkbox"
+                   id="specialization-${specName.replace(/\s/g, '-')}"
+                   name="specialization-option"
+                   value="${specName}"
+                   class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
+                   ${character.specialization.includes(specName) ? 'checked' : ''}
+               />
+               <label for="specialization-${specName.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
+           `;
             specializationDropdownOptions.appendChild(checkboxDiv);
         });
     }
@@ -1873,9 +1875,9 @@ function deleteCurrentCharacter() {
 }
 
 /**
- * Applies a historical state to the current character and updates the DOM.
- * @param {Array} state The character array state to apply.
- */
+* Applies a historical state to the current character and updates the DOM.
+* @param {Array} state The character array state to apply.
+*/
 function applyHistoryState(state) {
     characters = JSON.parse(JSON.stringify(state)); // Deep copy the state
     // Convert Sets back to Set after loading from history
@@ -1976,10 +1978,10 @@ const GOOGLE_DRIVE_AUTH_STATUS_KEY = 'googleDriveAuthorized';
 
 
 /**
- * Shows a status message to the user.
- * @param {string} message The message to display.
- * @param {boolean} isError Whether the message indicates an error.
- */
+* Shows a status message to the user.
+* @param {string} message The message to display.
+* @param {boolean} isError Whether the message indicates an error.
+*/
 function showStatusMessage(message, isError = false) {
     statusMessageElement.textContent = message;
     statusMessageElement.style.color = isError ? '#ef4444' : '#22c55e'; // red-500 or green-500
@@ -1989,12 +1991,12 @@ function showStatusMessage(message, isError = false) {
 }
 
 /**
- * Shows a custom confirmation modal.
- * @param {string} message The message to display in the modal.
- * @param {function} onConfirm Callback function to execute if user confirms.
- * @param {function} onCancel Callback function to execute if user cancels (optional).
- */
-function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
+* Shows a custom confirmation modal.
+* @param {string} message The message to display in the modal.
+* @param {function} onConfirm Callback function to execute if user confirms.
+* @param {function} onCancel Callback function to execute if user cancels (optional).
+*/
+function showConfirmationModal(message, onConfirm, onCancel = () => { }) {
     // Ensure elements are available before trying to access them
     if (!confirmationModal || !confirmMessage || !confirmOkBtn || !confirmCancelBtn) {
         console.error("Confirmation modal elements not found. Cannot show modal.");
@@ -2029,9 +2031,9 @@ function showConfirmationModal(message, onConfirm, onCancel = () => {}) {
 }
 
 /**
- * Enables Google Drive buttons if both GAPI and GIS are initialized.
- * Also updates the UI based on current authorization status and local storage.
- */
+* Enables Google Drive buttons if both GAPI and GIS are initialized.
+* Also updates the UI based on current authorization status and local storage.
+*/
 function maybeEnableGoogleDriveButtons() {
     if (window.gapiInited && window.gisInited) {
         authorizeGoogleDriveButton.disabled = false;
@@ -2059,8 +2061,8 @@ function maybeEnableGoogleDriveButtons() {
 }
 
 /**
- * Handles Google Drive authorization click.
- */
+* Handles Google Drive authorization click.
+*/
 function handleGoogleDriveAuthClick() {
     window.tokenClient.callback = async (resp) => {
         if (resp.error) {
@@ -2081,8 +2083,8 @@ function handleGoogleDriveAuthClick() {
 }
 
 /**
- * Handles Google Drive sign-out.
- */
+* Handles Google Drive sign-out.
+*/
 function handleGoogleDriveSignoutClick() {
     const token = gapi.client.getToken();
     if (token) {
@@ -2096,8 +2098,8 @@ function handleGoogleDriveSignoutClick() {
 }
 
 /**
- * Saves character data to Google Drive.
- */
+* Saves character data to Google Drive.
+*/
 async function saveCharacterToGoogleDrive() {
     if (!gapi.client.getToken()) {
         showStatusMessage("Please authorize Google Drive to save.", true);
@@ -2190,8 +2192,8 @@ async function saveCharacterToGoogleDrive() {
 }
 
 /**
- * Loads character data from Google Drive.
- */
+* Loads character data from Google Drive.
+*/
 async function loadCharacterFromGoogleDrive() {
     if (!gapi.client.getToken()) {
         showStatusMessage("Please authorize Google Drive to load.", true);
@@ -2254,9 +2256,9 @@ async function proceedToLoadGoogleDriveFile() {
 }
 
 /**
- * Fetches and loads content of a specific Google Drive file.
- * @param {string} fileId The ID of the Google Drive file to load.
- */
+* Fetches and loads content of a specific Google Drive file.
+* @param {string} fileId The ID of the Google Drive file to load.
+*/
 async function loadGoogleDriveFileContent(fileId) {
     showStatusMessage("Loading character data from Google Drive...");
     try {
@@ -2286,9 +2288,9 @@ async function loadGoogleDriveFileContent(fileId) {
 }
 
 /**
- * Toggles the visibility of a section and updates the button icon.
- * @param {string} sectionId The ID of the section content div.
- */
+* Toggles the visibility of a section and updates the button icon.
+* @param {string} sectionId The ID of the section content div.
+*/
 function toggleSection(sectionId) {
     const sectionContent = document.getElementById(sectionId);
     const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"] svg`);
@@ -2310,8 +2312,8 @@ function toggleSection(sectionId) {
 }
 
 /**
- * Updates the visibility of all sections based on the character's sectionVisibility data.
- */
+* Updates the visibility of all sections based on the character's sectionVisibility data.
+*/
 function updateSectionVisibility() {
     for (const sectionId in character.sectionVisibility) {
         const sectionContent = document.getElementById(sectionId);
@@ -2330,8 +2332,8 @@ function updateSectionVisibility() {
 }
 
 /**
- * Toggles the visibility and width of the left sidebar.
- */
+* Toggles the visibility and width of the left sidebar.
+*/
 function toggleSidebar() {
     const sidebar = document.getElementById('left-sidebar');
     const mainContent = document.getElementById('main-content');
@@ -2387,7 +2389,7 @@ function attachEventListeners() {
     });
 
     // Attach listeners for stat table inputs using delegation
-    document.getElementById('player-stats-container').addEventListener('input', function(event) {
+    document.getElementById('player-stats-container').addEventListener('input', function (event) {
         if (event.target.classList.contains('stat-input')) {
             handleChange(event);
         }
@@ -2398,7 +2400,7 @@ function attachEventListeners() {
     document.getElementById('class-display').addEventListener('click', toggleClassDropdown);
 
     // Attach event listeners to the dynamically created class checkboxes (delegation)
-    document.getElementById('class-dropdown-options').addEventListener('change', function(event) {
+    document.getElementById('class-dropdown-options').addEventListener('change', function (event) {
         if (event.target.type === 'checkbox' && event.target.name === 'class-option') {
             handleClassCheckboxChange(event);
         }
@@ -2408,14 +2410,14 @@ function attachEventListeners() {
     document.getElementById('specialization-display').addEventListener('click', toggleSpecializationDropdown);
 
     // Attach event listeners to the dynamically created specialization checkboxes (delegation)
-    document.getElementById('specialization-dropdown-options').addEventListener('change', function(event) {
+    document.getElementById('specialization-dropdown-options').addEventListener('change', function (event) {
         if (event.target.type === 'checkbox' && event.target.name === 'specialization-option') {
             handleSpecializationCheckboxChange(event);
         }
     });
 
     // Close dropdowns if clicked outside
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const classDisplayInput = document.getElementById('class-display');
         const classDropdownOptions = document.getElementById('class-dropdown-options');
         const specializationDisplayInput = document.getElementById('specialization-display');
@@ -2493,17 +2495,17 @@ function attachEventListeners() {
     document.getElementById('weapon-inventory-table').addEventListener('change', handleChange); // For checkbox 'use'
     document.getElementById('armor-inventory-table').addEventListener('change', handleChange); // For checkbox 'equipped'
 
-    document.getElementById('weapon-inventory-table').addEventListener('click', function(event) {
+    document.getElementById('weapon-inventory-table').addEventListener('click', function (event) {
         if (event.target.classList.contains('remove-item-btn')) {
             removeItem(event);
         }
     });
-    document.getElementById('armor-inventory-table').addEventListener('click', function(event) {
+    document.getElementById('armor-inventory-table').addEventListener('click', function (event) {
         if (event.target.classList.contains('remove-item-btn')) {
             removeItem(event);
         }
     });
-    document.getElementById('general-inventory-table').addEventListener('click', function(event) {
+    document.getElementById('general-inventory-table').addEventListener('click', function (event) {
         if (event.target.classList.contains('remove-item-btn')) {
             removeItem(event);
         }
@@ -2594,7 +2596,7 @@ window.addEventListener("gapi-ready", () => {
 });
 
 // Initialize the application when the DOM is fully loaded
-window.onload = async function() {
+window.onload = async function () {
     await ExternalDataManager.init();
     initPage();
-};
+}
