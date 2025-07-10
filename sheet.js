@@ -1066,6 +1066,11 @@ function renderMutantChoiceUI() {
                 if (typeSelect) {
                     typeSelect.addEventListener('change', (e) => {
                         const newType = e.target.value;
+                        const selectedOptionData = options.find(opt => opt.type === newType); // Get the full option data
+                        const newCalc = selectedOptionData ? selectedOptionData.calc : null;
+                        const newOptionValue = selectedOptionData ? selectedOptionData.value : null;
+                        const newLabel = selectedOptionData ? selectedOptionData.label : '';
+
                         if (statSelectionDiv) {
                             if (newType === 'stat_multiplier_set_50' || newType === 'stat_multiplier_reduce_50') {
                                 statSelectionDiv.classList.remove('hidden');
@@ -1087,7 +1092,7 @@ function renderMutantChoiceUI() {
                                 if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
                             }
                         }
-                        handleMutantChoice(category, passiveName, slotId, newType, statSelect ? statSelect.value : null, options.find(opt => opt.type === newType)?.calc, options.find(opt => opt.type === newType)?.value, options.find(opt => opt.type === newType)?.label);
+                        handleMutantChoice(category, passiveName, slotId, newType, statSelect ? statSelect.value : null, newCalc, newOptionValue, newLabel);
                     });
                 }
 
@@ -1095,7 +1100,13 @@ function renderMutantChoiceUI() {
                 // Event listener for stat change
                 if (statSelect) {
                     statSelect.addEventListener('change', (e) => {
-                        handleMutantChoice(category, passiveName, slotId, typeSelect.value, e.target.value, options.find(opt => opt.type === newType)?.calc, options.find(opt => opt.type === typeSelect.value)?.value, options.find(opt => opt.type === typeSelect.value)?.label);
+                        const currentType = typeSelect.value;
+                        const selectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
+                        const currentCalc = selectedOptionData ? selectedOptionData.calc : null;
+                        const currentOptionValue = selectedOptionData ? selectedOptionData.value : null;
+                        const currentLabel = selectedOptionData ? selectedOptionData.label : '';
+
+                        handleMutantChoice(category, passiveName, slotId, currentType, e.target.value, currentCalc, currentOptionValue, currentLabel);
                     });
                 }
             }
@@ -1115,6 +1126,7 @@ function renderMutantChoiceUI() {
  * @param {string} slotId The unique ID of the choice slot.
  * @param {string} optionType The type from options (e.g., 'stat_multiplier_set_50', 'double_base_health').
  * @param {string} selectedStatName The name of the stat chosen by the player (if applicable).
+ * @param {string} optionValue
  * @param {number} optionValue The numerical value associated with the option (e.g., 0.50, -0.50).
  * @param {string} label The display label of the choice.
  */
