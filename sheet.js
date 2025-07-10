@@ -1064,11 +1064,11 @@ function renderMutantChoiceUI() {
                         option.disabled = isAlreadyChosen;
                         statSelect.appendChild(option);
                     });
-                    statSelect.value = selectedStatName;
-                }
 
+                    statSelect.value = applicableStatsLength.length != 1 ? selectedStatName : selectedOptionData.applicableStats[0];
+                }
                 // Event listener for type change (to show/hide stat selection)
-                if (typeSelect) {
+                else if (typeSelect) {
                     typeSelect.addEventListener('change', (e) => {
                         const newType = e.target.value;
                         const newSelectedOptionData = options.find(opt => opt.type === newType);
@@ -1152,8 +1152,6 @@ function renderMutantChoiceUI() {
 function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
     console.log("--- handleMutantChoice called ---");
     console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, calc, optionValue, label });
-    const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
-    const abilityData = mutantPassives.abilities[passiveName];
 
     character.StatChoices[category] = character.StatChoices[category] || {};
     character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
@@ -1199,20 +1197,11 @@ function handleMutantChoice(category, passiveName, slotId, optionType, selectedS
         // Determine the stat name to affect based on optionType
         let statToAffect = null;
 
-        if (!selectedStatName) {
-            const selectedOptionData = abilityData.options.find(opt => opt.type == optionType);
-            const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
-
-            if (applicableStatsLength == 1)
-                statToAffect = selectedOptionData.applicableStats[0];
-
-            console.log(statToAffect);
-        }
-        else if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
+        if (optionType === 'stat_multiplier_set_50' || optionType === 'stat_multiplier_reduce_50' || optionType === 'double_base_health') {
             statToAffect = selectedStatName;
         } else if (optionType === 'natural_regen_active') {
             statToAffect = "naturalHealthRegenActive"; // Placeholder for flags
-        } else if (optionType === 'regen_doubled') {
+      //  } else if (optionType === 'regen_doubled') {
             statToAffect = "healthRegenDoubled"; // Placeholder for flags
         }
         // For skill_choice, no stat is directly affected in this way.
