@@ -1073,8 +1073,6 @@ function renderMutantChoiceUI() {
                         const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
                         const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
 
-                        console.log("div " + statSelectionDiv);
-
                         if (statSelectionDiv) {
                             if (newNeedsStatSelection) {
                                 if (newApplicableStatsLength > 1) {
@@ -1100,7 +1098,7 @@ function renderMutantChoiceUI() {
                             }
                         }
                         else if (newApplicableStatsLength == 1) {
-                            statSelect.value = newSelectedOptionData.applicableStats[0];
+                            newSelectedOptionData.value = newSelectedOptionData.applicableStats[0];
                             console.log(statSelect.value);
                         }
 
