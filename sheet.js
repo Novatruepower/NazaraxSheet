@@ -1019,7 +1019,8 @@ function renderMutantChoiceUI() {
                 choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
 
                 let statSelectionHtml = '';
-                if (options.some(opt => (opt.type === 'stat_multiplier_set_50' || opt.type === 'stat_multiplier_reduce_50') && opt.applicableStats)) {
+
+                if (options.some(opt => (opt.type === 'stat_multiplier_set_50' || opt.type === 'stat_multiplier_reduce_50' || opt.type === 'double_base_health') && opt.applicableStats)) {
                     statSelectionHtml = `
                         <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${selectedOptionType === 'stat_multiplier_set_50' || selectedOptionType === 'stat_multiplier_reduce_50' ? '' : 'hidden'}">
                             <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
