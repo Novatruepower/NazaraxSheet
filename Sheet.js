@@ -122,8 +122,10 @@ const defaultCharacterData = function () {
         },
 
         // Refactored properties for stat choices and affected stats
-        StatChoices: {}, // Stores chosen passive details: { category: { passiveName: { slotId: { type, value?, statName?, level?, label? } } } }
-        StatsAffected: {}, // Stores which stats are affected by which choices: { category: { passiveName: { statName: Set<string> } } }
+        // StatChoices: { category: { uniqueIdentifier: { slotId: { type, value?, statName?, level?, label?, unique? } } } }
+        StatChoices: {},
+        // StatsAffected: { category: { uniqueIdentifier: { statName: Set<string> } } }
+        StatsAffected: {},
 
         naturalHealthRegenActive: false,
         naturalManaRegenActive: false,
@@ -185,10 +187,10 @@ function convertSetsToArraysForSave(chars) {
     charactersCopy.forEach(char => {
         if (char.StatsAffected) {
             for (const category in char.StatsAffected) {
-                for (const passiveName in char.StatsAffected[category]) {
-                    for (const statName in char.StatsAffected[category][passiveName]) {
-                        if (char.StatsAffected[category][passiveName][statName] instanceof Set) {
-                            char.StatsAffected[category][passiveName][statName] = Array.from(char.StatsAffected[category][passiveName][statName]);
+                for (const uniqueIdentifier in char.StatsAffected[category]) { // Changed from passiveName
+                    for (const statName in char.StatsAffected[category][uniqueIdentifier]) { // Changed from passiveName
+                        if (char.StatsAffected[category][uniqueIdentifier][statName] instanceof Set) { // Changed from passiveName
+                            char.StatsAffected[category][uniqueIdentifier][statName] = Array.from(char.StatsAffected[category][uniqueIdentifier][statName]); // Changed from passiveName
                         }
                     }
                 }
@@ -207,10 +209,10 @@ function convertArraysToSetsAfterLoad(chars) {
     chars.forEach(char => {
         if (char.StatsAffected) {
             for (const category in char.StatsAffected) {
-                for (const passiveName in char.StatsAffected[category]) {
-                    for (const statName in char.StatsAffected[category][passiveName]) {
-                        if (Array.isArray(char.StatsAffected[category][passiveName][statName])) {
-                            char.StatsAffected[category][passiveName][statName] = new Set(char.StatsAffected[category][passiveName][statName]);
+                for (const uniqueIdentifier in char.StatsAffected[category]) { // Changed from passiveName
+                    for (const statName in char.StatsAffected[category][uniqueIdentifier]) { // Changed from passiveName
+                        if (Array.isArray(char.StatsAffected[category][uniqueIdentifier][statName])) { // Changed from passiveName
+                            char.StatsAffected[category][uniqueIdentifier][statName] = new Set(char.StatsAffected[category][uniqueIdentifier][statName]); // Changed from passiveName
                         }
                     }
                 }
@@ -763,21 +765,21 @@ function applyChoiceRacialChange(char, statName, value, calc) {
 }
 
 /**
- * Reverts the effects of all choices for a given category and passive name.
+ * Reverts the effects of all choices for a given category and unique identifier.
  * @param {object} char The character object.
  * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
- * @param {string} passiveName The name of the passive (e.g., 'Demi-human Stat Adjustments', 'Mutation').
+ * @param {string} uniqueIdentifier The 'unique' value of the passive (e.g., 'Stat Adjustments', 'Mutation_Degeneration').
  */
-function handleRevertChoices(char, category, passiveName) {
-    if (char.StatChoices[category] && char.StatChoices[category][passiveName]) {
-        for (const slotId in char.StatChoices[category][passiveName]) {
-            const choice = char.StatChoices[category][passiveName][slotId];
+function handleRevertChoices(char, category, uniqueIdentifier) {
+    if (char.StatChoices[category] && char.StatChoices[category][uniqueIdentifier]) {
+        for (const slotId in char.StatChoices[category][uniqueIdentifier]) {
+            const choice = char.StatChoices[category][uniqueIdentifier][slotId];
             if (choice.statName) {
                 revertChoiceRacialChange(char, choice.statName, choice);
-                if (char.StatsAffected[category] && char.StatsAffected[category][passiveName] && char.StatsAffected[category][passiveName][choice.statName]) {
-                    char.StatsAffected[category][passiveName][choice.statName].delete(slotId);
-                    if (char.StatsAffected[category][passiveName][choice.statName].size === 0) {
-                        delete char.StatsAffected[category][passiveName][choice.statName];
+                if (char.StatsAffected[category] && char.StatsAffected[category][uniqueIdentifier] && char.StatsAffected[category][uniqueIdentifier][choice.statName]) {
+                    char.StatsAffected[category][uniqueIdentifier][choice.statName].delete(slotId);
+                    if (char.StatsAffected[category][uniqueIdentifier][choice.statName].size === 0) {
+                        delete char.StatsAffected[category][uniqueIdentifier][choice.statName];
                     }
                 }
             }
@@ -790,10 +792,10 @@ function handleRevertChoices(char, category, passiveName) {
                 char.manaRegenDoubled = false;
             }
         }
-        delete char.StatChoices[category][passiveName];
+        delete char.StatChoices[category][uniqueIdentifier];
     }
     if (char.StatsAffected[category]) {
-        delete char.StatsAffected[category][passiveName];
+        delete char.StatsAffected[category][uniqueIdentifier];
     }
 }
 
@@ -801,30 +803,30 @@ function handleRevertChoices(char, category, passiveName) {
  * Handles the application or removal of a racial passive choice, including stat effects and flags.
  * This function centralizes the logic for both Demi-human and Mutant choices.
  * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
- * @param {string} passiveName The name of the passive (e.g., 'Stat Adjustments', 'Mutation', 'Degeneration').
+ * @param {string} uniqueIdentifier The 'unique' value of the passive (e.g., 'Stat Adjustments', 'Mutation_Degeneration').
  * @param {string} slotId The unique ID of the choice slot.
  * @param {object} newChoiceData The data for the new choice to be applied (or null/undefined to clear).
- * Expected properties: { type, calc?, value?, statName?, label?, level? }
+ * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
-function processRacialChoiceChange(category, passiveName, slotId, newChoiceData) {
+function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoiceData) {
     console.log("--- processRacialChoiceChange called ---");
-    console.log("Input parameters:", { category, passiveName, slotId, newChoiceData });
+    console.log("Input parameters:", { category, uniqueIdentifier, slotId, newChoiceData });
 
     character.StatChoices[category] = character.StatChoices[category] || {};
-    character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
+    character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
     character.StatsAffected[category] = character.StatsAffected[category] || {};
-    character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
+    character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
 
-    const previousChoice = character.StatChoices[category][passiveName][slotId];
+    const previousChoice = character.StatChoices[category][uniqueIdentifier][slotId];
 
     // 1. Revert previous effect if any
     if (previousChoice) {
         if (previousChoice.statName) {
             revertChoiceRacialChange(character, previousChoice.statName, previousChoice);
-            if (character.StatsAffected[category][passiveName][previousChoice.statName]) {
-                character.StatsAffected[category][passiveName][previousChoice.statName].delete(slotId);
-                if (character.StatsAffected[category][passiveName][previousChoice.statName].size === 0) {
-                    delete character.StatsAffected[category][passiveName][previousChoice.statName];
+            if (character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][previousChoice.statName]) {
+                character.StatsAffected[category][uniqueIdentifier][previousChoice.statName].delete(slotId);
+                if (character.StatsAffected[category][uniqueIdentifier][previousChoice.statName].size === 0) {
+                    delete character.StatsAffected[category][uniqueIdentifier][previousChoice.statName];
                 }
             }
         }
@@ -836,28 +838,46 @@ function processRacialChoiceChange(category, passiveName, slotId, newChoiceData)
             character.healthRegenDoubled = false;
             character.manaRegenDoubled = false;
         }
-        delete character.StatChoices[category][passiveName][slotId];
+        delete character.StatChoices[category][uniqueIdentifier][slotId];
         console.log(`  Removed previous choice for slot ${slotId}.`);
     }
 
     // 2. Apply new choice if a valid newChoiceData is provided
     if (newChoiceData && newChoiceData.type) {
         // Check for conflicts only if a stat is being affected and it's not the same slot re-selecting itself
-        if (newChoiceData.statName && character.StatsAffected[category][passiveName][newChoiceData.statName] && character.StatsAffected[category][passiveName][newChoiceData.statName].size > 0 && !character.StatsAffected[category][passiveName][newChoiceData.statName].has(slotId)) {
-            showStatusMessage(`'${newChoiceData.statName}' has already been affected by another choice in this category. Please select a different stat.`, true);
-            // Revert the dropdowns to previous state (if possible)
-            const typeSelectElement = document.getElementById(slotId + '-type');
-            const statSelectElement = document.getElementById(slotId + '-stat');
-            if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
-            if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
-            return; // Stop processing this choice
+        // The conflict check should be based on the 'unique' group, not just the stat name within the category.
+        // If a choice has a 'unique' property, it means only one of those choices can affect a given stat.
+        if (newChoiceData.statName && newChoiceData.unique) {
+            const uniqueGroup = newChoiceData.unique;
+            // Check all slots within this unique group to see if the stat is already affected by a different slot
+            let conflict = false;
+            if (character.StatChoices[category] && character.StatChoices[category][uniqueGroup]) {
+                for (const existingSlotId in character.StatChoices[category][uniqueGroup]) {
+                    const existingChoice = character.StatChoices[category][uniqueGroup][existingSlotId];
+                    if (existingChoice.statName === newChoiceData.statName && existingSlotId !== slotId) {
+                        conflict = true;
+                        break;
+                    }
+                }
+            }
+
+            if (conflict) {
+                showStatusMessage(`'${newChoiceData.statName}' has already been affected by another choice in the '${uniqueGroup}' group. Please select a different stat.`, true);
+                // Revert the dropdowns to previous state (if possible)
+                const typeSelectElement = document.getElementById(slotId + '-type');
+                const statSelectElement = document.getElementById(slotId + '-stat');
+                if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
+                if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
+                return; // Stop processing this choice
+            }
         }
+
 
         // Apply stat-modifying changes
         if (newChoiceData.statName) {
             applyChoiceRacialChange(character, newChoiceData.statName, newChoiceData.value, newChoiceData.calc);
-            character.StatsAffected[category][passiveName][newChoiceData.statName] = character.StatsAffected[category][passiveName][newChoiceData.statName] || new Set();
-            character.StatsAffected[category][passiveName][newChoiceData.statName].add(slotId);
+            character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName] = character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName] || new Set();
+            character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName].add(slotId);
             console.log(`  Added '${newChoiceData.statName}' to StatsAffected for slot ${slotId}.`);
         } else {
             // Handle non-stat affecting choices (e.g., skill_choice, natural_regen_active, regen_doubled)
@@ -873,7 +893,7 @@ function processRacialChoiceChange(category, passiveName, slotId, newChoiceData)
                 showStatusMessage(`'${newChoiceData.label}' (Regeneration Doubled) applied.`, false);
             }
         }
-        character.StatChoices[category][passiveName][slotId] = newChoiceData;
+        character.StatChoices[category][uniqueIdentifier][slotId] = newChoiceData;
     }
 
     recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
@@ -886,12 +906,10 @@ function processRacialChoiceChange(category, passiveName, slotId, newChoiceData)
 
 // Function to handle race change, updating racial characteristics
 function handleChangeRace(oldRace) {
-    console.log(character.BaseHealth);
-
     // Revert all previous manual passive choices for the old race
     if (character.StatChoices[oldRace]) {
-        for (const passiveName in character.StatChoices[oldRace]) {
-            handleRevertChoices(character, oldRace, passiveName);
+        for (const uniqueIdentifier in character.StatChoices[oldRace]) { // Changed from passiveName
+            handleRevertChoices(character, oldRace, uniqueIdentifier); // Changed from passiveName
         }
         delete character.StatChoices[oldRace];
     }
@@ -912,8 +930,6 @@ function handleChangeRace(oldRace) {
         updateRacialChange(oldRace, statName);
     });
 
-    console.log(character.BaseHealth);
-
     // Update maxHealth, maxMana and maxRacialPower when race changes
     recalculateSmallUpdateCharacter(character, true);
 
@@ -932,7 +948,7 @@ function attachClearChoiceListeners(query) {
         button.onclick = (event) => {
             const choiceId = event.target.dataset.choiceId;
             const category = event.target.dataset.category;
-            const passiveName = event.target.dataset.passiveName;
+            const uniqueIdentifier = event.target.dataset.uniqueIdentifier; // Changed from passiveName
 
             const selectElement = document.getElementById(choiceId);
             if (selectElement) {
@@ -941,7 +957,7 @@ function attachClearChoiceListeners(query) {
                 selectElement.dispatchEvent(new Event('change'));
             } else {
                 // For cases where there's no select element (e.g., just a button for a fixed choice)
-                processRacialChoiceChange(category, passiveName, choiceId.replace('-type', ''), null);
+                processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
             }
         };
     });
@@ -957,13 +973,15 @@ function renderDemiHumanStatChoiceUI() {
 
     const demiHumanPassives = ExternalDataManager.getRaceManualPassives('Demi-humans');
     const category = 'Demi-humans';
-    const passiveName = 'Stat Adjustments'; // Generic passive name for Demi-humans
 
-    if (character.race === category && demiHumanPassives && demiHumanPassives.choices) {
+    if (character.race === category && demiHumanPassives && demiHumanPassives['Stat Adjustments'] && demiHumanPassives['Stat Adjustments'].choices) {
+        const statAdjustmentsData = demiHumanPassives['Stat Adjustments'];
+        const uniqueIdentifier = statAdjustmentsData.choices[0].unique; // Assuming all demi-human choices have the same 'unique' value
+
         demiHumanChoicesContainer.classList.remove('hidden');
         demiHumanChoicesContainer.innerHTML = `
            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Demi-human Stat Adjustments</h4>
-           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${demiHumanPassives.description}</p>
+           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${statAdjustmentsData.description}</p>
            <div id="demi-human-modifiers-list" class="space-y-3">
                <!-- Modifiers will be dynamically added here -->
            </div>
@@ -973,15 +991,15 @@ function renderDemiHumanStatChoiceUI() {
 
         // Ensure the nested structure exists for Demi-humans
         character.StatChoices[category] = character.StatChoices[category] || {};
-        character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
+        character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
         character.StatsAffected[category] = character.StatsAffected[category] || {};
-        character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
+        character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
 
 
-        demiHumanPassives.choices.forEach((modifier, modIndex) => {
+        statAdjustmentsData.choices.forEach((modifier, modIndex) => {
             for (let i = 0; i < modifier.count; i++) {
                 const slotId = `demihuman-${modifier.type}-${modIndex}-${i}`; // Unique ID for each choice slot
-                const currentChoice = character.StatChoices[category][passiveName][slotId];
+                const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
                 const selectedStatName = currentChoice ? currentChoice.statName : '';
 
                 const choiceDiv = document.createElement('div');
@@ -991,7 +1009,7 @@ function renderDemiHumanStatChoiceUI() {
                    <select id="${slotId}" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                        <option value="">-- Select a Stat --</option>
                    </select>
-                   ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-passive-name="${passiveName}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
+                   ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-unique-identifier="${uniqueIdentifier}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
                `;
                 modifiersList.appendChild(choiceDiv);
 
@@ -1000,8 +1018,8 @@ function renderDemiHumanStatChoiceUI() {
                     const option = document.createElement('option');
                     option.value = statName;
                     option.textContent = statName;
-                    // Disable if already chosen by another slot, or if this is not the currently selected stat for this slot
-                    const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
+                    // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
+                    const isAlreadyChosen = character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][statName] && character.StatsAffected[category][uniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][uniqueIdentifier][statName].has(slotId);
                     option.disabled = isAlreadyChosen;
                     selectElement.appendChild(option);
                 });
@@ -1015,9 +1033,10 @@ function renderDemiHumanStatChoiceUI() {
                         calc: modifier.calc,
                         value: modifier.value,
                         statName: newSelectedStatName,
-                        label: modifier.label
+                        label: modifier.label,
+                        unique: modifier.unique // Pass the unique identifier
                     } : null;
-                    processRacialChoiceChange(category, passiveName, slotId, newChoiceData);
+                    processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoiceData);
                 });
             }
         });
@@ -1038,11 +1057,10 @@ function renderMutantOptionUI() {
     const mutantPassives = ExternalDataManager.getRaceManualPassives('Mutant');
     const category = 'Mutant';
 
-    if (character.race === category && mutantPassives && mutantPassives.abilities) {
+    if (character.race === category && mutantPassives) {
         MutantOptionsContainer.classList.remove('hidden');
         MutantOptionsContainer.innerHTML = `
            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Mutant Abilities: Mutation & Degeneration</h4>
-           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">${mutantPassives.description}</p>
            <div id="mutant-abilities-list" class="space-y-4">
                <!-- Mutation and Degeneration choices will be dynamically added here -->
            </div>
@@ -1057,7 +1075,7 @@ function renderMutantOptionUI() {
 
         // Helper to get available points for a type at current level
         const getAvailablePoints = (abilityType) => {
-            const levels = mutantPassives.abilities[abilityType].levels;
+            const levels = mutantPassives[abilityType].levels; // Access directly, not through .abilities
             const levelKeys = Object.keys(levels).map(Number).sort((a, b) => a - b);
             let points = 0;
             for (const levelThreshold of levelKeys) {
@@ -1071,135 +1089,163 @@ function renderMutantOptionUI() {
         };
 
         // Iterate over each ability (Mutation, Degeneration)
-        for (const abilityKey in mutantPassives.abilities) {
-            const abilityData = mutantPassives.abilities[abilityKey];
-            const maxChoices = getAvailablePoints(abilityKey);
-            const options = abilityData.options;
-            const passiveName = abilityKey; // e.g., "Mutation", "Degeneration"
+        for (const abilityKey in mutantPassives) { // Iterate directly over mutantPassives
+            if (mutantPassives.hasOwnProperty(abilityKey) && mutantPassives[abilityKey].options) { // Check if it's an ability with options
+                const abilityData = mutantPassives[abilityKey];
+                const maxChoices = getAvailablePoints(abilityKey);
+                const options = abilityData.options;
 
-            // Ensure nested structure for this passive name
-            character.StatChoices[category][passiveName] = character.StatChoices[category][passiveName] || {};
-            character.StatsAffected[category][passiveName] = character.StatsAffected[category][passiveName] || {};
+                // Add description for each ability type
+                const abilityDescription = document.createElement('p');
+                abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
+                abilityDescription.textContent = abilityData.description;
+                abilitiesList.appendChild(abilityDescription);
 
-            for (let i = 0; i < maxChoices; i++) {
-                const slotId = `mutant-${abilityKey.toLowerCase()}-${i}`;
-                const currentChoice = character.StatChoices[category][passiveName][slotId];
-                const selectedOptionType = currentChoice ? currentChoice.type : '';
-                const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
-                // Find the full data for the currently selected option type
-                const selectedOptionData = options.find(opt => opt.type === selectedOptionType);
-                const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
-                const needsStatSelection = applicableStatsLength > 0;
+                for (let i = 0; i < maxChoices; i++) {
+                    const slotId = `mutant-${abilityKey.toLowerCase()}-${i}`;
+                    // Find the current choice based on the unique identifier from the options
+                    let currentChoice = null;
+                    let currentUniqueIdentifier = null;
 
-                const choiceDiv = document.createElement('div');
-                choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
-
-                let statSelectionHtml = '';
-
-                if (needsStatSelection) {
-                    const hide = applicableStatsLength == 1 ? 'hidden' : '';
-                    statSelectionHtml = `
-                       <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
-                           <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
-                           <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                               <option value="">-- Select a Stat --</option>
-                           </select>
-                       </div>
-                   `;
-                }
-
-                choiceDiv.innerHTML = `
-                   <div class="flex items-center space-x-2">
-                       <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${i + 1}:</label>
-                       <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                           <option value="">-- Select ${abilityKey} Type --</option>
-                           ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''}>${opt.label}</option>`).join('')}
-                       </select>
-                       <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-passive-name="${passiveName}" class="clear-mutant-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
-                   </div>
-                   ${statSelectionHtml}
-               `;
-                abilitiesList.appendChild(choiceDiv);
-
-                const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
-                const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
-                const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
-
-                // Populate stat dropdown if needed on initial render
-                if (statSelect && needsStatSelection) {
-                    selectedOptionData.applicableStats.forEach(statName => {
-                        const option = document.createElement('option');
-                        option.value = statName;
-                        option.textContent = statName;
-                        const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
-                        option.disabled = isAlreadyChosen;
-                        statSelect.appendChild(option);
-                    });
-                    statSelect.value = selectedStatName;
-                }
-
-                // Event listener for type change (to show/hide stat selection)
-                if (typeSelect) {
-                    typeSelect.addEventListener('change', (e) => {
-                        const newType = e.target.value;
-                        const newSelectedOptionData = options.find(opt => opt.type === newType);
-                        const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
-                        const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
-
-                        if (statSelectionDiv) {
-                            if (newNeedsStatSelection) {
-                                if (newApplicableStatsLength > 1) {
-                                    statSelectionDiv.classList.remove('hidden');
-                                }
-
-                                // Repopulate stat dropdown for this specific select
-                                statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
-                                newSelectedOptionData.applicableStats.forEach(statName => {
-                                    const option = document.createElement('option');
-                                    option.value = statName;
-                                    option.textContent = statName;
-                                    const isAlreadyChosen = character.StatsAffected[category][passiveName][statName] && character.StatsAffected[category][passiveName][statName].size > 0 && !character.StatsAffected[category][passiveName][statName].has(slotId);
-                                    option.disabled = isAlreadyChosen;
-                                    statSelect.appendChild(option);
-                                });
-
-                                // Keep current selection if valid, otherwise clear
-                                statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
-                            } else {
-                                statSelectionDiv.classList.add('hidden');
-                                if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
-                            }
+                    // Iterate through all possible unique identifiers to find if this slot has a choice
+                    for (const uId in character.StatChoices[category]) {
+                        if (character.StatChoices[category][uId] && character.StatChoices[category][uId][slotId]) {
+                            currentChoice = character.StatChoices[category][uId][slotId];
+                            currentUniqueIdentifier = uId;
+                            break;
                         }
+                    }
 
-                        const statToAffect = newApplicableStatsLength == 1 ? newSelectedOptionData.applicableStats[0] : (statSelect ? statSelect.value : null);
-                        const newChoiceData = newType ? {
-                            type: newType,
-                            level: character.level,
-                            calc: newSelectedOptionData ? newSelectedOptionData.calc : null,
-                            value: newSelectedOptionData ? newSelectedOptionData.value : null,
-                            label: newSelectedOptionData ? newSelectedOptionData.label : '',
-                            statName: statToAffect
-                        } : null;
-                        processRacialChoiceChange(category, passiveName, slotId, newChoiceData);
-                    });
-                }
+                    const selectedOptionType = currentChoice ? currentChoice.type : '';
+                    const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
+                    const selectedOptionData = options.find(opt => opt.type === selectedOptionType);
+                    const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
+                    const needsStatSelection = applicableStatsLength > 0;
+
+                    const choiceDiv = document.createElement('div');
+                    choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+
+                    let statSelectionHtml = '';
+
+                    if (needsStatSelection) {
+                        const hide = applicableStatsLength == 1 ? 'hidden' : '';
+                        statSelectionHtml = `
+                           <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
+                               <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                               <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                                   <option value="">-- Select a Stat --</option>
+                               </select>
+                           </div>
+                       `;
+                    }
+
+                    choiceDiv.innerHTML = `
+                       <div class="flex items-center space-x-2">
+                           <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${i + 1}:</label>
+                           <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                               <option value="">-- Select ${abilityKey} Type --</option>
+                               ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                           </select>
+                           <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-mutant-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+                       </div>
+                       ${statSelectionHtml}
+                   `;
+                    abilitiesList.appendChild(choiceDiv);
+
+                    const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
+                    const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
+                    const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
+
+                    // Populate stat dropdown if needed on initial render
+                    if (statSelect && needsStatSelection) {
+                        selectedOptionData.applicableStats.forEach(statName => {
+                            const option = document.createElement('option');
+                            option.value = statName;
+                            option.textContent = statName;
+                            // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
+                            const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
+                            option.disabled = isAlreadyChosen;
+                            statSelect.appendChild(option);
+                        });
+                        statSelect.value = selectedStatName;
+                    }
+
+                    // Event listener for type change (to show/hide stat selection)
+                    if (typeSelect) {
+                        typeSelect.addEventListener('change', (e) => {
+                            const newType = e.target.value;
+                            const newSelectedOptionData = options.find(opt => opt.type === newType);
+                            const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
+                            const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
+                            const newUniqueIdentifier = newSelectedOptionData ? newSelectedOptionData.unique : null;
+
+                            if (statSelectionDiv) {
+                                if (newNeedsStatSelection) {
+                                    if (newApplicableStatsLength > 1) {
+                                        statSelectionDiv.classList.remove('hidden');
+                                    } else {
+                                        statSelectionDiv.classList.add('hidden'); // Hide if only one applicable stat
+                                    }
+
+                                    // Repopulate stat dropdown for this specific select
+                                    statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
+                                    newSelectedOptionData.applicableStats.forEach(statName => {
+                                        const option = document.createElement('option');
+                                        option.value = statName;
+                                        option.textContent = statName;
+                                        const isAlreadyChosen = character.StatsAffected[category][newUniqueIdentifier] && character.StatsAffected[category][newUniqueIdentifier][statName] && character.StatsAffected[category][newUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][newUniqueIdentifier][statName].has(slotId);
+                                        option.disabled = isAlreadyChosen;
+                                        statSelect.appendChild(option);
+                                    });
+
+                                    // Keep current selection if valid, otherwise clear
+                                    statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                                } else {
+                                    statSelectionDiv.classList.add('hidden');
+                                    if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
+                                }
+                            }
+
+                            const statToAffect = newApplicableStatsLength === 1 ? newSelectedOptionData.applicableStats[0] : (statSelect ? statSelect.value : null);
+                            const newChoiceData = newType ? {
+                                type: newType,
+                                level: character.level,
+                                calc: newSelectedOptionData ? newSelectedOptionData.calc : null,
+                                value: newSelectedOptionData ? newSelectedOptionData.value : null,
+                                label: newSelectedOptionData ? newSelectedOptionData.label : '',
+                                statName: statToAffect,
+                                unique: newUniqueIdentifier // Pass the unique identifier
+                            } : null;
+                            processRacialChoiceChange(category, newUniqueIdentifier, slotId, newChoiceData);
+
+                            // Update the clear button's data-unique-identifier
+                            const clearButton = e.target.closest('.flex').querySelector('.clear-mutant-choice-btn');
+                            if (clearButton) {
+                                clearButton.dataset.uniqueIdentifier = newUniqueIdentifier || '';
+                            }
+                        });
+                    }
 
 
-                // Event listener for stat change
-                if (statSelect) {
-                    statSelect.addEventListener('change', (e) => {
-                        const currentType = typeSelect.value;
-                        const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
-                        const newChoiceData = currentType ? {
-                            type: currentType,
-                            level: character.level,
-                            calc: currentSelectedOptionData ? currentSelectedOptionData.calc : null,
-                            value: currentSelectedOptionData ? currentSelectedOptionData.value : null,
-                            label: currentSelectedOptionData ? currentSelectedOptionData.label : '',
-                            statName: e.target.value // The newly selected stat
-                        } : null;
-                        processRacialChoiceChange(category, passiveName, slotId, newChoiceData);
-                    });
+                    // Event listener for stat change
+                    if (statSelect) {
+                        statSelect.addEventListener('change', (e) => {
+                            const currentType = typeSelect.value;
+                            const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
+                            const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
+
+                            const newChoiceData = currentType ? {
+                                type: currentType,
+                                level: character.level,
+                                calc: currentSelectedOptionData ? currentSelectedOptionData.calc : null,
+                                value: currentSelectedOptionData ? currentSelectedOptionData.value : null,
+                                label: currentSelectedOptionData ? currentSelectedOptionData.label : '',
+                                statName: e.target.value, // The newly selected stat
+                                unique: currentUniqueIdentifierForStat // Pass the unique identifier
+                            } : null;
+                            processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, newChoiceData);
+                        });
+                    }
                 }
             }
         }
@@ -1224,12 +1270,11 @@ function renderGenericRacialPassives() {
 
     const raceManualPassives = ExternalDataManager.getRaceManualPassives(character.race);
 
-    if (character.race !== 'Demi-humans' && character.race !== 'Mutant' && raceManualPassives && raceManualPassives.choices && raceManualPassives.choices.length === 0) {
-        // This condition is for races explicitly defined in manual_passives_data.json but with no manual choices
-        genericPassivesContainer.classList.remove('hidden');
-        genericPassivesContainer.innerHTML = `<p class="text-sm text-gray-600 dark:text-gray-400">${raceManualPassives.description || 'This race has no specific manually assigned passives.'}</p>`;
-    } else if (!raceManualPassives) {
-        // This condition is for races not defined in manual_passives_data.json at all
+    // Check if raceManualPassives exists and has any keys (like "Stat Adjustments" or "Mutation")
+    const hasManualPassivesDefined = raceManualPassives && Object.keys(raceManualPassives).length > 0;
+
+    // If the race has no manual passives defined in the JSON, or if it's defined but has no actual choices/options
+    if (!hasManualPassivesDefined || (hasManualPassivesDefined && Object.values(raceManualPassives).every(p => !p.choices && !p.options))) {
         genericPassivesContainer.classList.remove('hidden');
         genericPassivesContainer.innerHTML = '<p class="text-sm text-gray-600 dark:text-gray-400">This race has no specific manually assigned passives.</p>';
     }
