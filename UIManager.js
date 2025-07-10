@@ -982,4 +982,4 @@ export function maybeEnableGoogleDriveButtons(gapiInited, gisInited, gapiClientT
     }
 }
 
-export { googleDriveModal, googleDriveFileList, googleDriveModalStatus, showConfirmationModal, authorizeGoogleDriveButton, signoutGoogleDriveButton, toggleClassDropdown, toggleSpecializationDropdown };
+export { googleDriveModal, googleDriveFileList, googleDriveModalStatus, showConfirmationModal, authorizeGoogleDriveButton, signoutGoogleDriveButton };
