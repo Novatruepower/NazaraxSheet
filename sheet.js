@@ -1022,13 +1022,14 @@ function renderMutantChoiceUI() {
 
                 const choiceDiv = document.createElement('div');
                 choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
-
+                
                 let statSelectionHtml = '';
                 if (needsStatSelection) {
+                    const hide = applicableStatsLength == 1 ? 'hidden' : '';
                     statSelectionHtml = `
-                        <div id="${slotId}-stat-selection" class="flex items-center space-x-2" ${applicableStatsLength == 1 ? 'hidden' : ''}>
-                            <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
-                            <select id="${slotId}-stat" class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <div id="${slotId}-stat-selection" ${hide} class="flex items-center space-x-2">
+                            <label for="${slotId}-stat" ${hide} class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                            <select id="${slotId}-stat" ${hide} class="mutant-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">-- Select a Stat --</option>
                             </select>
                         </div>
