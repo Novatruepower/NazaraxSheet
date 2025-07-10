@@ -1074,7 +1074,7 @@ function renderMutantChoiceUI() {
 
                         if (statSelectionDiv) {
                             if (newNeedsStatSelection) {
-                                if (applicableStatsLength > 1)
+                                if (newSelectedOptionData.applicableStats.length > 1)
                                     statSelectionDiv.classList.remove('hidden');
                                 // Repopulate stat dropdown for this specific select
                                 statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
