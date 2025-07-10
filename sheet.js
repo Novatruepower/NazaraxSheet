@@ -1067,7 +1067,9 @@ function renderMutantChoiceUI() {
 
                     if (applicableStatsLength == 1 && !currentChoice) {
                         statSelect.value = selectedOptionData.applicableStats[0];
+                        console.log(statSelect.value);
                         handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
+                        console.log(selectedOptionData.applicableStats[0]);
                     }
                     else 
                         statSelect.value = selectedStatName;
