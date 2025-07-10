@@ -1064,15 +1064,13 @@ function renderMutantChoiceUI() {
                         option.disabled = isAlreadyChosen;
                         statSelect.appendChild(option);
                     });
-
-                    if (applicableStatsLength == 1 && !currentChoice) {
-                        statSelect.value = selectedOptionData.applicableStats[0];
-                        console.log(statSelect.value);
-                        handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
-                        console.log(selectedOptionData.applicableStats[0]);
-                    }
-                    else 
-                        statSelect.value = selectedStatName;
+                    statSelect.value = selectedStatName;
+                }
+                else if (applicableStatsLength == 1 && !currentChoice) {
+                    statSelect.value = selectedOptionData.applicableStats[0];
+                    console.log(statSelect.value);
+                    handleMutantChoice(category, passiveName, slotId, selectedOptionType, statSelect.value, selectedOptionData.calc, selectedOptionData.value, selectedOptionData.label);
+                    console.log(selectedOptionData.applicableStats[0]);
                 }
 
                 // Event listener for type change (to show/hide stat selection)
