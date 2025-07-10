@@ -1132,7 +1132,7 @@ function renderMutantChoiceUI() {
  */
 function handleMutantChoice(category, passiveName, slotId, optionType, selectedStatName = null, calc = null, optionValue = null, label = '') {
     console.log("--- handleMutantChoice called ---");
-    console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, optionValue, label });
+    console.log("Input parameters:", { category, passiveName, slotId, optionType, selectedStatName, calc, optionValue, label });
 
     // Ensure the nested structures exist
     character.StatChoices[category] = character.StatChoices[category] || {};
