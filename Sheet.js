@@ -1095,6 +1095,78 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
     return newChoiceData;
 }
 
+function renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, option, abilitiesList, indexChoice, indexLevel) {
+    character.StatChoices[category] = character.StatChoices[category] || {};
+    const uniqueIdentifier = option.unique || abilityKey;
+    character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
+    character.StatsAffected[category] = character.StatsAffected[category] || {};
+    character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
+    const maxCount = option.count || 1;
+    const needsStatSelection = option.applicableStats && option.applicableStats.length > 0;
+    const options = (abilityData.options && option.setsOption)
+    ? abilityData.options.filter(opt => opt.setsOption && opt.setsOption.some(setOpt => option.setsOption.includes(setOpt)))
+    : abilityData.options || {option};
+    const isLevelBased = abilityData.levels && abilityData.levels.length > 0;
+
+    for (let i = 0; i < maxCount; ++i) {
+        const slotId = `${race}-${option.type}-${indexChoice}-${indexLevel}-${i}`; // Unique ID for each choice slot
+        const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
+        const selectedStatName = currentChoice ? currentChoice.statName : '';
+
+        if (needsStatSelection) {
+            const hide = option.applicableStats === 1 ? 'hidden' : ''; // Hide if only one applicable stat
+            statSelectionHtml = `
+                <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
+                    <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                    <select id="${slotId}-stat" class="${race}-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Select a Stat --</option>
+                    </select>
+                </div>`;
+        }
+
+        const choiceDiv = document.createElement('div');
+        choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+        let innerHTML = `
+            <div class="flex items-center space-x-2">
+                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isLevelBased ? indexLevel + 1 : ''}:</label>
+                <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Select ${abilityKey} Type --</option>
+        `;
+
+        options.forEach(opt => {
+            const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
+            innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
+        });
+
+        innerHTML +=
+                `</select>
+                    <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${uniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+            </div>
+            ${statSelectionHtml}
+        `;
+
+        choiceDiv.innerHTML = innerHTML;
+        abilitiesList.appendChild(choiceDiv);
+        const selectElement = choiceDiv.querySelector(`#${slotId}`);
+
+        // Add event listener
+        selectElement.addEventListener('change', (e) => {
+            const newSelectedStatName = e.target.value;
+            const newChoiceData = newSelectedStatName ? {
+                type: option.type,
+                calc: option.calc,
+                value: option.value,
+                statName: newSelectedStatName,
+                label: option.label,
+                unique: option.unique // Pass the unique identifier
+            } : null;
+            processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoiceData);
+        });
+
+        selectElement.value = selectedStatName;
+    }
+}
+
 /**
  * Renders the generic racial options for a specific ability within a race.
  * This function is called for each available choice slot (e.g., for each level-based choice).
@@ -1103,12 +1175,12 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
  * @param {object} abilityData The data for the specific ability.
  * @param {string} category The category of the racial passive (usually the race name).
  * @param {HTMLElement} abilitiesList The container element to append the choices to.
- * @param {number} i The index of the current choice slot (e.g., 0 for the first choice, 1 for the second).
+ * @param {number} indexLevel
  */
-function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i) {
+function renderGenericOptionsRacialPassive(race, category, abilityKey, abilityData, abilitiesList, indexLevel) {
     const options = abilityData.options;
-    const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
-    const slotId = `${race}-${abilityKey}-${i}`; // Unique ID for each choice slot
+    const isLevelBased = abilityData.levels && abilityData.levels.length > 0;
+    const slotId = `${race}-${abilityKey}-${indexLevel}`; // Unique ID for each choice slot
 
     // Retrieve current choice data for this slot
     let currentChoice = null;
@@ -1146,7 +1218,7 @@ function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, catego
     choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
     let innerHTML = `
         <div class="flex items-center space-x-2">
-            <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isLevelBased ? i + 1 : ''}:</label>
+            <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isLevelBased ? indexLevel + 1 : ''}:</label>
             <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">-- Select ${abilityKey} Type --</option>
     `;
@@ -1218,7 +1290,7 @@ function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, catego
             }
 
             const statToAffect = newApplicableStatsLength === 1 ? (newSelectedOptionData ? newSelectedOptionData.applicableStats[0] : null) : (statSelect ? statSelect.value : null);
-            processRacialChoiceChange(category, newUniqueIdentifier, slotId, initEventNewChoiceData(newType, abilityData, i, newSelectedOptionData, statToAffect, newUniqueIdentifier));
+            processRacialChoiceChange(category, newUniqueIdentifier, slotId, initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, statToAffect, newUniqueIdentifier));
 
             // Update the clear button's data-unique-identifier
             const clearButton = e.target.closest('.flex').querySelector(`.clear-${race}-choice-btn`);
@@ -1272,15 +1344,15 @@ function renderGenericRacialPassives(race) {
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
                 abilityDescription.textContent = abilityData.description;
                 abilitiesList.appendChild(abilityDescription);
+                const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
+                const options = abilityData.options;
+                const optionsLenght = options.length;
 
-                if (abilityData.levels) {
-                    const maxChoices = getAvailablePoints(abilityData, currentLevel);
-                    for (let i = 0; i < maxChoices; i++) {
-                        renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i);
+                for (let i = 0; i < maxChoices; ++i) {
+                    //renderGenericOptionsRacialPassive(race, category, abilityKey, abilityData, abilitiesList, i);
+                    for (let i2; i2 < optionsLenght; ++i2) {
+                        renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, options[i2], abilitiesList, i2, i);
                     }
-                } else {
-                    // For abilities without levels, render once
-                    renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, 0);
                 }
             }
         }
