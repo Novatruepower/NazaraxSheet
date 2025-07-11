@@ -799,6 +799,22 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
     }
 }
 
+// Check all slots within this unique group to see if the stat is already affected by a different slot
+function hasConflict(char, category, uniqueGroup, statName, slotId) {
+    let conflict = false;
+    if (char.StatChoices[category] && char.StatChoices[category][uniqueGroup]) {
+        for (const existingSlotId in char.StatChoices[category][uniqueGroup]) {
+            const existingChoice = char.StatChoices[category][uniqueGroup][existingSlotId];
+            if (existingChoice.statName === statName && existingSlotId !== slotId) {
+                conflict = true;
+                break;
+            }
+        }
+    }
+
+    return conflict;
+}
+
 /**
  * Handles the application or removal of a racial passive choice, including stat effects and flags.
  * This function centralizes the logic for both Demi-human and Mutant choices.
@@ -847,29 +863,14 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
         // Check for conflicts only if a stat is being affected and it's not the same slot re-selecting itself
         // The conflict check should be based on the 'unique' group, not just the stat name within the category.
         // If a choice has a 'unique' property, it means only one of those choices can affect a given stat.
-        if (newChoiceData.statName && newChoiceData.unique) {
-            const uniqueGroup = newChoiceData.unique;
-            // Check all slots within this unique group to see if the stat is already affected by a different slot
-            let conflict = false;
-            if (character.StatChoices[category] && character.StatChoices[category][uniqueGroup]) {
-                for (const existingSlotId in character.StatChoices[category][uniqueGroup]) {
-                    const existingChoice = character.StatChoices[category][uniqueGroup][existingSlotId];
-                    if (existingChoice.statName === newChoiceData.statName && existingSlotId !== slotId) {
-                        conflict = true;
-                        break;
-                    }
-                }
-            }
-
-            if (conflict) {
-                showStatusMessage(`'${newChoiceData.statName}' has already been affected by another choice in the '${uniqueGroup}' group. Please select a different stat.`, true);
-                // Revert the dropdowns to previous state (if possible)
-                const typeSelectElement = document.getElementById(slotId + '-type');
-                const statSelectElement = document.getElementById(slotId + '-stat');
-                if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
-                if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
-                return; // Stop processing this choice
-            }
+        if (newChoiceData.statName && newChoiceData.unique && hasConflict(character, category, newChoiceData.unique, newChoiceData.statName, slotId)) {
+            showStatusMessage(`'${newChoiceData.statName}' has already been affected by another choice in the '${newChoiceData.unique}' group. Please select a different stat.`, true);
+            // Revert the dropdowns to previous state (if possible)
+            const typeSelectElement = document.getElementById(slotId + '-type');
+            const statSelectElement = document.getElementById(slotId + '-stat');
+            if (typeSelectElement) typeSelectElement.value = previousChoice ? previousChoice.type : '';
+            if (statSelectElement) statSelectElement.value = previousChoice ? previousChoice.statName : '';
+            return; // Stop processing this choice
         }
 
 
@@ -1010,8 +1011,8 @@ function renderDemiHumanStatChoiceUI() {
                     option.value = statName;
                     option.textContent = statName;
                     // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
-                    const isAlreadyChosen = character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][statName] && character.StatsAffected[category][uniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][uniqueIdentifier][statName].has(slotId);
-                    option.disabled = isAlreadyChosen;
+                    //const isAlreadyChosen = character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][statName] && character.StatsAffected[category][uniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][uniqueIdentifier][statName].has(slotId);
+                    option.disabled = hasConflict(character, category, uniqueIdentifier, statName, slotId);
                     selectElement.appendChild(option);
                 });
                 selectElement.value = selectedStatName;
@@ -1154,8 +1155,9 @@ function renderMutantOptionUI() {
                             option.value = statName;
                             option.textContent = statName;
                             // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
-                            const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
-                            option.disabled = isAlreadyChosen;
+                            //const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
+                            //const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
+                            option.disabled = hasConflict(character, category, uniqueIdentifier, statName, slotId);;
                             statSelect.appendChild(option);
                         });
                         statSelect.value = selectedStatName;
