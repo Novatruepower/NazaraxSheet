@@ -1167,7 +1167,7 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
             processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoiceData);
         });
 
-        selectElement.value = selectedStatName;
+        statSelect.value = selectedStatName;
     }
 }
 
