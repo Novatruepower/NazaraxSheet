@@ -1282,10 +1282,23 @@ function getAvailablePoints(abilityData, currentLevel) {
     return points;
 };
 
+/**
+ * Initializes a new choice data object for racial passives.
+ * @param {string} newType The type of the new choice.
+ * @param {object} abilityData The full ability data from ExternalDataManager.
+ * @param {number} indexLevel The index representing the level slot for this choice (e.g., 0 for first choice at level 1).
+ * @param {object} newSelectedOptionData The data for the newly selected option (from abilityData.options).
+ * @param {string|null} statToAffect The name of the stat to affect, if applicable.
+ * @param {string|null} newUniqueIdentifier The unique identifier for this choice group.
+ * @returns {object|null} The new choice data object, or null if newType is falsy.
+ */
 function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, statToAffect, newUniqueIdentifier) {
+    const levelKeys = abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b) : [];
+    const actualLevel = levelKeys[indexLevel] !== undefined ? levelKeys[indexLevel] : null;
+
     const newChoiceData = newType ? {
         type: newType,
-        level: abilityData.levels ? Object.keys(abilityData.levels)[indexLevel] : null,
+        level: actualLevel,
         calc: newSelectedOptionData ? newSelectedOptionData.calc : null,
         value: newSelectedOptionData ? newSelectedOptionData.value : null,
         label: newSelectedOptionData ? newSelectedOptionData.label : '',
@@ -1297,150 +1310,142 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 }
 
 /**
- * Renders the generic racial passives for races that don't have manual choices.
- * need to manually call attachClearChoiceListeners(`.clear-${race}-choice-btn`); after it
- * @param {HTMLElement | null} abilitiesList
- * @param {number} i
- * @param {object} selected
+ * Renders the generic racial options for a specific ability within a race.
+ * This function is called for each available choice slot (e.g., for each level-based choice).
+ * @param {string} race The name of the race.
+ * @param {string} abilityKey The key of the ability (e.g., 'Mutation', 'Degeneration').
+ * @param {object} abilityData The data for the specific ability.
+ * @param {string} category The category of the racial passive (usually the race name).
+ * @param {HTMLElement} abilitiesList The container element to append the choices to.
+ * @param {number} i The index of the current choice slot (e.g., 0 for the first choice, 1 for the second).
  */
-function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i = 0, selected = {}) {
+function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i) {
     const options = abilityData.options;
-    const isNameWithI = abilityData.levels && abilityData.levels.length > 1;
-    let i2 = 0;
+    const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
+    const slotId = `${race}-${abilityKey}-${i}`; // Unique ID for each choice slot
 
-    for (const option in options) {
-        const slotId = `${race}-${abilityKey}-${i}-${i2}`;
-
-        if (!selected[slotId]) {
-            // Iterate through all possible unique identifiers to find if this slot has a choice
-            for (const uId in character.StatChoices[category]) {
-                if (character.StatChoices[category][uId] && character.StatChoices[category][uId][slotId]) {
-                    selected[slotId] = {currentChoice:character.StatChoices[category][uId][slotId], currentUniqueIdentifier: uId};
-                    break;
-                }
+    // Retrieve current choice data for this slot
+    let currentChoice = null;
+    let currentUniqueIdentifier = null;
+    if (character.StatChoices[category]) {
+        for (const uId in character.StatChoices[category]) {
+            if (character.StatChoices[category][uId] && character.StatChoices[category][uId][slotId]) {
+                currentChoice = character.StatChoices[category][uId][slotId];
+                currentUniqueIdentifier = uId;
+                break;
             }
-            if (!selected[slotId]) 
-                selected[slotId] = {currentChoice: null, currentUniqueIdentifier: null};
         }
+    }
 
-        const select = selected[slotId];
-        const currentChoice = select ? select.currentChoice : null;
-        const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
-        const selectedOptionType = currentChoice ? currentChoice.type : '';
-        const selectedOptionData = currentChoice ? option : null;
-        const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
-        const needsStatSelection = applicableStatsLength > 0;
+    const selectedOptionType = currentChoice ? currentChoice.type : '';
+    const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
+    const selectedOptionData = options.find(opt => opt.type === selectedOptionType); // Find the full option data
+    const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
+    const needsStatSelection = applicableStatsLength > 0;
 
-        let statSelectionHtml = '';
+    let statSelectionHtml = '';
 
-        if (needsStatSelection) {
-            const hide = applicableStatsLength == 1 ? 'hidden' : '';
-            statSelectionHtml = `
+    if (needsStatSelection) {
+        const hide = applicableStatsLength === 1 ? 'hidden' : ''; // Hide if only one applicable stat
+        statSelectionHtml = `
             <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
                 <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
                 <select id="${slotId}-stat" class="${race}-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">-- Select a Stat --</option>
                 </select>
             </div>`;
-        }
+    }
 
-        const choiceDiv = document.createElement('div');
-        choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
-        choiceDiv.innerHTML = `
-            <div class="flex items-center space-x-2">
-                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isNameWithI ? i + 1 : ''}:</label>
-                <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">-- Select ${abilityKey} Type --</option>
-                    ${options.filter(opt => opt.unique == option.unique).map(opt => {
+    const choiceDiv = document.createElement('div');
+    choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+    choiceDiv.innerHTML = `
+        <div class="flex items-center space-x-2">
+            <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isLevelBased ? i + 1 : ''}:</label>
+            <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="">-- Select ${abilityKey} Type --</option>
+                ${options.map(opt => {
+                    // Check if this option (opt.type) would cause a conflict if selected for this slotId
                     const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
-                    return `<option id="${slotId}-label" value="${opt.type}-${i}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
-                    }).join('')}
-                </select>
-                <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${select.currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
-            </div>
-            ${statSelectionHtml}
-        `;
-        abilitiesList.appendChild(choiceDiv);
+                    return `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
+                }).join('')}
+            </select>
+            <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+        </div>
+        ${statSelectionHtml}
+    `;
+    abilitiesList.appendChild(choiceDiv);
 
-        const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
-        const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
-        const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
+    const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
+    const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
+    const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
-        // Populate stat dropdown if needed on initial render
-        if (statSelect && needsStatSelection) {
-            const level = abilityData.levels ? Object.keys(abilityData.levels)[i] : null;
-            selectedOptionData.applicableStats.forEach(statName => {
-                const option = document.createElement('option');
-                option.value = `${statName}-${level}`;
-                option.textContent = statName;
-                option.disabled = hasConflict(character, category, selectedOptionData.unique, statName, slotId);
-                statSelect.appendChild(option);
-            });
-            statSelect.value = `${selectedStatName}-${level}`;
-        }
+    // Populate stat dropdown if needed on initial render
+    if (statSelect && needsStatSelection) {
+        selectedOptionData.applicableStats.forEach(statName => {
+            const option = document.createElement('option');
+            option.value = statName;
+            option.textContent = statName;
+            option.disabled = hasConflict(character, category, selectedOptionData.unique, statName, slotId);
+            statSelect.appendChild(option);
+        });
+        statSelect.value = selectedStatName;
+    }
 
-        // Event listener for type change (to show/hide stat selection)
-        if (typeSelect) {
-            typeSelect.addEventListener('change', (e) => {
-                const target = e.target.value.split('-', 2);
-                const newType = target[0];
-                const indexLevel = target.length > 1 ? target[1] : null;
-                const newSelectedOptionData = options.find(opt => opt.type === newType);
-                const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
-                const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
-                const newUniqueIdentifier = newSelectedOptionData ? newSelectedOptionData.unique : null;
+    // Event listener for type change (to show/hide stat selection)
+    if (typeSelect) {
+        typeSelect.addEventListener('change', (e) => {
+            const newType = e.target.value;
+            const newSelectedOptionData = options.find(opt => opt.type === newType);
+            const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
+            const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
+            const newUniqueIdentifier = newSelectedOptionData ? newSelectedOptionData.unique : null;
 
-                if (statSelectionDiv) {
-                    if (newNeedsStatSelection) {
-                        if (newApplicableStatsLength > 1) {
-                            statSelectionDiv.classList.remove('hidden');
-                        } else {
-                            statSelectionDiv.classList.add('hidden'); // Hide if only one applicable stat
-                        }
-
-                        // Repopulate stat dropdown for this specific select
-                        statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
-                        newSelectedOptionData.applicableStats.forEach(statName => {
-                            const opt = document.createElement('option');
-                            opt.value = statName;
-                            opt.textContent = statName;
-                            opt.disabled = hasConflict(character, category, newUniqueIdentifier, statName, slotId);
-                            statSelect.appendChild(opt);
-                        });
-
-                        // Keep current selection if valid, otherwise clear
-                        statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? `${selectedStatName}-${indexLevel}` : '';
+            if (statSelectionDiv) {
+                if (newNeedsStatSelection) {
+                    if (newApplicableStatsLength > 1) {
+                        statSelectionDiv.classList.remove('hidden');
                     } else {
-                        statSelectionDiv.classList.add('hidden');
-                        if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
+                        statSelectionDiv.classList.add('hidden'); // Hide if only one applicable stat
                     }
+
+                    // Repopulate stat dropdown for this specific select
+                    statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
+                    newSelectedOptionData.applicableStats.forEach(statName => {
+                        const opt = document.createElement('option');
+                        opt.value = statName;
+                        opt.textContent = statName;
+                        opt.disabled = hasConflict(character, category, newUniqueIdentifier, statName, slotId);
+                        statSelect.appendChild(opt);
+                    });
+
+                    // Keep current selection if valid, otherwise clear
+                    statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                } else {
+                    statSelectionDiv.classList.add('hidden');
+                    if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
                 }
+            }
 
-                const statToAffect = newApplicableStatsLength === 1 ? newSelectedOptionData.applicableStats[0] : (statSelect ? statSelect.value : null);
-                processRacialChoiceChange(category, newUniqueIdentifier, slotId, initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, statToAffect, newUniqueIdentifier));
+            const statToAffect = newApplicableStatsLength === 1 ? (newSelectedOptionData ? newSelectedOptionData.applicableStats[0] : null) : (statSelect ? statSelect.value : null);
+            processRacialChoiceChange(category, newUniqueIdentifier, slotId, initEventNewChoiceData(newType, abilityData, i, newSelectedOptionData, statToAffect, newUniqueIdentifier));
 
-                // Update the clear button's data-unique-identifier
-                const clearButton = e.target.closest('.flex').querySelector(`.clear-${race}-choice-btn`);
-                if (clearButton) {
-                    clearButton.dataset.uniqueIdentifier = newUniqueIdentifier || '';
-                }
-            });
-        }
+            // Update the clear button's data-unique-identifier
+            const clearButton = e.target.closest('.flex').querySelector(`.clear-${race}-choice-btn`);
+            if (clearButton) {
+                clearButton.dataset.uniqueIdentifier = newUniqueIdentifier || '';
+            }
+        });
+    }
 
-        // Event listener for stat change
-        if (statSelect) {
-            statSelect.addEventListener('change', (e) => {
-                const target = typeSelect.value.split('-', 2);
-                const currentType = target[0];
-                const indexLevel = target.length > 1 ? target[1] : null;
-                const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
-                const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
+    // Event listener for stat change
+    if (statSelect) {
+        statSelect.addEventListener('change', (e) => {
+            const currentType = typeSelect.value;
+            const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
+            const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
 
-                processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
-            });
-        }
-
-        ++i2;
+            processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, i, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
+        });
     }
 }
 
@@ -1480,12 +1485,13 @@ function renderGenericRacialPassives(race) {
 
                 if (abilityData.levels) {
                     const maxChoices = getAvailablePoints(abilityData, currentLevel);
-                    const selected = {};
-
                     for (let i = 0; i < maxChoices; i++) {
-                        renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i, selected);
+                        renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i);
                     }
-                } 
+                } else {
+                    // For abilities without levels, render once
+                    renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, 0);
+                }
             }
         }
 
