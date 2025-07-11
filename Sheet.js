@@ -1346,12 +1346,12 @@ function renderGenericRacialPassives(race) {
                 abilitiesList.appendChild(abilityDescription);
                 const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
                 const options = abilityData.options;
-                const optionsLenght = options.length;
-                console.log(optionsLenght);
+                const optionsLength = options.length;
 
                 for (let i = 0; i < maxChoices; ++i) {
                     //renderGenericOptionsRacialPassive(race, category, abilityKey, abilityData, abilitiesList, i);
-                    for (let i2; i2 < optionsLenght; ++i2) {
+                    for (let i2; i2 < optionsLength; ++i2) {
+                                        console.log(options[i2]);
                         renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, options[i2], abilitiesList, i2, i);
                     }
                 }
