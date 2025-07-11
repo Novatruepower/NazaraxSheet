@@ -1347,6 +1347,7 @@ function renderGenericRacialPassives(race) {
                 const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
                 const options = abilityData.options;
                 const optionsLenght = options.length;
+                console.log(optionsLenght);
 
                 for (let i = 0; i < maxChoices; ++i) {
                     //renderGenericOptionsRacialPassive(race, category, abilityKey, abilityData, abilitiesList, i);
