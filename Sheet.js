@@ -802,7 +802,7 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
 // Check all slots within this unique group to see if the stat is already affected by a different slot
 function hasConflict(char, category, uniqueGroup, statName, slotId) {
     let conflict = false;
-    if (uniqueGroup && statName && char.StatChoices[category] && char.StatChoices[category][uniqueGroup]) {
+    if (uniqueGroup && char.StatChoices[category] && char.StatChoices[category][uniqueGroup]) {
         for (const existingSlotId in char.StatChoices[category][uniqueGroup]) {
             const existingChoice = char.StatChoices[category][uniqueGroup][existingSlotId];
             if (existingChoice.statName === statName && existingSlotId !== slotId) {
@@ -1157,7 +1157,7 @@ function renderMutantOptionUI() {
                             // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
                             //const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
                             //const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
-                            option.disabled = hasConflict(character, category, uniqueIdentifier, statName, slotId);;
+                            option.disabled = hasConflict(character, category, selectedOptionData.unique, statName, slotId);;
                             statSelect.appendChild(option);
                         });
                         statSelect.value = selectedStatName;
