@@ -1507,7 +1507,7 @@ function renderRacialPassives() {
    // } else if (character.race === 'Mutant') {
    //     renderMutantOptionUI();
     } else {
-        renderGenericRacialPassives();
+        renderGenericRacialPassives(character.race);
     }
 }
 
