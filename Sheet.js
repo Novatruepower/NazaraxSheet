@@ -816,6 +816,9 @@ function hasConflict(char, category, uniqueGroup, statName, slotId) {
 }
 
 function isUsableApplicableStats(applicableStats, category, unique, slotId) {
+    if (!unique)
+        return true;
+
     let count = 0;
     for (const statName of applicableStats) {
         if (hasConflict(character, category, unique, statName, slotId))
@@ -1153,21 +1156,23 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
         const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
         const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
-        // Add event listener
-        statSelect.addEventListener('change', (e) => {
-            const newSelectedIndexStatName = e.target.value;
-            const newChoiceData = newSelectedIndexStatName ? {
-                type: option.type,
-                calc: option.calc,
-                value: option.value,
-                statName: option.applicableStats ? option.applicableStats[newSelectedIndexStatName]: null,
-                label: option.label,
-                unique: option.unique // Pass the unique identifier
-            } : null;
-            processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoiceData);
-        });
+        if (statSelect) {
+            // Add event listener
+            statSelect.addEventListener('change', (e) => {
+                const newSelectedIndexStatName = e.target.value;
+                const newChoiceData = newSelectedIndexStatName ? {
+                    type: option.type,
+                    calc: option.calc,
+                    value: option.value,
+                    statName: option.applicableStats ? option.applicableStats[newSelectedIndexStatName]: null,
+                    label: option.label,
+                    unique: option.unique // Pass the unique identifier
+                } : null;
+                processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoiceData);
+            });
 
-        statSelect.value = selectedStatName;
+            statSelect.value = selectedStatName;
+        }
     }
 }
 
