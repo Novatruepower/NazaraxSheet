@@ -1432,6 +1432,7 @@ function handleChange(event) {
             character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             recalculateCharacterDerivedProperties(character);
+            renderRacialPassives();
         } else if (id === 'race') {
             let oldRace = character.race;
             character.race = newValue;
