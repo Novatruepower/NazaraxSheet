@@ -1452,7 +1452,7 @@ function renderGenericRacialPassives(race) {
     const genericPassives = ExternalDataManager.getRaceManualPassives(race);
     const category = race;
 
-    if (character.race === category && mutantPassives) {
+    if (character.race === category && genericPassives) {
         genericPassivesContainer.classList.remove('hidden');
         genericPassivesContainer.innerHTML = `
            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Abilities</h4>
@@ -1468,7 +1468,7 @@ function renderGenericRacialPassives(race) {
         character.StatsAffected[category] = character.StatsAffected[category] || {};
 
         // Iterate over each ability (Mutation, Degeneration)
-        for (const abilityKey in genericPassives) { // Iterate directly over mutantPassives
+        for (const abilityKey in genericPassives) { // Iterate directly over genericPassives
             if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) { // Check if it's an ability with options
                 const abilityData = genericPassives[abilityKey];
                 const abilityDescription = document.createElement('p');
