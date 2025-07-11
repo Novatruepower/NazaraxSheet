@@ -1151,11 +1151,10 @@ function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, catego
                 <option value="">-- Select ${abilityKey} Type --</option>
     `;
 
-    for (const opt in options) {
-        console.log(opt);
+    options.forEach(opt => {
         const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
         innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
-    }
+    });
 
     innerHTML +=
             `</select>
