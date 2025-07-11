@@ -1150,10 +1150,11 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
 
         choiceDiv.innerHTML = innerHTML;
         abilitiesList.appendChild(choiceDiv);
-        const selectElement = choiceDiv.querySelector(`#${slotId}`);
+        const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
+        const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
         // Add event listener
-        selectElement.addEventListener('change', (e) => {
+        statSelect.addEventListener('change', (e) => {
             const newSelectedIndexStatName = e.target.value;
             const newChoiceData = newSelectedIndexStatName ? {
                 type: option.type,
@@ -1241,8 +1242,8 @@ function renderGenericOptionsRacialPassive(race, category, abilityKey, abilityDa
     choiceDiv.innerHTML = innerHTML;
     abilitiesList.appendChild(choiceDiv);
 
-    const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
     const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
+    const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
     const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
 
     // Populate stat dropdown if needed on initial render
