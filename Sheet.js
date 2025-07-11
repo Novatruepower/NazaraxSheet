@@ -1152,6 +1152,7 @@ function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, catego
     `;
 
     for (const opt in options) {
+        console.log(opt);
         const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
         innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
     }
