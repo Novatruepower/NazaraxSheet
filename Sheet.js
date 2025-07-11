@@ -894,6 +894,11 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
                 showStatusMessage(`'${newChoiceData.label}' (Regeneration Doubled) applied.`, false);
             }
         }
+
+        if (!newChoiceData.level) {
+            newChoiceData.level = null;
+        }
+
         character.StatChoices[category][uniqueIdentifier][slotId] = newChoiceData;
     }
 
@@ -1202,7 +1207,7 @@ function renderMutantOptionUI() {
                             const statToAffect = newApplicableStatsLength === 1 ? newSelectedOptionData.applicableStats[0] : (statSelect ? statSelect.value : null);
                             const newChoiceData = newType ? {
                                 type: newType,
-                                level: character.level,
+                                level: Object.keys(mutantPassives[abilityType].levels)[i],
                                 calc: newSelectedOptionData ? newSelectedOptionData.calc : null,
                                 value: newSelectedOptionData ? newSelectedOptionData.value : null,
                                 label: newSelectedOptionData ? newSelectedOptionData.label : '',
@@ -1229,7 +1234,7 @@ function renderMutantOptionUI() {
 
                             const newChoiceData = currentType ? {
                                 type: currentType,
-                                level: character.level,
+                                level: Object.keys(mutantPassives[abilityType].levels)[i],
                                 calc: currentSelectedOptionData ? currentSelectedOptionData.calc : null,
                                 value: currentSelectedOptionData ? currentSelectedOptionData.value : null,
                                 label: currentSelectedOptionData ? currentSelectedOptionData.label : '',
@@ -1404,6 +1409,69 @@ function handlePlayerStatInputChange(event) {
     ]);
 }
 
+function removePassivesLevel() {
+        const categoriesToProcess = Object.keys(character.StatChoices);
+        let passivesReverted = false;
+
+        // Iterate through a copy of categories to avoid issues with modification during iteration
+        for (const category of categoriesToProcess) {
+            if (!character.StatChoices[category]) continue; // Skip if category was deleted
+
+            const uniqueIdentifiersToProcess = Object.keys(character.StatChoices[category]);
+            for (const uniqueIdentifier of uniqueIdentifiersToProcess) {
+                if (!character.StatChoices[category][uniqueIdentifier]) continue; // Skip if uniqueIdentifier was deleted
+
+                const slotIdsToProcess = Object.keys(character.StatChoices[category][uniqueIdentifier]);
+                for (const slotId of slotIdsToProcess) {
+                    const choice = character.StatChoices[category][uniqueIdentifier][slotId];
+                    // Check if the choice has a level requirement and if the new level is below it
+                    if (choice && typeof choice.level === 'number' && choice.level > character.level) {
+                        // Revert the effect of this specific choice directly
+                        if (choice.statName) {
+                            revertChoiceRacialChange(character, choice.statName, choice);
+                            if (character.StatsAffected[category] && character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][choice.statName]) {
+                                character.StatsAffected[category][uniqueIdentifier][choice.statName].delete(slotId);
+                                if (character.StatsAffected[category][uniqueIdentifier][choice.statName].size === 0) {
+                                    delete character.StatsAffected[category][uniqueIdentifier][choice.statName];
+                                }
+                            }
+                        }
+                        // Revert other specific flags if they were set by the previous choice
+                        if (choice.type === 'natural_regen_active') {
+                            character.naturalHealthRegenActive = false;
+                            character.naturalManaRegenActive = false;
+                        } else if (choice.type === 'regen_doubled') {
+                            character.healthRegenDoubled = false;
+                            character.manaRegenDoubled = false;
+                        }
+                        // Remove the choice from StatChoices
+                        delete character.StatChoices[category][uniqueIdentifier][slotId];
+                        passivesReverted = true;
+                        console.log(`Reverted passive '${choice.label}' (Level ${choice.level}) due to level decrease to ${character.level}.`);
+                    }
+                }
+                // Clean up empty uniqueIdentifier objects
+                if (Object.keys(character.StatChoices[category][uniqueIdentifier]).length === 0) {
+                    delete character.StatChoices[category][uniqueIdentifier];
+                }
+                if (character.StatsAffected[category][uniqueIdentifier] && Object.keys(character.StatsAffected[category][uniqueIdentifier]).length === 0) {
+                    delete character.StatsAffected[category][uniqueIdentifier];
+                }
+            }
+            // Clean up empty category objects
+            if (Object.keys(character.StatChoices[category]).length === 0) {
+                delete character.StatChoices[category];
+            }
+            if (character.StatsAffected[category] && Object.keys(character.StatsAffected[category]).length === 0) {
+                delete character.StatsAffected[category];
+            }
+        }
+
+        if (passivesReverted) {
+            showStatusMessage("Some racial passives were reverted due to level decrease.");
+        }
+}
+
 
 // Event listener for all input changes
 function handleChange(event) {
@@ -1428,9 +1496,12 @@ function handleChange(event) {
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             document.getElementById('levelExperience').value = character.levelExperience;
         } else if (id === 'level') {
+            const oldLevel = character.level;
             character.level = newValue;
             character.levelMaxExperience = calculateLevelMaxExperience(character.level);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
+            if (newValue < oldLevel)
+                removePassivesLevel();
             recalculateCharacterDerivedProperties(character);
             renderRacialPassives();
         } else if (id === 'race') {
