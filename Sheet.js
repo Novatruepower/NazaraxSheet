@@ -1102,7 +1102,8 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
     character.StatsAffected[category] = character.StatsAffected[category] || {};
     character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
     const maxCount = option.count || 1;
-    const needsStatSelection = option.applicableStats && option.applicableStats.length > 0;
+    const applicableStats = option.applicableStats;
+    const needsStatSelection = applicableStats && applicableStats.length > 0;
     const options = (abilityData.options && option.setsOption)
     ? abilityData.options.filter(opt => opt.setsOption && opt.setsOption.some(setOpt => option.setsOption.includes(setOpt)))
     : abilityData.options || {option};
@@ -1111,10 +1112,11 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
     for (let i = 0; i < maxCount; ++i) {
         const slotId = `${race}-${option.type}-${indexChoice}-${indexLevel}-${i}`; // Unique ID for each choice slot
         const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
+        const selectedOptionType = currentChoice ? currentChoice.type : '';
         const selectedStatName = currentChoice ? currentChoice.statName : '';
 
         if (needsStatSelection) {
-            const hide = option.applicableStats === 1 ? 'hidden' : ''; // Hide if only one applicable stat
+            const hide = applicableStats === 1 ? 'hidden' : ''; // Hide if only one applicable stat
             statSelectionHtml = `
                 <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
                     <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
@@ -1134,7 +1136,7 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
         `;
 
         options.forEach(opt => {
-            const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
+            const isOptionDisabled = applicableStats && !isUsableApplicableStats(applicableStats, category, opt.unique, slotId);
             innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
         });
 
@@ -1351,7 +1353,6 @@ function renderGenericRacialPassives(race) {
                 for (let i = 0; i < maxChoices; ++i) {
                     //renderGenericOptionsRacialPassive(race, category, abilityKey, abilityData, abilitiesList, i);
                     for (let i2 = 0; i2 < optionsLength; ++i2) {
-                                        console.log(options[i2]);
                         renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, options[i2], abilitiesList, i2, i);
                     }
                 }
