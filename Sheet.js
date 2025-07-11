@@ -1323,9 +1323,11 @@ function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, catego
                 selected[slotId] = {currentChoice: null, currentUniqueIdentifier: null};
         }
 
-        const selectedStatName = selected[slotId] && selected[slotId].statName ? selected[slotId].statName : '';
-        const selectedOptionType = selected[slotId] ? selected[slotId].type : '';
-        const selectedOptionData = selected[slotId] ? option : null;
+        const select = selected[slotId];
+        const currentChoice = select ? select.currentChoice : null;
+        const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
+        const selectedOptionType = currentChoice ? currentChoice.type : '';
+        const selectedOptionData = currentChoice ? option : null;
         const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
         const needsStatSelection = applicableStatsLength > 0;
 
@@ -1354,7 +1356,7 @@ function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, catego
                     return `<option id="${slotId}-label" value="${opt.type}-${i}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
                     }).join('')}
                 </select>
-                <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+                <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${select.currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
             </div>
             ${statSelectionHtml}
         `;
