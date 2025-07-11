@@ -1207,7 +1207,7 @@ function renderMutantOptionUI() {
                             const statToAffect = newApplicableStatsLength === 1 ? newSelectedOptionData.applicableStats[0] : (statSelect ? statSelect.value : null);
                             const newChoiceData = newType ? {
                                 type: newType,
-                                level: Object.keys(mutantPassives[abilityType].levels)[i],
+                                level: Object.keys(mutantPassives[abilityKey].levels)[i],
                                 calc: newSelectedOptionData ? newSelectedOptionData.calc : null,
                                 value: newSelectedOptionData ? newSelectedOptionData.value : null,
                                 label: newSelectedOptionData ? newSelectedOptionData.label : '',
@@ -1234,7 +1234,7 @@ function renderMutantOptionUI() {
 
                             const newChoiceData = currentType ? {
                                 type: currentType,
-                                level: Object.keys(mutantPassives[abilityType].levels)[i],
+                                level: Object.keys(mutantPassives[abilityKey].levels)[i],
                                 calc: currentSelectedOptionData ? currentSelectedOptionData.calc : null,
                                 value: currentSelectedOptionData ? currentSelectedOptionData.value : null,
                                 label: currentSelectedOptionData ? currentSelectedOptionData.label : '',
