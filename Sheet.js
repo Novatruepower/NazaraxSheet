@@ -1114,6 +1114,7 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
         const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
         const selectedOptionType = currentChoice ? currentChoice.type : '';
         const selectedStatName = currentChoice ? currentChoice.statName : '';
+        let statSelectionHtml = '';
 
         if (needsStatSelection) {
             const hide = applicableStats === 1 ? 'hidden' : ''; // Hide if only one applicable stat
@@ -1153,12 +1154,12 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
 
         // Add event listener
         selectElement.addEventListener('change', (e) => {
-            const newSelectedStatName = e.target.value;
-            const newChoiceData = newSelectedStatName ? {
+            const newSelectedIndexStatName = e.target.value;
+            const newChoiceData = newSelectedIndexStatName ? {
                 type: option.type,
                 calc: option.calc,
                 value: option.value,
-                statName: newSelectedStatName,
+                statName: option.applicableStats ? option.applicableStats[newSelectedIndexStatName]: null,
                 label: option.label,
                 unique: option.unique // Pass the unique identifier
             } : null;
