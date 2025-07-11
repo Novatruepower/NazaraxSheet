@@ -1303,7 +1303,7 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
  * @param {number} i
  * @param {object} selected
  */
-function renderGenericOptionsRacialPassive(race, abilityData, category, abilitiesList, i = 0, selected = {}) {
+function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i = 0, selected = {}) {
     const options = abilityData.options;
     const isNameWithI = abilityData.levels && abilityData.levels.length > 1;
     let i2 = 0;
@@ -1481,7 +1481,7 @@ function renderGenericRacialPassives(race) {
                     const selected = {};
 
                     for (let i = 0; i < maxChoices; i++) {
-                        renderGenericOptionsRacialPassive(race, abilityData, category, abilitiesList, i, selected);
+                        renderGenericOptionsRacialPassive(race, abilityKey, abilityData, category, abilitiesList, i, selected);
                     }
                 } 
             }
