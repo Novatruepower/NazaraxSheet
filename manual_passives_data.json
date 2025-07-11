@@ -61,10 +61,10 @@
               { "label": "One skill from any race", "type": "skill_choice", "unique":"Mutation_Degeneration" },
               { 
                 "label": "A statistical multiplier to be set to 50%",
-                 "type": "stat_multiplier_set_50",
-                  "calc": "add", "value": 0.50,
-                   "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
-                   "unique":"Mutation_Degeneration"
+                "type": "stat_multiplier_set_50",
+                "calc": "add", "value": 0.50,
+                "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
+                "unique":"Mutation_Degeneration"
               },
               { "label": "Doubling your base max health value", "type": "double_base_health", "calc": "mult", "value": 2, "applicableStats": ["BaseHealth"], "unique":"Mutation_Degeneration"},
               { "label": "Natural mana or health regeneration become permanently active", "type": "natural_regen_active", "unique":"Mutation_Degeneration" },

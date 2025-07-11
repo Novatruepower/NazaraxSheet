@@ -815,6 +815,16 @@ function hasConflict(char, category, uniqueGroup, statName, slotId) {
     return conflict;
 }
 
+function isUsableApplicableStats(applicableStats, category, unique, slotId) {
+    let count = 0;
+    for (const statName of applicableStats) {
+        if (hasConflict(character, category, unique, statName, slotId))
+            ++count;
+    }
+
+    return applicableStats.length > count;
+}
+
 /**
  * Handles the application or removal of a racial passive choice, including stat effects and flags.
  * This function centralizes the logic for both Demi-human and Mutant choices.
@@ -1141,7 +1151,7 @@ function renderMutantOptionUI() {
                            <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${i + 1}:</label>
                            <select id="${slotId}-type" class="mutant-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                                <option value="">-- Select ${abilityKey} Type --</option>
-                               ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                               ${options.map(opt => `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isUsableApplicableStats(opt.applicableStats, opt.type, opt.unique, slotId) ? '' : 'disabled'}>${opt.label}</option>`).join('')}
                            </select>
                            <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-mutant-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
                        </div>
@@ -1162,7 +1172,7 @@ function renderMutantOptionUI() {
                             // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
                             //const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
                             //const isAlreadyChosen = character.StatsAffected[category][currentUniqueIdentifier] && character.StatsAffected[category][currentUniqueIdentifier][statName] && character.StatsAffected[category][currentUniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][currentUniqueIdentifier][statName].has(slotId);
-                            option.disabled = hasConflict(character, category, selectedOptionData.unique, statName, slotId);;
+                            option.disabled = hasConflict(character, category, selectedOptionData.unique, statName, slotId);
                             statSelect.appendChild(option);
                         });
                         statSelect.value = selectedStatName;
