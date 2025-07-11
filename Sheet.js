@@ -1323,8 +1323,8 @@ function renderGenericOptionsRacialPassive(race, abilityKey, abilityData, catego
                 selected[slotId] = {currentChoice: null, currentUniqueIdentifier: null};
         }
 
-        const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
-        const selectedOptionType = currentChoice ? currentChoice.type : '';
+        const selectedStatName = selected[slotId] && selected[slotId].statName ? selected[slotId].statName : '';
+        const selectedOptionType = selected[slotId] ? selected[slotId].type : '';
         const selectedOptionData = selected[slotId] ? option : null;
         const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
         const needsStatSelection = applicableStatsLength > 0;
