@@ -20,11 +20,11 @@ export const ExternalDataManager = {
     replaceDataStat(statName) {
         switch (key) {
             case 'Roll':
-                return ExternalDataManager.rollStats;
+                return this.rollStats;
             case 'Other':
-                return ExternalDataManager.otherStats;
+                return this.otherStats;
             case 'Stats':
-                return ExternalDataManager.stats;
+                return this.stats;
             default:
                 return [statName];
         }
