@@ -108,7 +108,8 @@ export const ExternalDataManager = {
             const keys = Object.keys(manualPassivesData);
 
             keys.forEach(key => {
-                const keys2 = Object.keys(manualPassivesData[key]).forEach(key2 => {
+                const keys2 = Object.keys(manualPassivesData[key]);
+                keys2.forEach(key2 => {
                     const manual_passives_data = manualPassivesData[key][key2].manualPassives;
                     manual_passives_data.forEach(ability => {
                         if (ability.applicableStats) {
