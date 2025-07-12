@@ -105,26 +105,33 @@ export const ExternalDataManager = {
             // Fetch and load manual_passives_data.json
             const manualPassivesResponse = await fetch('./manual_passives_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
-            const keys = Object.keys(manualPassivesData);
 
-            keys.forEach(key => {
-                const keys2 = Object.keys(manualPassivesData[key]);
-                keys2.forEach(key2 => {
-                    const manual_passives_data = Object.values(manualPassivesData[key][key2].manualPassives);
-                    manual_passives_data.forEach(ability => {
+            // Iterate through each character and their data
+            for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
+                // Iterate through each category for the character (e.g., 'passives', 'skills')
+                for (const [categoryKey, categoryData] of Object.entries(characterData)) {
+                    // Get the array of abilities, which is a collection of values
+                    const abilities = Object.values(categoryData.manualPassives);
+
+                    // Process each ability and apply the data replacement
+                    for (const ability of abilities) {
                         if (ability.applicableStats) {
                             ability.applicableStats = this.replaceDataStats(ability.applicableStats);
                         }
-                    });
-
-                    if (this._data[key][key2]) {
-                        this._data[key][key2]['manualPassives'] = manual_passives_data;
-                    } else {
-                        // If it exists in manual_passives_data but not in the sheet, create a basic entry
-                        this._data[key][key2] = { manualPassives: manual_passives_data };
                     }
-                });
-            });
+
+                    // Safely update the main data sheet with the processed abilities
+                    if (this._data[characterKey] && this._data[characterKey][categoryKey]) {
+                        this._data[characterKey][categoryKey].manualPassives = abilities;
+                    } else {
+                        // Create a new entry if one doesn't exist
+                        if (!this._data[characterKey]) {
+                            this._data[characterKey] = {};
+                        }
+                        this._data[characterKey][categoryKey] = { manualPassives: abilities };
+                    }
+                }
+            }
 
             console.log("External data loaded successfully into ExternalDataManager.");
             console.log(this._data);
