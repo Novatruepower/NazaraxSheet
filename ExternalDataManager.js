@@ -55,9 +55,9 @@ export const ExternalDataManager = {
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
-                this._data['Other'] = [head[1], 'Mana', 'BaseHealth']; //By default it will be used with a racial change generated
+                this._data['Other'] = [head[1], 'Mana', 'BaseHealth']; //By default 
                 delete head[1]; // Remove 'Health' from the head array
-                this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll'
+                this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll' it will be used with a racial change generated
 
                 arr.forEach(value => {
                     let race = value[0]; // The first element is the race name
@@ -113,13 +113,6 @@ export const ExternalDataManager = {
                     // Get the array of abilities, which is a collection of values
                     const abilities = Object.values(categoryData.manualPassives);
 
-                    // Process each ability and apply the data replacement
-                    for (const ability of abilities) {
-                        if (ability.applicableStats) {
-                            ability.applicableStats = this.replaceDataStats(ability.applicableStats);
-                        }
-                    }
-
                     // Safely update the main data sheet with the processed abilities
                     if (this._data[characterKey] && this._data[characterKey][categoryKey]) {
                         this._data[characterKey][categoryKey].manualPassives = abilities;
@@ -130,6 +123,11 @@ export const ExternalDataManager = {
                         }
                         this._data[characterKey][categoryKey] = { manualPassives: abilities };
                     }
+
+                    this._data[characterKey][categoryKey].manualPassives.forEach(passive => {
+                        if (passive.applicableStats)
+                            passive.applicableStats = this.replaceDataStats(passive.applicableStats);
+                    });
                 }
             }
 
@@ -171,7 +169,7 @@ export const ExternalDataManager = {
 
     /**
      * Provides direct access to the 'otherStats' array from the internal data,
-     * which typically contains the names of important stats 
+     * which typically contains some names
      * @returns {Array<string>} An array of stat names.
      */
     get otherStats() {
