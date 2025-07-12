@@ -1105,12 +1105,13 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, indexLevel, tag) {
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
 
+    console.log(availableOptions);
     const newAvailableOptions = [];
     availableOptions.forEach(opt => {
         newAvailableOptions[opt.count || 0] ||= []; 
         newAvailableOptions[opt.count || 0].push(opt);
     });
-    
+    console.log(newAvailableOptions);
     const indexes = Object.keys(newAvailableOptions);
 
     indexes.forEach(indexCount => {
@@ -1264,12 +1265,12 @@ function renderGenericRacialPassives(race) {
     if (character.race === category && genericPassives) {
         genericPassivesContainer.classList.remove('hidden');
         genericPassivesContainer.innerHTML = `
-           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Abilities</h4>
-           <div id="${race}-abilities-list" class="space-y-4">
+           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Passives</h4>
+           <div id="${race}-manual-passives-list" class="space-y-4">
            </div>
        `;
 
-        const abilitiesList = document.getElementById(`${race}-abilities-list`);
+        const abilitiesList = document.getElementById(`${race}-manual-passives-list`);
         const currentLevel = character.level;
 
         character.StatChoices[category] = character.StatChoices[category] || {};
