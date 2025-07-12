@@ -64,7 +64,8 @@
                 "calc": "add", "value": 0.50,
                 "applicableStats": ["Roll", "Health", "Mana"],
                 "unique":"Mutation_Degeneration",
-                "setsOption": [1]
+                "setsOption": [1],
+                "count": 2
               },
               { "label": "Doubling your base max health value",
                 "type": "double_base_health",
