@@ -1105,7 +1105,8 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
  */
 function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, indexLevel, tag) {
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
-    const newAvailableOptions = [...availableOptions];
+    const deepCopy = [...availableOptions];
+    let newAvailableOptions = deepCopy;
 
     let count = 0;
     while (newAvailableOptions.length > 0) {
