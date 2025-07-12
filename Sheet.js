@@ -302,7 +302,7 @@ function calculateTotal(char, statName) {
 }
 
 function getAppliedRacialChange(charData, statName) {
-    if (ExternalDataManager._data.Stats.has(statName)) {
+    if (ExternalDataManager._data.Stats.includes(statName)) {
         return charData[statName].racialChange;
     }
 
