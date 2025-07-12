@@ -1120,7 +1120,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 
     console.log(newAvailableOptions);
 
-    const indexes = Object.keys(newAvailableOptions.filter(indexCount => newOpt));
+    const indexes = Object.keys(newAvailableOptions.filter(indexCount => indexCount != undefined));
 
     console.log(indexes);
 
