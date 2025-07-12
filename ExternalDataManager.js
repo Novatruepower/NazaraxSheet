@@ -32,13 +32,9 @@ export const ExternalDataManager = {
 
     replaceDataStats(statNames) {
         const names = [];
-        console.log(statNames);
         statNames.forEach(name => {
-            console.log(name);
             names.push(this.readDataStat(name));
         });
-
-        console.log(names);
 
         return names;
     },
@@ -119,7 +115,7 @@ export const ExternalDataManager = {
                     this._data[characterKey] = this._data[characterKey] || {};
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
                     this._data[characterKey][categoryKey]['manualPassives'] = abilities;
-                    console.log(this._data[characterKey][categoryKey]['manualPassives']);
+                    console.log(Object.entries(this._data[characterKey][categoryKey]['manualPassives']));
 
                     for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
                         if (optionData.applicableStats)
