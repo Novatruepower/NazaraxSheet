@@ -4,7 +4,7 @@
       "manualPassives": {
         "Stat Adjustments" : {
           "description": "Demi-humans can choose to apply stat modifiers to their character.",
-          "choices": [
+          "options": [
             {
               "label": "+25% to any stat",
               "type": "stat_increase",

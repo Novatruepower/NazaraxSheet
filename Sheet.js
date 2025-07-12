@@ -981,7 +981,7 @@ function renderDemiHumanStatChoiceUI() {
     const demiHumanPassives = ExternalDataManager.getRaceManualPassives('Demi-humans');
     const category = 'Demi-humans';
 
-    if (character.race === category && demiHumanPassives && demiHumanPassives['Stat Adjustments'] && demiHumanPassives['Stat Adjustments'].choices) {
+    if (character.race === category && demiHumanPassives && demiHumanPassives['Stat Adjustments'] && demiHumanPassives['Stat Adjustments'].options) {
         const statAdjustmentsData = demiHumanPassives['Stat Adjustments'];
 
         demiHumanChoicesContainer.classList.remove('hidden');
@@ -998,7 +998,7 @@ function renderDemiHumanStatChoiceUI() {
         // Ensure the nested structure exists for Demi-humans
         character.StatChoices[category] = character.StatChoices[category] || {};
 
-        statAdjustmentsData.choices.forEach((modifier, modIndex) => {
+        statAdjustmentsData.options.forEach((modifier, modIndex) => {
             const uniqueIdentifier = modifier.unique;
             character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
             character.StatsAffected[category] = character.StatsAffected[category] || {};
