@@ -1106,9 +1106,15 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
 
     const newAvailableOptions = [];
+
     availableOptions.forEach(opt => {
-        newAvailableOptions[opt.count || 0] ||= []; 
-        newAvailableOptions[opt.count || 0].push(opt);
+        const count = opt.count || 0;
+        
+        if (!newAvailableOptions[count]) {
+            newAvailableOptions[count] = [];
+        }
+
+        newAvailableOptions[count].push(opt);
     });
 
     console.log(newAvailableOptions);
@@ -1293,7 +1299,6 @@ function renderGenericRacialPassives(race) {
                 let countLevel = 0;
 
                 for (let i = 0; i < maxChoices; ++i) {
-                    console.log("count " + i+1);
                     const usedNullSetOptions = new Set();
                     const usedSetOptions = new Set();
                     let availableOptions = [];
