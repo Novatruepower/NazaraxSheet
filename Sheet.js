@@ -1105,20 +1105,6 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
  */
 function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, indexLevel, tag) {
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
-   // const newAvailableOptions = {};
-
-   // availableOptions.forEach(opt => {
-    //    const count = opt.count || 0;
-        
-   //     if (!newAvailableOptions[count]) {
-  //          newAvailableOptions[count] = [];
-   //     }
-
-     //   newAvailableOptions[count].push(opt);
-   // });
-
-    const indexes = Object.keys(newAvailableOptions);
-
     const newAvailableOptions = [...availableOptions];
 
     let count = 0;
@@ -1259,6 +1245,16 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         ++count;
         newAvailableOptions = newAvailableOptions.filter(opt => opt.count && opt.count > count);
     }
+}
+
+function filterFromArrayStartIndex(arr, startIndex, predicate) {
+  const result = [];
+  for (let i = startIndex; i < arr.length; i++) {
+    if (predicate(arr[i], i, arr)) {
+      result.push(arr[i]);
+    }
+  }
+  return result;
 }
 
 /**
