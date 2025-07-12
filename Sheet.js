@@ -1105,13 +1105,12 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, indexLevel, tag) {
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
 
-    console.log(availableOptions);
     const newAvailableOptions = [];
     availableOptions.forEach(opt => {
         newAvailableOptions[opt.count || 0] ||= []; 
         newAvailableOptions[opt.count || 0].push(opt);
     });
-    console.log(newAvailableOptions);
+
     const indexes = Object.keys(newAvailableOptions);
 
     indexes.forEach(indexCount => {
@@ -1305,6 +1304,8 @@ function renderGenericRacialPassives(race) {
                         const nextOption = availableOptions[0];
                         const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
+                        console.log(availableOptions);
+                        console.log(nextOption);
                         renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, countLevel, tagToPass);
 
                         if (tagToPass)
