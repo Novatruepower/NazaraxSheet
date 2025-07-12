@@ -1275,10 +1275,9 @@ function renderGenericRacialPassives(race) {
 
                 const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
 
-                const usedNullSetOptions = new Set();
-                const usedSetOptions = new Set();
-
                 for (let i = 0; i < maxChoices; ++i) {
+                    const usedNullSetOptions = new Set();
+                    const usedSetOptions = new Set();
                     let availableOptions = [];
                     do {
                         availableOptions = abilityData.options.filter(opt => {
