@@ -1293,6 +1293,7 @@ function renderGenericRacialPassives(race) {
                 let countLevel = 0;
 
                 for (let i = 0; i < maxChoices; ++i) {
+                    console.log("count " + i+1);
                     const usedNullSetOptions = new Set();
                     const usedSetOptions = new Set();
                     let availableOptions = [];
