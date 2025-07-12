@@ -1273,9 +1273,10 @@ function renderGenericRacialPassives(race) {
                 abilityDescription.textContent = abilityData.description;
                 abilitiesList.appendChild(abilityDescription);
 
-                const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
+                //+1 and 2 because i start at 1
+                const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) + 1 : 2;
 
-                for (let i = 0; i < maxChoices; ++i) {
+                for (let i = 1; i < maxChoices; ++i) {
                     const usedNullSetOptions = new Set();
                     const usedSetOptions = new Set();
                     let availableOptions = [];
@@ -1296,7 +1297,7 @@ function renderGenericRacialPassives(race) {
                             usedSetOptions.add(tagToPass);
                         else
                             usedNullSetOptions.add(nextOption);
-                        
+
                         renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, i * (usedSetOptions.size + usedNullSetOptions.size), tagToPass);
 
                     } while(availableOptions.length > 0);
