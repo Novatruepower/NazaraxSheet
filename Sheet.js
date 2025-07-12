@@ -1,3 +1,4 @@
+import { count } from 'console';
 import { ExternalDataManager } from './ExternalDataManager.js';
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
@@ -1119,7 +1120,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 
     console.log(newAvailableOptions);
 
-    const indexes = Object.keys(newAvailableOptions);
+    const indexes = Object.keys(newAvailableOptions.filter(indexCount => newOpt));
 
     console.log(indexes);
 
