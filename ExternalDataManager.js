@@ -116,7 +116,7 @@ export const ExternalDataManager = {
                     this._data[characterKey] = this._data[characterKey] || {};
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
                     this._data[characterKey][categoryKey] = passive;
-                    console.log(this._data[characterKey][raceName].manualPassives);
+                    console.log(this._data[characterKey][categoryKey].manualPassives);
                 }
             }
 
