@@ -99,21 +99,18 @@ export const ExternalDataManager = {
             const manualPassivesResponse = await fetch('./manual_passives_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
 
-            // A more efficient and readable version
             for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
-                this._data[characterKey] = this._data[characterKey] || {};
+                const characterTarget = this._data[characterKey] ||= {};
 
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
-                    this._data[characterKey][categoryKey] = categoryData;
+                    characterTarget[categoryKey] = categoryData;
 
-                    const abilities = categoryData.manualPassives;
+                    const abilities = categoryData.manualPassives || {};
                     for (const abilityData of Object.values(abilities)) {
-                        const options = abilityData.options;
-                        if (options) {
-                            for (const optionData of Object.values(options)) {
-                                if (optionData.applicableStats) {
-                                    optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
-                                }
+                        const options = abilityData.options || {};
+                        for (const optionData of Object.values(options)) {
+                            if (optionData.applicableStats) {
+                                optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
                             }
                         }
                     }
