@@ -47,17 +47,16 @@ export const ExternalDataManager = {
     async init() {
         try {
             await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
-
                 // Remove the first element (empty string from the sheet)
                 delete arr[0][0];
-                const head = arr[0]; // The header row (e.g., ["", "Health", "Strength", "Agility", ...])
-                this._data['Stats'] = [...arr[0], 'Mana', 'BaseHealth']; // Copy header for 'Stats'
+                const head = arr[0].filter(e => e != undefined); // The header row (e.g., ["", "Health", "Strength", "Agility", ...])
+                this._data['Stats'] = [...arr[0].filter(e => e != undefined), 'Mana', 'BaseHealth']; // Copy header for 'Stats'
                 delete arr[0]; // Remove the header row from the main array
-                delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
-                const health = head[1]; // Get the 'Health' column name
+                //delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
+                const health = head[1].filter(e => e != undefined); // Get the 'Health' column name
                 this._data['Other'] = [head[1], 'Mana', 'BaseHealth']; //By default 
                 delete head[1]; // Remove 'Health' from the head array
-                this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll' it will be used with a racial change generated
+                this._data['Roll'] = head.filter(e => e != undefined); // The remaining elements in head are the stat names for 'Roll' it will be used with a racial change generated
 
                 arr.forEach(value => {
                     let race = value[0]; // The first element is the race name
