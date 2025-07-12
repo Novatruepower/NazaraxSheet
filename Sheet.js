@@ -1235,7 +1235,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
             const currentSelectedOptionData = availableOptions.find(opt => opt.type === currentType); // Get the full option data
             const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
 
-            processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, i, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
+            processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
         });
     }
 }
@@ -1275,25 +1275,30 @@ function renderGenericRacialPassives(race) {
 
                 const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
 
+                const usedNullSetOptions = new Set();
                 const usedSetOptions = new Set();
 
                 for (let i = 0; i < maxChoices; ++i) {
-                    const availableOptions = abilityData.options.filter(opt => {
-                        if (!opt.setsOption) return true;
-                        return opt.setsOption.some(tag => !usedSetOptions.has(tag));
-                    });
+                    let availableOptions = [];
+                    do {
+                        availableOptions = abilityData.options.filter(opt => {
+                            if (!opt.setsOption) return usedNullSetOptions.has(opt);
+                            return opt.setsOption.some(tag => !usedSetOptions.has(tag));
+                        });
 
-                    if (availableOptions.length === 0) {
-                        break;
-                    }
+                        if (availableOptions.length === 0) {
+                            break;
+                        }
 
-                    const nextOption = availableOptions[0];
-                    const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
-                    renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, i, tagToPass);
+                        const nextOption = availableOptions[0];
+                        const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
+                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, i, tagToPass);
 
-                    if (tagToPass) {
-                        usedSetOptions.add(tagToPass);
-                    }
+                        if (tagToPass)
+                            usedSetOptions.add(tagToPass);
+                        else
+                            usedNullSetOptions.add(nextOption);
+                    } while(availableOptions.length > 0);
                 }
             }
         }
@@ -1445,7 +1450,7 @@ function renderGenericOptionsRacialPassive(race, category, abilityKey, abilityDa
             const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
             const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
 
-            processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, i, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
+            processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
         });
     }
 }
