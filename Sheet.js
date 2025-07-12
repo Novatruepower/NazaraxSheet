@@ -1107,7 +1107,7 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
  * @param {number} indexLevel
  */
 function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, indexLevel, tag) {
-    const isLevelBased = abilityData.levels && abilityData.levels.length > 0;
+    const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
     const slotId = `${race}-${abilityKey}-${indexLevel}-${tag || 'none'}`; // Unique ID for each choice slot
 
     // Retrieve current choice data for this slot
@@ -1291,12 +1291,13 @@ function renderGenericRacialPassives(race) {
 
                         const nextOption = availableOptions[0];
                         const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
-                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, i, tagToPass);
+                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, i * (usedSetOptions.length + usedNullSetOptions.length), tagToPass);
 
                         if (tagToPass)
                             usedSetOptions.add(tagToPass);
                         else
                             usedNullSetOptions.add(nextOption);
+
                     } while(availableOptions.length > 0);
                 }
             }
