@@ -1110,11 +1110,12 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         newAvailableOptions[opt.count || 0] ||= []; 
         newAvailableOptions[opt.count || 0].push(opt);
     });
+    
+    const indexes = Object.keys(newAvailableOptions);
 
-    const countLength = availableOptions.length;
-    for (let count = 0; count < countLength; ++count) {
-        availableOptions = newAvailableOptions[count];
-        const slotId = `${race}-${abilityKey}-${indexLevel}-${tag || 'none'}-${count}`; // Unique ID for each choice slot
+    indexes.forEach(index => {
+        const options = newAvailableOptions[index];
+        const slotId = `${race}-${abilityKey}-${indexLevel}-${tag || 'none'}-${index}`; // Unique ID for each choice slot
 
         // Retrieve current choice data for this slot
         let currentChoice = null;
@@ -1131,7 +1132,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 
         const selectedOptionType = currentChoice ? currentChoice.type : '';
         const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
-        const selectedOptionData = availableOptions.find(opt => opt.type === selectedOptionType); // Find the full option data
+        const selectedOptionData = options.find(opt => opt.type === selectedOptionType); // Find the full option data
         const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
         const needsStatSelection = applicableStatsLength > 0;
 
@@ -1158,7 +1159,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
                     <option value="">-- Select ${abilityKey} Type --</option>
         `;
 
-        availableOptions.forEach(opt => {
+        options.forEach(opt => {
             const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
             innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
         });
@@ -1193,7 +1194,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         if (typeSelect) {
             typeSelect.addEventListener('change', (e) => {
                 const newType = e.target.value;
-                const newSelectedOptionData = availableOptions.find(opt => opt.type === newType);
+                const newSelectedOptionData = options.find(opt => opt.type === newType);
                 const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
                 const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
                 const newUniqueIdentifier = newSelectedOptionData ? newSelectedOptionData.unique : null;
@@ -1239,13 +1240,13 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         if (statSelect) {
             statSelect.addEventListener('change', (e) => {
                 const currentType = typeSelect.value;
-                const currentSelectedOptionData = availableOptions.find(opt => opt.type === currentType); // Get the full option data
+                const currentSelectedOptionData = options.find(opt => opt.type === currentType); // Get the full option data
                 const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
 
                 processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
             });
         }
-    }
+    });
 }
 
 /**
