@@ -105,8 +105,9 @@ export const ExternalDataManager = {
             // Fetch and load manual_passives_data.json
             const manualPassivesResponse = await fetch('./manual_passives_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
+            const keys = Object.keys(manualPassivesData);
 
-            manualPassivesData.forEach(key => {
+            keys.forEach(key => {
                 manualPassivesData[key].forEach(key2 => {
                     const manual_passives_data = manualPassivesData[key][key2].manualPassives;
                     manual_passives_data.forEach(ability => {
