@@ -1110,6 +1110,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
     console.log(availableOptions);
 
     availableOptions.forEach(opt => {
+        console.log(opt);
         const count = opt.count || 0;
         
         if (!newAvailableOptions[count]) {
