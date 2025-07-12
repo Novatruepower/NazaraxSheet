@@ -1293,12 +1293,12 @@ function renderGenericRacialPassives(race) {
                         const nextOption = availableOptions[0];
                         const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
+                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, i * (usedSetOptions.size + usedNullSetOptions.size), tagToPass);
+
                         if (tagToPass)
                             usedSetOptions.add(tagToPass);
                         else
                             usedNullSetOptions.add(nextOption);
-
-                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, i * (usedSetOptions.size + usedNullSetOptions.size), tagToPass);
 
                     } while(availableOptions.length > 0);
                 }
