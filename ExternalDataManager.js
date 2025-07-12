@@ -117,11 +117,11 @@ export const ExternalDataManager = {
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
                     this._data[characterKey][categoryKey]['manualPassives'] = abilities;
 
-                    for (const [optionsKey, optionsData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
-                        console.log(optionData);
-                        if (optionData.applicableStats)
-                            this._data[characterKey][categoryKey]['manualPassives'][optionsKey][applicableStats] = this.replaceDataStats(optionData.applicableStats);
-                    }
+                    //for (const [optionsKey, optionsData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
+                 //       console.log(optionData);
+                  //      if (optionData.applicableStats)
+                 //           this._data[characterKey][categoryKey]['manualPassives'][optionsKey][applicableStats] = this.replaceDataStats(optionData.applicableStats);
+                 //   }
                 }
             }
 
