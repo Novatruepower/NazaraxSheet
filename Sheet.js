@@ -1293,6 +1293,7 @@ function renderGenericRacialPassives(race) {
                     let availableOptions = [];
                     do {
                         availableOptions = abilityData.options.filter(opt => {
+                            console.log(opt);
                             if (!opt.setsOption) return usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
