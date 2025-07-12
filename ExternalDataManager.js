@@ -17,6 +17,26 @@ export const ExternalDataManager = {
         return parseFloat(numberString.replace('%', '')) / 100;
     },
 
+    replaceDataStat(statName) {
+        switch (key) {
+            case 'otherStats':
+                return ExternalDataManager.otherStats;
+            case 'Stats':
+                return ExternalDataManager.stats;
+            default:
+                return [statName];
+        }
+    },
+
+    replaceDataStats(statNames) {
+        const names = [];
+        statNames.forEach(name => {
+            names.push(this.readDataStat(name));
+        });
+
+        return names;
+    },
+
     /**
      * Fetches external data from Google Sheets and populates the internal `_data` object.
      * This method is asynchronous and should be awaited before using other methods
@@ -33,7 +53,7 @@ export const ExternalDataManager = {
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
-                this._data['Other'] = [head[1], 'Mana', 'BaseHealth'];
+                this._data['Other'] = [head[1], 'Mana', 'BaseHealth']; //By default will be used with a racial change
                 delete head[1]; // Remove 'Health' from the head array
                 this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll'
 
@@ -84,29 +104,23 @@ export const ExternalDataManager = {
             const manualPassivesResponse = await fetch('./manual_passives_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
 
-            // Integrate manual passives data into _data.Races and _data.Classes
-            if (manualPassivesData.races) {
-                for (const raceName in manualPassivesData.races) {
-                    if (this._data['Races'][raceName]) {
-                        this._data['Races'][raceName]['manualPassives'] = manualPassivesData.races[raceName].manualPassives;
-                    } else {
-                        // If a race exists in manual_passives_data but not in the sheet, create a basic entry
-                        this._data['Races'][raceName] = { manualPassives: manualPassivesData.races[raceName].manualPassives };
-                    }
-                }
-            }
+            manualPassivesData.forEach(key => {
+                manualPassivesData[key].forEach(key2 => {
+                    const manual_passives_data = manualPassivesData[key][key2].manualPassives;
+                    manual_passives_data.forEach(ability => {
+                        if (ability.applicableStats) {
+                            ability.applicableStats = this.replaceDataStats(ability.applicableStats);
+                        }
+                    });
 
-            if (manualPassivesData.classes) {
-                for (const className in manualPassivesData.classes) {
-                    if (this._data['Classes'][className]) {
-                        this._data['Classes'][className]['manualPassives'] = manualPassivesData.classes[className].manualPassives;
+                    if (this._data[key][key2]) {
+                        this._data[key][key2]['manualPassives'] = manual_passives_data;
                     } else {
-                        // If a class exists in manual_passives_data but not in the sheet, create a basic entry
-                        this._data['Classes'][className] = { manualPassives: manualPassivesData.classes[className].manualPassives };
+                        // If it exists in manual_passives_data but not in the sheet, create a basic entry
+                        this._data[key][key2] = { manualPassives: manual_passives_data };
                     }
-                }
-            }
-
+                });
+            });
 
             console.log("External data loaded successfully into ExternalDataManager.");
             console.log(this._data);
@@ -114,6 +128,20 @@ export const ExternalDataManager = {
             console.error("Error initializing ExternalDataManager with external data:", error);
             // Optionally, re-throw or handle the error more gracefully
         }
+    },
+
+    /**
+     * Provides direct access to the 'Roll' array from the internal data,
+     * which typically contains the names of the stats that can be rolled.
+     * @returns {Array<string>} An array of stat names.
+     */
+    get stats() {
+        // Ensure _data and _data.Roll exist before accessing
+        if (typeof this._data === 'undefined' || !this._data.hasOwnProperty('Stats')) {
+            console.warn("ExternalDataManager: Data or 'Stats' property not yet available. Call init() first.");
+            return [];
+        }
+        return this._data['Stats'];
     },
 
     /**
