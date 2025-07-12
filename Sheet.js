@@ -1265,6 +1265,16 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
     });
 }
 
+function filterFromArrayStartIndex(arr, startIndex, predicate) {
+  const result = [];
+  for (let i = startIndex; i < arr.length; i++) {
+    if (predicate(arr[i], i, arr)) {
+      result.push(arr[i]);
+    }
+  }
+  return result;
+}
+
 /**
  * Renders the generic racial passives for races that don't have manual choices.
  * @param {string} race The name of the race.
@@ -1307,17 +1317,20 @@ function renderGenericRacialPassives(race) {
                     const usedSetOptions = new Set();
                     let availableOptions = [];
                     do {
-                        const nextOption = abilityData.options.find(opt => {
+                        const nextOptionIndex = abilityData.options.findIndex(opt => {
                             if (!opt.setsOption) return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
 
-                        if (!nextOption) {
+                        if (nextOptionIndex > -1) {
                             break;
                         }
+
+                        const nextOption = abilityData.options[nextOptionIndex];
                         
-                        availableOptions = nextOption.setsOption ? abilityData.options.filter(opt => {
-                            if (!opt.setsOption) return !usedNullSetOptions.has(opt);
+                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(abilityData.options, nextOptionIndex, (opt) => {
+                            if (!opt.setsOption) 
+                                return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         }) : [nextOption];
 
