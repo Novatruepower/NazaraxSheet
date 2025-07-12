@@ -112,12 +112,14 @@ export const ExternalDataManager = {
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                     // Get the array of abilities, which is a collection of values
                     const abilities = categoryData;
-                    abilities.array.forEach(ability => {
-                        ability.options.forEach(opt => {
-                            if (opt.applicableStats)
-                                opt.applicableStats = this.replaceDataStats(opt.applicableStats)
-                        })
-                    });
+                    for (const [abilityKey, abilityData] of Object.entries(abilities)) {
+                        for (const [optionKey, optionData] of Object.entries(abilityData)) {
+                            console.log(optionData);
+                            if (optionData.applicableStats)
+                                optionData.applicableStats = this.replaceDataStats(optionData.applicableStats)
+                        }
+                    }
+                    
                     this._data[characterKey] = this._data[characterKey] || {};
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
                     this._data[characterKey][categoryKey] = abilities;
