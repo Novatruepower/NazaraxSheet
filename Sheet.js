@@ -1115,6 +1115,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 
     indexes.forEach(indexCount => {
         const options = newAvailableOptions[indexCount];
+        console.log(indexCount);
         const slotId = `${race}-${abilityKey}-${indexLevel}-${tag || 'none'}-${indexCount}`; // Unique ID for each choice slot
 
         // Retrieve current choice data for this slot
