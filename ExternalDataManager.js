@@ -32,9 +32,13 @@ export const ExternalDataManager = {
 
     replaceDataStats(statNames) {
         const names = [];
+        console.log(statNames);
         statNames.forEach(name => {
+            console.log(name);
             names.push(this.readDataStat(name));
         });
+
+        console.log(names);
 
         return names;
     },
@@ -118,7 +122,6 @@ export const ExternalDataManager = {
                     console.log(this._data[characterKey][categoryKey]['manualPassives']);
 
                     for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
-                        console.log(optionKey);
                         if (optionData.applicableStats)
                             this._data[characterKey][categoryKey]['manualPassives'][optionKey][applicableStats] = this.replaceDataStats(optionData.applicableStats);
                     }
