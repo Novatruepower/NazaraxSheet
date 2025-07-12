@@ -31,12 +31,7 @@ export const ExternalDataManager = {
     },
 
     replaceDataStats(statNames) {
-        const names = [];
-        statNames.forEach(name => {
-            names.push(this.replaceDataStat(name));
-        });
-
-        return names;
+        return statNames.flatMap(name => this.replaceDataStat(name));
     },
 
     /**
