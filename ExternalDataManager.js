@@ -118,8 +118,9 @@ export const ExternalDataManager = {
                     console.log(this._data[characterKey][categoryKey]['manualPassives']);
 
                     for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
+                        console.log(optionKey);
                         if (optionData.applicableStats)
-                            this._data[characterKey][categoryKey].manualPassives[optionKey] = this.replaceDataStats(optionData.applicableStats);
+                            this._data[characterKey][categoryKey]['manualPassives'][optionKey][applicableStats] = this.replaceDataStats(optionData.applicableStats);
                     }
                 }
             }
