@@ -111,7 +111,7 @@ export const ExternalDataManager = {
                 // Iterate through each category for the character (e.g., 'passives', 'skills')
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                     // Get the array of abilities, which is a collection of values
-                    const abilities = categoryData[categoryKey];
+                    const abilities = categoryData;
                     console.log(abilities);
                     this._data[characterKey] = this._data[characterKey] || {};
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
