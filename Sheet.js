@@ -1256,8 +1256,8 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
             });
         }
 
-        newAvailableOptions = newAvailableOptions.filter(opt => opt.count ? opt.count > count : count == 0);
         ++count;
+        newAvailableOptions = newAvailableOptions.filter(opt => opt.count && opt.count > count);
     }
 }
 
