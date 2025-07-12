@@ -1107,6 +1107,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
 
     const newAvailableOptions = [];
+    console.log(availableOptions);
 
     availableOptions.forEach(opt => {
         const count = opt.count || 0;
@@ -1118,7 +1119,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         newAvailableOptions[count].push(opt);
     });
 
-    const indexes = Object.keys(newAvailableOptions).filter(indexCount => indexCount != undefined);
+    const indexes = Object.keys(newAvailableOptions);
 
     console.log(indexes);
 
