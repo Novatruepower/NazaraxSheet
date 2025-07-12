@@ -301,15 +301,11 @@ function calculateTotal(char, statName) {
     return value * racialChange + equipment + temporary;
 }
 
-// Helper function to get the applied racial change for a stat (for both Demi-humans and Mutants)
 function getAppliedRacialChange(charData, statName) {
-    // For standard most stats, the racialChange is directly stored on the stat object.
-    if (ExternalDataManager._data.Stats.includes(statName)) {
+    if (ExternalDataManager._data.Stats.has(statName)) {
         return charData[statName].racialChange;
     }
 
-    // If for some reason a statName is passed that isn't a rollStat, Health, or Mana,
-    // and it's not explicitly handled by the above, return 0 or a default.
     console.warn(`getAppliedRacialChange: Unhandled statName '${statName}'. Returning 0.`);
     return 0;
 }
@@ -1144,6 +1140,15 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+
+    const newAvailableOptions = [];
+    availableOptions.forEach(opt => {
+        newAvailableOptions[opt.count || 0] ||= []; 
+        newAvailableOptions[opt.count || 0].push(opt);
+    });
+
+    console.log(newAvailableOptions);
+
     let innerHTML = `
         <div class="flex items-center space-x-2">
             <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isLevelBased ? indexLevel + 1 : ''}:</label>
