@@ -1307,19 +1307,23 @@ function renderGenericRacialPassives(race) {
                     const usedSetOptions = new Set();
                     let availableOptions = [];
                     do {
-                        availableOptions = abilityData.options.filter(opt => {
+                        const nextOption = abilityData.options.find(opt => {
                             if (!opt.setsOption) return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
 
-                        if (availableOptions.length === 0) {
+                        if (!nextOption) {
                             break;
                         }
+                        
+                        availableOptions = nextOption.setsOption ? abilityData.options.filter(opt => {
+                            if (!opt.setsOption) return !usedNullSetOptions.has(opt);
+                            return opt.setsOption.some(tag => !usedSetOptions.has(tag));
+                        }) : [nextOption];
 
-                        const nextOption = availableOptions[0];
                         const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
-                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, tagToPass ? availableOptions : [nextOption], abilitiesList, countLevel, tagToPass);
+                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, countLevel, tagToPass);
 
                         if (tagToPass)
                             usedSetOptions.add(tagToPass);
