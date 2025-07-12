@@ -115,13 +115,13 @@ export const ExternalDataManager = {
                     console.log(abilities);
                     this._data[characterKey] = this._data[characterKey] || {};
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
-                    this._data[characterKey][categoryKey]['manualPassives'] = abilities;
+                    this._data[characterKey][categoryKey] = abilities;
 
-                    //for (const [optionsKey, optionsData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
-                 //       console.log(optionData);
-                  //      if (optionData.applicableStats)
-                 //           this._data[characterKey][categoryKey]['manualPassives'][optionsKey][applicableStats] = this.replaceDataStats(optionData.applicableStats);
-                 //   }
+                    for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
+                        console.log(optionData);
+                        if (optionData.applicableStats)
+                            this._data[characterKey][categoryKey]['manualPassives'][optionsKey][applicableStats] = this.replaceDataStats(optionData.applicableStats);
+                    }
                 }
             }
 
