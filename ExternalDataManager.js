@@ -112,6 +112,7 @@ export const ExternalDataManager = {
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                     // Get the array of abilities, which is a collection of values
                     const abilities = manualPassivesData[characterKey][categoryKey].manualPassives;
+                    console.log(abilities);
                     this._data[characterKey] = this._data[characterKey] || {};
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
                     this._data[characterKey][categoryKey]['manualPassives'] = abilities;
