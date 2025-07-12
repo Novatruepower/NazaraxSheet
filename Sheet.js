@@ -1322,7 +1322,7 @@ function renderGenericRacialPassives(race) {
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
 
-                        if (nextOptionIndex > -1) {
+                        if (nextOptionIndex < 0) {
                             break;
                         }
 
