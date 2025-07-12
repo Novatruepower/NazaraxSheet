@@ -1106,16 +1106,11 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
     character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
 
     const count = option.count || 1;
-    const applicableStats = option.applicableStats;
-    const needsStatSelection = applicableStats && applicableStats.length > 0;
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
 
-    // Get filtered options (setsOption group) if present
     const matchingOptions = option.setsOption
-        ? abilityData.options.filter(o =>
-            o.setsOption && o.setsOption.some(tag => option.setsOption.includes(tag))
-        )
-        : [option]; // Single option not in a group
+        ? abilityData.options.filter(o => o.setsOption && o.setsOption.some(tag => option.setsOption.includes(tag)))
+        : [option];
 
     const optionGroupId = option.setsOption ? option.setsOption.join('-') : option.type;
 
@@ -1128,7 +1123,6 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
         const container = document.createElement('div');
         container.className = 'flex flex-col space-y-1 p-2 border border-gray-300 dark:border-gray-700 rounded-md';
 
-        // Build select for types
         let html = `
         <div class="flex items-center space-x-2">
             <label for="${slotId}-type" class="text-sm font-medium w-32">${abilityKey} ${isLevelBased ? indexLevel + 1 : ''}:</label>
@@ -1145,7 +1139,6 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
             <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${uniqueIdentifier}" class="clear-${race}-choice-btn px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md">Clear</button>
         </div>`;
 
-        // Build stat select if needed
         const selectedOptionData = matchingOptions.find(opt => opt.type === selectedType);
         const showStatDropdown = selectedOptionData && selectedOptionData.applicableStats && selectedOptionData.applicableStats.length > 0;
         if (showStatDropdown) {
@@ -1171,7 +1164,6 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
         const typeSelect = container.querySelector(`#${slotId}-type`);
         const statSelect = container.querySelector(`#${slotId}-stat`);
 
-        // Event listener: TYPE
         typeSelect.addEventListener('change', e => {
             const newType = e.target.value;
             const newOption = matchingOptions.find(opt => opt.type === newType);
@@ -1183,7 +1175,6 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
             processRacialChoiceChange(category, newOption?.unique || uniqueIdentifier, slotId, newChoiceData);
         });
 
-        // Event listener: STAT
         if (statSelect) {
             statSelect.addEventListener('change', e => {
                 const newStat = e.target.value;
@@ -1365,32 +1356,41 @@ function renderGenericRacialPassives(race) {
         character.StatChoices[category] = character.StatChoices[category] || {};
         character.StatsAffected[category] = character.StatsAffected[category] || {};
 
-        // Iterate over each ability (Mutation, Degeneration)
-        for (const abilityKey in genericPassives) { // Iterate directly over genericPassives
-            if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) { // Check if it's an ability with options
+        for (const abilityKey in genericPassives) {
+            if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
                 const abilityData = genericPassives[abilityKey];
                 const abilityDescription = document.createElement('p');
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
                 abilityDescription.textContent = abilityData.description;
                 abilitiesList.appendChild(abilityDescription);
+
                 const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
-                const options = abilityData.options;
-                const optionsLength = options.length;
+                const usedSetOptions = new Set();
 
                 for (let i = 0; i < maxChoices; ++i) {
-                    //renderGenericOptionsRacialPassive(race, category, abilityKey, abilityData, abilitiesList, i);
-                    for (let i2 = 0; i2 < optionsLength; ++i2) {
-                        renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, options[i2], abilitiesList, i2, i);
+                    let remainingOptions = abilityData.options.filter(opt => {
+                        if (!opt.setsOption) return true;
+                        return opt.setsOption.some(tag => !usedSetOptions.has(tag));
+                    });
+
+                    if (remainingOptions.length === 0) break;
+
+                    const renderedTypes = new Set();
+                    for (const option of remainingOptions) {
+                        if (renderedTypes.has(option.type)) continue;
+                        renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, option, abilitiesList, i, i);
+                        renderedTypes.add(option.type);
+                        if (option.setsOption) option.setsOption.forEach(tag => usedSetOptions.add(tag));
+                        break;
                     }
                 }
             }
         }
-
     } else {
         genericPassivesContainer.classList.add('hidden');
-        genericPassivesContainer.innerHTML = ''; // Clear content when hidden
+        genericPassivesContainer.innerHTML = '';
     }
-    attachClearChoiceListeners(`.clear-${race}-choice-btn`); // Attach listeners for clear buttons
+    attachClearChoiceListeners(`.clear-${race}-choice-btn`);
 }
 
 /**
