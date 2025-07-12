@@ -1293,8 +1293,7 @@ function renderGenericRacialPassives(race) {
                     let availableOptions = [];
                     do {
                         availableOptions = abilityData.options.filter(opt => {
-                            console.log(opt);
-                            if (!opt.setsOption) return usedNullSetOptions.has(opt);
+                            if (!opt.setsOption) return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
 
@@ -1305,8 +1304,6 @@ function renderGenericRacialPassives(race) {
                         const nextOption = availableOptions[0];
                         const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
-                        console.log(availableOptions);
-                        console.log(nextOption);
                         renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, abilitiesList, countLevel, tagToPass);
 
                         if (tagToPass)
