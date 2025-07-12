@@ -11,7 +11,7 @@
               "value": 0.25,
               "calc": "add",
               "count": 1,
-              "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
+              "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             },
             {
@@ -20,7 +20,7 @@
               "value": 0.50,
               "calc": "add",
               "count": 2,
-              "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
+              "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             },
             {
@@ -29,7 +29,7 @@
               "calc": "add",
               "value": -0.25,
               "count": 1,
-              "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
+              "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             },
             {
@@ -38,7 +38,7 @@
               "calc": "add",
               "value": -0.50,
               "count": 2,
-              "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
+              "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             }
           ]
@@ -62,7 +62,7 @@
               { "label": "A statistical multiplier to be set to 50%",
                 "type": "stat_multiplier_set_50",
                 "calc": "add", "value": 0.50,
-                "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
+                "applicableStats": ["Roll", "Health", "Mana"],
                 "unique":"Mutation_Degeneration",
                 "setsOption": [1]
               },
@@ -91,7 +91,7 @@
                 "type": "stat_multiplier_reduce_50",
                 "calc": "add",
                 "value": -0.50,
-                "applicableStats": ["Strength", "Agility", "Magic", "Luck", "Crafting", "Intelligence", "Intimidation", "Charisma", "Negotiation", "Health", "Mana"],
+                "applicableStats": ["Roll", "Health", "Mana"],
                 "unique":"Mutation_Degeneration",
                 "setsOption": [1]
               }

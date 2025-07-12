@@ -19,7 +19,9 @@ export const ExternalDataManager = {
 
     replaceDataStat(statName) {
         switch (key) {
-            case 'otherStats':
+            case 'Roll':
+                return ExternalDataManager.rollStats;
+            case 'Other':
                 return ExternalDataManager.otherStats;
             case 'Stats':
                 return ExternalDataManager.stats;
@@ -53,7 +55,7 @@ export const ExternalDataManager = {
                 delete arr[0]; // Remove the header row from the main array
                 delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
-                this._data['Other'] = [head[1], 'Mana', 'BaseHealth']; //By default will be used with a racial change
+                this._data['Other'] = [head[1], 'Mana', 'BaseHealth']; //By default it will be used with a racial change generated
                 delete head[1]; // Remove 'Health' from the head array
                 this._data['Roll'] = head; // The remaining elements in head are the stat names for 'Roll'
 
@@ -132,7 +134,7 @@ export const ExternalDataManager = {
 
     /**
      * Provides direct access to the 'Roll' array from the internal data,
-     * which typically contains the names of the stats that can be rolled.
+     * which typically contains the names of the stats
      * @returns {Array<string>} An array of stat names.
      */
     get stats() {
@@ -159,8 +161,8 @@ export const ExternalDataManager = {
     },
 
     /**
-     * Provides direct access to the 'Roll' array from the internal data,
-     * which typically contains the names of the stats that can be rolled.
+     * Provides direct access to the 'otherStats' array from the internal data,
+     * which typically contains the names of important stats 
      * @returns {Array<string>} An array of stat names.
      */
     get otherStats() {

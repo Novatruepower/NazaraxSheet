@@ -746,7 +746,7 @@ function updateRacialChange(oldRace, statName) {
 
 // Revert stat changes
 function revertChoiceRacialChange(char, statName, choice) {
-    if (ExternalDataManager.otherStats.includes(statName)) {
+    if (ExternalDataManager.stats.has(statName)) {
         if (choice.calc == "mult")
             char[statName].racialChange /= choice.value;
         else
@@ -756,7 +756,7 @@ function revertChoiceRacialChange(char, statName, choice) {
 
 // Apply stat changes
 function applyChoiceRacialChange(char, statName, value, calc) {
-    if (ExternalDataManager.otherStats.includes(statName)) {
+    if (ExternalDataManager.stats.has(statName)) {
         if (calc == "mult")
             char[statName].racialChange *= value;
         else
