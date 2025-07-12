@@ -127,7 +127,7 @@ export const ExternalDataManager = {
                     const abilitiesKey = Object.keys(this._data[characterKey][categoryKey]);
 
                     abilitiesKey.forEach(abilityKey => {
-                        if (this._data[characterKey][categoryKey].manualPassives[abilityKey].applicableStats)
+                        if (this._data[characterKey][categoryKey].manualPassives[abilityKey].hasOwnProperty('applicableStats'))
                             this._data[characterKey][categoryKey].manualPassives[abilityKey] = this.replaceDataStats(passive.applicableStats);
                     });
                 }
