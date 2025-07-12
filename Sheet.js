@@ -1113,9 +1113,9 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
     
     const indexes = Object.keys(newAvailableOptions);
 
-    indexes.forEach(index => {
-        const options = newAvailableOptions[index];
-        const slotId = `${race}-${abilityKey}-${indexLevel}-${tag || 'none'}-${index}`; // Unique ID for each choice slot
+    indexes.forEach(indexCount => {
+        const options = newAvailableOptions[indexCount];
+        const slotId = `${race}-${abilityKey}-${indexLevel}-${tag || 'none'}-${indexCount}`; // Unique ID for each choice slot
 
         // Retrieve current choice data for this slot
         let currentChoice = null;
@@ -1154,7 +1154,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 
         let innerHTML = `
             <div class="flex items-center space-x-2">
-                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isLevelBased ? indexLevel + 1 : ''}:</label>
+                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${isLevelBased ? indexLevel + 1 + indexCount : ''}:</label>
                 <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">-- Select ${abilityKey} Type --</option>
         `;
