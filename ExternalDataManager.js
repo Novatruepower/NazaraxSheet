@@ -113,13 +113,6 @@ export const ExternalDataManager = {
                     // Get the array of abilities, which is a collection of values
                     const abilities = Object.values(categoryData.manualPassives);
 
-                    // Process each ability and apply the data replacement
-                    for (const ability of abilities) {
-                        if (ability.applicableStats) {
-                            ability.applicableStats = this.replaceDataStats(ability.applicableStats);
-                        }
-                    }
-
                     // Safely update the main data sheet with the processed abilities
                     if (this._data[characterKey] && this._data[characterKey][categoryKey]) {
                         this._data[characterKey][categoryKey]['manualPassives'] = abilities;
@@ -133,13 +126,14 @@ export const ExternalDataManager = {
 
                     console.log(characterKey);
                     console.log(categoryKey);
+                    console.log(this._data[characterKey]);
 
-                   // for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'].manualPassives)) {
-                  //      console.log(optionData);
-                  //      if (optionData.applicableStats)
-                   //         console.log("good");
+                    for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
+                        console.log(optionData);
+                      if (optionData.applicableStats)
+                            console.log("good");
                             //this._data[characterKey][categoryKey].manualPassives[optionKey] = this.replaceDataStats(optionData.applicableStats);
-                   // }
+                    }
                 }
             }
 
