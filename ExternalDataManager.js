@@ -117,10 +117,12 @@ export const ExternalDataManager = {
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
                     this._data[characterKey][categoryKey] = passives;
 
-                    for (const [optionKey, optionData] of Object.entries(passives.manualPassives)) {
-                        console.log(this._data[characterKey][categoryKey].manualPassives[optionKey]);
-                        console.log("--");
-                        console.log(optionData);
+                    for (const [abilityKey, abilityData] of Object.entries(passives.manualPassives)) {
+                        for (const [optionKey, optionData] of Object.entries(abilityData.options)) {
+                            console.log(this._data[characterKey][categoryKey].manualPassives[optionKey]);
+                            console.log("--");
+                            console.log(optionData);
+                        }
                     }
                 }
             }
