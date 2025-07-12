@@ -1330,15 +1330,7 @@ function renderGenericRacialPassives(race) {
 function renderRacialPassives() {
     // Hide all specific containers first
     document.getElementById('racial-passives-container').classList.add('hidden');
-
-    // Then render the appropriate one
-    if (character.race === 'Demi-humans') {
-        renderDemiHumanStatChoiceUI();
-   // } else if (character.race === 'Mutant') {
-   //     renderMutantOptionUI();
-    } else {
-        renderGenericRacialPassives(character.race);
-    }
+    renderGenericRacialPassives(character.race);
 }
 
 /**
