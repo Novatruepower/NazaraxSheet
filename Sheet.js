@@ -1092,6 +1092,92 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
     return newChoiceData;
 }
 
+function htmlAloneSelector(option) {
+    let innerHTML = `
+        <div class="flex items-center space-x-2">
+            <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${displayLevel}:</label>
+            <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="">-- Select ${abilityKey} Type --</option>
+    `;
+
+    option.applicableStats.forEach(statName => {
+        const option = document.createElement('option');
+        option.value = statName;
+        option.textContent = statName;
+        // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
+        //const isAlreadyChosen = character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][statName] && character.StatsAffected[category][uniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][uniqueIdentifier][statName].has(slotId);
+        option.disabled = hasConflict(character, category, uniqueIdentifier, statName, slotId);
+        selectElement.appendChild(option);
+    });
+
+    //optios.forEach(opt => {
+    //    if (opt.setsOption) {
+    //        const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
+      //      innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
+      //  }
+   // });
+
+    let statSelectionHtml = '';
+
+    if (needsStatSelection) {
+        const hide = applicableStatsLength === 1 ? 'hidden' : ''; // Hide if only one applicable stat
+        statSelectionHtml = `
+            <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
+                <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                <select id="${slotId}-stat" class="${race}-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Select a Stat --</option>
+                </select>
+            </div>`;
+    }
+
+    innerHTML +=
+            `</select>
+                <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+        </div>
+        ${statSelectionHtml}
+    `;
+
+    return innerHTML;
+}
+
+function htmlOptionsSelector(race, abilityKey, options, needsStatSelection, selectedOptionType) {
+    let innerHTML = `
+        <div class="flex items-center space-x-2">
+            <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${displayLevel}:</label>
+            <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="">-- Select ${abilityKey} Type --</option>
+    `;
+
+    options.forEach(opt => {
+        if (opt.setsOption) {
+            const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
+            innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
+        }
+    });
+
+    let statSelectionHtml = '';
+
+    if (needsStatSelection) {
+        const hide = applicableStatsLength === 1 ? 'hidden' : ''; // Hide if only one applicable stat
+        statSelectionHtml = `
+            <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
+                <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
+                <select id="${slotId}-stat" class="${race}-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Select a Stat --</option>
+                </select>
+            </div>`;
+    }
+
+    innerHTML +=
+            `</select>
+                <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+        </div>
+        ${statSelectionHtml}
+    `;
+
+    return innerHTML;
+}
+
 /**
  * Renders the generic racial options for a specific ability within a race.
  * This function is called for each available choice slot (e.g., for each level-based choice).
@@ -1131,6 +1217,22 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         const selectedOptionData = newAvailableOptions.find(opt => opt.type === selectedOptionType); // Find the full option data
         const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
         const needsStatSelection = applicableStatsLength > 0;
+        const choiceDiv = document.createElement('div');
+        choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+
+        let innerHTML = `
+            <div class="flex items-center space-x-2">
+                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${displayLevel}:</label>
+                <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Select ${abilityKey} Type --</option>
+        `;
+
+        newAvailableOptions.forEach(opt => {
+            if (opt.setsOption) {
+                const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
+                innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
+            }
+        });
 
         let statSelectionHtml = '';
 
@@ -1144,21 +1246,6 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
                     </select>
                 </div>`;
         }
-
-        const choiceDiv = document.createElement('div');
-        choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
-
-        let innerHTML = `
-            <div class="flex items-center space-x-2">
-                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${displayLevel}:</label>
-                <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">-- Select ${abilityKey} Type --</option>
-        `;
-
-        newAvailableOptions.forEach(opt => {
-            const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
-            innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
-        });
 
         innerHTML +=
                 `</select>

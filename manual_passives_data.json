@@ -16,7 +16,7 @@
             },
             {
               "label": "+50% to any stat",
-              "type": "stat_increase",
+              "type": "stat_increase2",
               "calc": "add",
               "value": 0.50,
               "count": 2,
@@ -34,7 +34,7 @@
             },
             {
               "label": "-50% to any stat",
-              "type": "stat_reduction",
+              "type": "stat_reduction2",
               "calc": "add",
               "value": -0.50,
               "count": 2,
