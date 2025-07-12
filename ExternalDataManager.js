@@ -119,8 +119,8 @@ export const ExternalDataManager = {
 
                     for (const [abilityKey, abilityData] of Object.entries(passives.manualPassives)) {
                         for (const [optionKey, optionData] of Object.entries(abilityData.options)) {
-                            const option = this._data[characterKey][categoryKey].manualPassives[optionKey];
-                            console.log(optionData);
+                            const option = this._data[characterKey][categoryKey].manualPassives[abilityKey][optionKey];
+                            console.log(option);
 
                             if (option.applicableStats)
                                 option.applicableStats = this.replaceDataStats(option.applicableStats);
