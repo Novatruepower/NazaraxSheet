@@ -1098,7 +1098,8 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
     return newChoiceData;
 }
 
-function renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, option, abilitiesList, indexChoice, indexLevel) {
+function renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, option, abilitiesList, indexLevel) {
+    const indexOption = abilityData.options.findIndex(opt => opt == option);
     const uniqueIdentifier = option.unique || abilityKey;
     character.StatChoices[category] = character.StatChoices[category] || {};
     character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
@@ -1115,7 +1116,7 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
     const optionGroupId = option.setsOption ? option.setsOption.join('-') : option.type;
 
     for (let i = 0; i < count; ++i) {
-        const slotId = `${race}-${optionGroupId}-${indexChoice}-${indexLevel}-${i}`;
+        const slotId = `${race}-${optionGroupId}-${abilityKey}-${indexOption}-${indexLevel}-${i}`;
         const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
         const selectedType = currentChoice ? currentChoice.type : '';
         const selectedStatName = currentChoice ? currentChoice.statName : '';
@@ -1332,9 +1333,6 @@ function renderGenericOptionsRacialPassive(race, category, abilityKey, abilityDa
     }
 }
 
-/**
-* Renders the generic racial passives for races that don't have manual choices.
-*/
 function renderGenericRacialPassives(race) {
     const genericPassivesContainer = document.getElementById('racial-passives-container');
     if (!genericPassivesContainer) return;
@@ -1365,23 +1363,22 @@ function renderGenericRacialPassives(race) {
                 abilitiesList.appendChild(abilityDescription);
 
                 const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
+
                 const usedSetOptions = new Set();
 
                 for (let i = 0; i < maxChoices; ++i) {
-                    let remainingOptions = abilityData.options.filter(opt => {
+                    const availableOptions = abilityData.options.filter(opt => {
                         if (!opt.setsOption) return true;
                         return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                     });
 
-                    if (remainingOptions.length === 0) break;
+                    if (availableOptions.length === 0) break;
 
-                    const renderedTypes = new Set();
-                    for (const option of remainingOptions) {
-                        if (renderedTypes.has(option.type)) continue;
-                        renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, option, abilitiesList, i, i);
-                        renderedTypes.add(option.type);
-                        if (option.setsOption) option.setsOption.forEach(tag => usedSetOptions.add(tag));
-                        break;
+                    const nextOption = availableOptions[0];
+                    renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, nextOption, abilitiesList, i);
+
+                    if (nextOption.setsOption) {
+                        nextOption.setsOption.forEach(tag => usedSetOptions.add(tag));
                     }
                 }
             }
