@@ -96,27 +96,25 @@ export const ExternalDataManager = {
                 });
             });
 
-            // Fetch and load manual_passives_data.json
             const manualPassivesResponse = await fetch('./manual_passives_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
 
-            // Iterate through each character and their data
+            // A more efficient and readable version
             for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
-                // Iterate through each category for the character (e.g., 'passives', 'skills')
+                this._data[characterKey] = this._data[characterKey] || {};
+
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
-                    // Get the array of abilities, which is a collection of values
-                    const passives = categoryData;
+                    this._data[characterKey][categoryKey] = categoryData;
 
-                    this._data[characterKey] = this._data[characterKey] || {};
-                    this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
-                    this._data[characterKey][categoryKey] = passives;
-
-                    for (const [abilityKey, abilityData] of Object.entries(passives.manualPassives)) {
-                        for (const [optionKey, optionData] of Object.entries(abilityData.options)) {
-                            const option = this._data[characterKey][categoryKey].manualPassives[abilityKey].options[optionKey];
-
-                            if (option.applicableStats)
-                                option.applicableStats = this.replaceDataStats(option.applicableStats);
+                    const abilities = categoryData.manualPassives;
+                    for (const abilityData of Object.values(abilities)) {
+                        const options = abilityData.options;
+                        if (options) {
+                            for (const optionData of Object.values(options)) {
+                                if (optionData.applicableStats) {
+                                    optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
+                                }
+                            }
                         }
                     }
                 }
