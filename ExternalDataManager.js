@@ -112,21 +112,13 @@ export const ExternalDataManager = {
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                     // Get the array of abilities, which is a collection of values
                     const abilities = Object.values(categoryData.manualPassives);
-
-                    // Safely update the main data sheet with the processed abilities
-                    if (this._data[characterKey] && this._data[characterKey][categoryKey]) {
-                        this._data[characterKey][categoryKey]['manualPassives'] = abilities;
-                    } else {
-                        // Create a new entry if one doesn't exist
-                        if (!this._data[characterKey]) {
-                            this._data[characterKey] = {};
-                        }
-                        this._data[characterKey][categoryKey] = { manualPassives: abilities };
-                    }
+                    this._data[characterKey] = this._data[characterKey] || {};
+                    this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
+                    this._data[characterKey][categoryKey]['manualPassives'] = abilities;
 
                     console.log(characterKey);
                     console.log(categoryKey);
-                    console.log(this._data[characterKey]);
+                    console.log(this._data[characterKey][categoryKey]);
 
                     for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
                         console.log(optionData);
