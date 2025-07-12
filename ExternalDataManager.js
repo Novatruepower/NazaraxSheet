@@ -115,13 +115,13 @@ export const ExternalDataManager = {
 
                     // Safely update the main data sheet with the processed abilities
                     if (this._data[characterKey] && this._data[characterKey][categoryKey]) {
-                        this._data[characterKey][categoryKey]['manualPassives'].manualPassives = abilities;
+                        this._data[characterKey][categoryKey]['manualPassives'] = abilities;
                     } else {
                         // Create a new entry if one doesn't exist
                         if (!this._data[characterKey]) {
                             this._data[characterKey] = {};
                         }
-                        this._data[characterKey][categoryKey]['manualPassives'] = { manualPassives: abilities };
+                        this._data[characterKey][categoryKey] = { manualPassives: abilities };
                     }
 
                     console.log(characterKey);
