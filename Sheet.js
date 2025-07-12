@@ -1099,7 +1099,6 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 }
 
 function renderGenericOptionRacialPassive(race, category, abilityKey, abilityData, option, abilitiesList, indexLevel) {
-    const indexOption = abilityData.options.findIndex(opt => opt == option);
     const uniqueIdentifier = option.unique || abilityKey;
     character.StatChoices[category] = character.StatChoices[category] || {};
     character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
@@ -1116,7 +1115,7 @@ function renderGenericOptionRacialPassive(race, category, abilityKey, abilityDat
     const optionGroupId = option.setsOption ? option.setsOption.join('-') : option.type;
 
     for (let i = 0; i < count; ++i) {
-        const slotId = `${race}-${optionGroupId}-${abilityKey}-${indexOption}-${indexLevel}-${i}`;
+        const slotId = `${race}-${optionGroupId}-${abilityKey}-${indexLevel}-${i}`;
         const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
         const selectedType = currentChoice ? currentChoice.type : '';
         const selectedStatName = currentChoice ? currentChoice.statName : '';
