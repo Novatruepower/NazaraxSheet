@@ -8,8 +8,8 @@
             {
               "label": "+25% to any stat",
               "type": "stat_increase",
-              "value": 0.25,
               "calc": "add",
+              "value": 0.25,
               "count": 1,
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
@@ -17,8 +17,8 @@
             {
               "label": "+50% to any stat",
               "type": "stat_increase",
-              "value": 0.50,
               "calc": "add",
+              "value": 0.50,
               "count": 2,
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
