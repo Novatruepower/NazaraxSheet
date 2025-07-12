@@ -115,9 +115,9 @@ export const ExternalDataManager = {
                     this._data[characterKey] = this._data[characterKey] || {};
                     this._data[characterKey][categoryKey] = this._data[characterKey][categoryKey] || {};
                     this._data[characterKey][categoryKey]['manualPassives'] = abilities;
-                    console.log(Object.entries(this._data[characterKey][categoryKey]['manualPassives']));
 
                     for (const [optionKey, optionData] of Object.entries(this._data[characterKey][categoryKey]['manualPassives'])) {
+                        console.log(optionData);
                         if (optionData.applicableStats)
                             this._data[characterKey][categoryKey]['manualPassives'][optionKey][applicableStats] = this.replaceDataStats(optionData.applicableStats);
                     }
