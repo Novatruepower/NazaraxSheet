@@ -67,7 +67,6 @@ export const ExternalDataManager = {
                         this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
                         this._data['Races'][race]['Stats']['Other']['BaseHealth'] = 1;
                         let index = 2; // Start from the third column for stats
-
                         head.forEach(statName => {
                             // Assign stat roll value for the current race
                             this._data['Races'][race]['Stats']['Roll'][statName] = this.parsePercent(value[index]);
@@ -99,23 +98,7 @@ export const ExternalDataManager = {
             const manualPassivesResponse = await fetch('./manual_passives_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
 
-            for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
-                const characterTarget = this._data[characterKey] ||= {};
 
-                for (const [categoryKey, categoryData] of Object.entries(characterData)) {
-                    characterTarget[categoryKey] = categoryData;
-
-                    const abilities = categoryData.manualPassives || {};
-                    for (const abilityData of Object.values(abilities)) {
-                        const options = abilityData.options || {};
-                        for (const optionData of Object.values(options)) {
-                            if (optionData.applicableStats) {
-                                optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
-                            }
-                        }
-                    }
-                }
-            }
 
             console.log("External data loaded successfully into ExternalDataManager.");
             console.log(this._data);

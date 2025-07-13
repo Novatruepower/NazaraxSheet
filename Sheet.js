@@ -1293,7 +1293,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         if (newAvailableOptions[0].setsOption) {
             optionsSelector(race, category, abilityKey, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
         } else {
-            optionChoices(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName);
+            //optionChoices(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName);
         }
 
         ++count;
