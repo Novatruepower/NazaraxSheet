@@ -101,8 +101,7 @@ export const ExternalDataManager = {
             for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
                 const characterTarget = this._data[characterKey] ||= {};
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
-                    console.log(Object.keys(categoryData));
-                    characterTarget[categoryKey][categoryData] = {};
+                    characterTarget[categoryKey]['manualPassives'] = categoryData.manualPassives;
 
                     const abilities = categoryData.manualPassives || {};
                     for (const abilityData of Object.values(abilities)) {
