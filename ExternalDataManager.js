@@ -100,8 +100,19 @@ export const ExternalDataManager = {
 
             for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
                 const characterTarget = this._data[characterKey] ||= {};
+                for (const [categoryKey, categoryData] of Object.entries(characterData)) {
+                    characterTarget[categoryKey] = [...characterTarget[categoryKey],...categoryData];
 
-
+                    const abilities = categoryData.manualPassives || {};
+                    for (const abilityData of Object.values(abilities)) {
+                        const options = abilityData.options || {};
+                        for (const optionData of Object.values(options)) {
+                            if (optionData.applicableStats) {
+                                optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
+                            }
+                        }
+                    }
+                }
             }
 
             console.log("External data loaded successfully into ExternalDataManager.");
