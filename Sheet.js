@@ -1138,7 +1138,7 @@ function optionChoices(option, category, manualpassivesList, slotId, currentUniq
     }
 }
 
-function optionsSelector(race, category, abilityKey, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength) {
+function optionsSelector(race, category, abilityKey, abilityData, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength) {
     const needsStatSelection = applicableStatsLength > 0;
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
@@ -1291,7 +1291,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
 
         if (newAvailableOptions[0].setsOption) {
-            optionsSelector(race, category, abilityKey, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
+            optionsSelector(race, category, abilityKey, abilityData, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
         } else {
             //optionChoices(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName);
         }
