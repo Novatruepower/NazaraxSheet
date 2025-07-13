@@ -98,7 +98,11 @@ export const ExternalDataManager = {
             const manualPassivesResponse = await fetch('./manual_passives_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
 
+            for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
+                const characterTarget = this._data[characterKey] ||= {};
 
+
+            }
 
             console.log("External data loaded successfully into ExternalDataManager.");
             console.log(this._data);
