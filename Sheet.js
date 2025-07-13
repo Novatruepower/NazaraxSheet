@@ -1138,7 +1138,7 @@ function optionChoices(option, category, manualpassivesList, slotId, currentUniq
     }
 }
 
-function optionsSelector(race, category, abilityKey, abilityData, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength) {
+function optionsSelector(race, category, abilityKey, abilityData, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel) {
     const needsStatSelection = applicableStatsLength > 0;
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
