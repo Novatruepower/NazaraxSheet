@@ -1115,7 +1115,7 @@ function optionSelector(option, category, manualpassivesList, slotId, currentUni
         option.textContent = statName;
         // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
         //const isAlreadyChosen = character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][statName] && character.StatsAffected[category][uniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][uniqueIdentifier][statName].has(slotId);
-        option.disabled = hasConflict(character, category, uniqueIdentifier, statName, slotId);
+        option.disabled = hasConflict(character, category, currentUniqueIdentifier, statName, slotId);
         statSelect.appendChild(option);
     });
     statSelect.value = selectedStatName;
