@@ -24,11 +24,15 @@
             </svg>
         </button>
 
+        <div class="flex flex-col items-center space-y-2 w-full">
+            <button onclick="print()">🖨️ Print</button>
+        </div>
+
         <!-- Save Dropdown -->
         <div class="dropdown-container w-full">
             <button id="save-dropdown-btn"
                     class="px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center w-full">
-                Save <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                💾 Save <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div id="save-dropdown-menu" class="dropdown-menu hidden left-0 right-0">
                 <button id="save-current-system-btn">Current System (JSON)</button>
@@ -40,7 +44,7 @@
         <div class="dropdown-container w-full">
             <button id="load-dropdown-btn"
                     class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center w-full">
-                Load <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                📂 Load <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div id="load-dropdown-menu" class="dropdown-menu hidden left-0 right-0">
                 <input type="file" id="load-json-input" accept=".json" class="hidden"/>
