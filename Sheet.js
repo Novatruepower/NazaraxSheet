@@ -1094,24 +1094,26 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 
 
 
-function optionsChoice(option, category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName) {
-    //const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
+function optionChoices(option, category, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel) {
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex items-center space-x-2';
+
     let innerHTML = `
         <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-36">${option.label}</label>
         <select id="${slotId}-stat" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-            <option value="">-- Select a Stat --</option>`
+            <option value="">-- Select a Stat --</option>`;
 
     option.applicableStats.forEach(statName => {
-        const isOptionDisabled = hasConflict(character, category, currentUniqueIdentifier, statName, slotId);
-        innerHTML += `<option value="${statName}" ${option.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${statName}</option>`;
+        const isDisabled = hasConflict(character, category, option.unique, statName, slotId);
+        innerHTML += `<option value="${statName}" ${statName === selectedStatName ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}>${statName}</option>`;
     });
 
-    innerHTML +=
-        `</select>
-        ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
-    `;
+    innerHTML += `</select>`;
+
+    if (selectedStatName) {
+        innerHTML += `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>`;
+    }
+
     choiceDiv.innerHTML = innerHTML;
     manualpassivesList.appendChild(choiceDiv);
 
@@ -1119,11 +1121,18 @@ function optionsChoice(option, category, manualpassivesList, slotId, currentUniq
     statSelect.value = selectedStatName;
 
     statSelect.addEventListener('change', (e) => {
-        const currentType = typeSelect.value;
-        const currentSelectedOptionData = setsOptions.find(opt => opt.type === currentType); // Get the full option data
-        const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
+        const statToAffect = e.target.value;
+        const newChoiceData = statToAffect ? {
+            type: option.type,
+            level: abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b)[indexLevel] : null,
+            calc: option.calc,
+            value: option.value,
+            label: option.label,
+            statName: statToAffect,
+            unique: option.unique
+        } : null;
 
-        processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
+        processRacialChoiceChange(category, option.unique, slotId, newChoiceData);
     });
 }
 
@@ -1282,7 +1291,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         if (newAvailableOptions[0].setsOption) {
             optionsSelector(race, category, abilityKey, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
         } else {
-            optionsChoice(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName);
+            optionChoices(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName);
         }
 
         ++count;
