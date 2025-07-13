@@ -1269,7 +1269,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 
     let count = 0;
     while (newAvailableOptions.length > 0) {
-        const displayLevel = isLevelBased ? indexLevel + count || 1 : '';
+        const displayLevel = isLevelBased ? indexLevel + count + 1 : '';
         const slotId = `${race}-${abilityKey}-${indexLevel}-${tag || 'none'}-${count}`;// Unique ID for each choice slot
 
         // Retrieve current choice data for this slot
