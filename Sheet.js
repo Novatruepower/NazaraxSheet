@@ -1094,7 +1094,7 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 
 
 
-function optionsChoice(option, category, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName) {
+function optionsChoice(option, category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName) {
     //const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex items-center space-x-2';
@@ -1282,7 +1282,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         if (newAvailableOptions[0].setsOption) {
             optionsSelector(race, category, abilityKey, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
         } else {
-            optionsChoice(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName);
+            optionsChoice(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName);
         }
 
         ++count;
