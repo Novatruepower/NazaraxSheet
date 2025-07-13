@@ -1093,13 +1093,13 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 }
 
 
-
 function optionChoices(option, category, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel) {
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex items-center space-x-2';
 
+    const labelText = option.label + (selectedStatName ? `: ${selectedStatName}` : '');
     let innerHTML = `
-        <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-36">${option.label}</label>
+        <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-36">${labelText}</label>
         <select id="${slotId}-stat" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
             <option value="">-- Select a Stat --</option>`;
 
@@ -1118,24 +1118,22 @@ function optionChoices(option, category, manualpassivesList, slotId, currentUniq
     manualpassivesList.appendChild(choiceDiv);
 
     const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
-    if (statSelect) {
-        statSelect.value = selectedStatName;
+    statSelect.value = selectedStatName;
 
-        statSelect.addEventListener('change', (e) => {
-            const statToAffect = e.target.value;
-            const newChoiceData = statToAffect ? {
-                type: option.type,
-                level: abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b)[indexLevel] : null,
-                calc: option.calc,
-                value: option.value,
-                label: option.label,
-                statName: statToAffect,
-                unique: option.unique
-            } : null;
+    statSelect.addEventListener('change', (e) => {
+        const statToAffect = e.target.value;
+        const newChoiceData = statToAffect ? {
+            type: option.type,
+            level: abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b)[indexLevel] : null,
+            calc: option.calc,
+            value: option.value,
+            label: option.label,
+            statName: statToAffect,
+            unique: option.unique
+        } : null;
 
-            processRacialChoiceChange(category, option.unique, slotId, newChoiceData);
-        });
-    }
+        processRacialChoiceChange(category, option.unique, slotId, newChoiceData);
+    });
 }
 
 function optionsSelector(race, category, abilityKey, abilityData, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel) {
@@ -1293,7 +1291,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         if (newAvailableOptions[0].setsOption) {
             optionsSelector(race, category, abilityKey, abilityData, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
         } else {
-            //optionChoices(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedOptionType, selectedStatName);
+            optionChoices(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel);
         }
 
         ++count;
