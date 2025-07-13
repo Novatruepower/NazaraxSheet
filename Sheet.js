@@ -1117,23 +1117,24 @@ function optionChoices(option, category, manualpassivesList, slotId, currentUniq
     choiceDiv.innerHTML = innerHTML;
     manualpassivesList.appendChild(choiceDiv);
 
-    const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
-    statSelect.value = selectedStatName;
+    const statSelect = document.getElementById(`${slotId}-stat`);
+    if (statSelect) {
+        statSelect.value = selectedStatName || '';
+        statSelect.addEventListener('change', (e) => {
+            const statToAffect = e.target.value;
+            const newChoiceData = statToAffect ? {
+                type: option.type,
+                level: abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b)[indexLevel] : null,
+                calc: option.calc,
+                value: option.value,
+                label: option.label,
+                statName: statToAffect,
+                unique: option.unique
+            } : null;
 
-    statSelect.addEventListener('change', (e) => {
-        const statToAffect = e.target.value;
-        const newChoiceData = statToAffect ? {
-            type: option.type,
-            level: abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b)[indexLevel] : null,
-            calc: option.calc,
-            value: option.value,
-            label: option.label,
-            statName: statToAffect,
-            unique: option.unique
-        } : null;
-
-        processRacialChoiceChange(category, option.unique, slotId, newChoiceData);
-    });
+            processRacialChoiceChange(category, option.unique, slotId, newChoiceData);
+        });
+    }
 }
 
 function optionsSelector(race, category, abilityKey, abilityData, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel) {
