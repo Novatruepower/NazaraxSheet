@@ -1099,25 +1099,23 @@ function optionSelector(option, category, manualpassivesList, slotId, currentUni
 
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex items-center space-x-2';
-    choiceDiv.innerHTML = `
+    let innerHTML = `
         <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-36">${option.label}</label>
         <select id="${slotId}-stat" class="stat-choice-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-            <option value="">-- Select a Stat --</option>
-        </select>
+            <option value="">-- Select a Stat --</option>`
+    option.applicableStats.forEach(statName => {
+        const isOptionDisabled = hasConflict(character, category, currentUniqueIdentifier, statName, slotId);
+        innerHTML += `<option value="${opt.statName}" ${opt.type === selectedOptionType && opt.value == selectedStatName ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.statName}</option>`;
+    });
+
+    innerHTML +=
+        `</select>
         ${selectedStatName ? `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>` : ''}
     `;
+    choiceDiv.innerHTML = innerHTML;
     manualpassivesList.appendChild(choiceDiv);
 
     const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
-    option.applicableStats.forEach(statName => {
-        const option = document.createElement('option');
-        option.value = statName;
-        option.textContent = statName;
-        // Disable if already chosen by another slot within the same unique group, or if this is not the currently selected stat for this slot
-        //const isAlreadyChosen = character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][statName] && character.StatsAffected[category][uniqueIdentifier][statName].size > 0 && !character.StatsAffected[category][uniqueIdentifier][statName].has(slotId);
-        option.disabled = hasConflict(character, category, currentUniqueIdentifier, statName, slotId);
-        statSelect.appendChild(option);
-    });
     statSelect.value = selectedStatName;
 
     statSelect.addEventListener('change', (e) => {
