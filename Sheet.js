@@ -1093,7 +1093,7 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 }
 
 
-function optionChoices(option, category, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel) {
+function optionChoices(race, category, option, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel) {
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex items-center space-x-2';
 
@@ -1111,7 +1111,7 @@ function optionChoices(option, category, manualpassivesList, slotId, currentUniq
     innerHTML += `</select>`;
 
     if (selectedStatName) {
-        innerHTML += `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier}" class="clear-demi-human-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>`;
+        innerHTML += `<button type="button" data-choice-id="${slotId}" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>`;
     }
 
     choiceDiv.innerHTML = innerHTML;
@@ -1292,7 +1292,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         if (newAvailableOptions[0].setsOption) {
             optionsSelector(race, category, abilityKey, abilityData, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
         } else {
-            optionChoices(newAvailableOptions[0], category, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel);
+            optionChoices(race, category, newAvailableOptions[0], manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel);
         }
 
         ++count;
