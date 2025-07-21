@@ -35,7 +35,7 @@ function roll(min, max) {
 
 // Default character data for creating new characters
 const maxRollStat = 20;
-const minRollStat = 6;
+const minRollStat = 5;
 
 function adjustValue(oldMaxValue, value, newMaxValue) {
     return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
