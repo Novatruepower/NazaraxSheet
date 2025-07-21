@@ -576,42 +576,9 @@ function updateDOM() {
     document.getElementById('skills').value = character.skills;
 
     // Render new inventory tables
-    renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
-        { field: 'name', type: 'text', class: 'w-full' },
-        { field: 'type', type: 'text', class: 'w-full' },
-        { field: 'material', type: 'text', class: 'w-full' },
-        { field: 'requirement', type: 'text', class: 'w-full' },
-        { field: 'requiredStat', type: 'text', class: 'w-full' },
-        { field: 'accuracy', type: 'number', class: 'w-full' },
-        { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.damage) : item.damage },
-        { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.magicDamage) : item.magicDamage },
-        { field: 'magicType', type: 'text', class: 'w-full' },
-        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
-        { field: 'value', type: 'number', class: 'w-full' },
-        { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
-    ]);
-    renderInventoryTable('armor', character.armorInventory, '#armor-inventory-table tbody', [
-        { field: 'name', type: 'text', class: 'w-full' },
-        { field: 'location', type: 'text', class: 'w-full' },
-        { field: 'material', type: 'text', class: 'w-full' },
-        { field: 'requirement', type: 'text', class: 'w-full' },
-        { field: 'requiredStat', type: 'text', class: 'w-full' },
-        { field: 'defense', type: 'number', class: 'w-full' },
-        { field: 'magicDefense', type: 'number', class: 'w-full' },
-        { field: 'magicType', type: 'text', class: 'w-full' },
-        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
-        { field: 'value', type: 'number', class: 'w-full' },
-        { field: 'equipped', type: 'checkbox', class: null, checked: (item) => item.equipped }
-    ]);
-    renderInventoryTable('general', character.generalInventory, '#general-inventory-table tbody', [
-        { field: 'name', type: 'text', class: 'w-full' },
-        { field: 'type', type: 'text', class: 'w-full' },
-        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
-        { field: 'accuracy', type: 'number', class: 'w-full' },
-        { field: 'amount', type: 'number', class: 'w-full' },
-        { field: 'valuePerUnit', type: 'number', class: 'w-full' }
-    ]);
-
+    renderWeaponTable();
+    renderArmorTable();
+    renderGeneralTable();
 
     // Update section visibility - NEW
     updateSectionVisibility();
@@ -705,6 +672,50 @@ function renderInventoryTable(inventoryType, inventoryArray, tbodySelector, colu
     });
 }
 
+function renderWeaponTable() {
+    renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'type', type: 'text', class: 'w-full' },
+        { field: 'material', type: 'text', class: 'w-full' },
+        { field: 'requirement', type: 'text', class: 'w-full' },
+        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        { field: 'accuracy', type: 'number', class: 'w-full' },
+        { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.damage) : item.damage },
+        { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.magicDamage) : item.magicDamage },
+        { field: 'magicType', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'value', type: 'number', class: 'w-full' },
+        { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
+    ]);
+}
+
+function renderArmorTable() {
+    renderInventoryTable('armor', character.armorInventory, '#armor-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'location', type: 'text', class: 'w-full' },
+        { field: 'material', type: 'text', class: 'w-full' },
+        { field: 'requirement', type: 'text', class: 'w-full' },
+        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        { field: 'defense', type: 'number', class: 'w-full' },
+        { field: 'magicDefense', type: 'number', class: 'w-full' },
+        { field: 'magicType', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'value', type: 'number', class: 'w-full' },
+        { field: 'equipped', type: 'checkbox', class: null, checked: (item) => item.equipped }
+    ]);
+}
+
+function renderGeneralTable() {
+    renderInventoryTable('general', character.generalInventory, '#general-inventory-table tbody', [
+        { field: 'name', type: 'text', class: 'w-full' },
+        { field: 'type', type: 'text', class: 'w-full' },
+        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
+        { field: 'accuracy', type: 'number', class: 'w-full' },
+        { field: 'amount', type: 'number', class: 'w-full' },
+        { field: 'valuePerUnit', type: 'number', class: 'w-full' }
+    ]);
+}
+
 // Function to perform a quick roll for all player stats
 function quickRollStats() {
     ExternalDataManager.rollStats.forEach(statName => {
@@ -718,20 +729,7 @@ function quickRollStats() {
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
     // Re-render weapon inventory to update calculated damage values
-    renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
-        { field: 'name', type: 'text', class: 'w-full' },
-        { field: 'type', type: 'text', class: 'w-full' },
-        { field: 'material', type: 'text', class: 'w-full' },
-        { field: 'requirement', type: 'text', class: 'w-full' },
-        { field: 'requiredStat', type: 'text', class: 'w-full' },
-        { field: 'accuracy', type: 'number', class: 'w-full' },
-        { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalDamage) : item.originalDamage },
-        { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalMagicDamage) : item.originalMagicDamage },
-        { field: 'magicType', type: 'text', class: 'w-full' },
-        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
-        { field: 'value', type: 'number', class: 'w-full' },
-        { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
-    ]);
+    renderWeaponTable();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
@@ -1429,20 +1427,7 @@ function handleInventoryInputChange(event) {
                 inventory[itemIndex].magicDamage = inventory[itemIndex].originalMagicDamage;
             }
             // Re-render weapon inventory to show calculated/restored values
-            renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
-                { field: 'name', type: 'text', class: 'w-full' },
-                { field: 'type', type: 'text', class: 'w-full' },
-                { field: 'material', type: 'text', class: 'w-full' },
-                { field: 'requirement', type: 'text', class: 'w-full' },
-                { field: 'requiredStat', type: 'text', class: 'w-full' },
-                { field: 'accuracy', type: 'number', class: 'w-full' },
-                { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalDamage) : item.originalDamage },
-                { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalMagicDamage) : item.originalMagicDamage },
-                { field: 'magicType', type: 'text', class: 'w-full' },
-                { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
-                { field: 'value', type: 'number', class: 'w-full' },
-                { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
-            ]);
+            renderWeaponTable();
         }
     } else if (type === 'number' && field !== 'damage' && field !== 'magicDamage') { // Exclude damage/magicDamage from number parsing for weapons
         inventory[itemIndex][field] = parseFloat(value) || 0;
@@ -1496,20 +1481,7 @@ function handlePlayerStatInputChange(event) {
 
     character[statName].total = calculateTotal(character, statName);
     document.getElementById(`${statName}-total`).value = character[statName].total;
-    renderInventoryTable('weapon', character.weaponInventory, '#weapon-inventory-table tbody', [
-        { field: 'name', type: 'text', class: 'w-full' },
-        { field: 'type', type: 'text', class: 'w-full' },
-        { field: 'material', type: 'text', class: 'w-full' },
-        { field: 'requirement', type: 'text', class: 'w-full' },
-        { field: 'requiredStat', type: 'text', class: 'w-full' },
-        { field: 'accuracy', type: 'number', class: 'w-full' },
-        { field: 'damage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalDamage) : item.originalDamage },
-        { field: 'magicDamage', type: 'textarea', class: 'w-full inventory-effect-textarea', getter: (item) => item.use ? calculateFormula(item.originalMagicDamage) : item.originalMagicDamage },
-        { field: 'magicType', type: 'text', class: 'w-full' },
-        { field: 'effect', type: 'textarea', class: 'w-full inventory-effect-textarea' },
-        { field: 'value', type: 'number', class: 'w-full' },
-        { field: 'use', type: 'checkbox', class: null, checked: (item) => item.use }
-    ]);
+    renderWeaponTable();
 }
 
 function removePassivesLevel() {
