@@ -1,8 +1,16 @@
-
 import { ExternalDataManager } from './ExternalDataManager.js';
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
+
+// Constants for point distribution
+const TOTAL_DISTRIBUTION_POINTS = 97;
+const MIN_STAT_VALUE = 5;
+const MAX_STAT_VALUE = 20;
+
+// Variable to track remaining points for distribution
+let remainingDistributionPoints = 0;
+let isDistributingStats = false; // Flag to indicate if in distribution mode
 
 // Function to calculate max experience for a given level
 function calculateLevelMaxExperience(level) {
@@ -32,10 +40,6 @@ function calculateMaxRacialPower(level) {
 function roll(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-// Default character data for creating new characters
-const maxRollStat = 20;
-const minRollStat = 5;
 
 function adjustValue(oldMaxValue, value, newMaxValue) {
     return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
@@ -136,7 +140,7 @@ const defaultCharacterData = function () {
 
     // Initialize each stat with its rolled value, racial change, and calculated total
     ExternalDataManager.rollStats.forEach(statName => {
-        const result = roll(minRollStat, maxRollStat);
+        const result = isDistributingStats ? MIN_STAT_VALUE : roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Initialize with MIN_STAT_VALUE if distributing
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
         newCharacter[statName] = {
             value: result,
@@ -565,6 +569,9 @@ function updateDOM() {
         playerStatsContainer.appendChild(row);
     });
 
+    // Update remaining points display
+    updateRemainingPointsDisplay();
+
 
     // Health & Combat
     document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
@@ -718,8 +725,9 @@ function renderGeneralTable() {
 
 // Function to perform a quick roll for all player stats
 function quickRollStats() {
+    isDistributingStats = false; // Exit distribution mode
     ExternalDataManager.rollStats.forEach(statName => {
-        character[statName].value = roll(minRollStat, maxRollStat); // Assign to the 'value' property
+        character[statName].value = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'value' property
 
         // Recalculate total for the updated stat
         character[statName].total = calculateTotal(character, statName);
@@ -730,9 +738,59 @@ function quickRollStats() {
     });
     // Re-render weapon inventory to update calculated damage values
     renderWeaponTable();
+    updateRemainingPointsDisplay(); // Reset remaining points display
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
+
+/**
+ * Initializes stats for point distribution.
+ */
+function distributeStats() {
+    showConfirmationModal("Are you sure you want to distribute 97 points? This will reset all stat values to 5.", () => {
+        isDistributingStats = true; // Enter distribution mode
+        remainingDistributionPoints = TOTAL_DISTRIBUTION_POINTS;
+
+        ExternalDataManager.rollStats.forEach(statName => {
+            character[statName].value = MIN_STAT_VALUE; // Set all stats to minimum
+            character[statName].total = calculateTotal(character, statName); // Recalculate total
+            document.getElementById(`${statName}-value`).value = character[statName].value;
+            document.getElementById(`${statName}-total`).value = character[statName].total;
+        });
+
+        updateRemainingPointsDisplay();
+        renderWeaponTable();
+        hasUnsavedChanges = true;
+        saveCurrentStateToHistory();
+    });
+}
+
+/**
+ * Updates the display of remaining distribution points.
+ */
+function updateRemainingPointsDisplay() {
+    const remainingPointsElement = document.getElementById('remaining-points');
+    if (remainingPointsElement) {
+        if (isDistributingStats) {
+            remainingPointsElement.textContent = `Points Left: ${remainingDistributionPoints}`;
+            if (remainingDistributionPoints < 0) {
+                remainingPointsElement.classList.add('text-red-500');
+                remainingPointsElement.classList.remove('text-gray-700', 'dark:text-gray-300');
+            } else if (remainingDistributionPoints === 0) {
+                remainingPointsElement.classList.add('text-green-500');
+                remainingPointsElement.classList.remove('text-red-500', 'text-gray-700', 'dark:text-gray-300');
+            } else {
+                remainingPointsElement.classList.add('text-gray-700', 'dark:text-gray-300');
+                remainingPointsElement.classList.remove('text-red-500', 'text-green-500');
+            }
+        } else {
+            remainingPointsElement.textContent = `Points Left: 0`; // Or hide it, depending on desired UI
+            remainingPointsElement.classList.add('text-gray-700', 'dark:text-gray-300');
+            remainingPointsElement.classList.remove('text-red-500', 'text-green-500');
+        }
+    }
+}
+
 
 function updateRacialChange(oldRace, statName) {
     character[statName].racialChange -= ExternalDataManager.getRacialChange(oldRace, statName);
@@ -996,8 +1054,10 @@ function renderDemiHumanStatChoiceUI() {
         statAdjustmentsData.options.forEach((modifier, modIndex) => {
             const uniqueIdentifier = modifier.unique;
             character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
-            character.StatsAffected[category] = character.StatsAffected[category] || {};
+            if (!character.StatsAffected[category])
+                character.StatsAffected[category] = {};
             character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
+
 
             for (let i = 0; i < modifier.count; i++) {
                 const slotId = `demihuman-${modifier.type}-${modIndex}-${i}`; // Unique ID for each choice slot
@@ -1248,6 +1308,16 @@ function optionsSelector(race, category, abilityKey, abilityData, setsOptions, m
     }
 }
 
+function filterFromArrayStartIndex(arr, startIndex, predicate) {
+  const result = [];
+  for (let i = startIndex; i < arr.length; i++) {
+    if (predicate(arr[i], i, arr)) {
+      result.push(arr[i]);
+    }
+  }
+  return result;
+}
+
 /**
  * Renders the generic racial options for a specific ability within a race.
  * This function is called for each available choice slot (e.g., for each level-based choice).
@@ -1296,16 +1366,6 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         ++count;
         newAvailableOptions = newAvailableOptions.filter(opt => opt.count && opt.count > count);
     }
-}
-
-function filterFromArrayStartIndex(arr, startIndex, predicate) {
-  const result = [];
-  for (let i = startIndex; i < arr.length; i++) {
-    if (predicate(arr[i], i, arr)) {
-      result.push(arr[i]);
-    }
-  }
-  return result;
 }
 
 /**
@@ -1475,6 +1535,30 @@ function handlePlayerStatInputChange(event) {
         }
         document.getElementById(`${statName}-value`).value = character[statName].value;
         document.getElementById(`${statName}-experience`).value = character[statName].experience;
+    } else if (subProperty === 'value' && isDistributingStats) {
+        const oldValue = character[statName].value;
+        let clampedValue = Math.max(MIN_STAT_VALUE, Math.min(MAX_STAT_VALUE, newValue));
+
+        if (clampedValue !== newValue) {
+            // If value was clamped, update input field to reflect clamped value
+            event.target.value = clampedValue;
+        }
+
+        const delta = clampedValue - oldValue;
+        if (remainingDistributionPoints - delta >= 0) { // Only allow if points don't go negative
+            remainingDistributionPoints -= delta;
+            character[statName].value = clampedValue;
+        } else {
+            // If not enough points, set to max possible value
+            const maxPossibleIncrease = remainingDistributionPoints;
+            if (maxPossibleIncrease > 0) {
+                character[statName].value = oldValue + maxPossibleIncrease;
+                remainingDistributionPoints = 0;
+            }
+            event.target.value = character[statName].value; // Update input to reflect actual value
+        }
+
+        updateRemainingPointsDisplay();
     } else {
         character[statName][subProperty] = newValue;
     }
@@ -1823,6 +1907,8 @@ function switchCharacter(event) {
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new character's state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after switching
+            isDistributingStats = false; // Exit distribution mode when switching characters
+            updateRemainingPointsDisplay(); // Reset remaining points display
         }, () => {
             // If user cancels, revert the dropdown selection
             event.target.value = currentCharacterIndex;
@@ -1833,6 +1919,8 @@ function switchCharacter(event) {
         historyStack = []; // Clear previous history
         historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the new character's state as the first history entry
+        isDistributingStats = false; // Exit distribution mode when switching characters
+        updateRemainingPointsDisplay(); // Reset remaining points display
     }
 }
 
@@ -1854,6 +1942,8 @@ function addNewCharacter() {
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new character's state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after adding
+            isDistributingStats = false; // Exit distribution mode when adding new character
+            updateRemainingPointsDisplay(); // Reset remaining points display
         });
     } else {
         const newChar = defaultCharacterData();
@@ -1868,6 +1958,8 @@ function addNewCharacter() {
         historyStack = []; // Clear previous history
         historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the new character's state as the first history entry
+        isDistributingStats = false; // Exit distribution mode when adding new character
+        updateRemainingPointsDisplay(); // Reset remaining points display
     }
 }
 
@@ -1921,6 +2013,8 @@ function resetCurrentCharacter() {
         historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the reset state as the first history entry
         hasUnsavedChanges = false; // Reset unsaved changes flag after reset
+        isDistributingStats = false; // Exit distribution mode on reset
+        updateRemainingPointsDisplay(); // Reset remaining points display
     });
 }
 
@@ -1949,6 +2043,8 @@ function deleteCurrentCharacter() {
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after deletion
+            isDistributingStats = false; // Exit distribution mode on delete
+            updateRemainingPointsDisplay(); // Reset remaining points display
         });
     }
 }
@@ -1976,6 +2072,8 @@ function applyHistoryState(state) {
     populateCharacterSelector(); // Update selector in case character names changed
     hasUnsavedChanges = false; // Reverted/Forwarded state is now considered "saved" locally
     updateHistoryButtonsState(); // Update button states after applying history
+    isDistributingStats = false; // Exit distribution mode on history change
+    updateRemainingPointsDisplay(); // Reset remaining points display
 }
 
 // Function to revert the current character to the previous state in history
@@ -2324,6 +2422,8 @@ async function loadGoogleDriveFileContent(fileId) {
         historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the newly loaded state as the first history entry
         hasUnsavedChanges = false; // Data is now loaded and considered "saved"
+        isDistributingStats = false; // Exit distribution mode on load
+        updateRemainingPointsDisplay(); // Reset remaining points display
     } catch (error) {
         console.error('Error loading Google Drive file content:', error);
         showStatusMessage("Failed to load character data from Google Drive. Check console for details.", true);
@@ -2490,6 +2590,9 @@ function attachEventListeners() {
 
     // Attach event listener for the Quick Roll Stats button
     document.getElementById('quick-roll-stats-btn').addEventListener('click', quickRollStats);
+    // Attach event listener for the Distribute Stats button
+    document.getElementById('distribute-stats-btn').addEventListener('click', distributeStats);
+
 
     // Attach event listeners for Save/Load dropdown buttons and options
     document.getElementById('save-dropdown-btn').addEventListener('click', () => toggleDropdown('save-dropdown-menu'));

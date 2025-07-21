@@ -230,10 +230,17 @@
                     </button>
                 </div>
                 <div id="player-stats-content" class="section-content">
-                    <button id="quick-roll-stats-btn"
-                            class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Quick Roll Stats
-                    </button>
+                    <div class="flex items-center space-x-4 mb-4">
+                        <button id="quick-roll-stats-btn"
+                                class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                            Quick Roll Stats
+                        </button>
+                        <button id="distribute-stats-btn"
+                                class="px-4 py-2 bg-green-500 text-white font-semibold rounded-md shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                            Distribute 97 Points
+                        </button>
+                        <span id="remaining-points" class="text-lg font-bold text-gray-700 dark:text-gray-300">Points Left: 0</span>
+                    </div>
                     <div id="player-stats-container" class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
                             <thead class="bg-gray-100 dark:bg-gray-700">
