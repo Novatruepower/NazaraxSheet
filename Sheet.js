@@ -1673,17 +1673,23 @@ function handlePlayerStatInputChange(event) {
         const oldExperience = character[statName].experience;
         character[statName].experience = newValue;
 
-        // Ensure experienceBonus doesn't go below 0
-        while (character[statName].experience < 0) {
-            character[statName].experienceBonus--;
-            character[statName].experience += character[statName].maxExperience;
-            character[statName].experienceBonus = Math.max(0, character[statName].experienceBonus);
-        }
+        if(character[statName].experience < 0) {
+            if (character[statName].experienceBonus == 0)
+                character[statName].experience = 0;
 
-        // If experience reaches or exceeds maxExperience, increment experienceBonus
-        while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
-            character[statName].experienceBonus++; // Increment experienceBonus instead of value
-            character[statName].experience -= character[statName].maxExperience;
+            // Ensure experienceBonus doesn't go below 0
+            while (character[statName].experience < 0) {
+                character[statName].experienceBonus--;
+                character[statName].experience += character[statName].maxExperience;
+                character[statName].experienceBonus = Math.max(0, character[statName].experienceBonus);
+            }
+        }
+        else {
+            // If experience reaches or exceeds maxExperience, increment experienceBonus
+            while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
+                character[statName].experienceBonus++; // Increment experienceBonus instead of value
+                character[statName].experience -= character[statName].maxExperience;
+            }
         }
 
         document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus; // Update displayed value
