@@ -2672,8 +2672,8 @@ function renderTemporaryEffects(statName) {
         );
         if (inputToRefocus) {
             inputToRefocus.focus();
-            // Optionally, restore cursor position if it's a text input
-            if (focusedElement.type === 'text' || focusedElement.type === 'number') {
+            // Only attempt to setSelectionRange if the input type supports it
+            if (inputToRefocus.type !== 'number') {
                 inputToRefocus.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
             }
         }
