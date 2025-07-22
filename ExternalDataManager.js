@@ -50,6 +50,8 @@ export const ExternalDataManager = {
                 //delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[1]; // Get the 'Health' column name
                 this._data['Other'] = [head[1], 'Mana', 'BaseHealth']; //By default 
+                console.log(head);
+                console.log("---");
                 delete head[1]; // Remove 'Health' from the head array
                 console.log(head);
                 this._data['Roll'] = head.filter(e => e != undefined); // The remaining elements in head are the stat names for 'Roll' it will be used with a racial change generated
