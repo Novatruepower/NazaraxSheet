@@ -19,6 +19,13 @@ function applyPercent(effect) {
     return effect.isPercent ? value / 100 : value;
 }
 
+function applyPercentOnBaseValue(effect, baseValue) {
+    if (effect.isPercent)
+        return baseValue * applyPercent(effect.isPercent);
+    
+    return baseValue;
+}
+
 function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
     let currentValue = baseValue;
 
@@ -29,7 +36,7 @@ function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
     }
     else if ((type === '+')) {
         temporaryEffects.forEach(effect => {
-            currentValue += applyPercent(effect);
+            currentValue += applyPercentOnBaseValue(effect, baseValue);
         });
     }
 
