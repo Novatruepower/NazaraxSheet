@@ -1867,7 +1867,7 @@ function handleChange(event) {
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             if (newValue < oldLevel)
                 removePassivesLevel();
-            recalculateCharacterDerivedProperties(character);
+            recalculateCharacterDerivedProperties(character, true);
             renderRacialPassives();
         } else if (id === 'race') {
             let oldRace = character.race;
