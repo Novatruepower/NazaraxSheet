@@ -75,7 +75,7 @@ function calculateMaxMana(charData, level) {
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = charData.racialPower.temporaryEffects;
-    
+
     return calculateMaxTotal(effects, level, 100);
 }
 
@@ -149,7 +149,7 @@ const defaultCharacterData = function () {
         maxHealth: 0, // Will be calculated dynamically
         // healthBonus: 0, // Removed, now handled by Health.temporaryEffects
         maxMana: 0, // Will be calculated dynamically
-        racialPower: { value: 100, temporaryEffects: [] },
+        racialPower: { value: 100 },
         maxRacialPower: 100,
         ac: 0,
         armorBonus: 0,
@@ -211,7 +211,7 @@ const defaultCharacterData = function () {
     newCharacter['BaseHealth'].value = 100;
     newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
     newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
-    newCharacter['racialPower'].value = 100;
+    newCharacter['racialPower'].temporaryEffects = [];
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
