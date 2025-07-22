@@ -39,7 +39,7 @@ function applyTemporaryEffects(baseValue, temporaryEffects) {
         currentValue *= (parseFloat(effect.value) || 1);
     });
 
-    // Apply additive effects first
+    // Apply additive total effects last
     additiveTotalEffects.forEach(effect => {
         currentValue += (parseFloat(effect.value) || 0);
     });
@@ -48,42 +48,44 @@ function applyTemporaryEffects(baseValue, temporaryEffects) {
 }
 
 function calculateMaxTotal(effects, level, initialValue, intermediateValue) {
-    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
-    let baseValue = applyTemporaryEffects(initialValue, effectsOnValue);
+    const effectsOnBaseValue = effects.filter(effect => effect.appliesTo === 'base-value');
+    let baseValue = applyTemporaryEffects(initialValue, effectsOnBaseValue);
 
     // Calculate the initial total based on the modified base value and level
     let currentTotal = baseValue * level + intermediateValue;
 
     // Apply effects on total
     const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
-    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
-
-    return currentTotal;
+    return applyTemporaryEffects(currentTotal, effectsOnTotal);
 }
 
-function calculateBaseMaxHealth(charData) {
-    return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
+function calculateBaseMaxHealth(charData, effects) {
+    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
+    let baseHealth = applyTemporaryEffects(charData.BaseHealth.value, effectsOnInitialValue);
+    return baseHealth * charData.BaseHealth.racialChange * charData.Health.racialChange;
 }
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(charData, level) {
     const effects = charData.Health.temporaryEffects;
 
-    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData), 0));
+    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData, effects), 0));
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
     const effects = charData.Mana.temporaryEffects;
+    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
 
-    return Math.floor(calculateMaxTotal(effects, level, 100, 0));
+    return Math.floor(calculateMaxTotal(effects, level, applyTemporaryEffects(100, effectsOnInitialValue), 0));
 }
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = charData.racialPower.temporaryEffects;
+    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
 
-    return Math.floor(calculateMaxTotal(effects, level, 100, 0));
+    return Math.floor(calculateMaxTotal(effects, level, applyTemporaryEffects(100, effectsOnInitialValue), 0));
 }
 
 /**
@@ -92,14 +94,15 @@ function calculateMaxRacialPower(charData, level) {
  * @returns {number} The calculated total defense.
  */
 function calculateTotalDefense(charData) {
-    let baseDefense = 0;
+    const effects = charData.totalDefense.temporaryEffects;
+    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
+    let baseDefense = applyTemporaryEffects(0, effectsOnInitialValue);;
     charData.armorInventory.forEach(armor => {
         if (armor.equipped) {
             baseDefense += (parseFloat(armor.defense) || 0);
         }
     });
 
-    const effects = charData.totalDefense.temporaryEffects;
     // For totalDefense, we don't have a 'level' multiplier like health/mana.
     // We apply effects directly to the sum of equipped armor defense.
     return Math.floor(applyTemporaryEffects(baseDefense, effects));
@@ -384,8 +387,10 @@ function calculateRollStatTotal(char, statName) {
     const racialChange = getAppliedRacialChange(char, statName);
 
     const effects = stat.temporaryEffects;
+    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
+    const baseStat = applyTemporaryEffects(combinedValue * racialChange, effectsOnInitialValue);;
 
-    return Math.ceil(calculateMaxTotal(effects, 1, Math.ceil(combinedValue * racialChange), equipment));
+    return Math.ceil(calculateMaxTotal(effects, 1, Math.ceil(baseStat), equipment));
 }
 
 function getAppliedRacialChange(charData, statName) {
@@ -2804,7 +2809,8 @@ function renderTemporaryEffects(statName) {
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Applies To</label>
                     <select data-stat-name="${statName}" data-effect-index="${index}" data-field="appliesTo" class="${inputBase}">
-                        <option value="value">Value</option>
+                        <option value="initial-value">initial value</option>
+                        <option value="base-value">base value</option>
                         <option value="total">Total</option>
                     </select>
                 </div>
