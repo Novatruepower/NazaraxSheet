@@ -149,7 +149,7 @@ const defaultCharacterData = function () {
         maxHealth: 0, // Will be calculated dynamically
         // healthBonus: 0, // Removed, now handled by Health.temporaryEffects
         maxMana: 0, // Will be calculated dynamically
-        racialPower: { value: 100 },
+        racialPower: { value: 100, temporaryEffects: [] },
         maxRacialPower: 100,
         ac: 0,
         armorBonus: 0,
