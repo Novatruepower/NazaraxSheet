@@ -78,11 +78,11 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
  * This function updates the character's internal data and can directly update the DOM.
  * DOM updates should be handled by calling `updateDOM()` separately.
  * @param {object} char The character object to recalculate properties for.
- * @param {boolean} char The character object to update the DOM.
+ * @param {boolean} isDisplay Whether to update the DOM.
  */
 function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     let oldMaxValue = char.maxHealth;
-    char.maxHealth = calculateMaxHealth(char, char.level); // Removed healthBonus parameter
+    char.maxHealth = calculateMaxHealth(char, char.level);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
 
     oldMaxValue = char.maxMana;
@@ -134,7 +134,7 @@ const defaultCharacterData = function () {
         levelMaxExperience: calculateLevelMaxExperience(1),
         maxHealth: 0, // Will be calculated dynamically
         maxMana: 0, // Will be calculated dynamically
-        racialPower: { // Initialize racialPower as an object
+        racialPower: { // Initialize racialPower as an object with value and temporaryEffects
             value: 100,
             temporaryEffects: []
         },
@@ -195,16 +195,16 @@ const defaultCharacterData = function () {
         }
     });
 
-    // Initialize Health and Mana with temporaryEffects array and default values
-    newCharacter['BaseHealth'].value = 100; // Set value for BaseHealth
+    // Initialize Health and Mana as objects with temporaryEffects array and default values
+    newCharacter['BaseHealth'] = { value: 100, racialChange: 1 }; // Ensure BaseHealth is an object
     newCharacter['Health'] = { // Ensure Health is an object
         value: 100, // Default current health
-        racialChange: newCharacter.Health.racialChange, // Keep racial change
+        racialChange: newCharacter.Health ? newCharacter.Health.racialChange : 1, // Keep racial change if it exists, otherwise default to 1
         temporaryEffects: [] // Initialize as an empty array
     };
     newCharacter['Mana'] = { // Ensure Mana is an object
         value: 100, // Default current mana
-        racialChange: newCharacter.Mana.racialChange, // Keep racial change
+        racialChange: newCharacter.Mana ? newCharacter.Mana.racialChange : 1, // Keep racial change if it exists, otherwise default to 1
         temporaryEffects: [] // Initialize as an empty array
     };
 
