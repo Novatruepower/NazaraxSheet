@@ -14,54 +14,23 @@ function calculateLevelMaxExperience(level) {
 }
 
 function calculateBaseMaxHealth(charData) {
-    // Ensure BaseHealth.value and BaseHealth.racialChange are accessed from an object
-    return (charData.BaseHealth ? charData.BaseHealth.value : 0) *
-           (charData.BaseHealth ? charData.BaseHealth.racialChange : 1) *
-           (charData.Health ? charData.Health.racialChange : 1);
+    return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
 }
 
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(charData, level) { // Removed healthBonus parameter
-    const additiveEffects = charData.Health.temporaryEffects.filter(effect => effect.calcType === 'add');
-    const multiplicativeEffects = charData.Health.temporaryEffects.filter(effect => effect.calcType === 'multiply');
-
-    const tempAdditiveSum = additiveEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
-    let tempMultiplicativeProduct = 1;
-    multiplicativeEffects.forEach(effect => {
-        tempMultiplicativeProduct *= (parseFloat(effect.value) || 1);
-    });
-
-    return Math.floor((calculateBaseMaxHealth(charData) * level + tempAdditiveSum) * tempMultiplicativeProduct);
+    const tempEffectsSum = charData.Health.temporaryEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
+    return Math.floor(calculateBaseMaxHealth(charData) * level) + tempEffectsSum;
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
-    const additiveEffects = charData.Mana.temporaryEffects.filter(effect => effect.calcType === 'add');
-    const multiplicativeEffects = charData.Mana.temporaryEffects.filter(effect => effect.calcType === 'multiply');
-
-    const tempAdditiveSum = additiveEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
-    let tempMultiplicativeProduct = 1;
-    multiplicativeEffects.forEach(effect => {
-        tempMultiplicativeProduct *= (parseFloat(effect.value) || 1);
-    });
-
-    return Math.floor((100 * charData.Mana.racialChange * level + tempAdditiveSum) * tempMultiplicativeProduct);
+    return Math.floor(100 * charData.Mana.racialChange * level);
 }
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(level) {
-    // Racial Power temporary effects are now supported
-    const racialPowerStat = character.racialPower;
-    const additiveEffects = racialPowerStat.temporaryEffects ? racialPowerStat.temporaryEffects.filter(effect => effect.calcType === 'add') : [];
-    const multiplicativeEffects = racialPowerStat.temporaryEffects ? racialPowerStat.temporaryEffects.filter(effect => effect.calcType === 'multiply') : [];
-
-    const tempAdditiveSum = additiveEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
-    let tempMultiplicativeProduct = 1;
-    multiplicativeEffects.forEach(effect => {
-        tempMultiplicativeProduct *= (parseFloat(effect.value) || 1);
-    });
-
-    return Math.floor((level * 100 + tempAdditiveSum) * tempMultiplicativeProduct);
+    return level * 100;
 }
 
 // Generate a random number between min and max (inclusive)
@@ -78,11 +47,11 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
  * This function updates the character's internal data and can directly update the DOM.
  * DOM updates should be handled by calling `updateDOM()` separately.
  * @param {object} char The character object to recalculate properties for.
- * @param {boolean} isDisplay Whether to update the DOM.
+ * @param {boolean} char The character object to update the DOM.
  */
 function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     let oldMaxValue = char.maxHealth;
-    char.maxHealth = calculateMaxHealth(char, char.level);
+    char.maxHealth = calculateMaxHealth(char, char.level); // Removed healthBonus parameter
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
 
     oldMaxValue = char.maxMana;
@@ -91,7 +60,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 
     oldMaxValue = char.maxRacialPower;
     char.maxRacialPower = calculateMaxRacialPower(char.level);
-    char.racialPower.value = adjustValue(oldMaxValue, char.racialPower.value, char.maxRacialPower); // Access value property
+    char.racialPower = adjustValue(oldMaxValue, char.racialPower, char.maxRacialPower);
 
     if (isDisplay) {
         document.getElementById('maxHealth').value = character.maxHealth;
@@ -99,7 +68,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         document.getElementById('maxMana').value = character.maxMana;
         document.getElementById('Mana').value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        document.getElementById('racialPower').value = character.racialPower.value; // Access value property
+        document.getElementById('racialPower').value = character.racialPower;
     }
 }
 
@@ -108,7 +77,6 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
  * This function updates the character's internal data, but does not directly update the DOM.
  * DOM updates should be handled by calling `updateDOM()` separately.
  * @param {object} char The character object to recalculate properties for.
- * @param {boolean} isSmallDisplay Whether to update only small parts of the DOM.
  */
 function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     recalculateSmallUpdateCharacter(char, isSmallDisplay);
@@ -133,11 +101,9 @@ const defaultCharacterData = function () {
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
         maxHealth: 0, // Will be calculated dynamically
+        // healthBonus: 0, // Removed, now handled by Health.temporaryEffects
         maxMana: 0, // Will be calculated dynamically
-        racialPower: { // Initialize racialPower as an object with value and temporaryEffects
-            value: 100,
-            temporaryEffects: []
-        },
+        racialPower: 100,
         maxRacialPower: 100,
         ac: 0,
         armorBonus: 0,
@@ -195,18 +161,9 @@ const defaultCharacterData = function () {
         }
     });
 
-    // Initialize Health and Mana as objects with temporaryEffects array and default values
-    newCharacter['BaseHealth'] = { value: 100, racialChange: 1 }; // Ensure BaseHealth is an object
-    newCharacter['Health'] = { // Ensure Health is an object
-        value: 100, // Default current health
-        racialChange: newCharacter.Health ? newCharacter.Health.racialChange : 1, // Keep racial change if it exists, otherwise default to 1
-        temporaryEffects: [] // Initialize as an empty array
-    };
-    newCharacter['Mana'] = { // Ensure Mana is an object
-        value: 100, // Default current mana
-        racialChange: newCharacter.Mana ? newCharacter.Mana.racialChange : 1, // Keep racial change if it exists, otherwise default to 1
-        temporaryEffects: [] // Initialize as an empty array
-    };
+    // Initialize Health with temporaryEffects array
+    newCharacter['BaseHealth'].value = 100;
+    newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
@@ -347,18 +304,10 @@ function calculateTotal(char, statName) {
     const racialChange = getAppliedRacialChange(char, statName);
     const equipment = parseFloat(stat.equipment) || 0;
 
-    // Separate temporary effects into additive and multiplicative
-    const additiveEffects = stat.temporaryEffects.filter(effect => effect.calcType === 'add');
-    const multiplicativeEffects = stat.temporaryEffects.filter(effect => effect.calcType === 'multiply');
+    // Sum up all temporary effects
+    const temporarySum = stat.temporaryEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
 
-    const tempAdditiveSum = additiveEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
-    let tempMultiplicativeProduct = 1;
-    multiplicativeEffects.forEach(effect => {
-        tempMultiplicativeProduct *= (parseFloat(effect.value) || 1); // Default to 1 for multiplication
-    });
-
-    // Apply additions first, then multiplications
-    return Math.ceil((value * racialChange + equipment + tempAdditiveSum) * tempMultiplicativeProduct);
+    return Math.ceil(value * racialChange + equipment + temporarySum);
 }
 
 function getAppliedRacialChange(charData, statName) {
@@ -486,39 +435,6 @@ function initLoadCharacter(loadedChar) {
         if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
         if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
     });
-
-    // Ensure calcType exists for all temporary effects, default to 'add'
-    ExternalDataManager.rollStats.forEach(statName => {
-        if (newChar[statName] && newChar[statName].temporaryEffects) {
-            newChar[statName].temporaryEffects.forEach(effect => {
-                if (typeof effect.calcType === 'undefined') {
-                    effect.calcType = 'add';
-                }
-            });
-        }
-    });
-    if (newChar.Health && newChar.Health.temporaryEffects) {
-        newChar.Health.temporaryEffects.forEach(effect => {
-            if (typeof effect.calcType === 'undefined') {
-                effect.calcType = 'add';
-            }
-        });
-    }
-    if (newChar.Mana && newChar.Mana.temporaryEffects) {
-        newChar.Mana.temporaryEffects.forEach(effect => {
-            if (typeof effect.calcType === 'undefined') {
-                effect.calcType = 'add';
-            }
-        });
-    }
-    if (newChar.racialPower && newChar.racialPower.temporaryEffects) {
-        newChar.racialPower.temporaryEffects.forEach(effect => {
-            if (typeof effect.calcType === 'undefined') {
-                effect.calcType = 'add';
-            }
-        });
-    }
-
 
     // Convert arrays within StatsAffected back to Sets
     convertArraysToSetsAfterLoad([newChar]);
@@ -1598,7 +1514,7 @@ function handleInventoryInputChange(event) {
  * @param {Event} event The input event.
  */
 function handlePlayerStatInputChange(event) {
-    const { name, value, type, dataset, checked } = event.target;
+    const { name, value, type, dataset } = event.target;
     let newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
     let statName = '';
@@ -1607,18 +1523,11 @@ function handlePlayerStatInputChange(event) {
     // Determine if it's a main stat input or a temporary effect input
     if (dataset.statName && dataset.effectIndex !== undefined) {
         statName = dataset.statName;
-        subProperty = dataset.field; // 'value', 'duration', or 'calcType' for temporary effects
+        subProperty = dataset.field; // 'value' or 'duration' for temporary effects
         const effectIndex = parseInt(dataset.effectIndex);
 
-        // Access the temporaryEffects array correctly for racialPower
-        const targetEffects = (statName === 'racialPower') ? character.racialPower.temporaryEffects : character[statName].temporaryEffects;
-
-        if (targetEffects[effectIndex]) {
-            if (subProperty === 'calcType') {
-                targetEffects[effectIndex][subProperty] = checked ? 'multiply' : 'add';
-            } else {
-                targetEffects[effectIndex][subProperty] = newValue;
-            }
+        if (character[statName].temporaryEffects[effectIndex]) {
+            character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
             // Re-render the temporary effects list and update the stat total immediately
             renderTemporaryEffects(statName); // This will now preserve focus
             // If the stat is Health, Mana, or RacialPower, recalculate its max value
@@ -1701,8 +1610,8 @@ function handlePlayerStatInputChange(event) {
             character.Mana.value = Math.min(newValue, character.maxMana);
             document.getElementById('Mana').value = character.Mana.value;
         } else if (statName === 'racialPower') {
-            character.racialPower.value = Math.min(newValue, character.maxRacialPower); // Access value property
-            document.getElementById('racialPower').value = character.racialPower.value; // Access value property
+            character.racialPower = Math.min(newValue, character.maxRacialPower);
+            document.getElementById('racialPower').value = character.racialPower;
         } else { // For rollStats
             character[statName][subProperty] = newValue;
         }
@@ -1831,8 +1740,8 @@ function handleChange(event) {
             character.Mana.value = Math.min(newValue, character.maxMana);
             document.getElementById('Mana').value = character.Mana.value;
         } else if (id === 'racialPower') {
-            character.racialPower.value = Math.min(newValue, character.maxRacialPower); // Access value property
-            document.getElementById('racialPower').value = character.racialPower.value; // Access value property
+            character.racialPower = Math.min(newValue, character.maxRacialPower);
+            document.getElementById('racialPower').value = character.racialPower;
         } else if (id === 'armorBonus') {
             character.armorBonus = newValue;
             recalculateCharacterDerivedProperties(character);
@@ -2316,7 +2225,7 @@ function showConfirmationModal(message, onConfirm, onCancel = () => { }) {
     // Ensure elements are available before trying to access them
     if (!confirmationModal || !confirmMessage || !confirmOkBtn || !confirmCancelBtn) {
         console.error("Confirmation modal elements not found. Cannot show modal.");
-        // Fallback to direct confirmation if modal elements is missing
+        // Fallback to direct confirmation if modal elements are missing
         if (window.confirm(message)) {
             onConfirm();
         } else {
@@ -2694,8 +2603,7 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    // Access the temporaryEffects array correctly for racialPower
-    const effects = (statName === 'racialPower') ? character.racialPower.temporaryEffects : character[statName].temporaryEffects;
+    const effects = character[statName].temporaryEffects;
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
@@ -2726,7 +2634,7 @@ function renderTemporaryEffects(statName) {
 
     effects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
-        let valueInput, durationInput, calcTypeCheckbox, removeButton;
+        let valueInput, durationInput, removeButton;
 
         // If the div doesn't exist or isn't the correct type, create it
         if (!effectDiv || !effectDiv.classList.contains('flex')) {
@@ -2745,40 +2653,27 @@ function renderTemporaryEffects(statName) {
                 <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Duration (turns):</label>
                 <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Multiply:</label>
-                <input type="checkbox" data-stat-name="${statName}" data-effect-index="${index}" data-field="calcType" class="temp-effect-input form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500" />
                 <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
             `;
             // Get references to the newly created inputs and button
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
-            calcTypeCheckbox = effectDiv.querySelector(`input[data-field="calcType"]`);
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
         } else {
             // If the div already exists and is correct, just update its children's values and data attributes
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
-            calcTypeCheckbox = effectDiv.querySelector(`input[data-field="calcType"]`);
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
 
             // Update data-effect-index for consistency if order changes (though it shouldn't often here)
             valueInput.dataset.effectIndex = index;
             durationInput.dataset.effectIndex = index;
-            calcTypeCheckbox.dataset.effectIndex = index;
             removeButton.dataset.effectIndex = index;
-
-            // Ensure mt-4 is correctly applied/removed based on index
-            if (index > 0) {
-                effectDiv.classList.add('mt-4');
-            } else {
-                effectDiv.classList.remove('mt-4');
-            }
         }
 
         // Always update the input values directly to reflect the current data
         valueInput.value = effect.value;
         durationInput.value = effect.duration;
-        calcTypeCheckbox.checked = effect.calcType === 'multiply';
 
         // Re-attach event listeners to ensure they are always active for current elements
         valueInput.removeEventListener('input', handlePlayerStatInputChange);
@@ -2786,9 +2681,6 @@ function renderTemporaryEffects(statName) {
 
         durationInput.removeEventListener('input', handlePlayerStatInputChange);
         durationInput.addEventListener('input', handlePlayerStatInputChange);
-
-        calcTypeCheckbox.removeEventListener('change', handlePlayerStatInputChange); // Use 'change' for checkbox
-        calcTypeCheckbox.addEventListener('change', handlePlayerStatInputChange);
 
         removeButton.removeEventListener('click', removeTemporaryEffect);
         removeButton.addEventListener('click', removeTemporaryEffect);
@@ -2807,7 +2699,7 @@ function renderTemporaryEffects(statName) {
         if (inputToRefocus) {
             inputToRefocus.focus();
             // Only attempt to setSelectionRange if the input type supports it
-            if (inputToRefocus.type !== 'number' && inputToRefocus.type !== 'checkbox') {
+            if (inputToRefocus.type !== 'number') {
                 inputToRefocus.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
             }
         }
@@ -2819,9 +2711,7 @@ function renderTemporaryEffects(statName) {
  */
 function addTemporaryEffect() {
     if (currentStatForTempEffects) {
-        // Access the temporaryEffects array correctly for racialPower
-        const targetEffects = (currentStatForTempEffects === 'racialPower') ? character.racialPower.temporaryEffects : character[currentStatForTempEffects].temporaryEffects;
-        targetEffects.push({ value: 0, duration: 0, calcType: 'add' });
+        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 0 });
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'racialPower') {
@@ -2843,11 +2733,8 @@ function removeTemporaryEffect(event) {
     const statName = event.target.dataset.statName;
     const effectIndex = parseInt(event.target.dataset.effectIndex);
 
-    // Access the temporaryEffects array correctly for racialPower
-    const targetStat = (statName === 'racialPower') ? character.racialPower : character[statName];
-
-    if (statName && targetStat && targetStat.temporaryEffects[effectIndex] !== undefined) {
-        targetStat.temporaryEffects.splice(effectIndex, 1);
+    if (statName && character[statName] && character[statName].temporaryEffects[effectIndex] !== undefined) {
+        character[statName].temporaryEffects.splice(effectIndex, 1);
         renderTemporaryEffects(statName); // This will now preserve focus
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
         if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
