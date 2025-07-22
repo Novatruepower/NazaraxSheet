@@ -1652,13 +1652,16 @@ function handlePlayerStatInputChange(event) {
     // Determine if it's a main stat input or a temporary effect input
     if (dataset.statName && dataset.effectIndex !== undefined) {
         statName = dataset.statName;
-        subProperty = dataset.field; // 'value', 'duration', 'type', or 'appliesTo' for temporary effects
+        subProperty = dataset.field; // 'value', 'duration', 'type', 'appliesTo', or 'isPercent' for temporary effects
         const effectIndex = parseInt(dataset.effectIndex);
 
         if (character[statName].temporaryEffects[effectIndex]) {
             if (subProperty === 'type' || subProperty === 'appliesTo') {
                 character[statName].temporaryEffects[effectIndex][subProperty] = value;
-            } else {
+            } else if (subProperty === 'isPercent') { // Handle the new isPercent checkbox
+                character[statName].temporaryEffects[effectIndex][subProperty] = checked;
+            }
+            else {
                 character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
             }
             
@@ -2792,7 +2795,7 @@ function renderTemporaryEffects(statName) {
 
     effects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
-        let valueInput, durationInput, typeSelect, appliesToSelect, removeButton;
+        let valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
 
         // If the div doesn't exist or isn't the correct type, create it
         if (!effectDiv || !effectDiv.classList.contains('flex')) {
@@ -2817,7 +2820,7 @@ function renderTemporaryEffects(statName) {
                     <label class="${labelBase}">Value</label>
                     <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
                         <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="${inputBase} flex-grow" />
-                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${index}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" />
+                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${index}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
                         <span class="${labelBase}">%</span> <!-- Added a span for the percentage symbol -->
                     </div>
                 </div>
@@ -2852,6 +2855,7 @@ function renderTemporaryEffects(statName) {
             `;
             // Get references to the newly created inputs and button
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
+            isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
             typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
             appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
@@ -2859,6 +2863,7 @@ function renderTemporaryEffects(statName) {
         } else {
             // If the div already exists and is correct, just update its children's values and data attributes
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
+            isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
             typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
             appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
@@ -2866,6 +2871,7 @@ function renderTemporaryEffects(statName) {
 
             // Update data-effect-index for consistency if order changes (though it shouldn't often here)
             valueInput.dataset.effectIndex = index;
+            isPercentCheckbox.dataset.effectIndex = index;
             durationInput.dataset.effectIndex = index;
             typeSelect.dataset.effectIndex = index;
             appliesToSelect.dataset.effectIndex = index;
@@ -2874,6 +2880,7 @@ function renderTemporaryEffects(statName) {
 
         // Always update the input values directly to reflect the current data
         valueInput.value = effect.value;
+        isPercentCheckbox.checked = effect.isPercent; // Set checked state for the checkbox
         durationInput.value = effect.duration;
         typeSelect.value = effect.type || '+'; // Default to 'add'
         appliesToSelect.value = effect.appliesTo || 'total'; // Default to 'total'
@@ -2881,6 +2888,9 @@ function renderTemporaryEffects(statName) {
         // Re-attach event listeners to ensure they are always active for current elements
         valueInput.removeEventListener('input', handlePlayerStatInputChange);
         valueInput.addEventListener('input', handlePlayerStatInputChange);
+
+        isPercentCheckbox.removeEventListener('change', handlePlayerStatInputChange); // Use 'change' for checkbox
+        isPercentCheckbox.addEventListener('change', handlePlayerStatInputChange); // Use 'change' for checkbox
 
         durationInput.removeEventListener('input', handlePlayerStatInputChange);
         durationInput.addEventListener('input', handlePlayerStatInputChange);
@@ -2908,7 +2918,7 @@ function renderTemporaryEffects(statName) {
         if (inputToRefocus) {
             inputToRefocus.focus();
             // Only attempt to setSelectionRange if the input type supports it
-            if (inputToRefocus.type !== 'number' && inputToRefocus.tagName !== 'SELECT') {
+            if (inputToRefocus.type !== 'number' && inputToRefocus.tagName !== 'SELECT' && inputToRefocus.type !== 'checkbox') {
                 inputToRefocus.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
             }
         }
