@@ -158,8 +158,7 @@ const defaultCharacterData = function () {
         maxMana: 0, // Will be calculated dynamically
         racialPower: { value: 100, temporaryEffects: [] },
         maxRacialPower: 100,
-        ac: 0,
-        armorBonus: 0,
+        ac: { value: 0, temporaryEffects: [] },
         skills: '',
         personalNotes: '',
         weaponInventory: [],
@@ -638,8 +637,7 @@ function updateDOM() {
 
     // Health & Combat
     // document.getElementById('healthBonus').value = character.healthBonus; // Removed this line
-    document.getElementById('ac').value = character.ac; // Populate total armor (readonly)
-    document.getElementById('armorBonus').value = character.armorBonus; // Populate armor bonus
+    document.getElementById('ac').value = character.ac.value; // Populate total armor (readonly)
 
 
     // Skills
@@ -1800,10 +1798,6 @@ function handleChange(event) {
         } else if (id === 'racialPower') {
             character.racialPower.value = Math.min(newValue, character.maxRacialPower);
             document.getElementById('racialPower').value = character.racialPower.value;
-        } else if (id === 'armorBonus') {
-            character.armorBonus = newValue;
-            recalculateCharacterDerivedProperties(character);
-            document.getElementById('ac').value = character.ac;
         } else if (id === 'personalNotes') {
             character.personalNotes = newValue;
         } else if (id !== 'class-display' && id !== 'specialization-display') {
@@ -2821,7 +2815,7 @@ function renderTemporaryEffects(statName) {
 function addTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 0, type: 'add', appliesTo: 'total' });
+        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 1, type: 'add', appliesTo: 'total' });
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower') {
@@ -2903,7 +2897,7 @@ function endTurn() {
 function attachEventListeners() {
     // Attach listeners for standard inputs and the race selector
     const inputs = document.querySelectorAll(
-        '#name, #level, #levelExperience, #race, #Health, #Mana, #racialPower, #skills, #armorBonus, #personalNotes'
+        '#name, #level, #levelExperience, #race, #Health, #Mana, #racialPower, #skills, #personalNotes'
     ); // Removed #healthBonus
     inputs.forEach(input => {
         if (!input.readOnly) {
