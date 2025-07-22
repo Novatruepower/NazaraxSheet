@@ -40,6 +40,20 @@ function applyTemporaryEffects(baseValue, temporaryEffects) {
     return currentValue;
 }
 
+function calculateMaxTotal(effects, level, initialValue) {
+    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
+    let baseValue = applyTemporaryEffects(initialValue, effectsOnValue);
+
+    // Calculate the initial total based on the modified base value and level
+    let currentTotal = Math.floor(baseValue * level);
+
+    // Apply effects on total
+    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
+    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
+
+    return Math.floor(currentTotal);
+}
+
 function calculateBaseMaxHealth(charData) {
     return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
 }
@@ -48,54 +62,21 @@ function calculateBaseMaxHealth(charData) {
 function calculateMaxHealth(charData, level) {
     const effects = charData.Health.temporaryEffects;
 
-    // Apply effects on value first
-    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
-    let baseHealthValue = applyTemporaryEffects(calculateBaseMaxHealth(charData), effectsOnValue);
-
-    // Calculate the initial total based on the modified base value and level
-    let currentTotal = Math.floor(baseHealthValue * level);
-
-    // Apply effects on total
-    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
-    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
-
-    return Math.floor(currentTotal);
+    return calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData));
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
     const effects = charData.Mana.temporaryEffects;
 
-    // Apply effects on value first
-    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
-    let baseManaValue = applyTemporaryEffects(100, effectsOnValue); // Base mana value before racial change and level
-
-    // Calculate the initial total based on the modified base value, racial change, and level
-    let currentTotal = Math.floor(baseManaValue * charData.Mana.racialChange * level);
-
-    // Apply effects on total
-    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
-    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
-
-    return Math.floor(currentTotal);
+    return calculateMaxTotal(effects, level, 100);
 }
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
-    const effects = charData.RacialPower.temporaryEffects;
-
-    // Apply effects on value first
-    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
-    let baseRacialPowerValue = applyTemporaryEffects(100, effectsOnValue); // Base racial power value before level
-
-    // Calculate the initial total based on the modified base value and level
-    let currentTotal = baseRacialPowerValue * level;
-
-    // Apply effects on total
-    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
-    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
-
-    return Math.floor(currentTotal);
+    const effects = charData.racialPower.temporaryEffects;
+    
+    return calculateMaxTotal(effects, level, 100);
 }
 
 // Generate a random number between min and max (inclusive)
@@ -168,7 +149,7 @@ const defaultCharacterData = function () {
         maxHealth: 0, // Will be calculated dynamically
         // healthBonus: 0, // Removed, now handled by Health.temporaryEffects
         maxMana: 0, // Will be calculated dynamically
-        racialPower: { value:100, temporaryEffects:[] },
+        racialPower: { value: 100, temporaryEffects: [] },
         maxRacialPower: 100,
         ac: 0,
         armorBonus: 0,
@@ -230,6 +211,7 @@ const defaultCharacterData = function () {
     newCharacter['BaseHealth'].value = 100;
     newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
     newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
+    newCharacter['racialPower'].value = 100;
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
