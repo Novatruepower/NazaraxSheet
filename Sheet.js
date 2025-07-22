@@ -1656,7 +1656,7 @@ function handlePlayerStatInputChange(event) {
         const effectIndex = parseInt(dataset.effectIndex);
 
         if (character[statName].temporaryEffects[effectIndex]) {
-            if (subProperty === 'type' || subProperty === 'appliesTo') {
+            if (subProperty === 'type' || subProperty === 'appliesTo' || subProperty === 'isPercent') {
                 character[statName].temporaryEffects[effectIndex][subProperty] = value;
             } else {
                 character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
