@@ -13,17 +13,23 @@ function calculateLevelMaxExperience(level) {
     return 100;
 }
 
+function applyPercent(effect) {
+    let value = parseFloat(effect.value) || 0;
+    
+    return effect.isPercent ? value / 100 : value;
+}
+
 function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
     let currentValue = baseValue;
 
     if (type === '*') {
         temporaryEffects.forEach(effect => {
-            currentValue *= (parseFloat(effect.value) || 0);
+            currentValue *= applyPercent(effect);
         });
     }
     else if ((type === '+')) {
         temporaryEffects.forEach(effect => {
-            currentValue += (parseFloat(effect.value) || 0);
+            currentValue += applyPercent(effect);
         });
     }
 
