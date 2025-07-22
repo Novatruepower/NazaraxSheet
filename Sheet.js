@@ -1516,6 +1516,24 @@ function handlePlayerStatInputChange(event) {
     let statName = '';
     let subProperty = '';
 
+    // Determine if it's a main stat input or a temporary effect input
+    if (dataset.statName && dataset.effectIndex !== undefined) {
+        statName = dataset.statName;
+        subProperty = dataset.field; // 'value' or 'duration' for temporary effects
+        const effectIndex = parseInt(dataset.effectIndex);
+
+        if (character[statName].temporaryEffects[effectIndex]) {
+            character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
+            // Re-render the temporary effects list and update the stat total immediately
+            renderTemporaryEffects(statName);
+            character[statName].total = calculateTotal(character, statName);
+            document.getElementById(`${statName}-total`).value = character[statName].total;
+            hasUnsavedChanges = true;
+            saveCurrentStateToHistory();
+        }
+        return; // Exit as it's a temporary effect input
+    }
+
     for (const stat of ExternalDataManager.rollStats) {
         if (name.startsWith(`${stat}-`)) {
             statName = stat;
@@ -1654,7 +1672,7 @@ function handleChange(event) {
 
     if (dataset.inventoryType) {
         handleInventoryInputChange(event);
-    } else if (event.target.classList.contains('stat-input')) {
+    } else if (event.target.classList.contains('stat-input') || event.target.classList.contains('temp-effect-input')) {
         handlePlayerStatInputChange(event);
     } else {
         newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
