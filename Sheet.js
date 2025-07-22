@@ -31,13 +31,13 @@ function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
 }
 
 function applyTemporaryFilterEffects(temporaryEffects, currentValue, isTotal) {
-    let currentValue = baseValue;
+    let tempValue = currentValue;
     const operators = isTotal ? ['multiply', 'add'] : ['add', 'multiply'];
     operators.forEach(type => {
-        currentValue = applyTemporaryOperatorEffects(temporaryEffects.filter(effect => effect.type === type), type, currentValue);
+        tempValue = applyTemporaryOperatorEffects(temporaryEffects.filter(effect => effect.type === type), type, tempValue);
     });
     
-    return currentValue;
+    return tempValue;
 }
 
 /**
