@@ -13,24 +13,89 @@ function calculateLevelMaxExperience(level) {
     return 100;
 }
 
+/**
+ * Applies a list of temporary effects to a given base value.
+ * Additive effects are applied first, then multiplicative effects.
+ * @param {number} baseValue The initial value to apply effects to.
+ * @param {Array<object>} temporaryEffects An array of effect objects, each with 'value', 'type' ('add' or 'multiply').
+ * @returns {number} The value after applying all temporary effects.
+ */
+function applyTemporaryEffects(baseValue, temporaryEffects) {
+    let currentValue = parseFloat(baseValue) || 0;
+
+    // Separate additive and multiplicative effects
+    const additiveEffects = temporaryEffects.filter(effect => effect.type === 'add');
+    const multiplicativeEffects = temporaryEffects.filter(effect => effect.type === 'multiply');
+
+    // Apply additive effects first
+    additiveEffects.forEach(effect => {
+        currentValue += (parseFloat(effect.value) || 0);
+    });
+
+    // Apply multiplicative effects
+    multiplicativeEffects.forEach(effect => {
+        currentValue *= (parseFloat(effect.value) || 1);
+    });
+
+    return currentValue;
+}
+
 function calculateBaseMaxHealth(charData) {
     return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
 }
 
 // Function to calculate max health based on race, level, and bonus
-function calculateMaxHealth(charData, level) { // Removed healthBonus parameter
-    const tempEffectsSum = charData.Health.temporaryEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
-    return Math.floor(calculateBaseMaxHealth(charData) * level) + tempEffectsSum;
+function calculateMaxHealth(charData, level) {
+    const effects = charData.Health.temporaryEffects;
+
+    // Apply effects on value first
+    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
+    let baseHealthValue = applyTemporaryEffects(calculateBaseMaxHealth(charData), effectsOnValue);
+
+    // Calculate the initial total based on the modified base value and level
+    let currentTotal = Math.floor(baseHealthValue * level);
+
+    // Apply effects on total
+    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
+    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
+
+    return Math.floor(currentTotal);
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
-    return Math.floor(100 * charData.Mana.racialChange * level);
+    const effects = charData.Mana.temporaryEffects;
+
+    // Apply effects on value first
+    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
+    let baseManaValue = applyTemporaryEffects(100, effectsOnValue); // Base mana value before racial change and level
+
+    // Calculate the initial total based on the modified base value, racial change, and level
+    let currentTotal = Math.floor(baseManaValue * charData.Mana.racialChange * level);
+
+    // Apply effects on total
+    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
+    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
+
+    return Math.floor(currentTotal);
 }
 
 // Function to calculate max racial power based on level
-function calculateMaxRacialPower(level) {
-    return level * 100;
+function calculateMaxRacialPower(charData, level) {
+    const effects = charData.RacialPower.temporaryEffects;
+
+    // Apply effects on value first
+    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
+    let baseRacialPowerValue = applyTemporaryEffects(100, effectsOnValue); // Base racial power value before level
+
+    // Calculate the initial total based on the modified base value and level
+    let currentTotal = baseRacialPowerValue * level;
+
+    // Apply effects on total
+    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
+    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
+
+    return Math.floor(currentTotal);
 }
 
 // Generate a random number between min and max (inclusive)
@@ -59,7 +124,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     char.Mana.value = adjustValue(oldMaxValue, char.Mana.value, char.maxMana);
 
     oldMaxValue = char.maxRacialPower;
-    char.maxRacialPower = calculateMaxRacialPower(char.level);
+    char.maxRacialPower = calculateMaxRacialPower(char, char.level);
     char.racialPower = adjustValue(oldMaxValue, char.racialPower, char.maxRacialPower);
 
     if (isDisplay) {
@@ -164,6 +229,8 @@ const defaultCharacterData = function () {
     // Initialize Health with temporaryEffects array
     newCharacter['BaseHealth'].value = 100;
     newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
+    newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
+    newCharacter['RacialPower'].temporaryEffects = []; // Ensure RacialPower has a temporaryEffects array
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
@@ -299,15 +366,25 @@ const statMapping = {
 function calculateTotal(char, statName) {
     const stat = char[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
-    const value = parseFloat(stat.value) || 0;
+    let value = parseFloat(stat.value) || 0;
+    const equipment = parseFloat(stat.equipment) || 0;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
     const racialChange = getAppliedRacialChange(char, statName);
-    const equipment = parseFloat(stat.equipment) || 0;
 
-    // Sum up all temporary effects
-    const temporarySum = stat.temporaryEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
+    const effects = stat.temporaryEffects;
 
-    return Math.ceil(value * racialChange + equipment + temporarySum);
+    // Apply effects on value first
+    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
+    value = applyTemporaryEffects(value, effectsOnValue);
+
+    // Calculate the intermediate total
+    let currentTotal = Math.ceil(value * racialChange + equipment);
+
+    // Apply effects on total
+    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
+    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
+
+    return Math.ceil(currentTotal);
 }
 
 function getAppliedRacialChange(charData, statName) {
@@ -418,7 +495,7 @@ function initLoadCharacter(loadedChar) {
                     newChar[key].maxExperience = defaultStatMaxExperience;
                 }
                 // Ensure temporaryEffects is initialized as an array for all relevant stats
-                if ((ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'racialPower') && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
+                if ((ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower') && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
                     newChar[key].temporaryEffects = [];
                 }
             } else {
@@ -849,10 +926,10 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
                 }
             }
             // Revert other specific flags if they were set by the previous choice
-            if (choice.type === 'natural_regen_active') {
+            if (previousChoice.type === 'natural_regen_active') {
                 char.naturalHealthRegenActive = false;
                 char.naturalManaRegenActive = false;
-            } else if (choice.type === 'regen_doubled') {
+            } else if (previousChoice.type === 'regen_doubled') {
                 char.healthRegenDoubled = false;
                 char.manaRegenDoubled = false;
             }
@@ -1514,7 +1591,7 @@ function handleInventoryInputChange(event) {
  * @param {Event} event The input event.
  */
 function handlePlayerStatInputChange(event) {
-    const { name, value, type, dataset } = event.target;
+    const { name, value, type, dataset, checked } = event.target;
     let newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
     let statName = '';
@@ -1523,15 +1600,20 @@ function handlePlayerStatInputChange(event) {
     // Determine if it's a main stat input or a temporary effect input
     if (dataset.statName && dataset.effectIndex !== undefined) {
         statName = dataset.statName;
-        subProperty = dataset.field; // 'value' or 'duration' for temporary effects
+        subProperty = dataset.field; // 'value', 'duration', 'type', or 'appliesTo' for temporary effects
         const effectIndex = parseInt(dataset.effectIndex);
 
         if (character[statName].temporaryEffects[effectIndex]) {
-            character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
+            if (subProperty === 'type' || subProperty === 'appliesTo') {
+                character[statName].temporaryEffects[effectIndex][subProperty] = value;
+            } else {
+                character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
+            }
+            
             // Re-render the temporary effects list and update the stat total immediately
             renderTemporaryEffects(statName); // This will now preserve focus
             // If the stat is Health, Mana, or RacialPower, recalculate its max value
-            if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
+            if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower') {
                 recalculateSmallUpdateCharacter(character, true); // Update max values and their DOM elements
             } else { // For rollStats, update their total
                 character[statName].total = calculateTotal(character, statName);
@@ -1621,7 +1703,7 @@ function handlePlayerStatInputChange(event) {
     if (ExternalDataManager.rollStats.includes(statName)) {
         character[statName].total = calculateTotal(character, statName);
         document.getElementById(`${statName}-total`).value = character[statName].total;
-    } else if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
+    } else if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower') {
         recalculateSmallUpdateCharacter(character, true);
     }
     
@@ -2634,7 +2716,7 @@ function renderTemporaryEffects(statName) {
 
     effects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
-        let valueInput, durationInput, removeButton;
+        let valueInput, durationInput, typeSelect, appliesToSelect, removeButton;
 
         // If the div doesn't exist or isn't the correct type, create it
         if (!effectDiv || !effectDiv.classList.contains('flex')) {
@@ -2651,6 +2733,19 @@ function renderTemporaryEffects(statName) {
             effectDiv.innerHTML = `
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
                 <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+                
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Type:</label>
+                <select data-stat-name="${statName}" data-effect-index="${index}" data-field="type" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                    <option value="add">Addition</option>
+                    <option value="multiply">Multiplication</option>
+                </select>
+
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Applies To:</label>
+                <select data-stat-name="${statName}" data-effect-index="${index}" data-field="appliesTo" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                    <option value="value">Value</option>
+                    <option value="total">Total</option>
+                </select>
+
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Duration (turns):</label>
                 <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
                 <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
@@ -2658,22 +2753,30 @@ function renderTemporaryEffects(statName) {
             // Get references to the newly created inputs and button
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
+            appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
         } else {
             // If the div already exists and is correct, just update its children's values and data attributes
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
+            appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
 
             // Update data-effect-index for consistency if order changes (though it shouldn't often here)
             valueInput.dataset.effectIndex = index;
             durationInput.dataset.effectIndex = index;
+            typeSelect.dataset.effectIndex = index;
+            appliesToSelect.dataset.effectIndex = index;
             removeButton.dataset.effectIndex = index;
         }
 
         // Always update the input values directly to reflect the current data
         valueInput.value = effect.value;
         durationInput.value = effect.duration;
+        typeSelect.value = effect.type || 'add'; // Default to 'add'
+        appliesToSelect.value = effect.appliesTo || 'total'; // Default to 'total'
 
         // Re-attach event listeners to ensure they are always active for current elements
         valueInput.removeEventListener('input', handlePlayerStatInputChange);
@@ -2681,6 +2784,12 @@ function renderTemporaryEffects(statName) {
 
         durationInput.removeEventListener('input', handlePlayerStatInputChange);
         durationInput.addEventListener('input', handlePlayerStatInputChange);
+
+        typeSelect.removeEventListener('change', handlePlayerStatInputChange);
+        typeSelect.addEventListener('change', handlePlayerStatInputChange);
+
+        appliesToSelect.removeEventListener('change', handlePlayerStatInputChange);
+        appliesToSelect.addEventListener('change', handlePlayerStatInputChange);
 
         removeButton.removeEventListener('click', removeTemporaryEffect);
         removeButton.addEventListener('click', removeTemporaryEffect);
@@ -2694,12 +2803,12 @@ function renderTemporaryEffects(statName) {
     // Restore focus
     if (focusedElementDataset) {
         const inputToRefocus = tempEffectsList.querySelector(
-            `input[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-field="${focusedElementDataset.field}"]`
+            `[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-field="${focusedElementDataset.field}"]`
         );
         if (inputToRefocus) {
             inputToRefocus.focus();
             // Only attempt to setSelectionRange if the input type supports it
-            if (inputToRefocus.type !== 'number') {
+            if (inputToRefocus.type !== 'number' && inputToRefocus.tagName !== 'SELECT') {
                 inputToRefocus.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
             }
         }
@@ -2711,10 +2820,11 @@ function renderTemporaryEffects(statName) {
  */
 function addTemporaryEffect() {
     if (currentStatForTempEffects) {
-        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 0 });
+        // Initialize new effect with default type and appliesTo
+        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 0, type: 'add', appliesTo: 'total' });
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
-        if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'racialPower') {
+        if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
             character[currentStatForTempEffects].total = calculateTotal(character, currentStatForTempEffects);
@@ -2737,7 +2847,7 @@ function removeTemporaryEffect(event) {
         character[statName].temporaryEffects.splice(effectIndex, 1);
         renderTemporaryEffects(statName); // This will now preserve focus
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
-        if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
+        if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
             character[statName].total = calculateTotal(character, statName);
