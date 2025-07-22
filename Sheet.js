@@ -2713,12 +2713,12 @@ function renderTemporaryEffects(statName) {
 
             // Populate innerHTML
             effectDiv.innerHTML = `
-                <div class="flex flex-col w-24">
+                <div class="flex flex-col min-w-[8rem] gap-y-1">
                     <label class="${labelBase}">Value</label>
                     <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="${inputBase}" />
                 </div>
 
-                <div class="flex flex-col w-36">
+                <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Type</label>
                     <select data-stat-name="${statName}" data-effect-index="${index}" data-field="type" class="${inputBase}">
                         <option value="add">+</option>
@@ -2726,7 +2726,7 @@ function renderTemporaryEffects(statName) {
                     </select>
                 </div>
 
-                <div class="flex flex-col w-36">
+                <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Applies To</label>
                     <select data-stat-name="${statName}" data-effect-index="${index}" data-field="appliesTo" class="${inputBase}">
                         <option value="value">Value</option>
@@ -2734,14 +2734,16 @@ function renderTemporaryEffects(statName) {
                     </select>
                 </div>
 
-                <div class="flex flex-col w-36">
+                <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Duration</label>
                     <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="${inputBase}" />
                 </div>
 
-                <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn self-end px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                    Remove
-                </button>
+                <div class="flex items-end">
+                    <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                        Remove
+                    </button>
+                </div>
             `;
             // Get references to the newly created inputs and button
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
