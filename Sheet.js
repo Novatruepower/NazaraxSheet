@@ -18,8 +18,9 @@ function calculateBaseMaxHealth(charData) {
 }
 
 // Function to calculate max health based on race, level, and bonus
-function calculateMaxHealth(charData, level, healthBonus) {
-    return Math.floor(calculateBaseMaxHealth(charData) * level) + (healthBonus || 0);
+function calculateMaxHealth(charData, level) { // Removed healthBonus parameter
+    const tempEffectsSum = charData.Health.temporaryEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
+    return Math.floor(calculateBaseMaxHealth(charData) * level) + tempEffectsSum;
 }
 
 // Function to calculate max magic based on level
@@ -50,7 +51,7 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
  */
 function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     let oldMaxValue = char.maxHealth;
-    char.maxHealth = calculateMaxHealth(char, char.level, char.healthBonus);
+    char.maxHealth = calculateMaxHealth(char, char.level); // Removed healthBonus parameter
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
 
     oldMaxValue = char.maxMana;
@@ -100,7 +101,7 @@ const defaultCharacterData = function () {
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
         maxHealth: 0, // Will be calculated dynamically
-        healthBonus: 0,
+        // healthBonus: 0, // Removed, now handled by Health.temporaryEffects
         maxMana: 0, // Will be calculated dynamically
         racialPower: 100,
         maxRacialPower: 100,
@@ -160,7 +161,10 @@ const defaultCharacterData = function () {
         }
     });
 
+    // Initialize Health with temporaryEffects array
     newCharacter['BaseHealth'].value = 100;
+    newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
+
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
     return newCharacter;
@@ -413,8 +417,8 @@ function initLoadCharacter(loadedChar) {
                 if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
                     newChar[key].maxExperience = defaultStatMaxExperience;
                 }
-                // Ensure temporaryEffects is initialized as an array
-                if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
+                // Ensure temporaryEffects is initialized as an array for all relevant stats
+                if ((ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'racialPower') && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
                     newChar[key].temporaryEffects = [];
                 }
             } else {
@@ -580,7 +584,7 @@ function updateDOM() {
 
 
     // Health & Combat
-    document.getElementById('healthBonus').value = character.healthBonus; // Populate the separate healthBonus input
+    // document.getElementById('healthBonus').value = character.healthBonus; // Removed this line
     document.getElementById('ac').value = character.ac; // Populate total armor (readonly)
     document.getElementById('armorBonus').value = character.armorBonus; // Populate armor bonus
 
@@ -910,7 +914,7 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
     if (previousChoice) {
         if (previousChoice.statName) {
             revertChoiceRacialChange(character, previousChoice.statName, previousChoice);
-            if (character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][previousChoice.statName]) {
+            if (character.StatsAffected[category] && character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][previousChoice.statName]) {
                 character.StatsAffected[category][uniqueIdentifier][previousChoice.statName].delete(slotId);
                 if (character.StatsAffected[category][uniqueIdentifier][previousChoice.statName].size === 0) {
                     delete character.StatsAffected[category][uniqueIdentifier][previousChoice.statName];
@@ -1526,13 +1530,19 @@ function handlePlayerStatInputChange(event) {
             character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
             // Re-render the temporary effects list and update the stat total immediately
             renderTemporaryEffects(statName);
-            character[statName].total = calculateTotal(character, statName);
-            document.getElementById(`${statName}-total`).value = character[statName].total;
+            // If the stat is Health, Mana, or RacialPower, recalculate its max value
+            if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
+                recalculateSmallUpdateCharacter(character, true); // Update max values and their DOM elements
+            } else { // For rollStats, update their total
+                character[statName].total = calculateTotal(character, statName);
+                document.getElementById(`${statName}-total`).value = character[statName].total;
+            }
             hasUnsavedChanges = true;
             saveCurrentStateToHistory();
         }
         return; // Exit as it's a temporary effect input
     }
+
 
     for (const stat of ExternalDataManager.rollStats) {
         if (name.startsWith(`${stat}-`)) {
@@ -1541,6 +1551,13 @@ function handlePlayerStatInputChange(event) {
             break;
         }
     }
+
+    // Also check for Health, Mana, RacialPower as they are now handled similarly for temporary effects
+    if (!statName && (name.startsWith('Health') || name.startsWith('Mana') || name.startsWith('racialPower'))) {
+        statName = name.split('-')[0]; // Get 'Health', 'Mana', 'racialPower'
+        subProperty = name.substring(statName.length + 1); // Get 'value' if applicable
+    }
+
 
     if (!statName) return; // Not a player stat input
 
@@ -1585,19 +1602,29 @@ function handlePlayerStatInputChange(event) {
         }
 
         updateRemainingPointsDisplay();
-    } else if (dataset.effectIndex !== undefined) { // Handle temporary effect changes
-        const effectIndex = parseInt(dataset.effectIndex);
-        if (character[statName].temporaryEffects[effectIndex]) {
-            character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
+    } else { // Handle direct value changes for Health, Mana, RacialPower, and other stat properties
+        if (statName === 'Health') {
+            character.Health.value = Math.min(newValue, character.maxHealth);
+            document.getElementById('Health').value = character.Health.value;
+        } else if (statName === 'Mana') {
+            character.Mana.value = Math.min(newValue, character.maxMana);
+            document.getElementById('Mana').value = character.Mana.value;
+        } else if (statName === 'racialPower') {
+            character.racialPower = Math.min(newValue, character.maxRacialPower);
+            document.getElementById('racialPower').value = character.racialPower;
+        } else { // For rollStats
+            character[statName][subProperty] = newValue;
         }
-        renderTemporaryEffects(statName); // Re-render the temporary effects list
-    }
-    else {
-        character[statName][subProperty] = newValue;
     }
 
-    character[statName].total = calculateTotal(character, statName);
-    document.getElementById(`${statName}-total`).value = character[statName].total;
+    // Recalculate and update total for rollStats, or max values for Health/Mana/RacialPower
+    if (ExternalDataManager.rollStats.includes(statName)) {
+        character[statName].total = calculateTotal(character, statName);
+        document.getElementById(`${statName}-total`).value = character[statName].total;
+    } else if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
+        recalculateSmallUpdateCharacter(character, true);
+    }
+    
     renderWeaponTable();
 }
 
@@ -1715,11 +1742,6 @@ function handleChange(event) {
         } else if (id === 'racialPower') {
             character.racialPower = Math.min(newValue, character.maxRacialPower);
             document.getElementById('racialPower').value = character.racialPower;
-        } else if (id === 'healthBonus') {
-            character.healthBonus = newValue;
-            recalculateCharacterDerivedProperties(character);
-            document.getElementById('maxHealth').value = character.maxHealth;
-            document.getElementById('Health').value = character.Health.value;
         } else if (id === 'armorBonus') {
             character.armorBonus = newValue;
             recalculateCharacterDerivedProperties(character);
@@ -2619,8 +2641,13 @@ function addTemporaryEffect() {
     if (currentStatForTempEffects) {
         character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 0 });
         renderTemporaryEffects(currentStatForTempEffects);
-        character[currentStatForTempEffects].total = calculateTotal(character, currentStatForTempEffects);
-        document.getElementById(`${currentStatForTempEffects}-total`).value = character[currentStatForTempEffects].total;
+        // If the stat is Health, Mana, or RacialPower, recalculate its max value
+        if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'racialPower') {
+            recalculateSmallUpdateCharacter(character, true);
+        } else { // For rollStats, update their total
+            character[currentStatForTempEffects].total = calculateTotal(character, currentStatForTempEffects);
+            document.getElementById(`${currentStatForTempEffects}-total`).value = character[currentStatForTempEffects].total;
+        }
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
     }
@@ -2637,8 +2664,13 @@ function removeTemporaryEffect(event) {
     if (statName && character[statName] && character[statName].temporaryEffects[effectIndex] !== undefined) {
         character[statName].temporaryEffects.splice(effectIndex, 1);
         renderTemporaryEffects(statName);
-        character[statName].total = calculateTotal(character, statName);
-        document.getElementById(`${statName}-total`).value = character[statName].total;
+        // If the stat is Health, Mana, or RacialPower, recalculate its max value
+        if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
+            recalculateSmallUpdateCharacter(character, true);
+        } else { // For rollStats, update their total
+            character[statName].total = calculateTotal(character, statName);
+            document.getElementById(`${statName}-total`).value = character[statName].total;
+        }
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
     }
@@ -2649,8 +2681,8 @@ function removeTemporaryEffect(event) {
 function attachEventListeners() {
     // Attach listeners for standard inputs and the race selector
     const inputs = document.querySelectorAll(
-        '#name, #level, #levelExperience, #race, #Health, #Mana, #racialPower, #skills, #healthBonus, #armorBonus, #personalNotes'
-    );
+        '#name, #level, #levelExperience, #race, #Health, #Mana, #racialPower, #skills, #armorBonus, #personalNotes'
+    ); // Removed #healthBonus
     inputs.forEach(input => {
         if (!input.readOnly) {
             input.addEventListener('input', handleChange);
@@ -2658,14 +2690,14 @@ function attachEventListeners() {
     });
 
     // Attach listeners for stat table inputs using delegation
-    document.getElementById('player-stats-container').addEventListener('input', function (event) {
+    document.getElementById('player-stats-content').addEventListener('input', function (event) { // Changed to player-stats-content
         if (event.target.classList.contains('stat-input')) {
             handleChange(event);
         }
     });
 
-    // Attach listeners for temporary effects buttons using delegation
-    document.getElementById('player-stats-container').addEventListener('click', function (event) {
+    // Attach listeners for temporary effects buttons using delegation on main-content
+    document.getElementById('main-content').addEventListener('click', function (event) {
         if (event.target.closest('.temp-effects-btn')) {
             const button = event.target.closest('.temp-effects-btn');
             const statName = button.dataset.statName;
