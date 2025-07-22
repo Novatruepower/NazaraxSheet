@@ -144,7 +144,7 @@ const defaultCharacterData = function () {
             value: result,
             racialChange: initialRacialChange,
             equipment: 0,
-            temporary: 0,
+            temporaryEffects: [], // Initialize as an empty array for temporary effects
             experience: 0,
             maxExperience: defaultStatMaxExperience,
             total: result * initialRacialChange
@@ -299,9 +299,11 @@ function calculateTotal(char, statName) {
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
     const racialChange = getAppliedRacialChange(char, statName);
     const equipment = parseFloat(stat.equipment) || 0;
-    const temporary = parseFloat(stat.temporary) || 0;
 
-    return Math.ceil(value * racialChange + equipment + temporary);
+    // Sum up all temporary effects
+    const temporarySum = stat.temporaryEffects.reduce((sum, effect) => sum + (parseFloat(effect.value) || 0), 0);
+
+    return Math.ceil(value * racialChange + equipment + temporarySum);
 }
 
 function getAppliedRacialChange(charData, statName) {
@@ -410,6 +412,10 @@ function initLoadCharacter(loadedChar) {
                 // Ensure maxExperience is set for stats, if it was excluded during saving or missing
                 if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
                     newChar[key].maxExperience = defaultStatMaxExperience;
+                }
+                // Ensure temporaryEffects is initialized as an array
+                if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
+                    newChar[key].temporaryEffects = [];
                 }
             } else {
                 newChar[key] = loadedChar[key];
@@ -537,15 +543,17 @@ function updateDOM() {
            <td class="px-2 py-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">${statName}</td>
            <td class="px-2 py-1 whitespace-nowrap">
                <input type="number" id="${statName}-value" name="${statName}-value" min="${MIN_STAT_VALUE}" value="${statData.value}" class="stat-input" />
+               <button type="button" class="temp-effects-btn ml-1 p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600" data-stat-name="${statName}">
+                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                   </svg>
+               </button>
            </td>
            <td class="px-2 py-1 whitespace-nowrap">
                <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(character, statName)}" readonly class="stat-input" />
            </td>
            <td class="px-2 py-1 whitespace-nowrap">
                <input type="number" id="${statName}-equipment" name="${statName}-equipment" value="${statData.equipment}" class="stat-input" />
-           </td>
-           <td class="px-2 py-1 whitespace-nowrap">
-               <input type="number" id="${statName}-temporary" name="${statName}-temporary" value="${statData.temporary}" class="stat-input" />
            </td>
            <td class="px-2 py-1 whitespace-nowrap">
                <div class="flex items-center justify-center exp-inputs-wrapper">
@@ -720,6 +728,7 @@ function quickRollStats() {
     character.isDistributingStats = false; // Exit distribution mode
     ExternalDataManager.rollStats.forEach(statName => {
         character[statName].value = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'value' property
+        character[statName].temporaryEffects = []; // Clear temporary effects on quick roll
 
         // Recalculate total for the updated stat
         character[statName].total = calculateTotal(character, statName);
@@ -745,6 +754,7 @@ function distributeStats() {
 
         ExternalDataManager.rollStats.forEach(statName => {
             character[statName].value = MIN_STAT_VALUE; // Set all stats to minimum
+            character[statName].temporaryEffects = []; // Clear temporary effects on distribution
             character[statName].total = calculateTotal(character, statName); // Recalculate total
             document.getElementById(`${statName}-value`).value = character[statName].value;
             document.getElementById(`${statName}-total`).value = character[statName].total;
@@ -1494,7 +1504,7 @@ function handleInventoryInputChange(event) {
  * @param {Event} event The input event.
  */
 function handlePlayerStatInputChange(event) {
-    const { name, value, type } = event.target;
+    const { name, value, type, dataset } = event.target;
     let newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
     let statName = '';
@@ -1551,7 +1561,14 @@ function handlePlayerStatInputChange(event) {
         }
 
         updateRemainingPointsDisplay();
-    } else {
+    } else if (dataset.effectIndex !== undefined) { // Handle temporary effect changes
+        const effectIndex = parseInt(dataset.effectIndex);
+        if (character[statName].temporaryEffects[effectIndex]) {
+            character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
+        }
+        renderTemporaryEffects(statName); // Re-render the temporary effects list
+    }
+    else {
         character[statName][subProperty] = newValue;
     }
 
@@ -2128,6 +2145,11 @@ let confirmationModal;
 let confirmMessage;
 let confirmOkBtn;
 let confirmCancelBtn;
+let tempEffectsModal;
+let tempEffectsModalTitle;
+let tempEffectsList;
+let addTempEffectBtn;
+let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
 
 
 // Key for local storage to persist Google Drive authorization status
@@ -2510,6 +2532,94 @@ function toggleSidebar() {
     }
 }
 
+/**
+ * Opens the temporary effects modal for a specific stat.
+ * @param {string} statName The name of the stat (e.g., 'Strength').
+ */
+function openTemporaryEffectsModal(statName) {
+    currentStatForTempEffects = statName;
+    tempEffectsModalTitle.textContent = `Temporary Effects for ${statName}`;
+    renderTemporaryEffects(statName);
+    tempEffectsModal.classList.remove('hidden');
+}
+
+/**
+ * Closes the temporary effects modal.
+ */
+function closeTemporaryEffectsModal() {
+    tempEffectsModal.classList.add('hidden');
+    currentStatForTempEffects = null;
+    updateDOM(); // Re-render the main stats table to reflect any changes in totals
+}
+
+/**
+ * Renders the list of temporary effects for the current stat in the modal.
+ * @param {string} statName The name of the stat.
+ */
+function renderTemporaryEffects(statName) {
+    tempEffectsList.innerHTML = ''; // Clear existing effects
+
+    const effects = character[statName].temporaryEffects;
+
+    if (effects.length === 0) {
+        tempEffectsList.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No temporary effects added yet.</p>';
+        return;
+    }
+
+    effects.forEach((effect, index) => {
+        const effectDiv = document.createElement('div');
+        effectDiv.className = 'flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+        effectDiv.innerHTML = `
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
+            <input type="number" value="${effect.value}" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Duration (turns):</label>
+            <input type="number" value="${effect.duration}" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+            <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
+        `;
+        tempEffectsList.appendChild(effectDiv);
+    });
+
+    // Attach event listeners to the newly rendered inputs and buttons
+    tempEffectsList.querySelectorAll('.temp-effect-input').forEach(input => {
+        input.addEventListener('input', handlePlayerStatInputChange); // Reuse existing handler
+    });
+    tempEffectsList.querySelectorAll('.remove-temp-effect-btn').forEach(button => {
+        button.addEventListener('click', removeTemporaryEffect);
+    });
+}
+
+/**
+ * Adds a new temporary effect to the current stat.
+ */
+function addTemporaryEffect() {
+    if (currentStatForTempEffects) {
+        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 0 });
+        renderTemporaryEffects(currentStatForTempEffects);
+        character[currentStatForTempEffects].total = calculateTotal(character, currentStatForTempEffects);
+        document.getElementById(`${currentStatForTempEffects}-total`).value = character[currentStatForTempEffects].total;
+        hasUnsavedChanges = true;
+        saveCurrentStateToHistory();
+    }
+}
+
+/**
+ * Removes a temporary effect from a stat.
+ * @param {Event} event The click event from the remove button.
+ */
+function removeTemporaryEffect(event) {
+    const statName = event.target.dataset.statName;
+    const effectIndex = parseInt(event.target.dataset.effectIndex);
+
+    if (statName && character[statName] && character[statName].temporaryEffects[effectIndex] !== undefined) {
+        character[statName].temporaryEffects.splice(effectIndex, 1);
+        renderTemporaryEffects(statName);
+        character[statName].total = calculateTotal(character, statName);
+        document.getElementById(`${statName}-total`).value = character[statName].total;
+        hasUnsavedChanges = true;
+        saveCurrentStateToHistory();
+    }
+}
+
 
 // Attach event listeners to all relevant input fields
 function attachEventListeners() {
@@ -2527,6 +2637,15 @@ function attachEventListeners() {
     document.getElementById('player-stats-container').addEventListener('input', function (event) {
         if (event.target.classList.contains('stat-input')) {
             handleChange(event);
+        }
+    });
+
+    // Attach listeners for temporary effects buttons using delegation
+    document.getElementById('player-stats-container').addEventListener('click', function (event) {
+        if (event.target.closest('.temp-effects-btn')) {
+            const button = event.target.closest('.temp-effects-btn');
+            const statName = button.dataset.statName;
+            openTemporaryEffectsModal(statName);
         }
     });
 
@@ -2609,6 +2728,10 @@ function attachEventListeners() {
     authorizeGoogleDriveButton.addEventListener('click', handleGoogleDriveAuthClick);
     signoutGoogleDriveButton.addEventListener('click', handleGoogleDriveSignoutClick);
     document.getElementById('close-google-drive-modal').addEventListener('click', () => googleDriveModal.classList.add('hidden'));
+
+    // Temporary Effects Modal buttons
+    addTempEffectBtn.addEventListener('click', addTemporaryEffect);
+    document.getElementById('close-temp-effects-modal').addEventListener('click', closeTemporaryEffectsModal);
 
 
     // Attach event listeners for Personal Notes button and panel close button
@@ -2694,6 +2817,10 @@ function initPage() {
     confirmMessage = document.getElementById('confirm-message');
     confirmOkBtn = document.getElementById('confirm-ok-btn');
     confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+    tempEffectsModal = document.getElementById('temp-effects-modal');
+    tempEffectsModalTitle = document.getElementById('temp-effects-modal-title');
+    tempEffectsList = document.getElementById('temp-effects-list');
+    addTempEffectBtn = document.getElementById('add-temp-effect-btn');
 
 
     characters = [defaultCharacterData()];

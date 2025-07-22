@@ -249,7 +249,6 @@
                                     <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Value</th>
                                     <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Racial</th>
                                     <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equip</th>
-                                    <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Temp</th>
                                     <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Exp</th>
                                     <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
                                 </tr>
@@ -549,6 +548,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Temporary Effects Modal -->
+    <div id="temp-effects-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-lg w-full text-left relative">
+            <button id="close-temp-effects-modal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 id="temp-effects-modal-title" class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">Temporary Effects for [Stat Name]</h2>
+            <div id="temp-effects-list" class="space-y-4 max-h-80 overflow-y-auto pr-2">
+                <!-- Temporary effects will be populated here -->
+            </div>
+            <button id="add-temp-effect-btn" class="mt-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                Add Temporary Effect
+            </button>
+        </div>
+    </div>
+
 
     <script>
         window.gapiInited = false;
