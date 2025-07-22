@@ -40,19 +40,18 @@ function applyTemporaryEffects(baseValue, temporaryEffects) {
     return currentValue;
 }
 
-function calculateMaxTotal(effects, level, initialValue) {
-    console.log(effects);
+function calculateMaxTotal(effects, level, initialValue, intermediateValue) {
     const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
     let baseValue = applyTemporaryEffects(initialValue, effectsOnValue);
 
     // Calculate the initial total based on the modified base value and level
-    let currentTotal = Math.floor(baseValue * level);
+    let currentTotal = baseValue * level + intermediateValue;
 
     // Apply effects on total
     const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
     currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
 
-    return Math.floor(currentTotal);
+    return currentTotal;
 }
 
 function calculateBaseMaxHealth(charData) {
@@ -63,21 +62,21 @@ function calculateBaseMaxHealth(charData) {
 function calculateMaxHealth(charData, level) {
     const effects = charData.Health.temporaryEffects;
 
-    return calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData));
+    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData), 0));
 }
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
     const effects = charData.Mana.temporaryEffects;
 
-    return calculateMaxTotal(effects, level, 100);
+    return Math.floor(calculateMaxTotal(effects, level, 100, 0));
 }
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = charData.racialPower.temporaryEffects;
 
-    return calculateMaxTotal(effects, level, 100);
+    return Math.floor(calculateMaxTotal(effects, level, 100, 0));
 }
 
 // Generate a random number between min and max (inclusive)
@@ -107,7 +106,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 
     oldMaxValue = char.maxRacialPower;
     char.maxRacialPower = calculateMaxRacialPower(char, char.level);
-    char.racialPower = adjustValue(oldMaxValue, char.racialPower.value, char.maxRacialPower);
+    char.racialPower.value = adjustValue(oldMaxValue, char.racialPower.value, char.maxRacialPower);
 
     if (isDisplay) {
         document.getElementById('maxHealth').value = character.maxHealth;
@@ -131,7 +130,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
         if (char[statName]) {
-            char[statName].total = calculateTotal(char, statName);
+            char[statName].total = calculateRollStatTotal(char, statName);
         }
     });
 }
@@ -344,7 +343,7 @@ const statMapping = {
 
 
 // Function to calculate the total for a given stat
-function calculateTotal(char, statName) {
+function calculateRollStatTotal(char, statName) {
     const stat = char[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
     let value = parseFloat(stat.value) || 0;
@@ -354,18 +353,7 @@ function calculateTotal(char, statName) {
 
     const effects = stat.temporaryEffects;
 
-    // Apply effects on value first
-    const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
-    value = applyTemporaryEffects(value, effectsOnValue);
-
-    // Calculate the intermediate total
-    let currentTotal = Math.ceil(value * racialChange + equipment);
-
-    // Apply effects on total
-    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
-    currentTotal = applyTemporaryEffects(currentTotal, effectsOnTotal);
-
-    return Math.ceil(currentTotal);
+    return Math.ceil(calculateMaxTotal(effects, 1, value * racialChange, equipment));
 }
 
 function getAppliedRacialChange(charData, statName) {
@@ -631,7 +619,7 @@ function updateDOM() {
                </div>
            </td>
            <td class="px-2 py-1 whitespace-nowrap">
-               <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateTotal(character, statName)}" readonly class="stat-input" />
+               <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateRollStatTotal(character, statName)}" readonly class="stat-input" />
            </td>
        `;
         playerStatsContainer.appendChild(row);
@@ -799,7 +787,7 @@ function quickRollStats() {
         character[statName].temporaryEffects = []; // Clear temporary effects on quick roll
 
         // Recalculate total for the updated stat
-        character[statName].total = calculateTotal(character, statName);
+        character[statName].total = calculateRollStatTotal(character, statName);
 
         // Update the DOM for value and total immediately
         document.getElementById(`${statName}-value`).value = character[statName].value;
@@ -823,7 +811,7 @@ function distributeStats() {
         ExternalDataManager.rollStats.forEach(statName => {
             character[statName].value = MIN_STAT_VALUE; // Set all stats to minimum
             character[statName].temporaryEffects = []; // Clear temporary effects on distribution
-            character[statName].total = calculateTotal(character, statName); // Recalculate total
+            character[statName].total = calculateRollStatTotal(character, statName); // Recalculate total
             document.getElementById(`${statName}-value`).value = character[statName].value;
             document.getElementById(`${statName}-total`).value = character[statName].total;
         });
@@ -1059,7 +1047,7 @@ function handleChangeRace(oldRace) {
     // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
         updateRacialChange(oldRace, statName);
-        character[statName].total = calculateTotal(character, statName);
+        character[statName].total = calculateRollStatTotal(character, statName);
         document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Display raw number
         document.getElementById(`${statName}-total`).value = character[statName].total;
     });
@@ -1597,7 +1585,7 @@ function handlePlayerStatInputChange(event) {
             if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower') {
                 recalculateSmallUpdateCharacter(character, true); // Update max values and their DOM elements
             } else { // For rollStats, update their total
-                character[statName].total = calculateTotal(character, statName);
+                character[statName].total = calculateRollStatTotal(character, statName);
                 document.getElementById(`${statName}-total`).value = character[statName].total;
             }
             hasUnsavedChanges = true;
@@ -1682,7 +1670,7 @@ function handlePlayerStatInputChange(event) {
 
     // Recalculate and update total for rollStats, or max values for Health/Mana/RacialPower
     if (ExternalDataManager.rollStats.includes(statName)) {
-        character[statName].total = calculateTotal(character, statName);
+        character[statName].total = calculateRollStatTotal(character, statName);
         document.getElementById(`${statName}-total`).value = character[statName].total;
     } else if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower') {
         recalculateSmallUpdateCharacter(character, true);
@@ -2808,7 +2796,7 @@ function addTemporaryEffect() {
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
-            character[currentStatForTempEffects].total = calculateTotal(character, currentStatForTempEffects);
+            character[currentStatForTempEffects].total = calculateRollStatTotal(character, currentStatForTempEffects);
             document.getElementById(`${currentStatForTempEffects}-total`).value = character[currentStatForTempEffects].total;
         }
         hasUnsavedChanges = true;
@@ -2831,7 +2819,7 @@ function removeTemporaryEffect(event) {
         if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
-            character[statName].total = calculateTotal(character, statName);
+            character[statName].total = calculateRollStatTotal(character, statName);
             document.getElementById(`${statName}-total`).value = character[statName].total;
         }
         hasUnsavedChanges = true;
