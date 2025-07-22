@@ -2620,7 +2620,9 @@ function renderTemporaryEffects(statName) {
     // This handles removals and ensures correct order
     const existingEffectDivs = Array.from(tempEffectsList.children);
     existingEffectDivs.forEach((div, index) => {
-        if (index >= effects.length) {
+        // If an element exists at this index and it's not a temporary effect div (e.g., the "No effects" message), remove it.
+        // Or if it's an excess div beyond the current number of effects, remove it.
+        if (index >= effects.length || !div.classList.contains('flex')) {
             tempEffectsList.removeChild(div);
         }
     });
@@ -2632,38 +2634,62 @@ function renderTemporaryEffects(statName) {
 
     effects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
+        let valueInput, durationInput, removeButton;
 
-        if (!effectDiv || !effectDiv.classList.contains('flex')) { // Check if element exists and is the correct type
+        // If the div doesn't exist or isn't the correct type, create it
+        if (!effectDiv || !effectDiv.classList.contains('flex')) {
             effectDiv = document.createElement('div');
             effectDiv.className = 'flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+            // Insert at the correct position or append
             if (tempEffectsList.children[index]) {
                 tempEffectsList.insertBefore(effectDiv, tempEffectsList.children[index]);
             } else {
                 tempEffectsList.appendChild(effectDiv);
             }
+
+            // Populate innerHTML for a newly created div
+            effectDiv.innerHTML = `
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
+                <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Duration (turns):</label>
+                <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+                <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
+            `;
+            // Get references to the newly created inputs and button
+            valueInput = effectDiv.querySelector(`input[data-field="value"]`);
+            durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
+        } else {
+            // If the div already exists and is correct, just update its children's values and data attributes
+            valueInput = effectDiv.querySelector(`input[data-field="value"]`);
+            durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
+
+            // Update data-effect-index for consistency if order changes (though it shouldn't often here)
+            valueInput.dataset.effectIndex = index;
+            durationInput.dataset.effectIndex = index;
+            removeButton.dataset.effectIndex = index;
         }
 
-        // Update content of existing or new div
-        effectDiv.innerHTML = `
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
-            <input type="number" value="${effect.value}" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Duration (turns):</label>
-            <input type="number" value="${effect.duration}" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
-            <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
-        `;
+        // Always update the input values directly to reflect the current data
+        valueInput.value = effect.value;
+        durationInput.value = effect.duration;
+
+        // Re-attach event listeners to ensure they are always active for current elements
+        valueInput.removeEventListener('input', handlePlayerStatInputChange);
+        valueInput.addEventListener('input', handlePlayerStatInputChange);
+
+        durationInput.removeEventListener('input', handlePlayerStatInputChange);
+        durationInput.addEventListener('input', handlePlayerStatInputChange);
+
+        removeButton.removeEventListener('click', removeTemporaryEffect);
+        removeButton.addEventListener('click', removeTemporaryEffect);
     });
 
-    // Attach event listeners to the newly rendered/updated inputs and buttons
-    tempEffectsList.querySelectorAll('.temp-effect-input').forEach(input => {
-        // Remove existing listener to prevent duplicates
-        input.removeEventListener('input', handlePlayerStatInputChange);
-        input.addEventListener('input', handlePlayerStatInputChange);
-    });
-    tempEffectsList.querySelectorAll('.remove-temp-effect-btn').forEach(button => {
-        // Remove existing listener to prevent duplicates
-        button.removeEventListener('click', removeTemporaryEffect);
-        button.addEventListener('click', removeTemporaryEffect);
-    });
+    // Remove any excess divs if the number of effects has decreased
+    while (tempEffectsList.children.length > effects.length) {
+        tempEffectsList.removeChild(tempEffectsList.lastChild);
+    }
 
     // Restore focus
     if (focusedElementDataset) {
