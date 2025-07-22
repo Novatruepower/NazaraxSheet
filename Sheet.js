@@ -23,7 +23,7 @@ function applyPercentOnBaseValue(effect, baseValue) {
     if (effect.isPercent)
         return baseValue * applyPercent(effect.isPercent);
     
-    return baseValue;
+    return applyPercent(effect.isPercent);
 }
 
 function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
