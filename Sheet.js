@@ -1529,7 +1529,7 @@ function handlePlayerStatInputChange(event) {
         if (character[statName].temporaryEffects[effectIndex]) {
             character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
             // Re-render the temporary effects list and update the stat total immediately
-            renderTemporaryEffects(statName);
+            renderTemporaryEffects(statName); // This will now preserve focus
             // If the stat is Health, Mana, or RacialPower, recalculate its max value
             if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
                 recalculateSmallUpdateCharacter(character, true); // Update max values and their DOM elements
@@ -2603,9 +2603,27 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    tempEffectsList.innerHTML = ''; // Clear existing effects
-
     const effects = character[statName].temporaryEffects;
+
+    // Store the currently focused element's ID if it's within the temp effects list
+    const focusedElement = document.activeElement;
+    let focusedElementDataset = null;
+    if (focusedElement && tempEffectsList.contains(focusedElement) && focusedElement.classList.contains('temp-effect-input')) {
+        focusedElementDataset = {
+            statName: focusedElement.dataset.statName,
+            effectIndex: parseInt(focusedElement.dataset.effectIndex),
+            field: focusedElement.dataset.field
+        };
+    }
+
+    // Clear existing children that are not part of the current effects array
+    // This handles removals and ensures correct order
+    const existingEffectDivs = Array.from(tempEffectsList.children);
+    existingEffectDivs.forEach((div, index) => {
+        if (index >= effects.length) {
+            tempEffectsList.removeChild(div);
+        }
+    });
 
     if (effects.length === 0) {
         tempEffectsList.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No temporary effects added yet.</p>';
@@ -2613,8 +2631,19 @@ function renderTemporaryEffects(statName) {
     }
 
     effects.forEach((effect, index) => {
-        const effectDiv = document.createElement('div');
-        effectDiv.className = 'flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+        let effectDiv = tempEffectsList.children[index];
+
+        if (!effectDiv || !effectDiv.classList.contains('flex')) { // Check if element exists and is the correct type
+            effectDiv = document.createElement('div');
+            effectDiv.className = 'flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+            if (tempEffectsList.children[index]) {
+                tempEffectsList.insertBefore(effectDiv, tempEffectsList.children[index]);
+            } else {
+                tempEffectsList.appendChild(effectDiv);
+            }
+        }
+
+        // Update content of existing or new div
         effectDiv.innerHTML = `
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
             <input type="number" value="${effect.value}" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
@@ -2622,16 +2651,33 @@ function renderTemporaryEffects(statName) {
             <input type="number" value="${effect.duration}" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
             <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
         `;
-        tempEffectsList.appendChild(effectDiv);
     });
 
-    // Attach event listeners to the newly rendered inputs and buttons
+    // Attach event listeners to the newly rendered/updated inputs and buttons
     tempEffectsList.querySelectorAll('.temp-effect-input').forEach(input => {
-        input.addEventListener('input', handlePlayerStatInputChange); // Reuse existing handler
+        // Remove existing listener to prevent duplicates
+        input.removeEventListener('input', handlePlayerStatInputChange);
+        input.addEventListener('input', handlePlayerStatInputChange);
     });
     tempEffectsList.querySelectorAll('.remove-temp-effect-btn').forEach(button => {
+        // Remove existing listener to prevent duplicates
+        button.removeEventListener('click', removeTemporaryEffect);
         button.addEventListener('click', removeTemporaryEffect);
     });
+
+    // Restore focus
+    if (focusedElementDataset) {
+        const inputToRefocus = tempEffectsList.querySelector(
+            `input[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-field="${focusedElementDataset.field}"]`
+        );
+        if (inputToRefocus) {
+            inputToRefocus.focus();
+            // Optionally, restore cursor position if it's a text input
+            if (focusedElement.type === 'text' || focusedElement.type === 'number') {
+                inputToRefocus.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
+            }
+        }
+    }
 }
 
 /**
@@ -2663,7 +2709,7 @@ function removeTemporaryEffect(event) {
 
     if (statName && character[statName] && character[statName].temporaryEffects[effectIndex] !== undefined) {
         character[statName].temporaryEffects.splice(effectIndex, 1);
-        renderTemporaryEffects(statName);
+        renderTemporaryEffects(statName); // This will now preserve focus
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
         if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
             recalculateSmallUpdateCharacter(character, true);
