@@ -135,7 +135,6 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     char.racialPower.value = adjustValue(oldMaxValue, char.racialPower.value, char.maxRacialPower);
 
     // Recalculate totalDefense
-    let oldTotalDefense = char.totalDefense.value;
     char.totalDefense.value = calculateTotalDefense(char);
     // No adjustment needed for totalDefense as it's not a current/max value like health/mana
 
@@ -162,7 +161,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
         if (char[statName]) {
-            char[statName].total = calculateRollStatTotal(char, statName);
+            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(char, statName);
         }
     });
 }
@@ -219,13 +218,13 @@ const defaultCharacterData = function () {
         const result = newCharacter.isDistributingStats ? MIN_STAT_VALUE : roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Initialize with MIN_STAT_VALUE if distributing
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
         newCharacter[statName] = {
-            value: result,
+            baseValue: result, // Changed 'value' to 'baseValue'
+            experienceBonus: 0, // Added new field for experience bonus
             racialChange: initialRacialChange,
             equipment: 0,
             temporaryEffects: [], // Initialize as an empty array for temporary effects
             experience: 0,
             maxExperience: defaultStatMaxExperience,
-            total: result * initialRacialChange
         };
     });
 
@@ -294,10 +293,10 @@ function convertArraysToSetsAfterLoad(chars) {
     chars.forEach(char => {
         if (char.StatsAffected) {
             for (const category in char.StatsAffected) {
-                for (const uniqueIdentifier in char.StatsAffected[category]) { // Changed from passiveName
-                    for (const statName in char.StatsAffected[category][uniqueIdentifier]) { // Changed from passiveName
-                        if (Array.isArray(char.StatsAffected[category][uniqueIdentifier][statName])) { // Changed from passiveName
-                            char.StatsAffected[category][uniqueIdentifier][statName] = new Set(char.StatsAffected[category][uniqueIdentifier][statName]); // Changed from passiveName
+                for (const uniqueIdentifier in char.StatChoices[category]) { // Use StatChoices to iterate actual choices
+                    for (const statName in char.StatsAffected[category][uniqueIdentifier]) {
+                        if (Array.isArray(char.StatsAffected[category][uniqueIdentifier][statName])) {
+                            char.StatsAffected[category][uniqueIdentifier][statName] = new Set(char.StatsAffected[category][uniqueIdentifier][statName]);
                         }
                     }
                 }
@@ -377,14 +376,14 @@ const statMapping = {
 function calculateRollStatTotal(char, statName) {
     const stat = char[statName];
     // Ensure values are treated as numbers, defaulting to 0 if NaN
-    let value = parseFloat(stat.value) || 0;
+    let combinedValue = (parseFloat(stat.baseValue) || 0) + (parseFloat(stat.experienceBonus) || 0); // Use baseValue + experienceBonus
     const equipment = parseFloat(stat.equipment) || 0;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
     const racialChange = getAppliedRacialChange(char, statName);
 
     const effects = stat.temporaryEffects;
 
-    return Math.ceil(calculateMaxTotal(effects, 1, Math.ceil(value * racialChange), equipment));
+    return Math.ceil(calculateMaxTotal(effects, 1, Math.ceil(combinedValue * racialChange), equipment));
 }
 
 function getAppliedRacialChange(charData, statName) {
@@ -489,14 +488,29 @@ function initLoadCharacter(loadedChar) {
                 // Handle nested objects (like stat objects)
                 if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
                     Object.assign(newChar[key], loadedChar[key]);
-                }
-                // Ensure maxExperience is set for stats, if it was excluded during saving or missing
-                if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
-                    newChar[key].maxExperience = defaultStatMaxExperience;
-                }
-                // Ensure temporaryEffects is initialized as an array for all relevant stats
-                if ((ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense') && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
-                    newChar[key].temporaryEffects = [];
+
+                    // Handle migration from old 'value' to 'baseValue' + 'experienceBonus'
+                    if (ExternalDataManager.rollStats.includes(key)) {
+                        if (typeof newChar[key].baseValue === 'undefined' && typeof newChar[key].value !== 'undefined') {
+                            // If old 'value' exists but new 'baseValue' doesn't, migrate it
+                            newChar[key].baseValue = newChar[key].value;
+                            delete newChar[key].value; // Remove old 'value' property
+                        } else if (typeof newChar[key].baseValue === 'undefined') {
+                            // If neither baseValue nor old value exists, default baseValue
+                            newChar[key].baseValue = MIN_STAT_VALUE; // Or some other default
+                        }
+                        if (typeof newChar[key].experienceBonus === 'undefined') {
+                            newChar[key].experienceBonus = 0; // Default experienceBonus
+                        }
+                    }
+                    // Ensure maxExperience is set for stats, if it was excluded during saving or missing
+                    if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
+                        newChar[key].maxExperience = defaultStatMaxExperience;
+                    }
+                    // Ensure temporaryEffects is initialized as an array for all relevant stats
+                    if ((ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense') && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
+                        newChar[key].temporaryEffects = [];
+                    }
                 }
             } else {
                 newChar[key] = loadedChar[key];
@@ -627,14 +641,14 @@ function updateDOM() {
                     data-stat-name="${statName}">
                     ${statName}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
+                        xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
             </td>
            <td class="px-2 py-1 whitespace-nowrap">
-               <input type="number" id="${statName}-value" name="${statName}-value" min="${MIN_STAT_VALUE}" value="${statData.value}" class="stat-input" />
+               <input type="number" id="${statName}-value" name="${statName}-value" min="${MIN_STAT_VALUE}" value="${statData.baseValue + statData.experienceBonus}" class="stat-input" />
             </td>
            <td class="px-2 py-1 whitespace-nowrap">
                <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(character, statName)}" readonly class="stat-input" />
@@ -814,15 +828,12 @@ function renderGeneralTable() {
 function quickRollStats() {
     character.isDistributingStats = false; // Exit distribution mode
     ExternalDataManager.rollStats.forEach(statName => {
-        character[statName].value = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'value' property
-        character[statName].temporaryEffects = []; // Clear temporary effects on quick roll
+        character[statName].baseValue = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'baseValue' property
+        // character[statName].temporaryEffects = []; // Removed: Do not clear temporary effects on quick roll
 
-        // Recalculate total for the updated stat
-        character[statName].total = calculateRollStatTotal(character, statName);
-
-        // Update the DOM for value and total immediately
-        document.getElementById(`${statName}-value`).value = character[statName].value;
-        document.getElementById(`${statName}-total`).value = character[statName].total;
+        // Update the DOM for value (combined) and total immediately
+        document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus;
+        document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
     });
     // Re-render weapon inventory to update calculated damage values
     renderWeaponTable();
@@ -840,11 +851,9 @@ function distributeStats() {
         character.remainingDistributionPoints = TOTAL_DISTRIBUTION_POINTS;
 
         ExternalDataManager.rollStats.forEach(statName => {
-            character[statName].value = MIN_STAT_VALUE; // Set all stats to minimum
-            character[statName].temporaryEffects = []; // Clear temporary effects on distribution
-            character[statName].total = calculateRollStatTotal(character, statName); // Recalculate total
-            document.getElementById(`${statName}-value`).value = character[statName].value;
-            document.getElementById(`${statName}-total`).value = character[statName].total;
+            character[statName].baseValue = MIN_STAT_VALUE; // Set all stats to minimum baseValue
+            document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus; // Update displayed value
+            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
         });
 
         updateRemainingPointsDisplay();
@@ -926,10 +935,11 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
                 }
             }
             // Revert other specific flags if they were set by the previous choice
-            if (previousChoice.type === 'natural_regen_active') {
+            // Need to ensure previousChoice is defined to access its properties
+            if (choice && choice.type === 'natural_regen_active') { // Check choice for type
                 char.naturalHealthRegenActive = false;
                 char.naturalManaRegenActive = false;
-            } else if (previousChoice.type === 'regen_doubled') {
+            } else if (choice && choice.type === 'regen_doubled') { // Check choice for type
                 char.healthRegenDoubled = false;
                 char.manaRegenDoubled = false;
             }
@@ -1078,9 +1088,8 @@ function handleChangeRace(oldRace) {
     // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
         updateRacialChange(oldRace, statName);
-        character[statName].total = calculateRollStatTotal(character, statName);
         document.getElementById(`${statName}-racialChange`).value = getAppliedRacialChange(character, statName); // Display raw number
-        document.getElementById(`${statName}-total`).value = character[statName].total;
+        document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
     });
     
 
@@ -1150,7 +1159,16 @@ function renderDemiHumanStatChoiceUI() {
 
             for (let i = 0; i < modifier.count; i++) {
                 const slotId = `demihuman-${modifier.type}-${modIndex}-${i}`; // Unique ID for each choice slot
-                const currentChoice = character.StatChoices[category][uniqueIdentifier][slotId];
+                let currentChoice = null;
+                // Find the current choice for this slot, iterating through unique identifiers
+                if (character.StatChoices[category]) {
+                    for (const uId in character.StatChoices[category]) {
+                        if (character.StatChoices[category][uId] && character.StatChoices[category][uId][slotId]) {
+                            currentChoice = character.StatChoices[category][uId][slotId];
+                            break;
+                        }
+                    }
+                }
                 const selectedStatName = currentChoice ? currentChoice.statName : '';
 
                 const choiceDiv = document.createElement('div');
@@ -1623,8 +1641,7 @@ function handlePlayerStatInputChange(event) {
             if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
                 recalculateSmallUpdateCharacter(character, true); // Update max values and their DOM elements
             } else { // For rollStats, update their total
-                character[statName].total = calculateRollStatTotal(character, statName);
-                document.getElementById(`${statName}-total`).value = character[statName].total;
+                document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
             }
             hasUnsavedChanges = true;
             saveCurrentStateToHistory();
@@ -1653,74 +1670,70 @@ function handlePlayerStatInputChange(event) {
     if (subProperty === 'experience') {
         character[statName].experience = newValue;
         while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
-            character[statName].value++;
+            character[statName].experienceBonus++; // Increment experienceBonus instead of value
             character[statName].experience -= character[statName].maxExperience;
         }
-        document.getElementById(`${statName}-value`).value = character[statName].value;
+        document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus; // Update displayed value
         document.getElementById(`${statName}-experience`).value = character[statName].experience;
     } else if (subProperty === 'maxExperience') {
         character[statName].maxExperience = Math.max(1, newValue);
         document.getElementById(`${statName}-maxExperience`).value = character[statName].maxExperience;
         while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
-            character[statName].value++;
+            character[statName].experienceBonus++; // Increment experienceBonus instead of value
             character[statName].experience -= character[statName].maxExperience;
         }
-        document.getElementById(`${statName}-value`).value = character[statName].value;
+        document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus; // Update displayed value
         document.getElementById(`${statName}-experience`).value = character[statName].experience;
     } else if (subProperty === 'value' && character.isDistributingStats) {
-        const oldValue = character[statName].value;
-        let clampedValue = Math.max(MIN_STAT_VALUE, Math.min(MAX_STAT_VALUE, newValue));
+        // When in distribution mode, the input affects baseValue, preserving experienceBonus
+        const oldBaseValue = character[statName].baseValue;
+        const currentExperienceBonus = character[statName].experienceBonus;
 
-        if (clampedValue !== newValue) {
-            // If value was clamped, update input field to reflect clamped value
-            event.target.value = clampedValue;
-        }
+        // Calculate the target baseValue based on the new combined value input by the user
+        let targetBaseValue = newValue - currentExperienceBonus;
 
-        const delta = clampedValue - oldValue;
-        if (character.remainingDistributionPoints - delta >= 0) { // Only allow if points don't go negative
+        // Clamp the targetBaseValue to MIN_STAT_VALUE and MAX_STAT_VALUE
+        targetBaseValue = Math.max(MIN_STAT_VALUE, Math.min(MAX_STAT_VALUE, targetBaseValue));
+
+        const delta = targetBaseValue - oldBaseValue;
+
+        if (character.remainingDistributionPoints - delta >= 0) {
             character.remainingDistributionPoints -= delta;
-            character[statName].value = clampedValue;
+            character[statName].baseValue = targetBaseValue;
         } else {
-            // If not enough points, set to max possible value
+            // If not enough points, set to max possible baseValue
             const maxPossibleIncrease = character.remainingDistributionPoints;
             if (maxPossibleIncrease > 0) {
-                character[statName].value = oldValue + maxPossibleIncrease;
+                character[statName].baseValue = oldBaseValue + maxPossibleIncrease;
                 character.remainingDistributionPoints = 0;
             }
-            event.target.value = character[statName].value; // Update input to reflect actual value
+            // Update the input field to reflect the actual combined value
+            event.target.value = character[statName].baseValue + character[statName].experienceBonus;
         }
-
         updateRemainingPointsDisplay();
-    } else { // Handle direct value changes for Health, Mana, RacialPower, totalDefense, and other stat properties
-        if (statName === 'Health') {
-            character.Health.value = Math.min(newValue, character.maxHealth);
-            document.getElementById('Health').value = character.Health.value;
-        } else if (statName === 'Mana') {
-            character.Mana.value = Math.min(newValue, character.maxMana);
-            document.getElementById('Mana').value = character.Mana.value;
-        } else if (statName === 'racialPower') {
-            character.racialPower.value = Math.min(newValue, character.maxRacialPower);
-            document.getElementById('racialPower').value = character.racialPower.value;
-        } else if (statName === 'totalDefense') {
-            // totalDefense.value is a derived property, so direct input should be handled carefully.
-            // For now, allow direct input but recalculate immediately.
-            character.totalDefense.value = newValue; // This will be overwritten by recalculateSmallUpdateCharacter
-            document.getElementById('total-defense').value = character.totalDefense.value;
-        }
-        else { // For rollStats
-            character[statName][subProperty] = newValue;
-        }
+    } else if (subProperty === 'value' && !character.isDistributingStats) {
+        // When NOT in distribution mode, direct input to the 'value' field should set the baseValue
+        // The experienceBonus remains an additive bonus on top of this manually set baseValue.
+        character[statName].baseValue = newValue - character[statName].experienceBonus;
+        // Ensure baseValue doesn't go below MIN_STAT_VALUE if user tries to set it too low
+        character[statName].baseValue = Math.max(MIN_STAT_VALUE, character[statName].baseValue);
+        // Update the input field to reflect the actual combined value
+        event.target.value = character[statName].baseValue + character[statName].experienceBonus;
+    }
+    else { // Handle other direct value changes for rollStats (e.g., equipment)
+        character[statName][subProperty] = newValue;
     }
 
     // Recalculate and update total for rollStats, or max values for Health/Mana/RacialPower/totalDefense
     if (ExternalDataManager.rollStats.includes(statName)) {
-        character[statName].total = calculateRollStatTotal(character, statName);
-        document.getElementById(`${statName}-total`).value = character[statName].total;
+        document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
     } else if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
         recalculateSmallUpdateCharacter(character, true);
     }
     
     renderWeaponTable();
+    hasUnsavedChanges = true;
+    saveCurrentStateToHistory();
 }
 
 function removePassivesLevel() {
@@ -2865,8 +2878,7 @@ function addTemporaryEffect() {
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
-            character[currentStatForTempEffects].total = calculateRollStatTotal(currentStatForTempEffects);
-            document.getElementById(`${currentStatForTempEffects}-total`).value = character[currentStatForTempEffects].total;
+            document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
         }
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
@@ -2888,8 +2900,7 @@ function removeTemporaryEffect(event) {
         if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
-            character[statName].total = calculateRollStatTotal(character, statName);
-            document.getElementById(`${statName}-total`).value = character[statName].total;
+            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
         }
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
