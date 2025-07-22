@@ -21,7 +21,7 @@ function applyPercent(effect) {
 
 function applyPercentOnBaseValue(effect, baseValue) {
     if (effect.isPercent)
-        return baseValue * applyPercent(effect.isPercent);
+        return baseValue * applyPercent(effect);
     
     return parseFloat(effect.value) || 0;
 }
