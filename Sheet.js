@@ -25,7 +25,7 @@ function applyTemporaryEffects(baseValue, temporaryEffects) {
 
     // Separate additive and multiplicative effects
     const additiveEffects = temporaryEffects.filter(effect => effect.type === 'add');
-    const additiveValueEffects = additiveEffects.filter(effect => effect.appliesTo === 'value');
+    const additiveValueEffects = additiveEffects.filter(effect => effect.appliesTo === 'base-value');
     const multiplicativeEffects = temporaryEffects.filter(effect => effect.type === 'multiply');
     const additiveTotalEffects = additiveEffects.filter(effect => effect.appliesTo === 'total');
 
