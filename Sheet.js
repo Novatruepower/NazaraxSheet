@@ -2809,9 +2809,11 @@ function renderTemporaryEffects(statName) {
             effectDiv.innerHTML = `
                 <div class="flex flex-col min-w-[8rem] gap-y-1">
                     <label class="${labelBase}">Value</label>
-                    <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="${inputBase}" />
-                    <input type="checkbox" data-stat-name="${statName}" data-effect-index="${index}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" />
-                        %
+                    <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
+                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="${inputBase} flex-grow" />
+                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${index}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" />
+                        <span class="${labelBase}">%</span> <!-- Added a span for the percentage symbol -->
+                    </div>
                 </div>
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
