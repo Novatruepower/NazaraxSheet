@@ -158,7 +158,7 @@ const defaultCharacterData = function () {
         maxMana: 0, // Will be calculated dynamically
         racialPower: { value: 100, temporaryEffects: [] },
         maxRacialPower: 100,
-        defense: { value: 0, temporaryEffects: [] },
+        totalDefense: { value: 0, temporaryEffects: [] },
         skills: '',
         personalNotes: '',
         weaponInventory: [],
@@ -343,8 +343,8 @@ const statMapping = {
     "maxMana": "maxMana",
     "RacialPower": "racialPower",
     "MaxRacialPower": "maxRacialPower",
-    "AC": "defense",
-    "Armor": "defense"
+    "AC": "totalDefense",
+    "Armor": "totalDefense"
 };
 
 
@@ -416,11 +416,11 @@ function prepareCharactersForSaving(chars) {
                 char[statName] = rest; // Assign the object without maxExperience and total
             }
         });
-        // Exclude calculated properties (maxHealth, maxMana, maxRacialPower, defense) from the saved data
+        // Exclude calculated properties (maxHealth, maxMana, maxRacialPower, totalDefense) from the saved data
         delete char.maxHealth;
         delete char.maxMana;
         delete char.maxRacialPower;
-        delete char.defense;
+        delete char.totalDefense;
     });
     return charactersToSave;
 }
@@ -637,7 +637,7 @@ function updateDOM() {
 
     // Health & Combat
     // document.getElementById('healthBonus').value = character.healthBonus; // Removed this line
-    document.getElementById('defense').value = character.defense.value; // Populate total armor (readonly)
+    document.getElementById('total-defense').value = character.totalDefense.value; // Populate total armor (readonly)
 
 
     // Skills
