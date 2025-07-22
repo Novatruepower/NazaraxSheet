@@ -26,28 +26,28 @@ function applyPercentOnBaseValue(effect, baseValue) {
     return parseFloat(effect.value) || 0;
 }
 
-function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
-    let currentValue = baseValue;
+function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue, currentValue) {
+    let tempValue = currentValue;
 
     if (type === '*') {
         temporaryEffects.forEach(effect => {
-            currentValue *= applyPercent(effect);
+            tempValue *= applyPercent(effect);
         });
     }
-    else if ((type === '+')) {
+    else if (type === '+') {
         temporaryEffects.forEach(effect => {
-            currentValue += applyPercentOnBaseValue(effect, baseValue);
+            tempValue += applyPercentOnBaseValue(effect, baseValue);
         });
     }
 
-    return currentValue;
+    return tempValue;
 }
 
-function applyTemporaryFilterEffects(temporaryEffects, currentValue, isTotal) {
+function applyTemporaryFilterEffects(temporaryEffects, baseValue, currentValue, isTotal) {
     let tempValue = currentValue;
     const operators = isTotal ? ['*', '+'] : ['+', '*'];
     operators.forEach(type => {
-        tempValue = applyTemporaryOperatorEffects(temporaryEffects.filter(effect => effect.type === type), type, tempValue);
+        tempValue = applyTemporaryOperatorEffects(temporaryEffects.filter(effect => effect.type === type), type, baseValue, tempValue);
     });
     
     return tempValue;
@@ -62,14 +62,15 @@ function applyTemporaryFilterEffects(temporaryEffects, currentValue, isTotal) {
  */
 function applyTemporaryEffects(baseValue, temporaryEffects) {
     let currentValue = parseFloat(baseValue) || 0;
+    const baseFloatValue = currentValue;
     const notTotalEffects = temporaryEffects.filter(effect => effect.appliesTo !== 'total');
     const totalEffects = temporaryEffects.filter(effect => effect.appliesTo === 'total');
     const appliesTo = ['initial-value', 'base-value'];
     appliesTo.forEach(applieTo => {
-        currentValue = applyTemporaryFilterEffects(notTotalEffects.filter(effect => effect.appliesTo === applieTo), currentValue, false);
+        currentValue = applyTemporaryFilterEffects(notTotalEffects.filter(effect => effect.appliesTo === applieTo), baseFloatValue, currentValue, false);
     });
 
-    currentValue = applyTemporaryFilterEffects(totalEffects, currentValue, true);
+    currentValue = applyTemporaryFilterEffects(totalEffects, baseFloatValue, currentValue, true);
 
     return currentValue;
 }
