@@ -14,7 +14,10 @@ function calculateLevelMaxExperience(level) {
 }
 
 function calculateBaseMaxHealth(charData) {
-    return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
+    // Ensure BaseHealth.value and BaseHealth.racialChange are accessed from an object
+    return (charData.BaseHealth ? charData.BaseHealth.value : 0) *
+           (charData.BaseHealth ? charData.BaseHealth.racialChange : 1) *
+           (charData.Health ? charData.Health.racialChange : 1);
 }
 
 // Function to calculate max health based on race, level, and bonus
@@ -47,8 +50,8 @@ function calculateMaxMana(charData, level) {
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(level) {
-    // Racial Power temporary effects are not currently supported in the UI, but adding the logic for future expansion
-    const racialPowerStat = character.racialPower; // Assuming racialPower is a top-level property or similar structure
+    // Racial Power temporary effects are now supported
+    const racialPowerStat = character.racialPower;
     const additiveEffects = racialPowerStat.temporaryEffects ? racialPowerStat.temporaryEffects.filter(effect => effect.calcType === 'add') : [];
     const multiplicativeEffects = racialPowerStat.temporaryEffects ? racialPowerStat.temporaryEffects.filter(effect => effect.calcType === 'multiply') : [];
 
@@ -88,7 +91,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 
     oldMaxValue = char.maxRacialPower;
     char.maxRacialPower = calculateMaxRacialPower(char.level);
-    char.racialPower = adjustValue(oldMaxValue, char.racialPower, char.maxRacialPower);
+    char.racialPower.value = adjustValue(oldMaxValue, char.racialPower.value, char.maxRacialPower); // Access value property
 
     if (isDisplay) {
         document.getElementById('maxHealth').value = character.maxHealth;
@@ -96,7 +99,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         document.getElementById('maxMana').value = character.maxMana;
         document.getElementById('Mana').value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        document.getElementById('racialPower').value = character.racialPower;
+        document.getElementById('racialPower').value = character.racialPower.value; // Access value property
     }
 }
 
@@ -105,6 +108,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
  * This function updates the character's internal data, but does not directly update the DOM.
  * DOM updates should be handled by calling `updateDOM()` separately.
  * @param {object} char The character object to recalculate properties for.
+ * @param {boolean} isSmallDisplay Whether to update only small parts of the DOM.
  */
 function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     recalculateSmallUpdateCharacter(char, isSmallDisplay);
@@ -129,9 +133,11 @@ const defaultCharacterData = function () {
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
         maxHealth: 0, // Will be calculated dynamically
-        // healthBonus: 0, // Removed, now handled by Health.temporaryEffects
         maxMana: 0, // Will be calculated dynamically
-        racialPower: 100,
+        racialPower: { // Initialize racialPower as an object
+            value: 100,
+            temporaryEffects: []
+        },
         maxRacialPower: 100,
         ac: 0,
         armorBonus: 0,
@@ -189,12 +195,18 @@ const defaultCharacterData = function () {
         }
     });
 
-    // Initialize Health with temporaryEffects array
-    newCharacter['BaseHealth'].value = 100;
-    newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
-    newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
-    newCharacter['racialPower'].temporaryEffects = []; // Ensure racialPower has a temporaryEffects array
-
+    // Initialize Health and Mana with temporaryEffects array and default values
+    newCharacter['BaseHealth'].value = 100; // Set value for BaseHealth
+    newCharacter['Health'] = { // Ensure Health is an object
+        value: 100, // Default current health
+        racialChange: newCharacter.Health.racialChange, // Keep racial change
+        temporaryEffects: [] // Initialize as an empty array
+    };
+    newCharacter['Mana'] = { // Ensure Mana is an object
+        value: 100, // Default current mana
+        racialChange: newCharacter.Mana.racialChange, // Keep racial change
+        temporaryEffects: [] // Initialize as an empty array
+    };
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
@@ -1598,11 +1610,14 @@ function handlePlayerStatInputChange(event) {
         subProperty = dataset.field; // 'value', 'duration', or 'calcType' for temporary effects
         const effectIndex = parseInt(dataset.effectIndex);
 
-        if (character[statName].temporaryEffects[effectIndex]) {
+        // Access the temporaryEffects array correctly for racialPower
+        const targetEffects = (statName === 'racialPower') ? character.racialPower.temporaryEffects : character[statName].temporaryEffects;
+
+        if (targetEffects[effectIndex]) {
             if (subProperty === 'calcType') {
-                character[statName].temporaryEffects[effectIndex][subProperty] = checked ? 'multiply' : 'add';
+                targetEffects[effectIndex][subProperty] = checked ? 'multiply' : 'add';
             } else {
-                character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
+                targetEffects[effectIndex][subProperty] = newValue;
             }
             // Re-render the temporary effects list and update the stat total immediately
             renderTemporaryEffects(statName); // This will now preserve focus
@@ -1686,8 +1701,8 @@ function handlePlayerStatInputChange(event) {
             character.Mana.value = Math.min(newValue, character.maxMana);
             document.getElementById('Mana').value = character.Mana.value;
         } else if (statName === 'racialPower') {
-            character.racialPower = Math.min(newValue, character.maxRacialPower);
-            document.getElementById('racialPower').value = character.racialPower;
+            character.racialPower.value = Math.min(newValue, character.maxRacialPower); // Access value property
+            document.getElementById('racialPower').value = character.racialPower.value; // Access value property
         } else { // For rollStats
             character[statName][subProperty] = newValue;
         }
@@ -1816,8 +1831,8 @@ function handleChange(event) {
             character.Mana.value = Math.min(newValue, character.maxMana);
             document.getElementById('Mana').value = character.Mana.value;
         } else if (id === 'racialPower') {
-            character.racialPower = Math.min(newValue, character.maxRacialPower);
-            document.getElementById('racialPower').value = character.racialPower;
+            character.racialPower.value = Math.min(newValue, character.maxRacialPower); // Access value property
+            document.getElementById('racialPower').value = character.racialPower.value; // Access value property
         } else if (id === 'armorBonus') {
             character.armorBonus = newValue;
             recalculateCharacterDerivedProperties(character);
@@ -2679,7 +2694,8 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    const effects = character[statName].temporaryEffects;
+    // Access the temporaryEffects array correctly for racialPower
+    const effects = (statName === 'racialPower') ? character.racialPower.temporaryEffects : character[statName].temporaryEffects;
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
@@ -2803,7 +2819,9 @@ function renderTemporaryEffects(statName) {
  */
 function addTemporaryEffect() {
     if (currentStatForTempEffects) {
-        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 0, calcType: 'add' });
+        // Access the temporaryEffects array correctly for racialPower
+        const targetEffects = (currentStatForTempEffects === 'racialPower') ? character.racialPower.temporaryEffects : character[currentStatForTempEffects].temporaryEffects;
+        targetEffects.push({ value: 0, duration: 0, calcType: 'add' });
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'racialPower') {
@@ -2825,8 +2843,11 @@ function removeTemporaryEffect(event) {
     const statName = event.target.dataset.statName;
     const effectIndex = parseInt(event.target.dataset.effectIndex);
 
-    if (statName && character[statName] && character[statName].temporaryEffects[effectIndex] !== undefined) {
-        character[statName].temporaryEffects.splice(effectIndex, 1);
+    // Access the temporaryEffects array correctly for racialPower
+    const targetStat = (statName === 'racialPower') ? character.racialPower : character[statName];
+
+    if (statName && targetStat && targetStat.temporaryEffects[effectIndex] !== undefined) {
+        targetStat.temporaryEffects.splice(effectIndex, 1);
         renderTemporaryEffects(statName); // This will now preserve focus
         // If the stat is Health, Mana, or RacialPower, recalculate its max value
         if (statName === 'Health' || statName === 'Mana' || statName === 'racialPower') {
