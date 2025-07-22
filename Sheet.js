@@ -23,7 +23,7 @@ function applyPercentOnBaseValue(effect, baseValue) {
     if (effect.isPercent)
         return baseValue * applyPercent(effect.isPercent);
     
-    return applyPercent(effect.isPercent);
+    return parseFloat(effect.value) || 0;
 }
 
 function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
