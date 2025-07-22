@@ -389,7 +389,7 @@ function calculateRollStatTotal(char, statName) {
 }
 
 function getAppliedRacialChange(charData, statName) {
-    if (ExternalDataManager._data.Stats.includes(statName)) {
+    if (ExternalDataManager.stats.includes(statName)) {
         return charData[statName].racialChange;
     }
 
@@ -643,7 +643,7 @@ function updateDOM() {
                     data-stat-name="${statName}">
                     ${statName}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
+                        xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -848,7 +848,7 @@ function quickRollStats() {
  * Initializes stats for point distribution.
  */
 function distributeStats() {
-    showConfirmationModal("Are you sure you want to distribute 97 points? This will reset all stat values to 5.", () => {
+    showConfirmationModal("Are you sure you want to distribute 97 points? This will reset all initial stat values to 5.", () => {
         character.isDistributingStats = true; // Enter distribution mode
         character.remainingDistributionPoints = TOTAL_DISTRIBUTION_POINTS;
 
@@ -1670,11 +1670,22 @@ function handlePlayerStatInputChange(event) {
     if (!statName) return; // Not a player stat input
 
     if (subProperty === 'experience') {
+        const oldExperience = character[statName].experience;
         character[statName].experience = newValue;
+
+        // Ensure experienceBonus doesn't go below 0
+        while (character[statName].experience < 0) {
+            character[statName].experienceBonus--;
+            character[statName].experience += character[statName].maxExperience;
+            character[statName].experienceBonus = Math.max(0, character[statName].experienceBonus);
+        }
+
+        // If experience reaches or exceeds maxExperience, increment experienceBonus
         while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
             character[statName].experienceBonus++; // Increment experienceBonus instead of value
             character[statName].experience -= character[statName].maxExperience;
         }
+
         document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus; // Update displayed value
         document.getElementById(`${statName}-experience`).value = character[statName].experience;
     } else if (subProperty === 'maxExperience') {

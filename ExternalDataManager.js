@@ -129,12 +129,7 @@ export const ExternalDataManager = {
      * @returns {Array<string>} An array of stat names.
      */
     get stats() {
-        // Ensure _data and _data.Roll exist before accessing
-        if (typeof this._data === 'undefined' || !this._data.hasOwnProperty('Stats')) {
-            console.warn("ExternalDataManager: Data or 'Stats' property not yet available. Call init() first.");
-            return [];
-        }
-        return this._data['Stats'];
+        return this._data.Stats;
     },
 
     /**
@@ -143,12 +138,7 @@ export const ExternalDataManager = {
      * @returns {Array<string>} An array of stat names.
      */
     get rollStats() {
-        // Ensure _data and _data.Roll exist before accessing
-        if (typeof this._data === 'undefined' || !this._data.hasOwnProperty('Roll')) {
-            console.warn("ExternalDataManager: Data or 'Roll' property not yet available. Call init() first.");
-            return [];
-        }
-        return this._data['Roll'];
+        return this._data.Roll;
     },
 
     /**
@@ -157,12 +147,7 @@ export const ExternalDataManager = {
      * @returns {Array<string>} An array of stat names.
      */
     get otherStats() {
-        // Ensure _data and _data.Other exist before accessing
-        if (typeof this._data === 'undefined' || !this._data.hasOwnProperty('Other')) {
-            console.warn("ExternalDataManager: Data or 'Other' property not yet available. Call init() first.");
-            return [];
-        }
-        return this._data['Other'];
+        return this._data.Other;
     },
 
     /**
@@ -172,11 +157,11 @@ export const ExternalDataManager = {
      * or null if the class is not found.
      */
     getClassData(className) {
-        if (typeof this._data === 'undefined' || !this._data['Classes'].hasOwnProperty(className)) {
+        if (typeof this._data === 'undefined' || !this._data.Classes.hasOwnProperty(className)) {
             console.warn(`ExternalDataManager: Class data for "${className}" not found. Call init() first or check class name.`);
             return null;
         }
-        return this._data['Classes'][className];
+        return this._data.Classes[className];
     },
 
     /**
@@ -200,11 +185,11 @@ export const ExternalDataManager = {
      * or null if the race is not found.
      */
     getRaceData(raceName) {
-        if (typeof this._data === 'undefined' || !this._data['Races'].hasOwnProperty(raceName)) {
+        if (typeof this._data === 'undefined' || !this._data.Races.hasOwnProperty(raceName)) {
             console.warn(`ExternalDataManager: Race data for "${raceName}" not found. Call init() first or check race name.`);
             return null;
         }
-        return this._data['Races'][raceName];
+        return this._data.Races[raceName];
     },
 
     /**
