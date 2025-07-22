@@ -223,6 +223,7 @@ const defaultCharacterData = function () {
             racialChange: initialRacialChange,
             equipment: 0,
             temporaryEffects: [], // Initialize as an empty array for temporary effects
+            experienceCount: 0,
             experience: 0,
             maxExperience: defaultStatMaxExperience,
             total: result * initialRacialChange
@@ -1653,19 +1654,19 @@ function handlePlayerStatInputChange(event) {
     if (subProperty === 'experience') {
         character[statName].experience = newValue;
         while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
-            character[statName].value++;
+            character[statName].experienceCount++;
             character[statName].experience -= character[statName].maxExperience;
         }
-        document.getElementById(`${statName}-value`).value = character[statName].value;
+        document.getElementById(`${statName}-value`).value = character[statName].value + character[statName].experienceCount;
         document.getElementById(`${statName}-experience`).value = character[statName].experience;
     } else if (subProperty === 'maxExperience') {
         character[statName].maxExperience = Math.max(1, newValue);
         document.getElementById(`${statName}-maxExperience`).value = character[statName].maxExperience;
         while (character[statName].experience >= character[statName].maxExperience && character[statName].maxExperience > 0) {
-            character[statName].value++;
+            character[statName].experienceCount++;
             character[statName].experience -= character[statName].maxExperience;
         }
-        document.getElementById(`${statName}-value`).value = character[statName].value;
+        document.getElementById(`${statName}-value`).value = character[statName].value + character[statName].experienceCount;
         document.getElementById(`${statName}-experience`).value = character[statName].experience;
     } else if (subProperty === 'value' && character.isDistributingStats) {
         const oldValue = character[statName].value;
