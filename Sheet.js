@@ -2721,8 +2721,8 @@ function renderTemporaryEffects(statName) {
                 <div class="flex flex-col w-36">
                     <label class="${labelBase}">Type</label>
                     <select data-stat-name="${statName}" data-effect-index="${index}" data-field="type" class="${inputBase}">
-                        <option value="add">Addition</option>
-                        <option value="multiply">Multiplication</option>
+                        <option value="add">+</option>
+                        <option value="multiply">*</option>
                     </select>
                 </div>
 
@@ -2739,7 +2739,7 @@ function renderTemporaryEffects(statName) {
                     <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="${inputBase}" />
                 </div>
 
-                <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="self-end px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn self-end px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                     Remove
                 </button>
             `;
