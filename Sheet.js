@@ -1656,7 +1656,7 @@ function handlePlayerStatInputChange(event) {
         const effectIndex = parseInt(dataset.effectIndex);
 
         if (character[statName].temporaryEffects[effectIndex]) {
-            if (subProperty === 'type' || subProperty === 'appliesTo' || subProperty === 'isPercent') {
+            if (subProperty === 'type' || subProperty === 'appliesTo') {
                 character[statName].temporaryEffects[effectIndex][subProperty] = value;
             } else {
                 character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
@@ -2921,7 +2921,7 @@ function renderTemporaryEffects(statName) {
 function addTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 1, type: '+', appliesTo: 'total' });
+        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, isPercent: false, duration: 1, type: '+', appliesTo: 'total' });
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
