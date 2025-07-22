@@ -1210,7 +1210,7 @@ function optionChoices(race, category, option, manualpassivesList, slotId, curre
 function optionsSelector(race, category, abilityKey, abilityData, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel) {
     const needsStatSelection = applicableStatsLength > 0;
     const choiceDiv = document.createElement('div');
-    choiceDiv.className = 'flex flex-col space-y-1 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+    choiceDiv.className = 'flex flex-col space-y-1 border border-gray-200 dark:border-gray-700 rounded-md';
     let innerHTML = `
             <div class="flex items-center space-x-2">
                 <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${displayLevel}:</label>
@@ -2639,7 +2639,7 @@ function renderTemporaryEffects(statName) {
         // If the div doesn't exist or isn't the correct type, create it
         if (!effectDiv || !effectDiv.classList.contains('flex')) {
             effectDiv = document.createElement('div');
-            effectDiv.className = 'flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md';
+            effectDiv.className = `flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md ${index > 0 ? 'mt-4' : ''}`;
             // Insert at the correct position or append
             if (tempEffectsList.children[index]) {
                 tempEffectsList.insertBefore(effectDiv, tempEffectsList.children[index]);
