@@ -41,6 +41,7 @@ function applyTemporaryEffects(baseValue, temporaryEffects) {
 }
 
 function calculateMaxTotal(effects, level, initialValue) {
+    console.log(effects);
     const effectsOnValue = effects.filter(effect => effect.appliesTo === 'value');
     let baseValue = applyTemporaryEffects(initialValue, effectsOnValue);
 
@@ -211,7 +212,6 @@ const defaultCharacterData = function () {
     newCharacter['BaseHealth'].value = 100;
     newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
     newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
-    newCharacter['racialPower'].temporaryEffects = [];
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
