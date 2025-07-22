@@ -1994,7 +1994,9 @@ function updateSpecializationDropdownAndData() {
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
     if (availableSpecializations.length === 0) {
         specializationDropdownOptions.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No specializations available for selected classes.</div>';
+        specializationDisplayInput.placeholder = 'No specializations available';
     } else {
+        specializationDisplayInput.placeholder = 'Select specializations...';
         availableSpecializations.forEach(specName => {
             const checkboxDiv = document.createElement('div');
             checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
