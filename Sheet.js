@@ -301,7 +301,7 @@ function calculateTotal(char, statName) {
     const equipment = parseFloat(stat.equipment) || 0;
     const temporary = parseFloat(stat.temporary) || 0;
 
-    return value * racialChange + equipment + temporary;
+    return Math.ceil(value * racialChange + equipment + temporary);
 }
 
 function getAppliedRacialChange(charData, statName) {
