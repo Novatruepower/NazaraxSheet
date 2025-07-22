@@ -72,6 +72,17 @@ function calculateMaxHealth(charData, level) {
     return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData), 0));
 }
 
+function calculateBaseMaxHealth(charData) {
+    return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
+}
+
+// Function to calculate max health based on race, level, and bonus
+function calculateMaxHealth(charData, level) {
+    const effects = charData.Health.temporaryEffects;
+
+    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData), 0));
+}
+
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
     const effects = charData.Mana.temporaryEffects;
@@ -2253,6 +2264,7 @@ let tempEffectsModal;
 let tempEffectsModalTitle;
 let tempEffectsList;
 let addTempEffectBtn;
+let endTurnBtn; // Declare the new button
 let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
 
 
@@ -2601,6 +2613,7 @@ function toggleSidebar() {
     const toggleButton = document.getElementById('sidebar-toggle-btn');
     const toggleIcon = toggleButton.querySelector('svg path');
     const toggleNotesBtn = document.getElementById('toggle-notes-btn'); // Get the personal notes button
+    const endTurnBtn = document.getElementById('end-turn-btn'); // Get the new end turn button
 
     if (sidebar.classList.contains('w-64')) {
         // Collapse sidebar
@@ -2619,6 +2632,9 @@ function toggleSidebar() {
         // Explicitly hide the personal notes button if it's not already hidden by the loop (e.g., if it's a direct child of sidebar)
         if (toggleNotesBtn) {
             toggleNotesBtn.classList.add('hidden');
+        }
+        if (endTurnBtn) {
+            endTurnBtn.classList.add('hidden');
         }
 
     } else {
@@ -2853,6 +2869,46 @@ function removeTemporaryEffect(event) {
     }
 }
 
+/**
+ * Decrements the duration of all temporary buffs and removes expired ones.
+ */
+function endTurn() {
+    showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
+        let effectsChanged = false;
+        // Iterate over all character properties that might have temporary effects
+        // This includes rollStats, Health, Mana, and racialPower
+        const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'racialPower'];
+
+        statsWithEffects.forEach(statName => {
+            if (character[statName] && Array.isArray(character[statName].temporaryEffects)) {
+                const initialLength = character[statName].temporaryEffects.length;
+
+                // Decrement duration and filter out expired effects
+                character[statName].temporaryEffects = character[statName].temporaryEffects.filter(effect => {
+                    if (effect.duration !== undefined && effect.duration !== null) {
+                        effect.duration--;
+                    }
+                    return effect.duration === undefined || effect.duration > 0;
+                });
+
+                if (character[statName].temporaryEffects.length !== initialLength) {
+                    effectsChanged = true;
+                }
+            }
+        });
+
+        if (effectsChanged) {
+            recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
+            updateDOM(); // Update the UI to reflect changes
+            showStatusMessage("Turn ended. Temporary effects updated.");
+            hasUnsavedChanges = true;
+            saveCurrentStateToHistory();
+        } else {
+            showStatusMessage("No temporary effects to update.", false);
+        }
+    });
+}
+
 
 // Attach event listeners to all relevant input fields
 function attachEventListeners() {
@@ -2966,6 +3022,9 @@ function attachEventListeners() {
     addTempEffectBtn.addEventListener('click', addTemporaryEffect);
     document.getElementById('close-temp-effects-modal').addEventListener('click', closeTemporaryEffectsModal);
 
+    // Attach event listener for the new End Turn button
+    endTurnBtn.addEventListener('click', endTurn);
+
 
     // Attach event listeners for Personal Notes button and panel close button
     document.getElementById('toggle-notes-btn').addEventListener('click', togglePersonalNotesPanel);
@@ -3054,6 +3113,7 @@ function initPage() {
     tempEffectsModalTitle = document.getElementById('temp-effects-modal-title');
     tempEffectsList = document.getElementById('temp-effects-list');
     addTempEffectBtn = document.getElementById('add-temp-effect-btn');
+    endTurnBtn = document.getElementById('end-turn-btn'); // Initialize the new button
 
 
     characters = [defaultCharacterData()];
