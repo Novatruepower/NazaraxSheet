@@ -72,17 +72,6 @@ function calculateMaxHealth(charData, level) {
     return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData), 0));
 }
 
-function calculateBaseMaxHealth(charData) {
-    return charData.BaseHealth.value * charData.BaseHealth.racialChange * charData.Health.racialChange;
-}
-
-// Function to calculate max health based on race, level, and bonus
-function calculateMaxHealth(charData, level) {
-    const effects = charData.Health.temporaryEffects;
-
-    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData), 0));
-}
-
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
     const effects = charData.Mana.temporaryEffects;
