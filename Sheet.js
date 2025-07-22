@@ -2697,7 +2697,7 @@ function renderTemporaryEffects(statName) {
         // If the div doesn't exist or isn't the correct type, create it
         if (!effectDiv || !effectDiv.classList.contains('flex')) {
             effectDiv = document.createElement('div');
-            effectDiv.className = `flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm ${index > 0 ? 'mt-4' : ''}`; // Added flex-wrap, gap-x, gap-y, p-3, rounded-lg, shadow-sm
+            effectDiv.className = `flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md ${index > 0 ? 'mt-4' : ''}`;
             // Insert at the correct position or append
             if (tempEffectsList.children[index]) {
                 tempEffectsList.insertBefore(effectDiv, tempEffectsList.children[index]);
@@ -2707,32 +2707,24 @@ function renderTemporaryEffects(statName) {
 
             // Populate innerHTML for a newly created div
             effectDiv.innerHTML = `
-                <div class="flex items-center gap-1">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
-                    <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
-                </div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
+                <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="temp-effect-input w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
                 
-                <div class="flex items-center gap-1">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Type:</label>
-                    <select data-stat-name="${statName}" data-effect-index="${index}" data-field="type" class="temp-effect-input w-32 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                        <option value="add">Addition</option>
-                        <option value="multiply">Multiplication</option>
-                    </select>
-                </div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Type:</label>
+                <select data-stat-name="${statName}" data-effect-index="${index}" data-field="type" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                    <option value="add">Addition</option>
+                    <option value="multiply">Multiplication</option>
+                </select>
 
-                <div class="flex items-center gap-1">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Applies To:</label>
-                    <select data-stat-name="${statName}" data-effect-index="${index}" data-field="appliesTo" class="temp-effect-input w-32 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                        <option value="value">Value</option>
-                        <option value="total">Total</option>
-                    </select>
-                </div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Applies To:</label>
+                <select data-stat-name="${statName}" data-effect-index="${index}" data-field="appliesTo" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                    <option value="value">Value</option>
+                    <option value="total">Total</option>
+                </select>
 
-                <div class="flex items-center gap-1">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Duration (turns):</label>
-                    <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
-                </div>
-                <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-3 py-1 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Duration (turns):</label>
+                <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="temp-effect-input w-28 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" />
+                <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn ml-auto px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Remove</button>
             `;
             // Get references to the newly created inputs and button
             valueInput = effectDiv.querySelector(`input[data-field="value"]`);
