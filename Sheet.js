@@ -16,12 +16,12 @@ function calculateLevelMaxExperience(level) {
 function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
     let currentValue = baseValue;
 
-    if (type === 'multiply') {
+    if (type === '*') {
         temporaryEffects.forEach(effect => {
             currentValue *= (parseFloat(effect.value) || 0);
         });
     }
-    else if ((type === 'add')) {
+    else if ((type === '+')) {
         temporaryEffects.forEach(effect => {
             currentValue += (parseFloat(effect.value) || 0);
         });
@@ -32,7 +32,7 @@ function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
 
 function applyTemporaryFilterEffects(temporaryEffects, currentValue, isTotal) {
     let tempValue = currentValue;
-    const operators = isTotal ? ['multiply', 'add'] : ['add', 'multiply'];
+    const operators = isTotal ? ['*', '+'] : ['+', '*'];
     operators.forEach(type => {
         tempValue = applyTemporaryOperatorEffects(temporaryEffects.filter(effect => effect.type === type), type, tempValue);
     });
@@ -2815,8 +2815,8 @@ function renderTemporaryEffects(statName) {
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Type</label>
                     <select data-stat-name="${statName}" data-effect-index="${index}" data-field="type" class="${inputBase}">
-                        <option value="add">+</option>
-                        <option value="multiply">*</option>
+                        <option value="+">+</option>
+                        <option value="*">*</option>
                     </select>
                 </div>
 
@@ -2865,7 +2865,7 @@ function renderTemporaryEffects(statName) {
         // Always update the input values directly to reflect the current data
         valueInput.value = effect.value;
         durationInput.value = effect.duration;
-        typeSelect.value = effect.type || 'add'; // Default to 'add'
+        typeSelect.value = effect.type || '+'; // Default to 'add'
         appliesToSelect.value = effect.appliesTo || 'total'; // Default to 'total'
 
         // Re-attach event listeners to ensure they are always active for current elements
@@ -2911,7 +2911,7 @@ function renderTemporaryEffects(statName) {
 function addTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 1, type: 'add', appliesTo: 'total' });
+        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, duration: 1, type: '+', appliesTo: 'total' });
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
