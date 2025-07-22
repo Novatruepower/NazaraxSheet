@@ -161,7 +161,9 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
         if (char[statName]) {
-            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(char, statName);
+            const total = document.getElementById(`${statName}-total`);
+            if (total)
+                total.value = calculateRollStatTotal(char, statName);
         }
     });
 }
