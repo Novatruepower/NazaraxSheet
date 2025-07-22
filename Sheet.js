@@ -360,7 +360,7 @@ function calculateRollStatTotal(char, statName) {
 
     const effects = stat.temporaryEffects;
 
-    return Math.ceil(calculateMaxTotal(effects, 1, value * racialChange, equipment));
+    return Math.ceil(calculateMaxTotal(effects, 1, Math.ceil(value * racialChange), equipment));
 }
 
 function getAppliedRacialChange(charData, statName) {
