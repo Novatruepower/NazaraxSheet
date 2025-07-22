@@ -13,6 +13,33 @@ function calculateLevelMaxExperience(level) {
     return 100;
 }
 
+function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue) {
+    let currentValue = baseValue;
+
+    if (type === 'multiply') {
+        temporaryEffects.forEach(effect => {
+            currentValue *= (parseFloat(effect.value) || 0);
+        });
+    }
+    else if ((type === 'add')) {
+        temporaryEffects.forEach(effect => {
+            currentValue += (parseFloat(effect.value) || 0);
+        });
+    }
+
+    return currentValue;
+}
+
+function applyTemporaryFilterEffects(temporaryEffects, currentValue, isTotal) {
+    let currentValue = baseValue;
+    const operators = isTotal ? ['multiply', 'add'] : ['add', 'multiply'];
+    operators.forEach(type => {
+        currentValue = applyTemporaryOperatorEffects(temporaryEffects.filter(effect => effect.type === type), type, currentValue);
+    });
+    
+    return currentValue;
+}
+
 /**
  * Applies a list of temporary effects to a given base value.
  * Additive effects are applied first, then multiplicative effects.
@@ -22,27 +49,14 @@ function calculateLevelMaxExperience(level) {
  */
 function applyTemporaryEffects(baseValue, temporaryEffects) {
     let currentValue = parseFloat(baseValue) || 0;
-
-    // Separate additive and multiplicative effects
-    const additiveEffects = temporaryEffects.filter(effect => effect.type === 'add');
-    const additiveValueEffects = additiveEffects.filter(effect => effect.appliesTo === 'base-value');
-    const multiplicativeEffects = temporaryEffects.filter(effect => effect.type === 'multiply');
-    const additiveTotalEffects = additiveEffects.filter(effect => effect.appliesTo === 'total');
-
-    // Apply additive effects first
-    additiveValueEffects.forEach(effect => {
-        currentValue += (parseFloat(effect.value) || 0);
+    const notTotalEffects = temporaryEffects.filter(effect => effect.appliesTo !== 'total');
+    const totalEffects = temporaryEffects.filter(effect => effect.appliesTo === 'total');
+    const appliesTo = ['initial-value', 'base-value'];
+    appliesTo.forEach(applieTo => {
+        currentValue = applyTemporaryFilterEffects(notTotalEffects.filter(effect => effect.appliesTo === applieTo), currentValue, false);
     });
 
-    // Apply multiplicative effects
-    multiplicativeEffects.forEach(effect => {
-        currentValue *= (parseFloat(effect.value) || 1);
-    });
-
-    // Apply additive total effects last
-    additiveTotalEffects.forEach(effect => {
-        currentValue += (parseFloat(effect.value) || 0);
-    });
+    currentValue = applyTemporaryFilterEffects(totalEffects, currentValue, true);
 
     return currentValue;
 }
