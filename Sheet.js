@@ -25,16 +25,23 @@ function applyTemporaryEffects(baseValue, temporaryEffects) {
 
     // Separate additive and multiplicative effects
     const additiveEffects = temporaryEffects.filter(effect => effect.type === 'add');
+    const additiveValueEffects = additiveEffects.filter(effect => effect.appliesTo === 'value');
     const multiplicativeEffects = temporaryEffects.filter(effect => effect.type === 'multiply');
+    const additiveTotalEffects = additiveEffects.filter(effect => effect.appliesTo === 'total');
 
     // Apply additive effects first
-    additiveEffects.forEach(effect => {
+    additiveValueEffects.forEach(effect => {
         currentValue += (parseFloat(effect.value) || 0);
     });
 
     // Apply multiplicative effects
     multiplicativeEffects.forEach(effect => {
         currentValue *= (parseFloat(effect.value) || 1);
+    });
+
+    // Apply additive effects first
+    additiveTotalEffects.forEach(effect => {
+        currentValue += (parseFloat(effect.value) || 0);
     });
 
     return currentValue;
