@@ -77,8 +77,8 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
  * DOM updates should be handled by calling `updateDOM()` separately.
  * @param {object} char The character object to recalculate properties for.
  */
-function recalculateCharacterDerivedProperties(char) {
-    recalculateSmallUpdateCharacter(char, false);
+function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
+    recalculateSmallUpdateCharacter(char, isSmallDisplay);
 
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
@@ -488,13 +488,7 @@ function updateDOM() {
     }
 
     // Update derived properties and then update their DOM elements
-    recalculateCharacterDerivedProperties(character);
-    document.getElementById('maxHealth').value = character.maxHealth;
-    document.getElementById('Health').value = character.Health.value;
-    document.getElementById('maxMana').value = character.maxMana;
-    document.getElementById('Mana').value = character.Mana.value;
-    document.getElementById('maxRacialPower').value = character.maxRacialPower;
-    document.getElementById('racialPower').value = character.racialPower;
+    recalculateCharacterDerivedProperties(character, true);
 
 
     // Handle custom multi-select for class
