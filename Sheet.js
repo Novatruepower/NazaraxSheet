@@ -1519,7 +1519,7 @@ function renderGenericRacialPassives(race) {
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
         button.addEventListener('click', (event) => {
             const targetId = event.currentTarget.dataset.target;
-            toggleSection(targetId, 'container');
+            toggleClass(targetId, 'container');
         });
     });
 }
@@ -2594,7 +2594,7 @@ async function loadGoogleDriveFileContent(fileId) {
 * @param {string} id The ID of the content div.
 * @param {string} toggleClass The class of the toggle-{0}-bt
 */
-function toggle(id, toggleClass) {
+function toggleClass(id, toggleClass) {
     const content = document.getElementById(id);
     const toggleButton = document.querySelector(`.toggle-${toggleClass}-btn[data-target="${id}"] svg`);
 
@@ -2619,7 +2619,7 @@ function toggle(id, toggleClass) {
 * @param {string} sectionId The ID of the section content div.
 */
 function toggleSection(sectionId) {
-    toggle(sectionId, 'section');
+    toggleClass(sectionId, 'section');
 }
 
 /**
