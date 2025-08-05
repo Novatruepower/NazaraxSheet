@@ -1532,6 +1532,7 @@ function renderGenericRacialPassives(race) {
     if (!genericPassivesContainer) return;
 
     const genericPassives = ExternalDataManager.getRaceManualPassives(race);
+    console.log(genericPassives);
     const category = race;
 
     if (character.race === category && genericPassives) {
@@ -1719,7 +1720,6 @@ function handlePlayerStatInputChange(event) {
     if (!statName) return; // Not a player stat input
 
     if (subProperty === 'experience') {
-        const oldExperience = character[statName].experience;
         character[statName].experience = newValue;
 
         if(character[statName].experience < 0) {
