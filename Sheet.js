@@ -1966,6 +1966,33 @@ function togglePersonalNotesPanel() {
     }
 }
 
+function makeResizable(element, handle) {
+    handle.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = element.offsetWidth;
+        const startHeight = element.offsetHeight;
+
+        function resize(e) {
+            const newWidth = Math.max(250, startWidth + (startX - e.clientX));
+            const newHeight = Math.max(250, startHeight + (e.clientY - startY));
+
+            element.style.width = newWidth + "px";
+            element.style.height = newHeight + "px";
+        }
+
+        function stopResize() {
+            window.removeEventListener("mousemove", resize);
+            window.removeEventListener("mouseup", stopResize);
+        }
+
+        window.addEventListener("mousemove", resize);
+        window.addEventListener("mouseup", stopResize);
+    });
+}
+
 // Draggable functionality for the personal notes panel
 function makeDraggable(element, handle) {
     let isDragging = false;
@@ -3184,10 +3211,12 @@ function initPage() {
     updateDOM();
     attachEventListeners(); // Attach event listeners after DOM is updated
 
-    // Make the personal notes panel draggable
+    // Make the personal notes panel draggable and resizable
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     const personalNotesHeader = document.querySelector('.personal-notes-header');
+    const personalNotesResizer = document.getElementById("custom-resizer");
     makeDraggable(personalNotesPanel, personalNotesHeader);
+    makeResizable(personalNotesPanel, personalNotesResizer);
 
     // Initialize Google API libraries
     gapiLoaded();

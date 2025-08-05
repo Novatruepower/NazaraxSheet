@@ -648,36 +648,6 @@
         }
     </script>
 
-    <script>
-        const notesPanel = document.getElementById("personal-notes-panel");
-        const resizer = document.getElementById("custom-resizer");
-
-        resizer.addEventListener("mousedown", function (e) {
-            e.preventDefault();
-
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const startWidth = notesPanel.offsetWidth;
-            const startHeight = notesPanel.offsetHeight;
-
-            function resize(e) {
-                const newWidth = Math.max(250, startWidth + (startX - e.clientX));
-                const newHeight = Math.max(250, startHeight + (e.clientY - startY));
-
-                notesPanel.style.width = newWidth + "px";
-                notesPanel.style.height = newHeight + "px";
-            }
-
-            function stopResize() {
-                window.removeEventListener("mousemove", resize);
-                window.removeEventListener("mouseup", stopResize);
-            }
-
-            window.addEventListener("mousemove", resize);
-            window.addEventListener("mouseup", stopResize);
-        });
-    </script>
-
     <!-- Google API Scripts -->
     <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded"></script>
     <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded"></script>
