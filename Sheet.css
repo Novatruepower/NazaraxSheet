@@ -94,7 +94,7 @@ body {
 .personal-notes-panel {
     position: fixed;
     top: 50px; /* Initial position from top */
-    left: 20;        
+    left: 20px;        
     width: 350px; /* Default width */
     min-width: 250px; /* Minimum width */
     min-height: 250px; /* Minimum height */
