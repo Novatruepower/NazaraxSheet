@@ -186,7 +186,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         document.getElementById('maxMana').value = character.maxMana;
         document.getElementById('Mana').value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        document.getElementById('racialPower').value = character.racialPower.value;
+        document.getElementById('racialPower').value = character.RacialPower.value;
         document.getElementById('total-defense').value = character.totalDefense.value; // Update totalDefense display
     }
 }
