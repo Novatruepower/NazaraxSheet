@@ -1457,22 +1457,21 @@ function renderGenericRacialPassives(race) {
         for (const abilityKey in genericPassives) {
             if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
                 const abilityData = genericPassives[abilityKey];
-                for (const option of abilityData.options) {
-                    if (!option.options || !option.options.counts) {
-                        options.push(option);
-                    } else {
-                        const { options, ...rest } = option;
 
-                        for (const value in option.options.values) {
-                            rest['value'] = value;
-                        }
+                if (!abilityData.options || !abilityData.options.counts) {
+                    options.push(abilityData);
+                } else {
+                    const { options, ...rest } = abilityData;
+                    let maxLength = abilityData.options.values.length;
 
-                        for (const count in option.options.counts) {
-                            rest['count'] = count;
-                        }
-                        console.log(rest);
+                    for (let index = 0; index < maxLength; ++index) {
+                        rest['value'] = abilityData.options.values[index];
+                        rest['count'] = abilityData.options.counts ? abilityData.options.counts[index] : 1;
                         options.push(rest);
                     }
+
+                    console.log(rest);
+                    options.push(rest);
                 }
             }
         }
