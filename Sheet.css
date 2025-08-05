@@ -94,7 +94,7 @@ body {
 .personal-notes-panel {
     position: fixed;
     top: 50px; /* Initial position from top */
-    right: auto;        
+    right: 20px;      
     width: 350px; /* Default width */
     min-width: 250px; /* Minimum width */
     min-height: 250px; /* Minimum height */
@@ -104,7 +104,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 100; /* Higher than other content */
-    resize: both; /* Allow resizing in both directions */
+    resize: none; /* Allow resizing in both directions */
     overflow: hidden; /* Hide scrollbars if content is smaller than panel */
     border: 1px solid #e2e8f0; /* subtle border */
 }
