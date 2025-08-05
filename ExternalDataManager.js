@@ -234,44 +234,8 @@ export const ExternalDataManager = {
 
             // Iterate over each manual passive's key (e.g., "Stat Adjustments", "Mutation").
             for (const passiveName in raceData.manualPassives) {
-                const originalPassive = raceData.manualPassives[passiveName];
-                
-                // Deep copy the passive to avoid modifying the original data.
-                const passiveCopy = JSON.parse(JSON.stringify(originalPassive));
-                const expandedOptions = [];
-
-                // Check if there are options to process.
-                if (passiveCopy.options) {
-                    // Iterate over each choice within the passive's options array.
-                    for (const option of passiveCopy.options) {
-                        // Check if this option needs to be expanded (like the Demi-human case).
-                        // This is identified by the presence of a nested 'options' object with 'values'.
-                        if (option.options && option.options.values) {
-                            const template = { ...option };
-                            // Remove the nested 'options' as it's a template for generation.
-                            delete template.options; 
-
-                            // Generate a concrete option for each value.
-                            for (let i = 0; i < option.options.values.length; i++) {
-                                const newOption = { ...template };
-                                newOption.value = option.options.values[i];
-                                newOption.label = option.label.replace('%', `${Math.abs(newOption.value*100)}%`);
-                                newOption.count = option.options.counts[i];
-                                expandedOptions.push(newOption);
-                            }
-                        } else {
-                            // This is a standard option (like for Mutants), add it directly.
-                            expandedOptions.push(option);
-                        }
-                    }
-                    // Replace the original options with the new, fully expanded list.
-                    passiveCopy.options = expandedOptions;
-                }
-                
-                processedPassives[passiveName] = passiveCopy;
+                processedPassives[passiveName] = this.processedOptions(raceData.manualPassives[passiveName]);
             }
-
-            console.log(processedPassives);
 
             return processedPassives;
         }
@@ -289,5 +253,41 @@ export const ExternalDataManager = {
             return classData.manualPassives;
         }
         return null;
+    },
+
+    processedOptions(array) {
+        // Deep copy the passive to avoid modifying the original data.
+        const copy = JSON.parse(JSON.stringify(array));
+        const expandedOptions = [];
+
+        // Check if there are options to process.
+        if (copy.options) {
+            // Iterate over each choice within the passive's options array.
+            for (const option of copy.options) {
+                // Check if this option needs to be expanded (like the Demi-human case).
+                // This is identified by the presence of a nested 'options' object with 'values'.
+                if (option.options && option.options.values) {
+                    const template = { ...option };
+                    // Remove the nested 'options' as it's a template for generation.
+                    delete template.options; 
+
+                    // Generate a concrete option for each value.
+                    for (let i = 0; i < option.options.values.length; i++) {
+                        const newOption = { ...template };
+                        newOption.value = option.options.values[i];
+                        newOption.label = option.label.replace('%', `${newOption.value*100}%`);
+                        newOption.count = option.options.counts[i];
+                        expandedOptions.push(newOption);
+                    }
+                } else {
+                    // This is a standard option (like for Mutants), add it directly.
+                    expandedOptions.push(option);
+                }
+            }
+            // Replace the original options with the new, fully expanded list.
+            copy.options = expandedOptions;
+        }
+        
+        return copy;
     }
 };
