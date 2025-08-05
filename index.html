@@ -551,15 +551,17 @@
             placeholder="Write your personal notes here..."
         ></textarea>
 
-        <div id="custom-resizer" style="
+        <div id="custom-resizer" style='
             position: absolute;
             bottom: 0;
-            left: 0;
+            right: 0;
             width: 20px;
             height: 20px;
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='gray'><path d='M24 24 L12 24 L24 12 Z'/></svg>") no-repeat center;
+            background-size: 16px;
             cursor: se-resize;
             z-index: 10;
-            "></div>
+            '></div>
     </div>
 
     <!-- Google Drive File List Modal -->
@@ -669,16 +671,16 @@
             const startHeight = notesPanel.offsetHeight;
 
             function resize(e) {
-            const newWidth = Math.max(250, startWidth + (startX - e.clientX));
-            const newHeight = Math.max(250, startHeight + (e.clientY - startY));
+                const newWidth = Math.max(250, startWidth + (startX - e.clientX));
+                const newHeight = Math.max(250, startHeight + (e.clientY - startY));
 
-            notesPanel.style.width = newWidth + "px";
-            notesPanel.style.height = newHeight + "px";
+                notesPanel.style.width = newWidth + "px";
+                notesPanel.style.height = newHeight + "px";
             }
 
             function stopResize() {
-            window.removeEventListener("mousemove", resize);
-            window.removeEventListener("mouseup", stopResize);
+                window.removeEventListener("mousemove", resize);
+                window.removeEventListener("mouseup", stopResize);
             }
 
             window.addEventListener("mousemove", resize);
