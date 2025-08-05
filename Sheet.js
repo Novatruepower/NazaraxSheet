@@ -230,7 +230,7 @@ const defaultCharacterData = function () {
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
-        sectionVisibility: {
+        htmlVisibility: {
             'basic-info-content': true,
             'player-stats-content': true,
             'health-combat-content': true,
@@ -567,7 +567,7 @@ function initLoadCharacter(loadedChar) {
     }
 
     // Handle section visibility - ensure all default sections are present
-    newChar.sectionVisibility = { ...defaultCharacterData().sectionVisibility, ...loadedChar.sectionVisibility };
+    newChar.htmlVisibility = { ...defaultCharacterData().htmlVisibility, ...loadedChar.htmlVisibility };
 
     // Initialize originalDamage/originalMagicDamage for weapons if not present
     newChar.weaponInventory.forEach(weapon => {
@@ -737,7 +737,7 @@ function updateDOM() {
     renderGeneralTable();
 
     // Update section visibility - NEW
-    updateSectionVisibility();
+    updatehtmlVisibility();
 
     updateHistoryButtonsState(); // Update history button states after DOM update
 }
@@ -1519,7 +1519,7 @@ function renderGenericRacialPassives(race) {
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
         button.addEventListener('click', (event) => {
             const targetId = event.currentTarget.dataset.target;
-            toggleClass(targetId, 'container');
+            toggleHtml(targetId, 'container');
         });
     });
 }
@@ -2594,7 +2594,7 @@ async function loadGoogleDriveFileContent(fileId) {
 * @param {string} id The ID of the content div.
 * @param {string} toggleClass The class of the toggle-{0}-bt
 */
-function toggleClass(id, toggleClass) {
+function toggleHtml(id, toggleClass) {
     const content = document.getElementById(id);
     const toggleButton = document.querySelector(`.toggle-${toggleClass}-btn[data-target="${id}"] svg`);
 
@@ -2603,11 +2603,11 @@ function toggleClass(id, toggleClass) {
         if (isHidden) {
             content.classList.remove('hidden');
             toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
-            character.sectionVisibility[id] = true;
+            character.htmlVisibility[id] = true;
         } else {
             content.classList.add('hidden');
             toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
-            character.sectionVisibility[id] = false;
+            character.htmlVisibility[id] = false;
         }
         hasUnsavedChanges = true; // Mark that there are unsaved changes
         saveCurrentStateToHistory(); // Save state after modification
@@ -2619,19 +2619,50 @@ function toggleClass(id, toggleClass) {
 * @param {string} sectionId The ID of the section content div.
 */
 function toggleSection(sectionId) {
-    toggleClass(sectionId, 'section');
+    toggleHtml(sectionId, 'section');
 }
 
 /**
-* Updates the visibility of all sections based on the character's sectionVisibility data.
+* @param {string} toggleClass The class of the toggle-{0}-bt
 */
-function updateSectionVisibility() {
-    for (const sectionId in character.sectionVisibility) {
+function updatehtmlVisibility(toggleClass) {
+    for (const htmlId in character.htmlVisibility) {
+        const htmlContent = document.getElementById(htmlId);
+        const toggleButton = document.querySelector(`.toggle-${toggleClass}-btn[data-target="${htmlId}"] svg`);
+
+        if (htmlContent && toggleButton) {
+            if (character.htmlVisibility[htmlId]) {
+                htmlContent.classList.remove('hidden');
+                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
+            } else {
+                htmlContent.classList.add('hidden');
+                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
+            }
+        }
+    }
+}
+
+/**
+* Updates the visibility of all html based on the character's htmlVisibility data.
+*/
+function updatehtmlVisibility() {
+    const htmlVisibility = ['section', 'container'];
+
+    htmlVisibility.forEach(visibility => {
+        updatehtmlVisibility(visibility);
+    });
+}
+
+/**
+* Updates the visibility of all sections based on the character's htmlVisibility data.
+*/
+function updatehtmlVisibility() {
+    for (const sectionId in character.htmlVisibility) {
         const sectionContent = document.getElementById(sectionId);
         const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"] svg`);
 
         if (sectionContent && toggleButton) {
-            if (character.sectionVisibility[sectionId]) {
+            if (character.htmlVisibility[sectionId]) {
                 sectionContent.classList.remove('hidden');
                 toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
             } else {
