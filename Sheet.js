@@ -737,7 +737,7 @@ function updateDOM() {
     renderGeneralTable();
 
     // Update section visibility - NEW
-    updatehtmlVisibility();
+    updateHtmlVisibility();
 
     updateHistoryButtonsState(); // Update history button states after DOM update
 }
@@ -2625,7 +2625,7 @@ function toggleSection(sectionId) {
 /**
 * @param {string} toggleClass The class of the toggle-{0}-bt
 */
-function updatehtmlVisibility(toggleClass) {
+function updateSpecificHtmlVisibility(toggleClass) {
     for (const htmlId in character.htmlVisibility) {
         const htmlContent = document.getElementById(htmlId);
         const toggleButton = document.querySelector(`.toggle-${toggleClass}-btn[data-target="${htmlId}"] svg`);
@@ -2645,18 +2645,18 @@ function updatehtmlVisibility(toggleClass) {
 /**
 * Updates the visibility of all html based on the character's htmlVisibility data.
 */
-function updatehtmlVisibility() {
+function updateHtmlVisibility() {
     const htmlVisibility = ['section', 'container'];
 
     htmlVisibility.forEach(visibility => {
-        updatehtmlVisibility(visibility);
+        updateSpecificHtmlVisibility(visibility);
     });
 }
 
 /**
 * Updates the visibility of all sections based on the character's htmlVisibility data.
 */
-function updatehtmlVisibility() {
+function updateHtmlVisibility() {
     for (const sectionId in character.htmlVisibility) {
         const sectionContent = document.getElementById(sectionId);
         const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"] svg`);
