@@ -270,7 +270,7 @@ export const ExternalDataManager = {
                         const newOption = { ...template };
                         newOption.value = option.options.values[i];
                         const percentage = newOption.value * 100;
-                        newOption.label = thjis.formatString(option.label, Math.abs(percentage));
+                        newOption.label = this.formatString(option.label, Math.abs(percentage));
                         newOption.count = option.options.counts[i];
                         expandedOptions.push(newOption);
                     }
