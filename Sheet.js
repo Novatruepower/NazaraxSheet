@@ -1433,7 +1433,7 @@ function renderManualRacialPassives(genericPassivesContainer, category) {
         genericPassivesContainer.classList.remove('hidden');
         genericPassivesContainer.innerHTML = `<div class="flex items-center justify-between mb-4">
             <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Manual Passives</h4>
-                <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="racial-manual-passives-container">
+                <button class="toggle-container-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="racial-manual-passives-container">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
            </div>
@@ -1516,6 +1516,12 @@ function renderGenericRacialPassives(race) {
         manualPassivesContainer.innerHTML = '';
     }
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
+    document.querySelectorAll('.toggle-container-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const targetId = event.currentTarget.dataset.target;
+            toggleSection(targetId);
+        });
+    });
 }
 
 /**
