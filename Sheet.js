@@ -1470,7 +1470,7 @@ function renderGenericRacialPassives(race) {
                     const usedSetOptions = new Set();
                     let availableOptions = [];
                     do {
-                        const nextOptionIndex = abilityData.findIndex(opt => {
+                        const nextOptionIndex = abilityData.options.findIndex(opt => {
                             if (!opt.setsOption) return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
@@ -1479,9 +1479,9 @@ function renderGenericRacialPassives(race) {
                             break;
                         }
 
-                        const nextOption = abilityData[nextOptionIndex];
+                        const nextOption = abilityData.options[nextOptionIndex];
                         
-                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(abilityData, nextOptionIndex, (opt) => {
+                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(abilityData.options, nextOptionIndex, (opt) => {
                             if (!opt.setsOption) 
                                 return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
