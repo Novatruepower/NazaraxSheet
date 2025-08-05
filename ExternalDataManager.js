@@ -21,8 +21,7 @@ export const ExternalDataManager = {
      * @returns {string} The formatted string.
      */
     formatString(str, ...args) {
-        console.log(args);
-        return str.replace(/{(\d+)}/g, (_, index) => args[index] ?? 'missing');
+        return str.replace(/{(\d+)}/g, (_, index) => args[index] ?? '');
     },
 
     parsePercent(numberString) {
@@ -256,6 +255,7 @@ export const ExternalDataManager = {
                         newOption.value = option.options.values[i];
                         const percentage = Number(newOption.value) * 100;
                         newOption.label = this.formatString(option.label, Math.abs(percentage));
+                        console.log(newOption.label);
                         newOption.count = option.options.counts[i];
                         expandedOptions.push(newOption);
                     }
