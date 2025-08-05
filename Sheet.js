@@ -1428,21 +1428,10 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
     }
 }
 
-/**
- * Renders the generic racial passives for races that don't have manual choices.
- * @param {string} race The name of the race.
- */
-function renderGenericRacialPassives(race) {
-    const genericPassivesContainer = document.getElementById('racial-passives-container');
-    if (!genericPassivesContainer) return;
-
-    const genericPassives = ExternalDataManager.getRaceManualPassives(race);
-    const category = race;
-
-    if (character.race === category && genericPassives) {
+function renderManualRacialPassives(genericPassivesContainer, category) {
         genericPassivesContainer.classList.remove('hidden');
-        genericPassivesContainer.innerHTML = `
-           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Passives</h4>
+        genericPassivesContainer.innerHTML += `
+           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Manual Passives</h4>
            <div id="${race}-manual-passives-list" class="space-y-4">
            </div>
        `;
@@ -1465,43 +1454,58 @@ function renderGenericRacialPassives(race) {
                 const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
                 let countLevel = 0;
 
-                for (let i = 0; i < maxChoices; ++i) {
-                    const usedNullSetOptions = new Set();
-                    const usedSetOptions = new Set();
-                    let availableOptions = [];
-                    do {
-                        const nextOptionIndex = abilityData.options.findIndex(opt => {
-                            if (!opt.setsOption) return !usedNullSetOptions.has(opt);
-                            return opt.setsOption.some(tag => !usedSetOptions.has(tag));
-                        });
+            for (let i = 0; i < maxChoices; ++i) {
+                const usedNullSetOptions = new Set();
+                const usedSetOptions = new Set();
+                let availableOptions = [];
+                do {
+                    const nextOptionIndex = abilityData.options.findIndex(opt => {
+                        if (!opt.setsOption) return !usedNullSetOptions.has(opt);
+                        return opt.setsOption.some(tag => !usedSetOptions.has(tag));
+                    });
 
-                        if (nextOptionIndex < 0) {
-                            break;
-                        }
+                    if (nextOptionIndex < 0) {
+                        break;
+                    }
 
-                        const nextOption = abilityData.options[nextOptionIndex];
-                        
-                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(abilityData.options, nextOptionIndex, (opt) => {
-                            if (!opt.setsOption) 
-                                return !usedNullSetOptions.has(opt);
-                            return opt.setsOption.some(tag => !usedSetOptions.has(tag));
-                        }) : [nextOption];
+                    const nextOption = abilityData.options[nextOptionIndex];
+                    
+                    availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(abilityData.options, nextOptionIndex, (opt) => {
+                        if (!opt.setsOption) 
+                            return !usedNullSetOptions.has(opt);
+                        return opt.setsOption.some(tag => !usedSetOptions.has(tag));
+                    }) : [nextOption];
 
-                        const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
+                    const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
-                        renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualpassivesList, countLevel, tagToPass);
+                    renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualpassivesList, countLevel, tagToPass);
 
-                        if (tagToPass)
-                            usedSetOptions.add(tagToPass);
-                        else
-                            usedNullSetOptions.add(nextOption);
+                    if (tagToPass)
+                        usedSetOptions.add(tagToPass);
+                    else
+                        usedNullSetOptions.add(nextOption);
 
-                        ++countLevel;
-                    } while(availableOptions.length > 0);
-                }
+                    ++countLevel;
+                } while(availableOptions.length > 0);
             }
         }
+    }
+}
 
+/**
+ * Renders the generic racial passives for races that don't have manual choices.
+ * @param {string} race The name of the race.
+ */
+function renderGenericRacialPassives(race) {
+    const genericPassivesContainer = document.getElementById('racial-passives-container');
+    if (!genericPassivesContainer) return;
+
+    const genericPassives = ExternalDataManager.getRaceManualPassives(race);
+    const category = race;
+    genericPassivesContainer.innerHTML = '';
+
+    if (character.race === category && genericPassives) {
+        renderManualRacialPassives(genericPassivesContainer, category);
     } else {
         genericPassivesContainer.classList.add('hidden');
         genericPassivesContainer.innerHTML = '';
