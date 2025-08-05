@@ -1532,7 +1532,6 @@ function renderGenericRacialPassives(race) {
     if (!genericPassivesContainer) return;
 
     const genericPassives = ExternalDataManager.getRaceManualPassives(race);
-    console.log(genericPassives);
     const category = race;
 
     if (character.race === category && genericPassives) {
