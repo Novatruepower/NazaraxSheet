@@ -2654,26 +2654,6 @@ function updateHtmlVisibility() {
 }
 
 /**
-* Updates the visibility of all sections based on the character's htmlVisibility data.
-*/
-function updateHtmlVisibility() {
-    for (const sectionId in character.htmlVisibility) {
-        const sectionContent = document.getElementById(sectionId);
-        const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"] svg`);
-
-        if (sectionContent && toggleButton) {
-            if (character.htmlVisibility[sectionId]) {
-                sectionContent.classList.remove('hidden');
-                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
-            } else {
-                sectionContent.classList.add('hidden');
-                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
-            }
-        }
-    }
-}
-
-/**
 * Toggles the visibility and width of the left sidebar.
 */
 function toggleSidebar() {
