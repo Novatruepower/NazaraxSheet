@@ -122,7 +122,7 @@ function calculateBaseMaxRacialPower(charData, effects) {
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
-    const effects = charData.racialPower.temporaryEffects;
+    const effects = charData.RacialPower.temporaryEffects;
 
     return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
@@ -283,10 +283,6 @@ const defaultCharacterData = function () {
     newCharacter['BaseHealth'].value = 100;
     newCharacter['BaseMana'].value = 100;
     newCharacter['BaseRacialPower'].value = 100;
-
-    newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
-    newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
-    newCharacter['RacialPower'].temporaryEffects = []; // Ensure RacialPower has a temporaryEffects array
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
