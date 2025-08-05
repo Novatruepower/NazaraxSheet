@@ -174,7 +174,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 
     oldMaxValue = char.maxRacialPower;
     char.maxRacialPower = calculateMaxRacialPower(char, char.level);
-    char.racialPower.value = adjustValue(oldMaxValue, char.racialPower.value, char.maxRacialPower);
+    char.RacialPower.value = adjustValue(oldMaxValue, char.RacialPower.value, char.maxRacialPower);
 
     // Recalculate totalDefense
     char.totalDefense.value = calculateTotalDefense(char);
