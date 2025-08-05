@@ -10,12 +10,12 @@
         "Rocky Skin": {
           "level": 50,
           "description": "You have [30] racial points per level.",
-          "racialPowerFormula": "30 * level"
+          "formula": [{"applicableStat": "BaseRacialPower", "stat": "level", "value": 30}]
         },
         "Crystal Skin": {
           "level": 100,
           "description": "You have [40] racial points per level.",
-          "racialPowerFormula": "40 * level"
+          "formula": [{"applicableStat": "BaseRacialPower", "stat": "level", "value": 40}]
         }
       }
     },
@@ -25,20 +25,11 @@
           "description": "Demi-humans can choose to apply stat modifiers to their character.",
           "options": [
             {
-              "label": "+25% to any stat",
+              "label": "+% to any stat",
               "type": "stat_increase",
               "calc": "add",
+              "option": {"values":[0.25, 0.5], "counts": [1, 2]}, 
               "value": 0.25,
-              "count": 1,
-              "applicableStats": ["Roll", "Health", "Mana"],
-              "unique": "Stat Adjustments"
-            },
-            {
-              "label": "+50% to any stat",
-              "type": "stat_increase",
-              "calc": "add",
-              "value": 0.50,
-              "count": 2,
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             },
@@ -55,7 +46,7 @@
               "label": "-50% to any stat",
               "type": "stat_reduction",
               "calc": "add",
-              "value": -0.50,
+              "value": -0.5,
               "count": 2,
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
