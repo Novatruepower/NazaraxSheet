@@ -251,10 +251,10 @@ export const ExternalDataManager = {
         if (copy.options) {
             // Iterate over each choice within the passive's options array.
             for (const option of copy.options) {
+                const template = { ...option };
                 // Check if this option needs to be expanded (like the Demi-human case).
                 // This is identified by the presence of a nested 'options' object with 'values'.
                 if (option.options && option.options.values) {
-                    const template = { ...option };
                     // Remove the nested 'options' as it's a template for generation.
                     delete template.options; 
 
@@ -267,8 +267,9 @@ export const ExternalDataManager = {
                         expandedOptions.push(newOption);
                     }
                 } else {
-                    // This is a standard option (like for Mutants), add it directly.
-                    expandedOptions.push(option);
+                    // This is a standard option
+                    template.label = this.formatString(option.label, Math.abs(template.value));
+                    expandedOptions.push(template);
                 }
             }
             // Replace the original options with the new, fully expanded list.
