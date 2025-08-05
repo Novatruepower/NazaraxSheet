@@ -1470,7 +1470,7 @@ function renderGenericRacialPassives(race) {
                         for (const count in option.options.counts) {
                             rest['count'] = count;
                         }
-
+                        console.log(options);
                         options.push(rest);
                     }
                 }
