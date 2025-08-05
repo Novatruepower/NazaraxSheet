@@ -1517,7 +1517,9 @@ function renderGenericRacialPassives(race) {
     }
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
+        console.log(button);
         button.addEventListener('click', (event) => {
+            console.log("test");
             const targetId = event.currentTarget.dataset.target;
             toggleSection(targetId);
         });
