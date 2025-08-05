@@ -286,7 +286,7 @@ const defaultCharacterData = function () {
 
     newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
     newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
-    newCharacter['RacialPower'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
+    newCharacter['RacialPower'].temporaryEffects = []; // Ensure RacialPower has a temporaryEffects array
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
