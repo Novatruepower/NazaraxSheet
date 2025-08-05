@@ -1434,6 +1434,9 @@ function renderManualRacialPassives(genericPassivesContainer, category) {
         genericPassivesContainer.innerHTML = `
            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Manual Passives</h4>
            <div id="${race}-manual-passives-list" class="space-y-4">
+                <button class="close-container-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-target="racial-manual-passives-container">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
            </div>
        `;
 
