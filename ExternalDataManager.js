@@ -21,23 +21,7 @@ export const ExternalDataManager = {
      * @returns {string} The formatted string.
      */
     formatString(str, ...args) {
-        // The core of the function is the .replace() method with a regular expression.
-        // The regex /{ (\d+) }/g looks for:
-        // {   - a literal opening curly brace
-        // (\d+) - a capturing group that matches one or more digits (like 0, 1, 12)
-        // }   - a literal closing curly brace
-        // g   - the "global" flag, to replace all occurrences, not just the first one.
-        return str.replace(/{(\d+)}/g, (match, index) => {
-            // 'match' is the full matched string (e.g., "{0}")
-            // 'index' is the captured group's content (e.g., "0")
-            const argIndex = parseInt(index, 10);
-            
-            // Check if an argument exists for this index.
-            // If it does, return the argument.
-            // If not (e.g., "{2}" was in the string but only 2 args were provided),
-            // return the original match so it doesn't get replaced with "undefined".
-            return typeof args[argIndex] !== 'undefined' ? args[argIndex] : match;
-        });
+        return str.replace(/{(\d+)}/g, (_, index) => args[index] ?? '');
     },
 
     parsePercent(numberString) {
