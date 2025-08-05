@@ -230,23 +230,47 @@ export const ExternalDataManager = {
     getRaceManualPassives(raceName) {
         const raceData = this.getRaceData(raceName);
         if (raceData && raceData.manualPassives) {
-            const passives = [];
+            const processedPassives = {};
 
-            for (const passive in raceData.manualPassives) {
-                if (!passive.options) {
-                    passives.push(passive);
-                }
-                else {
-                    const { options, ...rest } = passive;
+            // Iterate over each manual passive's key (e.g., "Stat Adjustments", "Mutation").
+            for (const passiveName in raceData.manualPassives) {
+                const originalPassive = raceData.manualPassives[passiveName];
+                
+                // Deep copy the passive to avoid modifying the original data.
+                const passiveCopy = JSON.parse(JSON.stringify(originalPassive));
+                const expandedOptions = [];
 
-                    for (let index = 0; index < maxLength; ++index) {
-                        rest['value'] = passive.options.values[index];
-                        rest['count'] = passive.options.counts[index];
-                        console.log(rest);
-                        options.push(rest);
+                // Check if there are options to process.
+                if (passiveCopy.options) {
+                    // Iterate over each choice within the passive's options array.
+                    for (const option of passiveCopy.options) {
+                        // Check if this option needs to be expanded (like the Demi-human case).
+                        // This is identified by the presence of a nested 'options' object with 'values'.
+                        if (option.options && option.options.values) {
+                            const template = { ...option };
+                            // Remove the nested 'options' as it's a template for generation.
+                            delete template.options; 
+
+                            // Generate a concrete option for each value.
+                            for (let i = 0; i < option.options.values.length; i++) {
+                                const newOption = { ...template };
+                                newOption.value = option.options.values[i];
+                                newOption.count = option.options.counts[i];
+                                expandedOptions.push(newOption);
+                            }
+                        } else {
+                            // This is a standard option (like for Mutants), add it directly.
+                            expandedOptions.push(option);
+                        }
                     }
+                    // Replace the original options with the new, fully expanded list.
+                    passiveCopy.options = expandedOptions;
                 }
+                
+                processedPassives[passiveName] = passiveCopy;
             }
+
+            return processedPassives;
         }
         return null;
     },
