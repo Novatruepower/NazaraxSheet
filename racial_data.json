@@ -4,18 +4,18 @@
       "passives": {
         "Clay Skin": {
           "level": 1,
-          "description": "You have [20] racial points per level.",
-          "formula": [{"applicableStat": "BaseRacialPower", "stat": "level", "value": 20}]
+          "description": "You have 20 racial points per level.",
+          "formula": {"applicableStats": ["BaseRacialPower"], "stats": ["level"], "values": [20]}
         },
         "Rocky Skin": {
           "level": 50,
-          "description": "You have [30] racial points per level.",
-          "formula": [{"applicableStat": "BaseRacialPower", "stat": "level", "value": 30}]
+          "description": "You have 30 racial points per level.",
+          "formula": {"applicableStats": ["BaseRacialPower"], "stats": ["level"], "values": [30]}
         },
         "Crystal Skin": {
           "level": 100,
-          "description": "You have [40] racial points per level.",
-          "formula": [{"applicableStat": "BaseRacialPower", "stat": "level", "value": 40}]
+          "description": "You have 40 racial points per level.",
+          "formula": {"applicableStats": ["BaseRacialPower"], "stats": ["level"], "values": [40]}
         }
       }
     },
@@ -25,7 +25,7 @@
           "description": "Demi-humans can choose to apply stat modifiers to their character.",
           "options": [
             {
-              "label": "+% to any stat",
+              "label": "+{0}% to any stat",
               "type": "stat_increase",
               "calc": "add",
               "options": {"values":[0.25, 0.5], "counts": [1, 2]}, 
@@ -33,7 +33,7 @@
               "unique": "Stat Adjustments"
             },
             {
-              "label": "-% to any stat",
+              "label": "-valu{0}% to any stat",
               "type": "stat_reduction",
               "calc": "add",
               "options": {"values":[-0.25, -0.5], "counts": [1, 2]}, 

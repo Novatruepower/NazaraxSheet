@@ -13,6 +13,33 @@ export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
     _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
+    /**
+     * Replaces placeholders like {0}, {1} in a string with provided arguments.
+     *
+     * @param {string} str The string containing placeholders.
+     * @param {...*} args The values to insert into the string.
+     * @returns {string} The formatted string.
+     */
+    formatString(str, ...args) {
+        // The core of the function is the .replace() method with a regular expression.
+        // The regex /{ (\d+) }/g looks for:
+        // {   - a literal opening curly brace
+        // (\d+) - a capturing group that matches one or more digits (like 0, 1, 12)
+        // }   - a literal closing curly brace
+        // g   - the "global" flag, to replace all occurrences, not just the first one.
+        return str.replace(/{(\d+)}/g, (match, index) => {
+            // 'match' is the full matched string (e.g., "{0}")
+            // 'index' is the captured group's content (e.g., "0")
+            const argIndex = parseInt(index, 10);
+            
+            // Check if an argument exists for this index.
+            // If it does, return the argument.
+            // If not (e.g., "{2}" was in the string but only 2 args were provided),
+            // return the original match so it doesn't get replaced with "undefined".
+            return typeof args[argIndex] !== 'undefined' ? args[argIndex] : match;
+        });
+    },
+
     parsePercent(numberString) {
         return parseFloat(numberString.replace('%', '')) / 100;
     },
@@ -243,7 +270,7 @@ export const ExternalDataManager = {
                         const newOption = { ...template };
                         newOption.value = option.options.values[i];
                         const percentage = newOption.value * 100;
-                        newOption.label = option.label.replace('%', `${Math.abs(percentage)}%`);
+                        newOption.label = thjis.formatString(option.label, Math.abs(percentage));
                         newOption.count = option.options.counts[i];
                         expandedOptions.push(newOption);
                     }
