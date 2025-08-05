@@ -28,7 +28,7 @@
               "label": "+% to any stat",
               "type": "stat_increase",
               "calc": "add",
-              "option": {"values":[0.25, 0.5], "counts": [1, 2]}, 
+              "options": {"values":[0.25, 0.5], "counts": [1, 2]}, 
               "value": 0.25,
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"

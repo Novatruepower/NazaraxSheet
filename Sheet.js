@@ -1452,6 +1452,25 @@ function renderGenericRacialPassives(race) {
 
         character.StatChoices[category] = character.StatChoices[category] || {};
         character.StatsAffected[category] = character.StatsAffected[category] || {};
+        const options = [];
+
+        for (const option of abilityData.options) {
+            if (!option.options || !option.options.counts) {
+                options.push(option);
+            } else {
+                const { options, ...rest } = option;
+
+                for (const value in option.options.values) {
+                    rest['value'] = value;
+                }
+
+                for (const count in option.options.counts) {
+                    rest['count'] = count;
+                }
+
+                options.push(rest);
+            }
+        }
 
         for (const abilityKey in genericPassives) {
             if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
@@ -1470,7 +1489,7 @@ function renderGenericRacialPassives(race) {
                     const usedSetOptions = new Set();
                     let availableOptions = [];
                     do {
-                        const nextOptionIndex = abilityData.options.findIndex(opt => {
+                        const nextOptionIndex = options.findIndex(opt => {
                             if (!opt.setsOption) return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
@@ -1479,9 +1498,9 @@ function renderGenericRacialPassives(race) {
                             break;
                         }
 
-                        const nextOption = abilityData.options[nextOptionIndex];
+                        const nextOption = options[nextOptionIndex];
                         
-                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(abilityData.options, nextOptionIndex, (opt) => {
+                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(options, nextOptionIndex, (opt) => {
                             if (!opt.setsOption) 
                                 return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
