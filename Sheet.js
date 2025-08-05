@@ -87,10 +87,15 @@ function calculateMaxTotal(effects, level, initialValue, intermediateValue) {
     return applyTemporaryEffects(currentTotal, effectsOnTotal);
 }
 
-function calculateBaseMaxHealth(charData, effects) {
+function calculateBaseMaxValue(charData, effects, valueName) {
+    const baseValueName = `Base${valueName}`;
     const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
-    let baseHealth = applyTemporaryEffects(charData.BaseHealth.value, effectsOnInitialValue);
-    return baseHealth * charData.BaseHealth.racialChange * charData.Health.racialChange;
+    let base = applyTemporaryEffects(charData[baseValueName].value, effectsOnInitialValue);
+    return base * charData[baseValueName].racialChange * charData[valueName].racialChange;
+}
+
+function calculateBaseMaxHealth(charData, effects) {
+    return calculateBaseMaxValue(charData, effects, 'Health');
 }
 
 // Function to calculate max health based on race, level, and bonus
@@ -100,20 +105,26 @@ function calculateMaxHealth(charData, level) {
     return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData, effects), 0));
 }
 
+function calculateBaseMaxMana(charData, effects) {
+    return calculateBaseMaxValue(charData, effects, 'Mana');
+}
+
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
     const effects = charData.Mana.temporaryEffects;
-    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
 
-    return Math.floor(calculateMaxTotal(effects, level, applyTemporaryEffects(100, effectsOnInitialValue), 0));
+    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxMana(charData, effects), 0));
+}
+
+function calculateBaseMaxRacialPower(charData, effects) {
+    return calculateBaseMaxValue(charData, effects, 'RacialPower');
 }
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = charData.racialPower.temporaryEffects;
-    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
 
-    return Math.floor(calculateMaxTotal(effects, level, applyTemporaryEffects(100, effectsOnInitialValue), 0));
+    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
 
 /**
@@ -272,6 +283,8 @@ const defaultCharacterData = function () {
 
     // Initialize Health with temporaryEffects array
     newCharacter['BaseHealth'].value = 100;
+    newCharacter['BaseMana'].value = 100;
+    newCharacter['BaseRacialPower'].value = 100;
     newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
     newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
 

@@ -45,11 +45,11 @@ export const ExternalDataManager = {
                 // Remove the first element (empty string from the sheet)
                 delete arr[0][0];
                 const head = arr[0].filter(e => e != undefined); // The header row (e.g., ["", "Health", "Strength", "Agility", ...])
-                this._data['Stats'] = [...arr[0].filter(e => e != undefined), 'Mana', 'BaseHealth']; // Copy header for 'Stats'
+                this._data['Stats'] = [...arr[0].filter(e => e != undefined), 'Mana', 'BaseHealth', 'BaseMana', 'BaseRacialPower']; // Copy header for 'Stats'
                 delete arr[0]; // Remove the header row from the main array
                 //delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
                 const health = head[0]; // Get the 'Health' column name
-                this._data['Other'] = [health, 'Mana', 'BaseHealth']; //By default 
+                this._data['Other'] = [health, 'Mana', 'BaseHealth', 'BaseMana', 'BaseRacialPower']; //By default 
                 delete head[0]; // Remove 'Health' from the head array
                 this._data['Roll'] = head.filter(e => e != undefined); // The remaining elements in head are the stat names for 'Roll' it will be used with a racial change generated
 
@@ -66,6 +66,8 @@ export const ExternalDataManager = {
                         this._data['Races'][race]['Stats']['Other'][health] = this.parsePercent(value[1]); // Assign health multiplier
                         this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
                         this._data['Races'][race]['Stats']['Other']['BaseHealth'] = 1;
+                        this._data['Races'][race]['Stats']['Other']['BaseMana'] = 1;
+                        this._data['Races'][race]['Stats']['Other']['BaseRacialPower'] = 1;
                         let index = 2; // Start from the third column for stats
                         head.forEach(statName => {
                             // Assign stat roll value for the current race
@@ -95,20 +97,22 @@ export const ExternalDataManager = {
                 });
             });
 
-            const manualPassivesResponse = await fetch('./manual_passives_data.json');
+            const manualPassivesResponse = await fetch('./racial_data.json');
             const manualPassivesData = await manualPassivesResponse.json();
 
             for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
                 const characterTarget = this._data[characterKey] ||= {};
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
-                    characterTarget[categoryKey]['manualPassives'] = categoryData.manualPassives;
+                    if (characterTarget[categoryKey].hasOwnProperty('manualPassives')) {
+                        characterTarget[categoryKey]['manualPassives'] = categoryData.manualPassives;
 
-                    const abilities = categoryData.manualPassives || {};
-                    for (const abilityData of Object.values(abilities)) {
-                        const options = abilityData.options || {};
-                        for (const optionData of Object.values(options)) {
-                            if (optionData.applicableStats) {
-                                optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
+                        const abilities = categoryData.manualPassives || {};
+                        for (const abilityData of Object.values(abilities)) {
+                            const options = abilityData.options || {};
+                            for (const optionData of Object.values(options)) {
+                                if (optionData.applicableStats) {
+                                    optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
+                                }
                             }
                         }
                     }
