@@ -1517,11 +1517,9 @@ function renderGenericRacialPassives(race) {
     }
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
-        console.log(button);
         button.addEventListener('click', (event) => {
-            console.log("test");
             const targetId = event.currentTarget.dataset.target;
-            toggleSection(targetId);
+            toggleSection(targetId, 'container');
         });
     });
 }
@@ -2593,26 +2591,35 @@ async function loadGoogleDriveFileContent(fileId) {
 
 /**
 * Toggles the visibility of a section and updates the button icon.
-* @param {string} sectionId The ID of the section content div.
+* @param {string} id The ID of the content div.
+* @param {string} toggleClass The class of the toggle-{0}-bt
 */
-function toggleSection(sectionId) {
-    const sectionContent = document.getElementById(sectionId);
-    const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"] svg`);
+function toggle(id, toggleClass) {
+    const content = document.getElementById(id);
+    const toggleButton = document.querySelector(`.toggle-${toggleClass}-btn[data-target="${id}"] svg`);
 
-    if (sectionContent && toggleButton) {
-        const isHidden = sectionContent.classList.contains('hidden');
+    if (content && toggleButton) {
+        const isHidden = content.classList.contains('hidden');
         if (isHidden) {
-            sectionContent.classList.remove('hidden');
+            content.classList.remove('hidden');
             toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
-            character.sectionVisibility[sectionId] = true;
+            character.sectionVisibility[id] = true;
         } else {
-            sectionContent.classList.add('hidden');
+            content.classList.add('hidden');
             toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
-            character.sectionVisibility[sectionId] = false;
+            character.sectionVisibility[id] = false;
         }
         hasUnsavedChanges = true; // Mark that there are unsaved changes
         saveCurrentStateToHistory(); // Save state after modification
     }
+}
+
+/**
+* Toggles the visibility of a section and updates the button icon.
+* @param {string} sectionId The ID of the section content div.
+*/
+function toggleSection(sectionId) {
+    toggle(sectionId, 'section');
 }
 
 /**
