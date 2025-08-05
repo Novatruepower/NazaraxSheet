@@ -270,6 +270,8 @@ export const ExternalDataManager = {
                 processedPassives[passiveName] = passiveCopy;
             }
 
+            console.log(processedPassives);
+
             return processedPassives;
         }
         return null;
