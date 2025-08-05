@@ -90,6 +90,18 @@ body {
     padding: 0.25rem 0.2rem;
 }
 
+#custom-resizer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><line x1='1' y1='23' x2='23' y2='1'/><line x1='8' y1='23' x2='23' y2='8'/><line x1='15' y1='23' x2='23' y2='15'/></svg>") no-repeat center;
+    background-size: 16px;
+    cursor: se-resize;
+    z-index: 10;
+}
+
 /* Personal Notes Panel Styles */
 .personal-notes-panel {
     position: fixed;
