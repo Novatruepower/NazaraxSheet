@@ -1432,7 +1432,7 @@ function renderManualRacialPassives(genericPassivesContainer, category) {
         const race = character.race;
         genericPassivesContainer.classList.remove('hidden');
         genericPassivesContainer.innerHTML = `
-           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Passives</h4>
+           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Manual Passives</h4>
            <div id="${race}-manual-passives-list" class="space-y-4">
            </div>
        `;
