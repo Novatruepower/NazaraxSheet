@@ -1429,6 +1429,7 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 }
 
 function renderManualRacialPassives(genericPassivesContainer, category) {
+        const race = character.race;
         genericPassivesContainer.classList.remove('hidden');
         genericPassivesContainer.innerHTML += `
            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Manual Passives</h4>
