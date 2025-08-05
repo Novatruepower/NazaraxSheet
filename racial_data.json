@@ -4,17 +4,17 @@
       "passives": {
         "Clay Skin": {
           "level": 1,
-          "description": "You have 20 racial points per level.",
+          "description": "You have {0} racial points per level.",
           "formula": {"applicableStats": ["BaseRacialPower"], "stats": ["level"], "values": [20]}
         },
         "Rocky Skin": {
           "level": 50,
-          "description": "You have 30 racial points per level.",
+          "description": "You have {0} racial points per level.",
           "formula": {"applicableStats": ["BaseRacialPower"], "stats": ["level"], "values": [30]}
         },
         "Crystal Skin": {
           "level": 100,
-          "description": "You have 40 racial points per level.",
+          "description": "You have {0} racial points per level.",
           "formula": {"applicableStats": ["BaseRacialPower"], "stats": ["level"], "values": [40]}
         }
       }
@@ -58,7 +58,7 @@
             },
             "options": [
               { "label": "One skill from any race", "type": "mutant_skill_choice", "setsOption": [1] },
-              { "label": "A statistical multiplier to be set to 50%",
+              { "label": "A statistical multiplier to be set to {0}%",
                 "type": "stat_multiplier_set_50",
                 "calc": "add", "value": 0.50,
                 "applicableStats": ["Roll", "Health", "Mana"],
@@ -86,7 +86,7 @@
             },
             "options": [
               { 
-                "label": "Reduce a stat’s multiplier to -50%",
+                "label": "Reduce a stat’s multiplier to -{0}%",
                 "type": "stat_multiplier_reduce_50",
                 "calc": "add",
                 "value": -0.50,
