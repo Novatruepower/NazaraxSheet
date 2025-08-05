@@ -1437,14 +1437,15 @@ function renderManualRacialPassives(genericPassivesContainer, category) {
        `;
 
         const manualpassivesList = document.getElementById(`${race}-manual-passives-list`);
+        const manualpPassives = ExternalDataManager.getRaceManualPassives(race);
         const currentLevel = character.level;
 
         character.StatChoices[category] = character.StatChoices[category] || {};
         character.StatsAffected[category] = character.StatsAffected[category] || {};
 
-        for (const abilityKey in genericPassives) {
-            if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
-                const abilityData = genericPassives[abilityKey];
+        for (const abilityKey in manualpPassives) {
+            if (manualpPassives.hasOwnProperty(abilityKey) && manualpPassives[abilityKey].options) {
+                const abilityData = manualpPassives[abilityKey];
                 const abilityDescription = document.createElement('p');
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
                 abilityDescription.textContent = abilityData.description;
@@ -1508,7 +1509,6 @@ function renderGenericRacialPassives(race) {
         renderManualRacialPassives(genericPassivesContainer, category);
     } else {
         genericPassivesContainer.classList.add('hidden');
-        genericPassivesContainer.innerHTML = '';
     }
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
 }
