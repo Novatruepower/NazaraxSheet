@@ -222,9 +222,7 @@ const defaultCharacterData = function () {
         levelExperience: 0,
         levelMaxExperience: calculateLevelMaxExperience(1),
         maxHealth: 0, // Will be calculated dynamically
-        // healthBonus: 0, // Removed, now handled by Health.temporaryEffects
         maxMana: 0, // Will be calculated dynamically
-        racialPower: { value: 100, temporaryEffects: [] },
         maxRacialPower: 100,
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         skills: '',
@@ -285,8 +283,6 @@ const defaultCharacterData = function () {
     newCharacter['BaseHealth'].value = 100;
     newCharacter['BaseMana'].value = 100;
     newCharacter['BaseRacialPower'].value = 100;
-    newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
-    newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
