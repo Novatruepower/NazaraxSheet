@@ -29,25 +29,14 @@
               "type": "stat_increase",
               "calc": "add",
               "options": {"values":[0.25, 0.5], "counts": [1, 2]}, 
-              "value": 0.25,
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             },
             {
-              "label": "-25% to any stat",
+              "label": "-% to any stat",
               "type": "stat_reduction",
               "calc": "add",
-              "value": -0.25,
-              "count": 1,
-              "applicableStats": ["Roll", "Health", "Mana"],
-              "unique": "Stat Adjustments"
-            },
-            {
-              "label": "-50% to any stat",
-              "type": "stat_reduction",
-              "calc": "add",
-              "value": -0.5,
-              "count": 2,
+              "options": {"values":[-0.25, -0.5], "counts": [1, 2]}, 
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             }
