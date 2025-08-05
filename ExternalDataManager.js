@@ -118,10 +118,10 @@ export const ExternalDataManager = {
                 });
             });
 
-            const manualPassivesResponse = await fetch('./racial_data.json');
-            const manualPassivesData = await manualPassivesResponse.json();
+            const racialResponse = await fetch('./racial_data.json');
+            const racialData = await racialResponse.json();
 
-            for (const [characterKey, characterData] of Object.entries(manualPassivesData)) {
+            for (const [characterKey, characterData] of Object.entries(racialData)) {
                 const characterTarget = this._data[characterKey] ||= {};
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                     if (categoryData.hasOwnProperty('manualPassives')) {
@@ -133,6 +133,18 @@ export const ExternalDataManager = {
                             for (const optionData of Object.values(options)) {
                                 if (optionData.applicableStats) {
                                     optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
+                                }
+                            }
+                        }
+                    }
+                    if (categoryData.hasOwnProperty('fullAutoPassives')) {
+                        characterTarget[categoryKey]['fullAutoPassives'] = categoryData.fullAutoPassives;
+                        const abilities = categoryData.fullAutoPassives || {};
+                        for (const abilityData of Object.values(abilities)) {
+                            const formula = abilityData.formula || {};
+                            for (const formulaData of Object.values(formula)) {
+                                if (formulaData.stats) {
+                                    formulaData.stats = this.replaceDataStats(formulaData.stats);
                                 }
                             }
                         }
