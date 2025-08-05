@@ -1431,8 +1431,8 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
 function renderManualRacialPassives(genericPassivesContainer, category) {
         const race = character.race;
         genericPassivesContainer.classList.remove('hidden');
-        genericPassivesContainer.innerHTML += `
-           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Manual Passives</h4>
+        genericPassivesContainer.innerHTML = `
+           <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Passives</h4>
            <div id="${race}-manual-passives-list" class="space-y-4">
            </div>
        `;
@@ -1499,17 +1499,17 @@ function renderManualRacialPassives(genericPassivesContainer, category) {
  * @param {string} race The name of the race.
  */
 function renderGenericRacialPassives(race) {
-    const genericPassivesContainer = document.getElementById('racial-passives-container');
-    if (!genericPassivesContainer) return;
+    const manualPassivesContainer = document.getElementById('racial-manual-passives-container');
+    if (!manualPassivesContainer) return;
 
     const genericPassives = ExternalDataManager.getRaceManualPassives(race);
     const category = race;
-    genericPassivesContainer.innerHTML = '';
 
     if (character.race === category && genericPassives) {
-        renderManualRacialPassives(genericPassivesContainer, category);
+        renderManualRacialPassives(manualPassivesContainer, category);
     } else {
-        genericPassivesContainer.classList.add('hidden');
+        manualPassivesContainer.classList.add('hidden');
+        manualPassivesContainer.innerHTML = '';
     }
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
 }
@@ -1519,7 +1519,7 @@ function renderGenericRacialPassives(race) {
 */
 function renderRacialPassives() {
     // Hide all specific containers first
-    document.getElementById('racial-passives-container').classList.add('hidden');
+    document.getElementById('racial-manual-passives-container').classList.add('hidden');
     renderGenericRacialPassives(character.race);
 }
 
