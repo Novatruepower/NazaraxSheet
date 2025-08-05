@@ -255,7 +255,7 @@ export const ExternalDataManager = {
                             for (let i = 0; i < option.options.values.length; i++) {
                                 const newOption = { ...template };
                                 newOption.value = option.options.values[i];
-                                newOption.label = option.label.replace('%', `${newOption.value*100}%`);
+                                newOption.label = option.label.replace('%', `${Math.abs(newOption.value*100)}%`);
                                 newOption.count = option.options.counts[i];
                                 expandedOptions.push(newOption);
                             }

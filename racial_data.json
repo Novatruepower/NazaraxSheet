@@ -33,7 +33,7 @@
               "unique": "Stat Adjustments"
             },
             {
-              "label": "% to any stat",
+              "label": "-% to any stat",
               "type": "stat_reduction",
               "calc": "add",
               "options": {"values":[-0.25, -0.5], "counts": [1, 2]}, 
