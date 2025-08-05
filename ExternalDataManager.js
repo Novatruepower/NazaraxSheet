@@ -21,7 +21,7 @@ export const ExternalDataManager = {
      * @returns {string} The formatted string.
      */
     formatString(str, ...args) {
-        return str.replace(/{(\d+)}/g, (_, index) => args[index] ?? '');
+        return str.replace(/{(\d+)}/g, (_, index) => args[index] ?? 'missing');
     },
 
     parsePercent(numberString) {
