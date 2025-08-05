@@ -1452,7 +1452,7 @@ function renderGenericRacialPassives(race) {
 
         character.StatChoices[category] = character.StatChoices[category] || {};
         character.StatsAffected[category] = character.StatsAffected[category] || {};
-        const options = [];
+        let options = [];
 
         for (const abilityKey in genericPassives) {
             if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
