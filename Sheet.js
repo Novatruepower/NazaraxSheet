@@ -1466,7 +1466,7 @@ function renderGenericRacialPassives(race) {
 
                     for (let index = 0; index < maxLength; ++index) {
                         rest['value'] = abilityData.options.values[index];
-                        rest['count'] = abilityData.options.counts ? abilityData.options.counts[index] : 1;
+                        rest['count'] = abilityData.options.counts[index];
                         options.push(rest);
                     }
 
@@ -1475,6 +1475,8 @@ function renderGenericRacialPassives(race) {
                 }
             }
         }
+
+        console.log(options);
 
         for (const abilityKey in genericPassives) {
             if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
