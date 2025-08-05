@@ -1452,31 +1452,6 @@ function renderGenericRacialPassives(race) {
 
         character.StatChoices[category] = character.StatChoices[category] || {};
         character.StatsAffected[category] = character.StatsAffected[category] || {};
-        const options = [];
-
-        for (const abilityKey in genericPassives) {
-            if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
-                const abilityData = genericPassives[abilityKey];
-
-                for (const option of abilityData.options) {
-                    if (!option.options || !option.options.counts) {
-                        options.push(option);
-                    } else {
-                        const { options, ...rest } = option;
-                        let maxLength = option.options.values.length;
-
-                        for (let index = 0; index < maxLength; ++index) {
-                            rest['value'] = option.options.values[index];
-                            rest['count'] = option.options.counts[index];
-                            console.log(rest);
-                            options.push(rest);
-                        }
-                    }
-                }
-            }
-        }
-
-        console.log(options);
 
         for (const abilityKey in genericPassives) {
             if (genericPassives.hasOwnProperty(abilityKey) && genericPassives[abilityKey].options) {
@@ -1495,7 +1470,7 @@ function renderGenericRacialPassives(race) {
                     const usedSetOptions = new Set();
                     let availableOptions = [];
                     do {
-                        const nextOptionIndex = options.findIndex(opt => {
+                        const nextOptionIndex = abilityData.findIndex(opt => {
                             if (!opt.setsOption) return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));
                         });
@@ -1504,9 +1479,9 @@ function renderGenericRacialPassives(race) {
                             break;
                         }
 
-                        const nextOption = options[nextOptionIndex];
+                        const nextOption = abilityData[nextOptionIndex];
                         
-                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(options, nextOptionIndex, (opt) => {
+                        availableOptions = nextOption.setsOption ? filterFromArrayStartIndex(abilityData, nextOptionIndex, (opt) => {
                             if (!opt.setsOption) 
                                 return !usedNullSetOptions.has(opt);
                             return opt.setsOption.some(tag => !usedSetOptions.has(tag));

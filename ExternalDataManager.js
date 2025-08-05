@@ -230,7 +230,23 @@ export const ExternalDataManager = {
     getRaceManualPassives(raceName) {
         const raceData = this.getRaceData(raceName);
         if (raceData && raceData.manualPassives) {
-            return raceData.manualPassives;
+            const passives = [];
+
+            for (const passive in raceData.manualPassives) {
+                if (!passive.options) {
+                    passives.push(passive);
+                }
+                else {
+                    const { options, ...rest } = passive;
+
+                    for (let index = 0; index < maxLength; ++index) {
+                        rest['value'] = passive.options.values[index];
+                        rest['count'] = passive.options.counts[index];
+                        console.log(rest);
+                        options.push(rest);
+                    }
+                }
+            }
         }
         return null;
     },
