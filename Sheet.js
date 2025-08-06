@@ -1062,7 +1062,6 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
-    console.log(newAbilityData);
     if (newAbilityData.statsAffected) {
         addTemporaryEffect(character, newAbilityData, Infinity);
     }
@@ -1502,7 +1501,7 @@ function renderFullAutoRacialPassives(passivesContainer, category) {
             abilityDescription.textContent = abilityData.description;
             fullAutoPassivesList.appendChild(abilityDescription);
 
-            processRacialFullAutoPassiveChange(category, abilityKey, abilityData);
+            processRacialFullAutoPassiveChange(category, abilityData);
         }
     }
 }
