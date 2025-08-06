@@ -1062,6 +1062,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
+    console.log(newAbilityData);
     if (newAbilityData.statsAffected) {
         addTemporaryEffect(character, newAbilityData, Infinity);
     }
