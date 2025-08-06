@@ -1062,7 +1062,9 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
-
+    if (newAbilityData.statsAffected) {
+        addTemporaryEffect(character, newAbilityData, Infinity);
+    }
 }
 
 /**
@@ -3009,26 +3011,27 @@ function renderTemporaryEffects(statName) {
 /**
 * Adds a temporary effect to a specified character stat.
 * @param {object} char The character object.
-* @param {string} statName The name of the stat to apply the effect to (e.g., 'Health', 'Strength').
-* @param {object} effect The effect object to add. Must contain 'value', 'type' ('+', '*'), and 'appliesTo' ('initial-value', 'base-value', 'total').
+* @param {object} effect The effect object to add. Must contain 'value', 'statsName', 'type' ('+', '*'), and 'appliesTo' ('initial-value', 'base-value', 'total').
 * @param {number} duration The duration of the effect in turns. Use Infinity for a permanent effect.
 */
-function addTemporaryEffect(char, statName, effect, duration) {
-    const stat = char[statName];
-    if (!stat) {
-        console.error(`Stat "${statName}" not found on character.`);
-        return;
-    }
+function addTemporaryEffect(char, effect, duration) {
+    for (const statName of effect.statsName) {
+        const stat = char[statName];
+        if (!stat) {
+            console.error(`Stat "${statName}" not found on character.`);
+            return;
+        }
 
-    // If the stat doesn't have a temporaryEffects array, initialize it
-    if (!stat.temporaryEffects) {
-        stat.temporaryEffects = [];
-    }
+        // If the stat doesn't have a temporaryEffects array, initialize it
+        if (!stat.temporaryEffects) {
+            stat.temporaryEffects = [];
+        }
 
-    // Add the effect with its duration
-    stat.temporaryEffects.push({ ...effect,
-        duration: duration
-    });
+        // Add the effect with its duration
+        stat.temporaryEffects.push({ ...effect,
+            duration: duration
+        });
+    }
 }
 
 /**
@@ -3037,7 +3040,7 @@ function addTemporaryEffect(char, statName, effect, duration) {
 function addCurrentTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        addTemporaryEffect(character, currentStatForTempEffects, {value: 0, isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
+        addTemporaryEffect(character, {statsAffected: [currentStatForTempEffects], value: 0, isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {

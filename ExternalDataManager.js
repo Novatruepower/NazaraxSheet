@@ -143,8 +143,8 @@ export const ExternalDataManager = {
                         for (const abilityData of Object.values(abilities)) {
                             const formulas = abilityData.formulas || {};
                             for (const formulaData of Object.values(formulas)) {
-                                if (formulaData.statAffected) {
-                                    formulaData.statAffected = this.replaceDataStats([formulaData.statAffected]);
+                                if (formulaData.statsAffected) {
+                                    formulaData.statsAffected = this.replaceDataStats(formulaData.statsAffected);
                                 }
                             }
                         }
@@ -347,6 +347,7 @@ export const ExternalDataManager = {
         // Deep copy the passive to avoid modifying the original data.
         const copy = JSON.parse(JSON.stringify(ability));
         const template = { ...copy };
+        template['identifier'] = name;
         template['name'] = name;
         // Check if there are options to process.
         if (copy.upgrades) {
