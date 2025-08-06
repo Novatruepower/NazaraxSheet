@@ -334,7 +334,6 @@ export const ExternalDataManager = {
     processedUpgrades(name, ability, level) {
         // Deep copy the passive to avoid modifying the original data.
         const copy = JSON.parse(JSON.stringify(ability));
-        const expanded = [];
         const template = { ...copy };
         template['name'] = name;
         // Check if there are options to process.
@@ -342,9 +341,6 @@ export const ExternalDataManager = {
             delete template.upgrades; 
             if (copy.upgrades.some(u => u.formula.some(f => f.values))) {
                 const data = ability.upgrades.findLast(e => e.level <= level);
-                console.log(level);
-                console.log(copy.upgrades);
-                console.log(data);
                 if (data) {
                     template['name'] = data.name;
                     template.level = data.level
@@ -358,9 +354,6 @@ export const ExternalDataManager = {
                     }
                 }
             }
-
-            // Replace the original options with the new, fully expanded list.
-            return expanded;
         }
         
         return template;
