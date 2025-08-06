@@ -740,19 +740,13 @@ function updateDOM() {
 
     // Personal Notes
     document.getElementById('personalNotes').value = character.personalNotes;
-    const personalNotesContainer = document.getElementById('personal-notes-panel');
-    if (personalNotesContainer) { // NEW
+    const personalNotesPanel = document.getElementById('personal-notes-panel');
+    if (personalNotesPanel) { // NEW
         const layout = character.personalNoteLayout; // NEW
-        personalNotesContainer.style.left = `${layout.x}px`; // NEW
-        personalNotesContainer.style.top = `${layout.y}px`; // NEW
-        personalNotesContainer.style.width = `${layout.width}px`; // NEW
-        personalNotesContainer.style.height = `${layout.height}px`; // NEW
-        // Add event listener for saving position/size after dragging or resizing // NEW
-        const draggableInstance = Draggable.get(personalNotesContainer); // NEW
-        if (draggableInstance) { // NEW
-            draggableInstance.vars.onDragEnd = savePersonalNotePositionAndSize; // NEW
-            draggableInstance.vars.onResizeEnd = savePersonalNotePositionAndSize; // NEW
-        } // NEW
+        personalNotesPanel.style.left = `${layout.x}px`; // NEW
+        personalNotesPanel.style.top = `${layout.y}px`; // NEW
+        personalNotesPanel.style.width = `${layout.width}px`; // NEW
+        personalNotesPanel.style.height = `${layout.height}px`; // NEW
     }
 
     // Update section visibility - NEW
