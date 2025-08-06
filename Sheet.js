@@ -1484,7 +1484,7 @@ function renderFullAutoRacialPassives(passivesContainer, category) {
         if (fullAutoPassives.hasOwnProperty(abilityKey)) {
             let abilityName = abilityKey;
 
-            if (fullAutoPassives[abilityKey].Upgrades) {
+            if (fullAutoPassives[abilityKey].upgrades) {
                 
             }
         }

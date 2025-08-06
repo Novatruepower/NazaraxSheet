@@ -339,10 +339,10 @@ export const ExternalDataManager = {
         template['name'] = name;
 
         // Check if there are options to process.
-        if (copy.Upgrades) {
-            delete template.Upgrades; 
+        if (copy.upgrades) {
+            delete template.upgrades; 
             if (copy.upgrade.formula.some(f => f.values)) {
-                const data = upgrade.formula.findLast(e => e.level <= level);
+                const data = copy.upgrades.formula.findLast(e => e.level <= level);
 
                 if (data) {
                     template['name'] = data.name;
