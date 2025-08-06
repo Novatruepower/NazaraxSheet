@@ -356,7 +356,7 @@ export const ExternalDataManager = {
                 if (data) {
                     template['name'] = data.name;
                     template.level = data.level
-                    const length = data.formula;
+                    const length = data.formula.length;
 
                     for(let index = 0; index < length; ++index) {
                         console.log(data.formula[index]);
