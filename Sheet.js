@@ -3018,10 +3018,10 @@ function renderTemporaryEffects(statName) {
 */
 function addTemporaryEffect(char, effect, duration) {
     console.log(effect);
+    console.log(effect[0]);
     for (const statName of effect.statsAffected) {
-        const stat = char[statName];
         console.log(statName);
-        console.log(stat);
+        const stat = char[statName];
         if (!stat) {
             console.error(`Stat "${statName}" not found on character.`);
             return;
