@@ -10,12 +10,12 @@
             {
               "name":"Rocky Skin",
               "level": 50,
-              "values": [30]
+              "formula":[{"values": [30]}]
             }, 
             {
               "name":"Crystal Skin",
               "level": 100,
-              "values": [30]
+              "formula":[{"values": [40]}]
             }
           ]
         }

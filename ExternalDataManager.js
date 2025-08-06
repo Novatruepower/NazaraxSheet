@@ -271,7 +271,8 @@ export const ExternalDataManager = {
                     delete template.options; 
 
                     // Generate a concrete option for each value.
-                    for (let i = 0; i < option.options.values.length; i++) {
+                    const length = option.options.values.length;
+                    for (let i = 0; i < length; i++) {
                         const newOption = { ...template };
                         newOption.value = option.options.values[i];
                         newOption.label = this.formatString(option.label, Math.abs(newOption.value));
@@ -319,7 +320,76 @@ export const ExternalDataManager = {
     getClassManualPassives(className) {
         const classData = this.getClassData(className);
         if (classData && classData.manualPassives) {
-            return classData.manualPassives;
+            const processedPassives = {};
+
+            for (const passiveName in classData.manualPassives) {
+                processedPassives[passiveName] = this.processedOptions(classData.manualPassives[passiveName]);
+            }
+
+            return processedPassives;
+        }
+        return null;
+    },
+
+    processedUpgrades(name, array, level) {
+        // Deep copy the passive to avoid modifying the original data.
+        const copy = JSON.parse(JSON.stringify(array.filter(e => e.level <= level)));
+        const expanded = [];
+
+        // Check if there are options to process.
+        if (copy.Upgrades) {
+            for (const upgrade of copy.Upgrades) {
+                const template = { ...copy };
+                template['name'] = name;
+
+                if (upgrade.formula && upgrade.formula.some(f => f && f.values)) {
+                    delete template.Upgrades; 
+                    const data = upgrade.formula.findLast(e => e.level <= level);
+
+                    if (data) {
+                        template['name'] = data.name;
+                        template.level = data.level
+                        const length = data.formula;
+                        for(let index = 0; index < length; ++index) {
+                            template.formula[index] = template.formula[index] || {'values':[]};
+                            const valuesLength = data.formula[index].length;
+                            for(let index2 = 0; index2 < valuesLength; ++index2) {
+                                template.formula[index]['values'][index2] = data.formula[index]['values'][index2];
+                            }
+                        }
+                    }
+                }
+
+                const extendValues = [];
+
+                for (const formula of template.formula) {
+                    formula.values.forEach(v => extendValues.push(Math.abs(v)))
+                }
+
+                template.description = this.formatString(template.description, extendValues);
+                expanded.push(template);
+            }
+            // Replace the original options with the new, fully expanded list.
+            return expanded;
+        }
+        
+        return copy;
+    },
+
+    /**
+     * Retrieves the fuall auto passive choices for a specific class.
+     * @param {string} className The name of the class.
+     * @returns {Object|null} The full auto passive choices object for the class, or null if not found.
+     */
+    getRaceFullAutoPassives(raceName, level) {
+        const raceData = this.getRaceData(raceName);
+        if (raceData && raceData.fullAutoPassives) {
+            const processedPassives = {};
+            for (const passiveName in raceData.fullAutoPassives) {
+                processedPassives[passiveName] = this.processedUpgrades(passiveName, raceData.fullAutoPassives[passiveName], level);
+            }
+
+            return processedPassives;
         }
         return null;
     }

@@ -1241,7 +1241,7 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
 }
 
 
-function optionChoices(race, category, option, manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel) {
+function optionChoices(race, category, option, manualPassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel) {
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex items-center space-x-2';
 
@@ -1263,7 +1263,7 @@ function optionChoices(race, category, option, manualpassivesList, slotId, curre
     }
 
     choiceDiv.innerHTML = innerHTML;
-    manualpassivesList.appendChild(choiceDiv);
+    manualPassivesList.appendChild(choiceDiv);
 
     const statSelect = document.getElementById(`${slotId}-stat`);
     if (statSelect) {
@@ -1285,15 +1285,15 @@ function optionChoices(race, category, option, manualpassivesList, slotId, curre
     }
 }
 
-function optionsSelector(race, category, abilityKey, abilityData, setsOptions, manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel) {
+function optionsSelector(race, category, abilityName, abilityData, setsOptions, manualPassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel) {
     const needsStatSelection = applicableStatsLength > 0;
     const choiceDiv = document.createElement('div');
     choiceDiv.className = 'flex flex-col space-y-1 border border-gray-200 dark:border-gray-700 rounded-md';
     let innerHTML = `
             <div class="flex items-center space-x-2">
-                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityKey} ${displayLevel}:</label>
+                <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityName} ${displayLevel}:</label>
                 <select id="${slotId}-type" class="${race}-choice-type-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">-- Select a ${abilityKey} Type --</option>
+                    <option value="">-- Select a ${abilityName} Type --</option>
         `;
 
     setsOptions.forEach(opt => {
@@ -1322,7 +1322,7 @@ function optionsSelector(race, category, abilityKey, abilityData, setsOptions, m
     `;
 
     choiceDiv.innerHTML = innerHTML;
-    manualpassivesList.appendChild(choiceDiv);
+    manualPassivesList.appendChild(choiceDiv);
 
     const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
     const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
@@ -1416,10 +1416,10 @@ function filterFromArrayStartIndex(arr, startIndex, predicate) {
  * @param {object} abilityData The data for the specific ability.
  * @param {string} category The category of the racial passive (usually the race name).
  * @param {Array}
- * @param {HTMLElement} manualpassivesList The container element to append the choices to.
+ * @param {HTMLElement} manualPassivesList The container element to append the choices to.
  * @param {number} indexLevel
  */
-function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualpassivesList, indexLevel, tag) {
+function renderTagManualRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualPassivesList, indexLevel, tag) {
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
     const deepCopy = [...availableOptions];
     let newAvailableOptions = deepCopy;
@@ -1448,9 +1448,9 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
         const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
 
         if (newAvailableOptions[0].setsOption) {
-            optionsSelector(race, category, abilityKey, abilityData, newAvailableOptions.filter(opt => opt.setsOption), manualpassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
+            optionsSelector(race, category, abilityKey, abilityData, newAvailableOptions.filter(opt => opt.setsOption), manualPassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
         } else {
-            optionChoices(race, category, newAvailableOptions[0], manualpassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel);
+            optionChoices(race, category, newAvailableOptions[0], manualPassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel);
         }
 
         ++count;
@@ -1458,37 +1458,62 @@ function renderGenericTagRacialPassive(race, category, abilityKey, abilityData, 
     }
 }
 
-function renderManualRacialPassives(genericPassivesContainer, category) {
-        const race = character.race;
-        genericPassivesContainer.classList.remove('hidden');
-        genericPassivesContainer.innerHTML = `<div class="flex items-center justify-between mb-4">
-            <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} Manual Passives</h4>
-                <button class="toggle-container-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="${race}-manual-passives-list">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-           </div>
-           <div id="${race}-manual-passives-list" class="space-y-4">
-           </div>
-       `;
+function renderContainer(PassivesContainer, title, id) {
+    const race = character.race;
+    PassivesContainer.classList.remove('hidden');
+    PassivesContainer.innerHTML = `<div class="flex items-center justify-between mb-4">
+        <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} ${title}</h4>
+            <button class="toggle-container-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="${race}-${id}-list">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+        </div>
+        <div id="${race}-${id}-list" class="space-y-4">
+        </div>
+    `;
+}
 
-        const manualpassivesList = document.getElementById(`${race}-manual-passives-list`);
-        const manualpPassives = ExternalDataManager.getRaceManualPassives(race);
-        const currentLevel = character.level;
+function renderFullAutoRacialPassives(passivesContainer, category) {
+    const race = character.race;
+    const id = '"full-auto-passives';
+    renderContainer(passivesContainer, "Full Auto Passives", id);
+    const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
+    const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, );
+    console.log(fullAutoPassives);
 
-        character.StatChoices[category] = character.StatChoices[category] || {};
-        character.StatsAffected[category] = character.StatsAffected[category] || {};
+    for (const abilityKey in fullAutoPassives) {
+        if (fullAutoPassives.hasOwnProperty(abilityKey)) {
+            let abilityName = abilityKey;
 
-        for (const abilityKey in manualpPassives) {
-            if (manualpPassives.hasOwnProperty(abilityKey) && manualpPassives[abilityKey].options) {
-                const abilityData = manualpPassives[abilityKey];
-                const abilityDescription = document.createElement('p');
-                abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
-                abilityDescription.textContent = abilityData.description;
-                manualpassivesList.appendChild(abilityDescription);
+            if (fullAutoPassives[abilityKey].Upgrades) {
+                
+            }
+        }
+    }
+}
 
-                //+1 and 2 because i start at 1
-                const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
-                let countLevel = 0;
+function renderManualRacialPassives(passivesContainer, category) {
+    const race = character.race;
+    const id = 'manual-passives';
+    renderContainer(passivesContainer, "Manual Passives", id);
+
+    const manualPassivesList = document.getElementById(`${race}-${id}-list`);
+    const manualPassives = ExternalDataManager.getRaceManualPassives(race);
+    const currentLevel = character.level;
+
+    character.StatChoices[category] = character.StatChoices[category] || {};
+    character.StatsAffected[category] = character.StatsAffected[category] || {};
+
+    for (const abilityKey in manualPassives) {
+        if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
+            const abilityData = manualPassives[abilityKey];
+            const abilityDescription = document.createElement('p');
+            abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
+            abilityDescription.textContent = abilityData.description;
+            manualPassivesList.appendChild(abilityDescription);
+
+            //+1 and 2 because i start at 1
+            const maxChoices = abilityData.levels ? getAvailablePoints(abilityData, currentLevel) : 1;
+            let countLevel = 0;
 
             for (let i = 0; i < maxChoices; ++i) {
                 const usedNullSetOptions = new Set();
@@ -1514,7 +1539,7 @@ function renderManualRacialPassives(genericPassivesContainer, category) {
 
                     const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
-                    renderGenericTagRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualpassivesList, countLevel, tagToPass);
+                    renderTagManualRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualPassivesList, countLevel, tagToPass);
 
                     if (tagToPass)
                         usedSetOptions.add(tagToPass);
@@ -1532,19 +1557,28 @@ function renderManualRacialPassives(genericPassivesContainer, category) {
  * Renders the generic racial passives for races that don't have manual choices.
  * @param {string} race The name of the race.
  */
-function renderGenericRacialPassives(race) {
+function renderGenericRacialPassives(race, category) {
     const manualPassivesContainer = document.getElementById('racial-manual-passives-container');
-    if (!manualPassivesContainer) return;
 
     const genericPassives = ExternalDataManager.getRaceManualPassives(race);
-    const category = race;
+    const isCategoryValid = race === category;
 
-    if (character.race === category && genericPassives) {
+    if (isCategoryValid && genericPassives) {
         renderManualRacialPassives(manualPassivesContainer, category);
     } else {
         manualPassivesContainer.classList.add('hidden');
         manualPassivesContainer.innerHTML = '';
     }
+
+    const fullAutoPassivesContainer = document.getElementById('racial-full-auto-passives-container');
+
+    if (isCategoryValid && fullAutoPassivesContainer) {
+        renderManualRacialPassives(fullAutoPassivesContainer, category);
+    } else {
+        fullAutoPassivesContainer.classList.add('hidden');
+        fullAutoPassivesContainer.innerHTML = '';
+    }
+
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
         button.addEventListener('click', (event) => {
@@ -1560,7 +1594,7 @@ function renderGenericRacialPassives(race) {
 function renderRacialPassives() {
     // Hide all specific containers first
     document.getElementById('racial-manual-passives-container').classList.add('hidden');
-    renderGenericRacialPassives(character.race);
+    renderGenericRacialPassives(character.race, character.race);
 }
 
 /**
