@@ -3015,6 +3015,7 @@ function renderTemporaryEffects(statName) {
 * @param {number} duration The duration of the effect in turns. Use Infinity for a permanent effect.
 */
 function addTemporaryEffect(char, effect, duration) {
+    console.log(char);
     for (const statName of effect.statsName) {
         const stat = char[statName];
         if (!stat) {
