@@ -342,7 +342,7 @@ export const ExternalDataManager = {
             delete template.upgrades; 
             if (copy.upgrades.some(u => u.formula.some(f => f.values))) {
                 const data = copy.upgrades.findLast(e => e.level <= level);
-
+                console.log(data);
                 if (data) {
                     template['name'] = data.name;
                     template.level = data.level
