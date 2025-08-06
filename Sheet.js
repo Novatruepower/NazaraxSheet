@@ -1062,8 +1062,6 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
-    console.log(newAbilityData);
-
     for (const formula of newAbilityData.formulas) {
         if (formula.statsAffected) {
             addTemporaryEffect(character, formula, Infinity);
@@ -3022,6 +3020,8 @@ function addTemporaryEffect(char, effect, duration) {
     console.log(effect);
     for (const statName of effect.statsAffected) {
         const stat = char[statName];
+        console.log(statName);
+        console.log(stat);
         if (!stat) {
             console.error(`Stat "${statName}" not found on character.`);
             return;
