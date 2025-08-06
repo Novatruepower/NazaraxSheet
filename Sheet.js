@@ -1101,7 +1101,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
         }
     }
 
-    recalculateCharacterDerivedProperties(character, true);
+    //recalculateCharacterDerivedProperties(character, true);
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
 }
