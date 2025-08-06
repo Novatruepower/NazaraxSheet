@@ -336,7 +336,7 @@ export const ExternalDataManager = {
 
         for (const formula of ability.formula) {
             for (const value of formula.values) {
-                values.push(value);
+                values.push(Math.abs(value));
             }
         }
 
@@ -370,9 +370,7 @@ export const ExternalDataManager = {
             }
         }
 
-        const values = this.processedFormulaValues(template);
-        console.log(values);
-        //newOption.label = this.formatString(option.label, Math.abs(newOption.value));
+        template.description = this.formatString(template.description, this.processedFormulaValues(template));
         
         return template;
     },
