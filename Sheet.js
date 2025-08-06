@@ -1482,7 +1482,7 @@ function renderFullAutoRacialPassives(passivesContainer, category) {
     for (const abilityKey in fullAutoPassives) {
         if (fullAutoPassives.hasOwnProperty(abilityKey)) {
             const abilityData = fullAutoPassives[abilityKey];
-            const abilityTitle = document.createElement('h3');
+            const abilityTitle = document.createElement('h2');
             abilityTitle.className = 'text-sm font-medium text-gray-700 dark:text-gray-300 w-32';
             abilityTitle.textContent = abilityData.name;
             fullAutoPassivesList.appendChild(abilityTitle);
@@ -1490,6 +1490,8 @@ function renderFullAutoRacialPassives(passivesContainer, category) {
             abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
             abilityDescription.textContent = abilityData.description;
             fullAutoPassivesList.appendChild(abilityDescription);
+
+            //apply the bonus
         }
     }
 }
