@@ -1573,7 +1573,7 @@ function renderGenericRacialPassives(race, category) {
     const fullAutoPassivesContainer = document.getElementById('racial-full-auto-passives-container');
 
     if (isCategoryValid && fullAutoPassivesContainer) {
-        renderManualRacialPassives(fullAutoPassivesContainer, category);
+        renderFullAutoRacialPassives(fullAutoPassivesContainer, category);
     } else {
         fullAutoPassivesContainer.classList.add('hidden');
         fullAutoPassivesContainer.innerHTML = '';
