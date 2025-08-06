@@ -3020,11 +3020,13 @@ function addTemporaryEffect(char, effect, duration) {
     console.log(effect);
     for (const statName of effect.statsAffected) {
         const stat = char[statName];
-        console.log(!stat);
         if (!stat) {
             console.error(`Stat "${statName}" not found on character.`);
             return;
         }
+
+        console.log(stat);
+        console.log(!stat.temporaryEffects);
 
         // If the stat doesn't have a temporaryEffects array, initialize it
         if (!stat.temporaryEffects) {
