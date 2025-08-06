@@ -1095,6 +1095,18 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
+    if (newAbilityData.identifier) {
+        for (const formula of newAbilityData.formulas) {
+            if (formula.statsAffected) {
+                for (const statName of formula.statsAffected) {
+                    console.log(character[statName].temporaryEffects);
+                  //  const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier);
+                    //character[statName].temporaryEffects.splice(effectIndex, 1);
+                }
+            }
+        }
+    }
+
     console.log(newAbilityData);
     for (const formula of newAbilityData.formulas) {
         if (formula.statsAffected) {
