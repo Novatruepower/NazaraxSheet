@@ -1110,6 +1110,14 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
     console.log(newAbilityData);
     for (const formula of newAbilityData.formulas) {
         if (formula.statsAffected) {
+            if(newAbilityData.identifier) {
+                formula['identifier'] = newAbilityData.identifier;
+            }
+
+            if(newAbilityData.name) {
+                formula['name'] = newAbilityData.name;
+            }
+
             addTemporaryEffect(character, formula, Infinity);
         }
     }
