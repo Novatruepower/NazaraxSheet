@@ -5,17 +5,17 @@
         "Clay Skin": {
           "level": 1,
           "description": "You store up energy that you absorb from the air around you in a clay-like skin layer. This layer of skin counts as both your racial point pool and as a supplementary health bar which gets used up before your real health bar. You have {0} racial points per level.",
-          "formula": [{"statAffected": "BaseRacialPower", "calc": "add", "values": [20], "calcs": "mult", "stats": ["level"]}],
+          "formulas": [{"statAffected": "RacialPower", "appliesTo": "base-value", "type": "+", "values": [20], "types": "*", "stats": ["level"]}],
           "upgrades": [
             {
               "name":"Rocky Skin",
               "level": 50,
-              "formula":[{"values": [30]}]
+              "formulas":[{"values": [30]}]
             }, 
             {
               "name":"Crystal Skin",
               "level": 100,
-              "formula":[{"values": [40]}]
+              "formulas":[{"values": [40]}]
             }
           ]
         }

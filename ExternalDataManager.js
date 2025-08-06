@@ -141,10 +141,10 @@ export const ExternalDataManager = {
                         characterTarget[categoryKey]['fullAutoPassives'] = categoryData.fullAutoPassives;
                         const abilities = categoryData.fullAutoPassives || {};
                         for (const abilityData of Object.values(abilities)) {
-                            const formula = abilityData.formula || {};
-                            for (const formulaData of Object.values(formula)) {
-                                if (formulaData.stats) {
-                                    formulaData.applicableStats = this.replaceDataStats(formulaData.stats);
+                            const formulas = abilityData.formulas || {};
+                            for (const formulaData of Object.values(formulas)) {
+                                if (formulaData.statAffected) {
+                                    formulaData.statAffected = this.replaceDataStats(formulaData.statAffected);
                                 }
                             }
                         }
@@ -334,7 +334,7 @@ export const ExternalDataManager = {
     processedFormulaValues(ability) {
         const values = [];
 
-        for (const formula of ability.formula) {
+        for (const formula of ability.formulas) {
             for (const value of formula.values) {
                 values.push(Math.abs(value));
             }
@@ -351,18 +351,18 @@ export const ExternalDataManager = {
         // Check if there are options to process.
         if (copy.upgrades) {
             delete template.upgrades; 
-            if (copy.upgrades.some(u => u.formula.some(f => f.values))) {
+            if (copy.upgrades.some(u => u.formulas.some(f => f.values))) {
                 const data = ability.upgrades.findLast(e => e.level <= level);
                 if (data) {
                     template['name'] = data.name;
                     template.level = data.level
-                    const length = data.formula.length;
+                    const length = data.formulas.length;
 
                     for(let index = 0; index < length; ++index) {
-                        const valuesLength = data.formula[index]['values'].length;
+                        const valuesLength = data.formulas[index]['values'].length;
                         for(let index2 = 0; index2 < valuesLength; ++index2) {
-                            const value = data.formula[index]['values'][index2];
-                            template.formula[index]['values'][index2] = value;
+                            const value = data.formulas[index]['values'][index2];
+                            template.formulas[index]['values'][index2] = value;
                         }
                     }
                 }

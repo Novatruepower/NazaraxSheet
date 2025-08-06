@@ -1058,59 +1058,11 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 /**
  * Handles the application or removal of a racial passive choice, including stat effects and flags.
  * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
- * @param {string} uniqueIdentifier The 'unique' value of the passive
- * @param {object} abilityData The data for the new choice to be applied (or null/undefined to clear).
+ * @param {object} newAbilityData The data for the new choice to be applied (or null/undefined to clear).
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
-function processRacialFullAutoPassiveChange(category, uniqueIdentifier, abilityData) {
-    console.log("--- processRacialFullAutoPassiveChange called ---");
-    console.log("Input parameters:", { category, uniqueIdentifier, abilityData });
+function processRacialFullAutoPassiveChange(category, newAbilityData) {
 
-    // 1. Revert any previous application of this passive
-    handleRevertChoices(character, category, uniqueIdentifier);
-
-    // 2. Nothing to do if the passive is above current level
-    if (abilityData.level > character.level) return;
-
-    // 3. Apply every formula tuple
-    abilityData.formula.forEach(({ statAffected, calc, values, stats }) => {
-        const result = values.reduce((acc, val, i) => {
-            const statName = stats?.[i];
-            const statValue = statName
-            ? character[statName].baseValue + character[statName].experienceBonus
-            : 0;
-
-            const operator = Array.isArray(calc) ? calc[i] : calc;
-
-            switch (operator) {
-            case 'add': return acc + val * statValue;
-            case 'mult': return acc * (val * statValue);
-            case 'sub':  return acc - val * statValue;
-            case 'div':  return acc / (val * statValue);
-            default:     return acc + val * statValue;
-            }
-        }, 0);
-
-        const delta = result - (character[statAffected].baseValue + character[statAffected].experienceBonus);
-
-        character[statAffected].temporaryEffects = character[statAffected].temporaryEffects || [];
-
-        character[statAffected].temporaryEffects.push({
-            value: delta,
-            type: '+',
-            appliesTo: 'initial-value',
-            duration: Infinity
-        });
-
-    // ...rest of tracking and revert logic stays the same
-    });
-
-    recalculateCharacterDerivedProperties(character);
-    updateDOM();
-    hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
-
-    console.log("--- processRacialFullAutoPassiveChange finished ---");
 }
 
 /**
@@ -3055,12 +3007,37 @@ function renderTemporaryEffects(statName) {
 }
 
 /**
+* Adds a temporary effect to a specified character stat.
+* @param {object} char The character object.
+* @param {string} statName The name of the stat to apply the effect to (e.g., 'Health', 'Strength').
+* @param {object} effect The effect object to add. Must contain 'value', 'type' ('+', '*'), and 'appliesTo' ('initial-value', 'base-value', 'total').
+* @param {number} duration The duration of the effect in turns. Use Infinity for a permanent effect.
+*/
+function addTemporaryEffect(char, statName, effect, duration) {
+    const stat = char[statName];
+    if (!stat) {
+        console.error(`Stat "${statName}" not found on character.`);
+        return;
+    }
+
+    // If the stat doesn't have a temporaryEffects array, initialize it
+    if (!stat.temporaryEffects) {
+        stat.temporaryEffects = [];
+    }
+
+    // Add the effect with its duration
+    stat.temporaryEffects.push({ ...effect,
+        duration: duration
+    });
+}
+
+/**
  * Adds a new temporary effect to the current stat.
  */
-function addTemporaryEffect() {
+function addCurrentTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        character[currentStatForTempEffects].temporaryEffects.push({ value: 0, isPercent: false, duration: 1, type: '+', appliesTo: 'total' });
+        addTemporaryEffect(character, currentStatForTempEffects, {value: 0, isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
@@ -3261,7 +3238,7 @@ function attachEventListeners() {
     document.getElementById('close-google-drive-modal').addEventListener('click', () => googleDriveModal.classList.add('hidden'));
 
     // Temporary Effects Modal buttons
-    addTempEffectBtn.addEventListener('click', addTemporaryEffect);
+    addTempEffectBtn.addEventListener('click', addCurrentTemporaryEffect);
     document.getElementById('close-temp-effects-modal').addEventListener('click', closeTemporaryEffectsModal);
 
     // Attach event listener for the new End Turn button
