@@ -227,6 +227,7 @@ const defaultCharacterData = function () {
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         skills: '',
         personalNotes: '',
+        personalNoteLayout: { x: 0, y: 0, width: 350, height: 250 },
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
@@ -532,6 +533,8 @@ function initLoadCharacter(loadedChar) {
             if (key === 'class' || key === 'specialization' || key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
                 // Ensure these are arrays, even if loaded data has non-array
                 newChar[key] = Array.isArray(loadedChar[key]) ? loadedChar[key] : [];
+            }   else if (key === 'personalNoteLayout') { // NEW
+                newChar[key] = { ...newChar[key], ...loadedChar[key] }; // NEW
             } else if (typeof newChar[key] === 'object' && newChar[key] !== null && !Array.isArray(newChar[key]) && !(newChar[key] instanceof Set)) {
                 // Handle nested objects (like stat objects)
                 if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
@@ -1966,6 +1969,21 @@ function togglePersonalNotesPanel() {
     }
 }
 
+/**
+ * Saves the current position and size of the personal notes container to the character data.
+ */
+function savePersonalNotePositionAndSize() { // NEW
+    const personalNotesContainer = document.getElementById('personal-notes-container'); // NEW
+    if (personalNotesContainer) { // NEW
+        character.personalNoteLayout.x = personalNotesContainer.offsetLeft; // NEW
+        character.personalNoteLayout.y = personalNotesContainer.offsetTop; // NEW
+        character.personalNoteLayout.width = personalNotesContainer.offsetWidth; // NEW
+        character.personalNoteLayout.height = personalNotesContainer.offsetHeight; // NEW
+        saveCurrentStateToHistory(); // Save the state after an update // NEW
+        hasUnsavedChanges = true; // Mark as unsaved // NEW
+    } // NEW
+}
+
 function makeResizable(element, handle) {
     handle.addEventListener("mousedown", function (e) {
         e.preventDefault();
@@ -1986,6 +2004,7 @@ function makeResizable(element, handle) {
         function stopResize() {
             window.removeEventListener("mousemove", resize);
             window.removeEventListener("mouseup", stopResize);
+            savePersonalNotePositionAndSize();
         }
 
         window.addEventListener("mousemove", resize);
@@ -2037,6 +2056,7 @@ function makeDraggable(element, handle) {
         element.style.cursor = 'grab';
         document.removeEventListener("mousemove", drag);
         document.removeEventListener("mouseup", dragEnd);
+        savePersonalNotePositionAndSize();
     }
 }
 
