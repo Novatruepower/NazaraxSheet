@@ -1486,11 +1486,11 @@ function renderFullAutoRacialPassives(passivesContainer, category) {
             const abilityTitle = document.createElement('h3');
             abilityTitle.className = 'text-sm font-medium text-gray-700 dark:text-gray-300 w-32';
             abilityTitle.textContent = abilityData.name;
-            manualPassivesList.appendChild(abilityDescription);
+            fullAutoPassivesList.appendChild(abilityDescription);
             const abilityDescription = document.createElement('p');
             abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
             abilityDescription.textContent = abilityData.description;
-            manualPassivesList.appendChild(abilityDescription);
+            fullAutoPassivesList.appendChild(abilityDescription);
         }
     }
 }
