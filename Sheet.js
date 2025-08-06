@@ -1067,6 +1067,9 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
             addTemporaryEffect(character, formula, Infinity);
         }
     }
+
+    hasUnsavedChanges = true;
+    saveCurrentStateToHistory();
 }
 
 /**
@@ -3033,19 +3036,7 @@ function addTemporaryEffect(char, effect, duration) {
         stat.temporaryEffects.push({ ...effect,
             duration: duration
         });
-
-        renderTemporaryEffects(statName);
-
-        // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
-        if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
-            recalculateSmallUpdateCharacter(character, true);
-        } else { // For rollStats, update their total
-            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
-        }
     }
-    
-    hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
 }
 
 /**
@@ -3055,6 +3046,15 @@ function addCurrentTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
         addTemporaryEffect(character, {statsAffected: [currentStatForTempEffects], value: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
+        renderTemporaryEffects(currentStatForTempEffects);
+        // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
+        if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
+            recalculateSmallUpdateCharacter(character, true);
+        } else { // For rollStats, update their total
+            document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
+        }
+        hasUnsavedChanges = true;
+        saveCurrentStateToHistory();
     }
 }
 
