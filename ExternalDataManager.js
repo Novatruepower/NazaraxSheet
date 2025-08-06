@@ -361,6 +361,7 @@ export const ExternalDataManager = {
                     for(let index = 0; index < length; ++index) {
                         console.log(data.formula[index]);
                         const valuesLength = data.formula[index].length;
+                        console.log(valuesLength);
                         for(let index2 = 0; index2 < valuesLength; ++index2) {
                             const value = data.formula[index]['values'][index2];
                             console.log(value);
