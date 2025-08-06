@@ -1094,14 +1094,15 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * @param {object} newAbilityData The data for the new choice to be applied (or null/undefined to clear).
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
-function processRacialFullAutoPassiveChange(newAbilityData) {
+function processRacialFullAutoPassiveChange(category, newAbilityData) {
     if (newAbilityData.identifier) {
         for (const formula of newAbilityData.formulas) {
             if (formula.statsAffected) {
                 for (const statName of formula.statsAffected) {
                     console.log(character[statName].temporaryEffects);
                     const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == formula.identifier);
-
+                    console.log(formula);
+                    console.log(effectIndex);
                     if (effectIndex > 0)
                         character[statName].temporaryEffects.splice(effectIndex, 1);
                 }
@@ -1109,7 +1110,6 @@ function processRacialFullAutoPassiveChange(newAbilityData) {
         }
     }
 
-    console.log(newAbilityData);
     for (const formula of newAbilityData.formulas) {
         if (formula.statsAffected) {
             if(newAbilityData.identifier) {
@@ -1120,6 +1120,7 @@ function processRacialFullAutoPassiveChange(newAbilityData) {
                 formula['name'] = newAbilityData.name;
             }
 
+            formula['category'] = category;
             addTemporaryEffect(character, formula, Infinity);
         }
     }
@@ -1650,7 +1651,7 @@ function renderGenericRacialPassives(race, category) {
     const fullAutoPassivesContainer = document.getElementById('racial-full-auto-passives-container');
 
     if (isCategoryValid && fullAutoPassivesContainer) {
-        renderFullAutoRacialPassives(fullAutoPassivesContainer);
+        renderFullAutoRacialPassives(fullAutoPassivesContainer, category);
     } else {
         fullAutoPassivesContainer.classList.add('hidden');
         fullAutoPassivesContainer.innerHTML = '';
