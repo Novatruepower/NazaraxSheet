@@ -1100,9 +1100,8 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
             if (formula.statsAffected) {
                 for (const statName of formula.statsAffected) {
                     console.log(character[statName].temporaryEffects);
-                    const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == formula.identifier);
-                    console.log(formula);
-                    console.log(effectIndex);
+                    const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == newAbilityData.identifier);
+
                     if (effectIndex > 0)
                         character[statName].temporaryEffects.splice(effectIndex, 1);
                 }
