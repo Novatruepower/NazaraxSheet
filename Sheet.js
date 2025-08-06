@@ -14,7 +14,7 @@ function calculateLevelMaxExperience(level) {
 }
 
 function applyPercent(effect) {
-    let value = parseFloat(effect.value) || 0;
+    let value = parseFloat(effect.values[0]) || 0;
     
     return effect.isPercent ? value / 100 : value;
 }
@@ -23,7 +23,7 @@ function applyPercentOnBaseValue(effect, baseValue) {
     if (effect.isPercent)
         return baseValue * applyPercent(effect);
     
-    return parseFloat(effect.value) || 0;
+    return parseFloat(effect.values[0]) || 0;
 }
 
 function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue, currentValue) {
