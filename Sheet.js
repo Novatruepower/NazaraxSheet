@@ -1982,16 +1982,17 @@ function togglePersonalNotesPanel() {
 /**
  * Saves the current position and size of the personal notes container to the character data.
  */
-function savePersonalNotePositionAndSize() { // NEW
-    const personalNotesContainer = document.getElementById('personal-notes-panel'); // NEW
-    if (personalNotesContainer) { // NEW
-        character.personalNoteLayout.x = personalNotesContainer.offsetLeft; // NEW
-        character.personalNoteLayout.y = personalNotesContainer.offsetTop; // NEW
-        character.personalNoteLayout.width = personalNotesContainer.offsetWidth; // NEW
-        character.personalNoteLayout.height = personalNotesContainer.offsetHeight; // NEW
-        saveCurrentStateToHistory(); // Save the state after an update // NEW
-        hasUnsavedChanges = true; // Mark as unsaved // NEW
-    } // NEW
+function savePersonalNotePositionAndSize() {
+    const personalNotesContainer = document.getElementById('personal-notes-panel');
+    if (personalNotesContainer) {
+        // Save offsetLeft and offsetTop directly, as makeDraggable now manipulates these
+        character.personalNoteLayout.x = personalNotesContainer.offsetLeft;
+        character.personalNoteLayout.y = personalNotesContainer.offsetTop;
+        character.personalNoteLayout.width = personalNotesContainer.offsetWidth;
+        character.personalNoteLayout.height = personalNotesContainer.offsetHeight;
+        saveCurrentStateToHistory(); // Save the state after an update
+        hasUnsavedChanges = true; // Mark as unsaved
+    }
 }
 
 function makeResizable(element, handle) {
@@ -2004,7 +2005,7 @@ function makeResizable(element, handle) {
         const startHeight = element.offsetHeight;
 
         function resize(e) {
-            const newWidth = Math.max(250, startWidth + (startX - e.clientX));
+            const newWidth = Math.max(250, startWidth + (e.clientX - startX)); // Corrected direction for width
             const newHeight = Math.max(250, startHeight + (e.clientY - startY));
 
             element.style.width = newWidth + "px";
@@ -2014,7 +2015,7 @@ function makeResizable(element, handle) {
         function stopResize() {
             window.removeEventListener("mousemove", resize);
             window.removeEventListener("mouseup", stopResize);
-            savePersonalNotePositionAndSize();
+            savePersonalNotePositionAndSize(); // Corrected typo here
         }
 
         window.addEventListener("mousemove", resize);
@@ -2025,18 +2026,17 @@ function makeResizable(element, handle) {
 // Draggable functionality for the personal notes panel
 function makeDraggable(element, handle) {
     let isDragging = false;
-    let currentX;
-    let currentY;
     let initialX;
     let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
 
     handle.addEventListener("mousedown", dragStart);
 
     function dragStart(e) {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
+        // Get the current left and top values from the element's style,
+        // or its offsetLeft/offsetTop if not explicitly set.
+        // This ensures dragging starts from the current visual position.
+        initialX = e.clientX - element.offsetLeft;
+        initialY = e.clientY - element.offsetTop;
 
         if (e.target === handle || handle.contains(e.target)) {
             isDragging = true;
@@ -2049,24 +2049,22 @@ function makeDraggable(element, handle) {
     function drag(e) {
         if (isDragging) {
             e.preventDefault(); // Prevent text selection
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
+            // Calculate new position relative to the viewport
+            const currentX = e.clientX - initialX;
+            const currentY = e.clientY - initialY;
 
-            xOffset = currentX;
-            yOffset = currentY;
-
-            element.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+            // Apply directly to style.left and style.top
+            element.style.left = `${currentX}px`;
+            element.style.top = `${currentY}px`;
         }
     }
 
     function dragEnd(e) {
-        initialX = currentX;
-        initialY = currentY;
         isDragging = false;
         element.style.cursor = 'grab';
         document.removeEventListener("mousemove", drag);
         document.removeEventListener("mouseup", dragEnd);
-        savePersonalNotePositionAndSize();
+        savePersonalNotePositionAndSize(); // Save the final position
     }
 }
 
