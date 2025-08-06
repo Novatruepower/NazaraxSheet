@@ -123,6 +123,7 @@ function calculateBaseMaxRacialPower(charData, effects) {
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = charData.RacialPower.temporaryEffects;
+    console.log(effects);
 
     return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
