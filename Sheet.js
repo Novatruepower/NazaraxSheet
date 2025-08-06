@@ -3031,9 +3031,9 @@ function addTemporaryEffect(char, effect, duration) {
         stat.temporaryEffects.push({ ...effect,
             duration: duration
         });
-    }
 
-    console.log(...stat.temporaryEffects);
+        console.log(stat.temporaryEffects);
+    }
 }
 
 /**
