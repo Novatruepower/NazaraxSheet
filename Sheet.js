@@ -228,7 +228,12 @@ const defaultCharacterData = function () {
         skills: '',
         personalNotes: '',
         // Store layout as percentages (0.0 - 1.0) for responsiveness
-        personalNoteLayout: { x: 0.0104, y: 0.0463, width: 0.1823, height: 0.2315 }, // Default values in percentages
+        personalNoteLayout: { // Default values in percentages
+            x: 0.8031800601633003,
+            y: 0.025295109612141653,
+            width: 0.1826385904598195,
+            height: 0.2318718381112985
+        },
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
