@@ -1058,7 +1058,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 /**
  * Handles the application or removal of a racial passive choice, including stat effects and flags.
  * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
- * @param {string} uniqueIdentifier The 'unique' value of the passive (e.g., 'Stat Adjustments', 'Mutation_Degeneration').
+ * @param {string} uniqueIdentifier The 'unique' value of the passive
  * @param {object} abilityData The data for the new choice to be applied (or null/undefined to clear).
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
@@ -1067,7 +1067,7 @@ function processRacialFullAutoPassiveChange(category, uniqueIdentifier, abilityD
     console.log("Input parameters:", { category, uniqueIdentifier, abilityData });
 
     // 1. Revert any previous application of this passive
-    handleRevertChoices(character, category, uniqueId);
+    handleRevertChoices(character, category, uniqueIdentifier);
 
     // 2. Nothing to do if the passive is above current level
     if (abilityData.level > character.level) return;
