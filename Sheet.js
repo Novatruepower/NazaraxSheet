@@ -1973,7 +1973,7 @@ function togglePersonalNotesPanel() {
  * Saves the current position and size of the personal notes container to the character data.
  */
 function savePersonalNotePositionAndSize() { // NEW
-    const personalNotesContainer = document.getElementById('personal-notes-container'); // NEW
+    const personalNotesContainer = document.getElementById('personal-notes-panel'); // NEW
     if (personalNotesContainer) { // NEW
         character.personalNoteLayout.x = personalNotesContainer.offsetLeft; // NEW
         character.personalNoteLayout.y = personalNotesContainer.offsetTop; // NEW
