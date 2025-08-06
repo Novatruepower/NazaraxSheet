@@ -227,7 +227,7 @@ const defaultCharacterData = function () {
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         skills: '',
         personalNotes: '',
-        personalNoteLayout: { x: 0, y: 0, width: 350, height: 250 },
+        personalNoteLayout: { x: 20, y: 50, width: 350, height: 250 },
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
@@ -747,6 +747,7 @@ function updateDOM() {
         personalNotesPanel.style.top = `${layout.y}px`; // NEW
         personalNotesPanel.style.width = `${layout.width}px`; // NEW
         personalNotesPanel.style.height = `${layout.height}px`; // NEW
+        personalNotesContainer.style.transform = 'none';
     }
 
     // Update section visibility - NEW
