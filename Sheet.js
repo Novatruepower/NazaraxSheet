@@ -123,7 +123,6 @@ function calculateBaseMaxRacialPower(charData, effects) {
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = charData.RacialPower.temporaryEffects;
-    console.log(effects);
 
     return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
@@ -1689,7 +1688,7 @@ function handlePlayerStatInputChange(event) {
                 character[statName].temporaryEffects[effectIndex][subProperty] = checked;
             }
             else {
-                character[statName].temporaryEffects[effectIndex][subProperty] = newValue;
+                character[statName].temporaryEffects[effectIndex][subProperty] = [newValue];
             }
             
             // Re-render the temporary effects list and update the stat total immediately
@@ -2909,7 +2908,7 @@ function renderTemporaryEffects(statName) {
                 <div class="flex flex-col min-w-[8rem] gap-y-1">
                     <label class="${labelBase}">Value</label>
                     <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
-                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="value" class="${inputBase} flex-grow" />
+                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="values" class="${inputBase} flex-grow" />
                         <input type="checkbox" data-stat-name="${statName}" data-effect-index="${index}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
                         <span class="${labelBase}">%</span> <!-- Added a span for the percentage symbol -->
                     </div>
@@ -2944,7 +2943,7 @@ function renderTemporaryEffects(statName) {
                 </div>
             `;
             // Get references to the newly created inputs and button
-            valueInput = effectDiv.querySelector(`input[data-field="value"]`);
+            valueInput = effectDiv.querySelector(`input[data-field="values"]`);
             isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
             typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
@@ -2952,7 +2951,7 @@ function renderTemporaryEffects(statName) {
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
         } else {
             // If the div already exists and is correct, just update its children's values and data attributes
-            valueInput = effectDiv.querySelector(`input[data-field="value"]`);
+            valueInput = effectDiv.querySelector(`input[data-field="values"]`);
             isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
             typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
@@ -3047,7 +3046,7 @@ function addTemporaryEffect(char, effect, duration) {
 function addCurrentTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        addTemporaryEffect(character, {statsAffected: [currentStatForTempEffects], value: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
+        addTemporaryEffect(character, {statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
