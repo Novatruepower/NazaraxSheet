@@ -3032,6 +3032,8 @@ function addTemporaryEffect(char, effect, duration) {
             duration: duration
         });
     }
+
+    console.error(stat.temporaryEffects);
 }
 
 /**
