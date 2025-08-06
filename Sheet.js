@@ -13,20 +13,53 @@ function calculateLevelMaxExperience(level) {
     return 100;
 }
 
-function applyPercent(effect) {
-    let value = parseFloat(effect.values[0]) || 0;
+function applyOperator(v1, type, v2) {
+    switch (type) {
+        case '*':
+            return v1 * v2;
+        case '/':
+            return v1 / v2;
+        case '+':
+            return v1 + v2;
+        case '-':
+            return v1 - v2;
+        default:
+            return 0;
+    }
+}
+
+function applyEffectValues(charData, effect) {
+    let val = 0;
+
+    if (effect.stats) {
+        const length = effect.stats.length;
+
+        for (let index = 0; index < length; ++index) {
+            val += applyOperator(charData[effect.stats[index]], effect.types[index], effect.values[index])
+        }
+    } else {
+        for (const value of effect.values) {
+            val += value;
+        }
+    }
+
+    return val;
+}
+
+function applyPercent(charData, effect) {
+    let value = applyEffectValues(charData, effect);
     
     return effect.isPercent ? value / 100 : value;
 }
 
-function applyPercentOnBaseValue(effect, baseValue) {
+function applyPercentOnBaseValue(charData, effect, baseValue) {
     if (effect.isPercent)
-        return baseValue * applyPercent(effect);
+        return baseValue * applyPercent(charData, effect);
     
     return parseFloat(effect.values[0]) || 0;
 }
 
-function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue, currentValue) {
+function applyTemporaryOperatorEffects(charData, temporaryEffects, type, baseValue, currentValue) {
     let tempValue = currentValue;
 
     if (type === '*') {
@@ -36,18 +69,18 @@ function applyTemporaryOperatorEffects(temporaryEffects, type, baseValue, curren
     }
     else if (type === '+') {
         temporaryEffects.forEach(effect => {
-            tempValue += applyPercentOnBaseValue(effect, baseValue);
+            tempValue += applyPercentOnBaseValue(charData, effect, baseValue);
         });
     }
 
     return tempValue;
 }
 
-function applyTemporaryFilterEffects(temporaryEffects, baseValue, currentValue, isTotal) {
+function applyTemporaryFilterEffects(charData, temporaryEffects, baseValue, currentValue, isTotal) {
     let tempValue = currentValue;
     const operators = isTotal ? ['*', '+'] : ['+', '*'];
     operators.forEach(type => {
-        tempValue = applyTemporaryOperatorEffects(temporaryEffects.filter(effect => effect.type === type), type, baseValue, tempValue);
+        tempValue = applyTemporaryOperatorEffects(charData, temporaryEffects.filter(effect => effect.type === type), type, baseValue, tempValue);
     });
     
     return tempValue;
@@ -60,37 +93,37 @@ function applyTemporaryFilterEffects(temporaryEffects, baseValue, currentValue, 
  * @param {Array<object>} temporaryEffects An array of effect objects, each with 'value', 'type' ('add' or 'multiply').
  * @returns {number} The value after applying all temporary effects.
  */
-function applyTemporaryEffects(baseValue, temporaryEffects) {
+function applyTemporaryEffects(charData, baseValue, temporaryEffects) {
     let currentValue = parseFloat(baseValue) || 0;
     const baseFloatValue = currentValue;
     const notTotalEffects = temporaryEffects.filter(effect => effect.appliesTo !== 'total');
     const totalEffects = temporaryEffects.filter(effect => effect.appliesTo === 'total');
     const appliesTo = ['initial-value', 'base-value'];
     appliesTo.forEach(applieTo => {
-        currentValue = applyTemporaryFilterEffects(notTotalEffects.filter(effect => effect.appliesTo === applieTo), baseFloatValue, currentValue, false);
+        currentValue = applyTemporaryFilterEffects(charData, notTotalEffects.filter(effect => effect.appliesTo === applieTo), baseFloatValue, currentValue, false);
     });
 
-    currentValue = applyTemporaryFilterEffects(totalEffects, baseFloatValue, currentValue, true);
+    currentValue = applyTemporaryFilterEffects(charData, totalEffects, baseFloatValue, currentValue, true);
 
     return currentValue;
 }
 
-function calculateMaxTotal(effects, level, initialValue, intermediateValue) {
+function calculateMaxTotal(charData, effects, level, initialValue, intermediateValue) {
     const effectsOnBaseValue = effects.filter(effect => effect.appliesTo === 'base-value');
-    let baseValue = applyTemporaryEffects(initialValue, effectsOnBaseValue);
+    let baseValue = applyTemporaryEffects(charData, initialValue, effectsOnBaseValue);
 
     // Calculate the initial total based on the modified base value and level
     let currentTotal = baseValue * level + intermediateValue;
 
     // Apply effects on total
     const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
-    return applyTemporaryEffects(currentTotal, effectsOnTotal);
+    return applyTemporaryEffects(charData, currentTotal, effectsOnTotal);
 }
 
 function calculateBaseMaxValue(charData, effects, valueName) {
     const baseValueName = `Base${valueName}`;
     const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
-    let base = applyTemporaryEffects(charData[baseValueName].value, effectsOnInitialValue);
+    let base = applyTemporaryEffects(charData, charData[baseValueName].value, effectsOnInitialValue);
     return base * charData[baseValueName].racialChange * charData[valueName].racialChange;
 }
 
@@ -102,7 +135,7 @@ function calculateBaseMaxHealth(charData, effects) {
 function calculateMaxHealth(charData, level) {
     const effects = charData.Health.temporaryEffects;
 
-    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxHealth(charData, effects), 0));
+    return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxHealth(charData, effects), 0));
 }
 
 function calculateBaseMaxMana(charData, effects) {
@@ -113,7 +146,7 @@ function calculateBaseMaxMana(charData, effects) {
 function calculateMaxMana(charData, level) {
     const effects = charData.Mana.temporaryEffects;
 
-    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxMana(charData, effects), 0));
+    return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxMana(charData, effects), 0));
 }
 
 function calculateBaseMaxRacialPower(charData, effects) {
@@ -124,7 +157,7 @@ function calculateBaseMaxRacialPower(charData, effects) {
 function calculateMaxRacialPower(charData, level) {
     const effects = charData.RacialPower.temporaryEffects;
 
-    return Math.floor(calculateMaxTotal(effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
+    return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
 
 /**
@@ -135,7 +168,7 @@ function calculateMaxRacialPower(charData, level) {
 function calculateTotalDefense(charData) {
     const effects = charData.totalDefense.temporaryEffects;
     const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
-    let baseDefense = applyTemporaryEffects(0, effectsOnInitialValue);;
+    let baseDefense = applyTemporaryEffects(charData, 0, effectsOnInitialValue);;
     charData.armorInventory.forEach(armor => {
         if (armor.equipped) {
             baseDefense += (parseFloat(armor.defense) || 0);
@@ -144,7 +177,7 @@ function calculateTotalDefense(charData) {
 
     // For totalDefense, we don't have a 'level' multiplier like health/mana.
     // We apply effects directly to the sum of equipped armor defense.
-    return Math.floor(applyTemporaryEffects(baseDefense, effects));
+    return Math.floor(applyTemporaryEffects(charData, baseDefense, effects));
 }
 
 // Generate a random number between min and max (inclusive)
@@ -436,9 +469,9 @@ function calculateRollStatTotal(char, statName) {
 
     const effects = stat.temporaryEffects;
     const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
-    const baseStat = applyTemporaryEffects(combinedValue * racialChange, effectsOnInitialValue);;
+    const baseStat = applyTemporaryEffects(char, combinedValue * racialChange, effectsOnInitialValue);;
 
-    return Math.ceil(calculateMaxTotal(effects, 1, Math.ceil(baseStat), equipment));
+    return Math.ceil(calculateMaxTotal(char, effects, 1, Math.ceil(baseStat), equipment));
 }
 
 function getAppliedRacialChange(charData, statName) {
