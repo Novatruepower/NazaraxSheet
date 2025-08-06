@@ -1063,8 +1063,11 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
     console.log(newAbilityData);
-    if (newAbilityData.statsAffected) {
-        addTemporaryEffect(character, newAbilityData, Infinity);
+
+    for (const formula of newAbilityData.formulas) {
+        if (formula.statsAffected) {
+            addTemporaryEffect(character, newAbilityData, Infinity);
+        }
     }
 }
 
@@ -3012,12 +3015,12 @@ function renderTemporaryEffects(statName) {
 /**
 * Adds a temporary effect to a specified character stat.
 * @param {object} char The character object.
-* @param {object} effect The effect object to add. Must contain 'value', 'statsName', 'type' ('+', '*'), and 'appliesTo' ('initial-value', 'base-value', 'total').
+* @param {object} effect The effect object to add. Must contain 'value', 'statsAffected', 'type' ('+', '*'), and 'appliesTo' ('initial-value', 'base-value', 'total').
 * @param {number} duration The duration of the effect in turns. Use Infinity for a permanent effect.
 */
 function addTemporaryEffect(char, effect, duration) {
     console.log(char);
-    for (const statName of effect.statsName) {
+    for (const statName of effect.statsAffected) {
         const stat = char[statName];
         if (!stat) {
             console.error(`Stat "${statName}" not found on character.`);
