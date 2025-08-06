@@ -331,6 +331,18 @@ export const ExternalDataManager = {
         return null;
     },
 
+    processedFormulaValues(ability) {
+        const values = [];
+
+        for (const formula of ability.formula) {
+            for (const value of formula.values) {
+                values.push(value);
+            }
+        }
+
+        return values;
+    },
+
     processedUpgrades(name, ability, level) {
         // Deep copy the passive to avoid modifying the original data.
         const copy = JSON.parse(JSON.stringify(ability));
@@ -345,16 +357,22 @@ export const ExternalDataManager = {
                     template['name'] = data.name;
                     template.level = data.level
                     const length = data.formula;
+
                     for(let index = 0; index < length; ++index) {
                         template.formula[index] = template.formula[index] || {'values':[]};
                         const valuesLength = data.formula[index].length;
                         for(let index2 = 0; index2 < valuesLength; ++index2) {
-                            template.formula[index]['values'][index2] = data.formula[index]['values'][index2];
+                            const value = data.formula[index]['values'][index2];
+                            template.formula[index]['values'][index2] = value;
                         }
                     }
                 }
             }
         }
+
+        const values = this.processedFormulaValues(template);
+        console.log(values);
+        //newOption.label = this.formatString(option.label, Math.abs(newOption.value));
         
         return template;
     },

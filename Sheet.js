@@ -1478,7 +1478,6 @@ function renderFullAutoRacialPassives(passivesContainer, category) {
     renderContainer(passivesContainer, "Full Auto Passives", id);
     const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
-    console.log(fullAutoPassives);
 
     for (const abilityKey in fullAutoPassives) {
         if (fullAutoPassives.hasOwnProperty(abilityKey)) {
