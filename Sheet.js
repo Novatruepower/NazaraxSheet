@@ -227,7 +227,7 @@ const defaultCharacterData = function () {
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         skills: '',
         personalNotes: '',
-        personalNoteLayout: { x: 20, y: 50, width: 350, height: 250 },
+        personalNoteLayout: { x: 2000, y: 100, width: 350, height: 250 },
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
