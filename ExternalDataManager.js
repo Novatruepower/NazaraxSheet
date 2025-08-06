@@ -341,7 +341,7 @@ export const ExternalDataManager = {
         // Check if there are options to process.
         if (copy.Upgrades) {
             delete template.Upgrades; 
-            if (upgrade.formula.some(f => f && f.values)) {
+            if (copy.upgrade.formula.some(f => f.values)) {
                 const data = upgrade.formula.findLast(e => e.level <= level);
 
                 if (data) {
@@ -357,7 +357,7 @@ export const ExternalDataManager = {
                     }
                 }
             }
-            
+
             // Replace the original options with the new, fully expanded list.
             return expanded;
         }
