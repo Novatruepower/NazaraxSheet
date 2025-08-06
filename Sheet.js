@@ -1066,7 +1066,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
 
     for (const formula of newAbilityData.formulas) {
         if (formula.statsAffected) {
-            addTemporaryEffect(character, newAbilityData, Infinity);
+            addTemporaryEffect(character, formula, Infinity);
         }
     }
 }
