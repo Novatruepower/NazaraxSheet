@@ -337,7 +337,7 @@ export const ExternalDataManager = {
         const expanded = [];
         const template = { ...copy };
         template['name'] = name;
-
+        console.log(copy);
         // Check if there are options to process.
         if (copy.upgrades) {
             delete template.upgrades; 
