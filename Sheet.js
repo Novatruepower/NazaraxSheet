@@ -3033,7 +3033,7 @@ function addTemporaryEffect(char, effect, duration) {
         });
     }
 
-    console.error(stat.temporaryEffects);
+    console.log(stat.temporaryEffects);
 }
 
 /**
