@@ -331,9 +331,9 @@ export const ExternalDataManager = {
         return null;
     },
 
-    processedUpgrades(name, array, level) {
+    processedUpgrades(name, ability, level) {
         // Deep copy the passive to avoid modifying the original data.
-        const copy = JSON.parse(JSON.stringify(array.filter(e => e.level <= level)));
+        const copy = JSON.parse(JSON.stringify(ability));
         const expanded = [];
 
         // Check if there are options to process.
@@ -386,7 +386,10 @@ export const ExternalDataManager = {
         if (raceData && raceData.fullAutoPassives) {
             const processedPassives = {};
             for (const passiveName in raceData.fullAutoPassives) {
-                processedPassives[passiveName] = this.processedUpgrades(passiveName, raceData.fullAutoPassives[passiveName], level);
+                const ability = raceData.fullAutoPassives[passiveName];
+                if (ability.level <= level) {
+                    processedPassives[passiveName] = this.processedUpgrades(passiveName, raceData.fullAutoPassives[passiveName], level);
+                }
             }
 
             return processedPassives;
