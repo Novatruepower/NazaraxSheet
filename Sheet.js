@@ -1095,13 +1095,14 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
+    console.log(newAbilityData);
     for (const formula of newAbilityData.formulas) {
         if (formula.statsAffected) {
             addTemporaryEffect(character, formula, Infinity);
         }
     }
 
-    //recalculateCharacterDerivedProperties(character, true);
+    recalculateCharacterDerivedProperties(character, true);
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
 }
