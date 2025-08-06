@@ -144,7 +144,7 @@ export const ExternalDataManager = {
                             const formulas = abilityData.formulas || {};
                             for (const formulaData of Object.values(formulas)) {
                                 if (formulaData.statAffected) {
-                                    formulaData.statAffected = this.replaceDataStats(formulaData.statAffected);
+                                    formulaData.statAffected = this.replaceDataStats([formulaData.statAffected]);
                                 }
                             }
                         }
