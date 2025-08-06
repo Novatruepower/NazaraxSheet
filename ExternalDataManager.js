@@ -335,45 +335,34 @@ export const ExternalDataManager = {
         // Deep copy the passive to avoid modifying the original data.
         const copy = JSON.parse(JSON.stringify(ability));
         const expanded = [];
+        const template = { ...copy };
+        template['name'] = name;
 
         // Check if there are options to process.
         if (copy.Upgrades) {
-            for (const upgrade of copy.Upgrades) {
-                const template = { ...copy };
-                template['name'] = name;
+            delete template.Upgrades; 
+            if (upgrade.formula.some(f => f && f.values)) {
+                const data = upgrade.formula.findLast(e => e.level <= level);
 
-                if (upgrade.formula && upgrade.formula.some(f => f && f.values)) {
-                    delete template.Upgrades; 
-                    const data = upgrade.formula.findLast(e => e.level <= level);
-
-                    if (data) {
-                        template['name'] = data.name;
-                        template.level = data.level
-                        const length = data.formula;
-                        for(let index = 0; index < length; ++index) {
-                            template.formula[index] = template.formula[index] || {'values':[]};
-                            const valuesLength = data.formula[index].length;
-                            for(let index2 = 0; index2 < valuesLength; ++index2) {
-                                template.formula[index]['values'][index2] = data.formula[index]['values'][index2];
-                            }
+                if (data) {
+                    template['name'] = data.name;
+                    template.level = data.level
+                    const length = data.formula;
+                    for(let index = 0; index < length; ++index) {
+                        template.formula[index] = template.formula[index] || {'values':[]};
+                        const valuesLength = data.formula[index].length;
+                        for(let index2 = 0; index2 < valuesLength; ++index2) {
+                            template.formula[index]['values'][index2] = data.formula[index]['values'][index2];
                         }
                     }
                 }
-
-                const extendValues = [];
-
-                for (const formula of template.formula) {
-                    formula.values.forEach(v => extendValues.push(Math.abs(v)))
-                }
-
-                template.description = this.formatString(template.description, extendValues);
-                expanded.push(template);
             }
+            
             // Replace the original options with the new, fully expanded list.
             return expanded;
         }
         
-        return copy;
+        return template;
     },
 
     /**
