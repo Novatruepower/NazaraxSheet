@@ -339,7 +339,7 @@ export const ExternalDataManager = {
                 values.push(Math.abs(value));
             }
         }
-
+        console.log(values);
         return values;
     },
 
