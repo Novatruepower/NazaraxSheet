@@ -339,7 +339,7 @@ export const ExternalDataManager = {
                 values.push(Math.abs(value));
             }
         }
-        console.log(values);
+
         return values;
     },
 
@@ -359,10 +359,11 @@ export const ExternalDataManager = {
                     const length = data.formula;
 
                     for(let index = 0; index < length; ++index) {
-                        template.formula[index] = template.formula[index] || {'values':[]};
+                        console.log(data.formula[index]);
                         const valuesLength = data.formula[index].length;
                         for(let index2 = 0; index2 < valuesLength; ++index2) {
                             const value = data.formula[index]['values'][index2];
+                            console.log(value);
                             template.formula[index]['values'][index2] = value;
                         }
                     }
