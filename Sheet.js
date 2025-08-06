@@ -1074,31 +1074,33 @@ function processRacialFullAutoPassiveChange(category, uniqueIdentifier, abilityD
 
     // 3. Apply every formula tuple
     abilityData.formula.forEach(({ statAffected, calc, values, stats }) => {
-    const result = values.reduce((acc, val, i) => {
-        const statName = stats?.[i];
-        const statValue = statName
-        ? character[statName].baseValue + character[statName].experienceBonus
-        : 0;
+        const result = values.reduce((acc, val, i) => {
+            const statName = stats?.[i];
+            const statValue = statName
+            ? character[statName].baseValue + character[statName].experienceBonus
+            : 0;
 
-        const operator = Array.isArray(calc) ? calc[i] : calc;
+            const operator = Array.isArray(calc) ? calc[i] : calc;
 
-        switch (operator) {
-        case 'add': return acc + val * statValue;
-        case 'mult': return acc * (val * statValue);
-        case 'sub':  return acc - val * statValue;
-        case 'div':  return acc / (val * statValue);
-        default:     return acc + val * statValue;
-        }
-    }, 0);
+            switch (operator) {
+            case 'add': return acc + val * statValue;
+            case 'mult': return acc * (val * statValue);
+            case 'sub':  return acc - val * statValue;
+            case 'div':  return acc / (val * statValue);
+            default:     return acc + val * statValue;
+            }
+        }, 0);
 
-    const delta = result - (character[statAffected].baseValue + character[statAffected].experienceBonus);
+        const delta = result - (character[statAffected].baseValue + character[statAffected].experienceBonus);
 
-    character[statAffected].temporaryEffects.push({
-        value: delta,
-        type: '+',
-        appliesTo: 'initial-value',
-        duration: Infinity
-    });
+        character[statAffected].temporaryEffects = character[statAffected].temporaryEffects || [];
+
+        character[statAffected].temporaryEffects.push({
+            value: delta,
+            type: '+',
+            appliesTo: 'initial-value',
+            duration: Infinity
+        });
 
     // ...rest of tracking and revert logic stays the same
     });
