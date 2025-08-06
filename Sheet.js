@@ -747,7 +747,6 @@ function updateDOM() {
         personalNotesPanel.style.top = `${layout.y}px`; // NEW
         personalNotesPanel.style.width = `${layout.width}px`; // NEW
         personalNotesPanel.style.height = `${layout.height}px`; // NEW
-        personalNotesContainer.style.transform = 'none';
     }
 
     // Update section visibility - NEW
