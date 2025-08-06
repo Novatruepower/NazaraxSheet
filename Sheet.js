@@ -227,7 +227,8 @@ const defaultCharacterData = function () {
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         skills: '',
         personalNotes: '',
-        personalNoteLayout: { x: 2000, y: 100, width: 350, height: 250 },
+        // Store layout as percentages (0.0 - 1.0) for responsiveness
+        personalNoteLayout: { x: 0.0104, y: 0.0463, width: 0.1823, height: 0.2315 }, // Default values in percentages
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
@@ -533,8 +534,18 @@ function initLoadCharacter(loadedChar) {
             if (key === 'class' || key === 'specialization' || key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
                 // Ensure these are arrays, even if loaded data has non-array
                 newChar[key] = Array.isArray(loadedChar[key]) ? loadedChar[key] : [];
-            }   else if (key === 'personalNoteLayout') { // NEW
-                newChar[key] = { ...newChar[key], ...loadedChar[key] }; // NEW
+            }   else if (key === 'personalNoteLayout') {
+                newChar[key] = { ...newChar[key], ...loadedChar[key] };
+                // If loaded values are likely pixel values (e.g., > 1), convert them to percentages
+                if (newChar[key].x > 1 || newChar[key].y > 1 || newChar[key].width > 1 || newChar[key].height > 1) {
+                    const currentViewportWidth = window.innerWidth;
+                    const currentViewportHeight = window.innerHeight;
+
+                    newChar[key].x = (loadedChar[key].x / currentViewportWidth);
+                    newChar[key].y = (loadedChar[key].y / currentViewportHeight);
+                    newChar[key].width = (loadedChar[key].width / currentViewportWidth);
+                    newChar[key].height = (loadedChar[key].height / currentViewportHeight);
+                }
             } else if (typeof newChar[key] === 'object' && newChar[key] !== null && !Array.isArray(newChar[key]) && !(newChar[key] instanceof Set)) {
                 // Handle nested objects (like stat objects)
                 if (typeof loadedChar[key] === 'object' && loadedChar[key] !== null) {
@@ -741,12 +752,13 @@ function updateDOM() {
     // Personal Notes
     document.getElementById('personalNotes').value = character.personalNotes;
     const personalNotesPanel = document.getElementById('personal-notes-panel');
-    if (personalNotesPanel) { // NEW
-        const layout = character.personalNoteLayout; // NEW
-        personalNotesPanel.style.left = `${layout.x}px`; // NEW
-        personalNotesPanel.style.top = `${layout.y}px`; // NEW
-        personalNotesPanel.style.width = `${layout.width}px`; // NEW
-        personalNotesPanel.style.height = `${layout.height}px`; // NEW
+    if (personalNotesPanel) {
+        const layout = character.personalNoteLayout;
+        // Apply position and size using viewport units (vw/vh)
+        personalNotesPanel.style.left = `${layout.x * 100}vw`;
+        personalNotesPanel.style.top = `${layout.y * 100}vh`;
+        personalNotesPanel.style.width = `${layout.width * 100}vw`;
+        personalNotesPanel.style.height = `${layout.height * 100}vh`;
     }
 
     // Update section visibility - NEW
@@ -1985,11 +1997,11 @@ function togglePersonalNotesPanel() {
 function savePersonalNotePositionAndSize() {
     const personalNotesContainer = document.getElementById('personal-notes-panel');
     if (personalNotesContainer) {
-        // Save offsetLeft and offsetTop directly, as makeDraggable now manipulates these
-        character.personalNoteLayout.x = personalNotesContainer.offsetLeft;
-        character.personalNoteLayout.y = personalNotesContainer.offsetTop;
-        character.personalNoteLayout.width = personalNotesContainer.offsetWidth;
-        character.personalNoteLayout.height = personalNotesContainer.offsetHeight;
+        // Save position and size as percentages of the viewport
+        character.personalNoteLayout.x = personalNotesContainer.offsetLeft / window.innerWidth;
+        character.personalNoteLayout.y = personalNotesContainer.offsetTop / window.innerHeight;
+        character.personalNoteLayout.width = personalNotesContainer.offsetWidth / window.innerWidth;
+        character.personalNoteLayout.height = personalNotesContainer.offsetHeight / window.innerHeight;
         saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
@@ -2015,7 +2027,7 @@ function makeResizable(element, handle) {
         function stopResize() {
             window.removeEventListener("mousemove", resize);
             window.removeEventListener("mouseup", stopResize);
-            savePersonalNotePositionAndSize(); // Corrected typo here
+            savePersonalNotePositionAndSize();
         }
 
         window.addEventListener("mousemove", resize);
@@ -3023,6 +3035,21 @@ function endTurn() {
     });
 }
 
+/**
+ * Updates the personal notes panel's position and size based on stored percentage values.
+ * This function should be called on window resize.
+ */
+function updatePersonalNotesPanelPosition() {
+    const personalNotesPanel = document.getElementById('personal-notes-panel');
+    if (personalNotesPanel) {
+        const layout = character.personalNoteLayout;
+        personalNotesPanel.style.left = `${layout.x * 100}vw`;
+        personalNotesPanel.style.top = `${layout.y * 100}vh`;
+        personalNotesPanel.style.width = `${layout.width * 100}vw`;
+        personalNotesPanel.style.height = `${layout.height * 100}vh`;
+    }
+}
+
 
 // Attach event listeners to all relevant input fields
 function attachEventListeners() {
@@ -3209,6 +3236,9 @@ function attachEventListeners() {
             return "You have unsaved changes. Are you sure you want to exit?";
         }
     });
+
+    // Add resize listener for the personal notes panel
+    window.addEventListener('resize', updatePersonalNotesPanelPosition);
 }
 
 function initPage() {
