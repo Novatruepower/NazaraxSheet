@@ -1690,9 +1690,12 @@ function renderGenericRacialPassives(oldRace, race, category) {
             toggleHtml(targetId, 'container');
         });
     });
+
     document.querySelectorAll('.toggle-element-btn').forEach(button => {
+        console.log(button);
         button.addEventListener('click', (event) => {
             const targetId = event.currentTarget.dataset.target;
+            console.log(targetId);
             toggleHtml(targetId, 'element');
         });
     });
