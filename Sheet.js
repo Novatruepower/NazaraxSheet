@@ -1095,18 +1095,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
-    if (newAbilityData.identifier) {
-        for (const formula of newAbilityData.formulas) {
-            if (formula.statsAffected) {
-                for (const statName of formula.statsAffected) {
-                    const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == newAbilityData.identifier);
-
-                    if (effectIndex > -1)
-                        character[statName].temporaryEffects.splice(effectIndex, 1);
-                }
-            }
-        }
-    }
+    removeTemporaryEffectByIdentifier(newAbilityData);
 
     for (const formula of newAbilityData.formulas) {
         if (formula.statsAffected) {
@@ -1250,7 +1239,7 @@ function handleChangeRace(oldRace) {
     recalculateSmallUpdateCharacter(character, true);
 
     // Re-render the racial passives UI
-    renderRacialPassives();
+    renderRacialPassives(oldRace);
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
@@ -1543,13 +1532,37 @@ function renderContainer(PassivesContainer, title, id) {
     `;
 }
 
-function renderFullAutoRacialPassives(passivesContainer, category) {
+function removeTemporaryEffectByIdentifier(oldAbilityData){
+    if (oldAbilityData.identifier) {
+        for (const formula of oldAbilityData.formulas) {
+            if (formula.statsAffected) {
+                for (const statName of formula.statsAffected) {
+                    const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == newAbilityData.identifier);
+
+                    if (effectIndex > -1)
+                        character[statName].temporaryEffects.splice(effectIndex, 1);
+                }
+            }
+        }
+    }
+}
+
+function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     const race = character.race;
     const id = 'full-auto-passives';
+
+    if (oldRace) {
+        const oldFullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(oldRace, character.level);
+        for (const abilityKey in oldFullAutoPassives) {
+            if (oldFullAutoPassives.hasOwnProperty(abilityKey)) {
+                removeTemporaryEffectByIdentifier(oldFullAutoPassives[abilityKey]);
+            }
+        }
+    }
+
     renderContainer(passivesContainer, "Full Auto Passives", id);
     const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
-    console.log(fullAutoPassives);
 
     for (const abilityKey in fullAutoPassives) {
         if (fullAutoPassives.hasOwnProperty(abilityKey)) {
@@ -1634,7 +1647,7 @@ function renderManualRacialPassives(passivesContainer, category) {
  * Renders the generic racial passives for races that don't have manual choices.
  * @param {string} race The name of the race.
  */
-function renderGenericRacialPassives(race, category) {
+function renderGenericRacialPassives(oldRace, race, category) {
     const manualPassivesContainer = document.getElementById('racial-manual-passives-container');
 
     const genericPassives = ExternalDataManager.getRaceManualPassives(race);
@@ -1650,7 +1663,7 @@ function renderGenericRacialPassives(race, category) {
     const fullAutoPassivesContainer = document.getElementById('racial-full-auto-passives-container');
 
     if (isCategoryValid && fullAutoPassivesContainer) {
-        renderFullAutoRacialPassives(fullAutoPassivesContainer, category);
+        renderFullAutoRacialPassives(oldRace, fullAutoPassivesContainer, category);
     } else {
         fullAutoPassivesContainer.classList.add('hidden');
         fullAutoPassivesContainer.innerHTML = '';
@@ -1668,10 +1681,10 @@ function renderGenericRacialPassives(race, category) {
 /**
 * Orchestrates the rendering of all racial passive sections based on the current race.
 */
-function renderRacialPassives() {
+function renderRacialPassives(oldRace) {
     // Hide all specific containers first
     document.getElementById('racial-manual-passives-container').classList.add('hidden');
-    renderGenericRacialPassives(character.race, character.race);
+    renderGenericRacialPassives(oldRace, character.race, character.race);
 }
 
 /**
