@@ -1095,6 +1095,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
+    console.log(newAbilityData);
     if (newAbilityData.identifier) {
         for (const formula of newAbilityData.formulas) {
             if (formula.statsAffected) {
