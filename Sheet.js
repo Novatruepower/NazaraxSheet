@@ -2397,6 +2397,17 @@ function removeItem(event) {
 }
 
 // Function to reset the current character to default data
+function resetSheets() {
+    showConfirmationModal("Are you sure you want to reset all current sheets? All data will be lost.", () => {
+        historyStack = []; // Clear history after a full reset
+        historyPointer = -1; // Reset history pointer
+        hasUnsavedChanges = false; // Reset unsaved changes flag after reset
+        initPage();
+        showStatusMessage("Sheets reset successfully!");
+    });
+}
+
+// Function to reset the current character to default data
 function resetCurrentCharacter() {
     showConfirmationModal("Are you sure you want to reset the current character? All data will be lost.", () => {
         characters[currentCharacterIndex] = defaultCharacterData();
@@ -3420,6 +3431,7 @@ function attachEventListeners() {
 
     // Attach event listeners for Reset and Delete buttons - NEW
     document.getElementById('reset-character-btn').addEventListener('click', resetCurrentCharacter);
+    document.getElementById('reset-sheets-btn').addEventListener('click', resetSheets);
     document.getElementById('delete-character-btn').addEventListener('click', deleteCurrentCharacter);
     // Attach event listener for Revert button
     document.getElementById('revert-character-btn').addEventListener('click', revertCurrentCharacter);
@@ -3443,6 +3455,7 @@ function attachEventListeners() {
 }
 
 function initPage() {
+    currentGoogleDriveFileId = null;
     // Assign DOM elements to variables here, after the DOM is loaded
     statusMessageElement = document.getElementById('status-message');
     googleDriveAuthStatusSpan = document.getElementById('google-drive-auth-status');
