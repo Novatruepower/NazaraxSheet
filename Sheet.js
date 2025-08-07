@@ -1537,7 +1537,7 @@ function removeTemporaryEffectByIdentifier(oldAbilityData){
         for (const formula of oldAbilityData.formulas) {
             if (formula.statsAffected) {
                 for (const statName of formula.statsAffected) {
-                    const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == newAbilityData.identifier);
+                    const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == oldAbilityData.identifier);
 
                     if (effectIndex > -1)
                         character[statName].temporaryEffects.splice(effectIndex, 1);
