@@ -1095,12 +1095,10 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
-    console.log(newAbilityData);
     if (newAbilityData.identifier) {
         for (const formula of newAbilityData.formulas) {
             if (formula.statsAffected) {
                 for (const statName of formula.statsAffected) {
-                    console.log(character[statName].temporaryEffects);
                     const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == newAbilityData.identifier);
 
                     if (effectIndex > 0)
@@ -1545,7 +1543,7 @@ function renderContainer(PassivesContainer, title, id) {
     `;
 }
 
-function renderFullAutoRacialPassives(passivesContainer) {
+function renderFullAutoRacialPassives(passivesContainer, category) {
     const race = character.race;
     const id = 'full-auto-passives';
     renderContainer(passivesContainer, "Full Auto Passives", id);
@@ -1554,10 +1552,8 @@ function renderFullAutoRacialPassives(passivesContainer) {
     console.log(fullAutoPassives);
 
     for (const abilityKey in fullAutoPassives) {
-        console.log(abilityKey);
         if (fullAutoPassives.hasOwnProperty(abilityKey)) {
             const abilityData = fullAutoPassives[abilityKey];
-            console.log(abilityData);
             const abilityTitle = document.createElement('h2');
             abilityTitle.className = 'text-sm font-medium text-gray-700 dark:text-gray-300 w-32';
             abilityTitle.textContent = abilityData.name;
@@ -1567,7 +1563,7 @@ function renderFullAutoRacialPassives(passivesContainer) {
             abilityDescription.textContent = abilityData.description;
             fullAutoPassivesList.appendChild(abilityDescription);
 
-            processRacialFullAutoPassiveChange(abilityData);
+            processRacialFullAutoPassiveChange(category, abilityData);
         }
     }
 }
