@@ -1569,6 +1569,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
         for (const abilityKey in fullAutoPassives) {
             if (fullAutoPassives.hasOwnProperty(abilityKey)) {
                 const abilityData = fullAutoPassives[abilityKey];
+                const abilityTarget = abilityData.identifier;
                 const abilityElement = document.createElement('div');
                 abilityElement.className = 'flex items-center justify-between mb-4';
                 const abilityTitle = document.createElement('h2');
@@ -1576,12 +1577,12 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 abilityTitle.textContent = abilityData.name;
                 abilityElement.appendChild(abilityTitle);
                 const toggableBtn = document.createElement('button');
-                toggableBtn.className = `toggle-element-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="${abilityData.identifier}"`;
+                toggableBtn.className = `toggle-element-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="${abilityTarget}"`;
                 toggableBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
                 abilityElement.appendChild(toggableBtn);
                 fullAutoPassivesList.appendChild(abilityElement);
                 const abilityDescription = document.createElement('p');
-                abilityDescription.id = abilityData.identifier;
+                abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
                 abilityDescription.textContent = abilityData.description;
                 fullAutoPassivesList.appendChild(abilityDescription);
@@ -1692,7 +1693,6 @@ function renderGenericRacialPassives(oldRace, race, category) {
     });
 
     document.querySelectorAll('.toggle-element-btn').forEach(button => {
-        console.log(button);
         button.addEventListener('click', (event) => {
             const targetId = event.currentTarget.dataset.target;
             console.log(targetId);
