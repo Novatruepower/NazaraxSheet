@@ -1100,7 +1100,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
             if (formula.statsAffected) {
                 for (const statName of formula.statsAffected) {
                     const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == newAbilityData.identifier);
-                    console.log(effectIndex);
+
                     if (effectIndex > -1)
                         character[statName].temporaryEffects.splice(effectIndex, 1);
                 }
@@ -2939,6 +2939,9 @@ function renderTemporaryEffects(statName) {
     }
 
     effects.forEach((effect, index) => {
+        if (effects.category != 'manual')
+            return;
+
         let effectDiv = tempEffectsList.children[index];
         let valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
 
@@ -3099,10 +3102,10 @@ function addTemporaryEffect(char, effect, duration) {
 /**
  * Adds a new temporary effect to the current stat.
  */
-function addCurrentTemporaryEffect() {
+function addManualTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        addTemporaryEffect(character, {statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
+        addTemporaryEffect(character, {statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total', category: 'manual' }, 1);
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
@@ -3303,7 +3306,7 @@ function attachEventListeners() {
     document.getElementById('close-google-drive-modal').addEventListener('click', () => googleDriveModal.classList.add('hidden'));
 
     // Temporary Effects Modal buttons
-    addTempEffectBtn.addEventListener('click', addCurrentTemporaryEffect);
+    addTempEffectBtn.addEventListener('click', addManualTemporaryEffect);
     document.getElementById('close-temp-effects-modal').addEventListener('click', closeTemporaryEffectsModal);
 
     // Attach event listener for the new End Turn button
