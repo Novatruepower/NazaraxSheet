@@ -1609,6 +1609,8 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 processRacialFullAutoPassiveChange(category, abilityData);
             }
         }
+        
+        updateSpecificHtmlVisibility('element');
     } else {
         passivesContainer.classList.add('hidden');
         passivesContainer.innerHTML = '';
@@ -1702,8 +1704,6 @@ function renderGenericRacialPassives(oldRace, race, category) {
         fullAutoPassivesContainer.classList.add('hidden');
         fullAutoPassivesContainer.innerHTML = '';
     }
-
-    updateHtmlVisibility();
 
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
