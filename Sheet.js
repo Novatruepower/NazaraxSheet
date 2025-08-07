@@ -2909,8 +2909,8 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    const noManualEffectsLength = character[statName].temporaryEffects.filter(e => e.category != 'manual').length;
     const manualEffects = character[statName].temporaryEffects.filter(e => e.category == 'manual');
+    const noManualEffectsLength = character[statName].temporaryEffects.length - manualEffects.length;
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
