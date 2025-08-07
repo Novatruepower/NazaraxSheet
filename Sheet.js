@@ -1562,7 +1562,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
 
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
     console.log(fullAutoPassives);
-    if (fullAutoPassives && fullAutoPassives.length > 0) {
+    if (fullAutoPassives && Object.keys(fullAutoPassives).length > 0) {
         renderContainer(passivesContainer, "Full Auto Passives", id);
         const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
 
