@@ -610,6 +610,39 @@
         </div>
     </div>
 
+    <!-- ========  Google Drive Folder Picker Modal  ======== -->
+    <div id="gd-folder-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-button" id="close-gd-folder-modal">&times;</span>
+        <h2 class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">
+            Choose a Google Drive folder
+        </h2>
+
+        <!-- Breadcrumb / path bar -->
+        <nav id="gd-folder-breadcrumb" class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+            Root
+        </nav>
+
+        <!-- Folder list -->
+        <ul id="gd-folder-list" class="divide-y divide-gray-200 dark:divide-gray-700 max-h-80 overflow-y-auto">
+        <!-- Folders will be injected here -->
+        </ul>
+
+        <!-- Action buttons -->
+        <div class="mt-4 flex justify-end space-x-3">
+        <button id="gd-select-this-folder"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700">
+            Save here
+        </button>
+        <button id="gd-new-folder-btn"
+                class="px-4 py-2 bg-green-600 text-white rounded-md shadow-md hover:bg-green-700">
+            New folder
+        </button>
+        </div>
+
+        <p id="gd-folder-status" class="text-sm text-gray-500 mt-2"></p>
+    </div>
+    </div>
 
     <script>
         window.gapiInited = false;

@@ -2398,7 +2398,7 @@ function removeItem(event) {
 
 // Function to reset the current character to default data
 function newFile() {
-    showConfirmationModal("Are you sure you want to make a new file? All data will be lost.", () => {
+    showConfirmationModal(`Are you sure you want to make a new file? ${hasUnsavedChanges ? 'All unsaved data will be lost.': ''}`, () => {
         currentGoogleDriveFileId = null;
         characters = [defaultCharacterData()];
         currentCharacterIndex = 0; // Set the active character to the new, single sheet
@@ -2679,74 +2679,205 @@ function handleGoogleDriveSignoutClick() {
     maybeEnableGoogleDriveButtons(); // Update UI
 }
 
+/*****************************************************************
+ *  Google Drive Folder Picker
+ *****************************************************************/
+let gdPickerCurrentParent = 'root';   // folder-id we are currently viewing
+let gdPickerSelectedFolder = null;    // folder-id the user finally picked
+
+// Open the picker and return a Promise<folderId | null>
+function chooseGoogleDriveFolder() {
+  return new Promise(async (resolve) => {
+    const modal   = document.getElementById('gd-folder-modal');
+    const list    = document.getElementById('gd-folder-list');
+    const bc      = document.getElementById('gd-folder-breadcrumb');
+    const status  = document.getElementById('gd-folder-status');
+
+    // Wire one-time close & select listeners
+    const closeBtn   = document.getElementById('close-gd-folder-modal');
+    const selectBtn  = document.getElementById('gd-select-this-folder');
+    const newBtn     = document.getElementById('gd-new-folder-btn');
+
+    const cleanup = () => {
+      modal.classList.add('hidden');
+      closeBtn.onclick = selectBtn.onclick = newBtn.onclick = null;
+    };
+
+    closeBtn.onclick  = () => { cleanup(); resolve(null); };
+    selectBtn.onclick = () => { cleanup(); resolve(gdPickerSelectedFolder); };
+
+    newBtn.onclick = async () => {
+      const name = prompt('Name for new folder:');
+      if (!name) return;
+      try {
+        const res = await gapi.client.drive.files.create({
+          resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [gdPickerCurrentParent] }
+        });
+        status.textContent = `Folder "${name}" created.`;
+        await renderFolders(); // refresh
+      } catch (e) {
+        status.textContent = 'Error creating folder.';
+        console.error(e);
+      }
+    };
+
+    // Kick-off
+    modal.classList.remove('hidden');
+    await renderFolders();
+
+    async function renderFolders() {
+      list.innerHTML = '<li class="p-2 text-gray-500">Loading…</li>';
+      try {
+        const res = await gapi.client.drive.files.list({
+          q: `'${gdPickerCurrentParent}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'`,
+          fields: 'files(id,name), nextPageToken',
+          orderBy: 'name',
+          pageSize: 100
+        });
+
+        list.innerHTML = '';
+        const folders = res.result.files;
+
+        // Up-link (except at root)
+        if (gdPickerCurrentParent !== 'root') {
+          const upLi = document.createElement('li');
+          upLi.className = 'p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-indigo-600';
+          upLi.innerHTML = '⬆️ .. (Up)';
+          upLi.onclick = async () => {
+            // Fetch parent id
+            if (gdPickerCurrentParent === 'root') return;
+            const parentRes = await gapi.client.drive.files.get({
+              fileId: gdPickerCurrentParent,
+              fields: 'parents'
+            });
+            gdPickerCurrentParent = (parentRes.result.parents && parentRes.result.parents[0]) || 'root';
+            gdPickerSelectedFolder = gdPickerCurrentParent;
+            await renderFolders();
+            updateBreadcrumb();
+          };
+          list.appendChild(upLi);
+        }
+
+        folders.forEach(f => {
+          const li = document.createElement('li');
+          li.className = 'p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
+          li.textContent = `📁 ${f.name}`;
+          li.onclick = () => {
+            gdPickerCurrentParent = f.id;
+            gdPickerSelectedFolder = f.id;
+            renderFolders();
+            updateBreadcrumb();
+          };
+          list.appendChild(li);
+        });
+
+        if (!folders.length && gdPickerCurrentParent === 'root') {
+          list.innerHTML = '<li class="p-2 text-gray-500">No folders found in Drive.</li>';
+        }
+
+        updateBreadcrumb();
+      } catch (e) {
+        list.innerHTML = '<li class="p-2 text-red-500">Error loading folders.</li>';
+        console.error(e);
+      }
+    }
+
+    function updateBreadcrumb() {
+      bc.innerHTML = '';
+      buildBreadcrumb(gdPickerCurrentParent, bc);
+    }
+
+    async function buildBreadcrumb(id, container) {
+      const path = [];
+      let current = id;
+      while (current && current !== 'root') {
+        const res = await gapi.client.drive.files.get({ fileId: current, fields: 'id,name,parents' });
+        path.unshift(res.result);
+        current = (res.result.parents && res.result.parents[0]) || 'root';
+      }
+      path.unshift({ id: 'root', name: 'Root' });
+
+      path.forEach((p, idx) => {
+        const a = document.createElement('span');
+        a.className = idx === path.length - 1
+          ? 'font-semibold text-indigo-600'
+          : 'cursor-pointer hover:underline';
+        a.textContent = p.name;
+        if (idx !== path.length - 1) {
+          a.onclick = () => {
+            gdPickerCurrentParent = p.id;
+            gdPickerSelectedFolder = p.id;
+            renderFolders();
+            updateBreadcrumb();
+          };
+        }
+        container.appendChild(a);
+        if (idx < path.length - 1) container.append(' › ');
+      });
+    }
+  });
+}
+
 /**
 * Saves character data to Google Drive.
 */
 async function saveCharacterToGoogleDrive() {
-    if (!gapi.client.getToken()) {
-        showStatusMessage("Please authorize Google Drive to save.", true);
-        // If local storage says it was authorized, prompt to re-authorize
-        if (localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true') {
-            showStatusMessage("Google Drive session expired. Please re-authorize.", true);
-        }
-        return;
+  if (!gapi.client.getToken()) {
+    showStatusMessage('Please authorize Google Drive to save.', true);
+    return;
+  }
+
+  // Ask the user where to save
+  const targetFolder = await chooseGoogleDriveFolder();
+  if (targetFolder === null) return; // user cancelled
+
+  showStatusMessage('Saving to Google Drive…');
+
+  try {
+    const charactersToSave = prepareCharactersForSaving(characters);
+    const content = JSON.stringify(charactersToSave, null, 2);
+    const fileName = (characters[0].name.trim() || 'character_sheets') + '.json';
+    const mimeType = 'application/json';
+
+    // Decide parents
+    const parents = targetFolder === 'root' ? ['root'] : [targetFolder];
+
+    // Overwrite existing file if we have an id, otherwise create new
+    if (currentGoogleDriveFileId) {
+      await gapi.client.request({
+        path: `/upload/drive/v3/files/${currentGoogleDriveFileId}`,
+        method: 'PATCH',
+        params: { uploadType: 'media' },
+        headers: { 'Content-Type': mimeType },
+        body: content
+      });
+      showStatusMessage('Character data updated in Google Drive!');
+    } else {
+      const metadata = { name: fileName, mimeType, parents };
+      const boundary = '-------314159265358979323846';
+      const multipartBody =
+        `--${boundary}\r\n` +
+        'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+        JSON.stringify(metadata) + '\r\n' +
+        `--${boundary}\r\n` +
+        `Content-Type: ${mimeType}\r\n\r\n` +
+        content + '\r\n' +
+        `--${boundary}--`;
+
+      const res = await gapi.client.request({
+        path: '/upload/drive/v3/files?uploadType=multipart',
+        method: 'POST',
+        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body: multipartBody
+      });
+      currentGoogleDriveFileId = res.result.id;
+      showStatusMessage('New character data saved to Google Drive!');
     }
-
-    showStatusMessage("Saving to Google Drive...");
-
-    try {
-        const charactersToSave = prepareCharactersForSaving(characters);
-
-        const content = JSON.stringify(charactersToSave, null, 2);
-        // Determine the file name based on the first character's name, or a default
-        const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() + '_sheet' : 'character_sheets') + '.json';
-        const mimeType = 'application/json';
-
-        if (currentGoogleDriveFileId) {
-            // Update existing file
-            await gapi.client.request({
-                path: `/upload/drive/v3/files/${currentGoogleDriveFileId}`,
-                method: 'PATCH',
-                params: { uploadType: 'media' },
-                headers: { 'Content-Type': mimeType },
-                body: content
-            });
-            showStatusMessage("Character data updated in Google Drive!");
-        } else {
-            // Create new file
-            const metadata = {
-                name: fileName,
-                mimeType: mimeType,
-                // Specify 'appDataFolder' to save in the hidden application data folder
-                // or 'root' to save in the user's main Drive folder.
-                // For this app, we'll save it to the root for easier user access.
-                parents: ['root']
-            };
-            const boundary = '-------314159265358979323846';
-            const multipartRequestBody =
-                `--${boundary}\r\n` +
-                `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-                JSON.stringify(metadata) + `\r\n` +
-                `--${boundary}\r\n` +
-                `Content-Type: ${mimeType}\r\n\r\n` +
-                content + `\r\n` +
-                `--${boundary}--`;
-
-            const response = await gapi.client.request({
-                path: '/upload/drive/v3/files?uploadType=multipart',
-                method: 'POST',
-                headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-                body: multipartRequestBody
-            });
-            currentGoogleDriveFileId = response.result.id;
-            showStatusMessage("New character data saved to Google Drive!");
-        }
-        console.log("Character data saved to Google Drive!");
-        hasUnsavedChanges = false; // Data is now saved
-    } catch (error) {
-        console.error('Error saving to Google Drive:', error);
-        showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
-    }
+    hasUnsavedChanges = false;
+  } catch (err) {
+    console.error(err);
+    showStatusMessage('Failed to save to Google Drive.', true);
+  }
 }
 
 /**
@@ -3479,6 +3610,9 @@ function initPage() {
     tempEffectsList = document.getElementById('temp-effects-list');
     addTempEffectBtn = document.getElementById('add-temp-effect-btn');
     endTurnBtn = document.getElementById('end-turn-btn'); // Initialize the new button
+    document.getElementById('close-gd-folder-modal').addEventListener('click', () => {
+        document.getElementById('gd-folder-modal').classList.add('hidden');
+    });
 
 
     characters = [defaultCharacterData()];
