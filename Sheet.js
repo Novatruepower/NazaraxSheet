@@ -1518,10 +1518,10 @@ function renderTagManualRacialPassive(race, category, abilityKey, abilityData, a
     }
 }
 
-function renderContainer(PassivesContainer, title, id) {
+function renderContainer(passivesContainer, title, id) {
     const race = character.race;
-    PassivesContainer.classList.remove('hidden');
-    PassivesContainer.innerHTML = `<div class="flex items-center justify-between mb-4">
+    passivesContainer.classList.remove('hidden');
+    passivesContainer.innerHTML = `<div class="flex items-center justify-between mb-4">
         <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} ${title}</h4>
             <button class="toggle-container-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="${race}-${id}-list">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -1561,7 +1561,8 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     }
 
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
-    if (fullAutoPassives.length > 0) {
+    console.log(fullAutoPassives);
+    if (fullAutoPassives && fullAutoPassives.length > 0) {
         renderContainer(passivesContainer, "Full Auto Passives", id);
         const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
 
@@ -1580,6 +1581,9 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 processRacialFullAutoPassiveChange(category, abilityData);
             }
         }
+    } else {
+      //  passivesContainer.classList.add('hidden');
+      //  passivesContainer.innerHTML = '';
     }
 }
 
