@@ -2707,7 +2707,7 @@ function handleGoogleDriveSignoutClick() {
 */
 async function saveCharacterToGoogleDrive() {
     if (!gapi.client.getToken()) {
-        handleGoogleDriveAuthClickThenCall(handleGoogleDriveAuthClickThenCall);
+        handleGoogleDriveAuthClickThenCall(saveCharacterToGoogleDrive);
         return;
     }
 
