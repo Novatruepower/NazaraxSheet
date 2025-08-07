@@ -1554,8 +1554,10 @@ function renderFullAutoRacialPassives(passivesContainer) {
     console.log(fullAutoPassives);
 
     for (const abilityKey in fullAutoPassives) {
+        console.log(abilityKey);
         if (fullAutoPassives.hasOwnProperty(abilityKey)) {
             const abilityData = fullAutoPassives[abilityKey];
+            console.log(abilityData);
             const abilityTitle = document.createElement('h2');
             abilityTitle.className = 'text-sm font-medium text-gray-700 dark:text-gray-300 w-32';
             abilityTitle.textContent = abilityData.name;
