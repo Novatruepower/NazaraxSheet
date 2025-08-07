@@ -391,29 +391,34 @@ function convertArraysToSetsAfterLoad(chars) {
     });
 }
 
-// Function to push the current character's state to the history stack
 function saveCurrentStateToHistory() {
-    // Deep copy the entire characters array and convert Sets to Arrays for saving its state
     const currentState = convertSetsToArraysForSave(characters);
-    let forwards = [];
 
-    // If the history pointer is not at the end, it means we reverted and are now making a new change.
-    // In this case, discard all "future" states from the current pointer onwards.
-    if (historyPointer < historyStack.length - 1) {
-        forwards = historyStack.splice(historyPointer + 1);
-    }
+    // Check if the current state is different from the current historyPointer state
+    const isNewState =
+        historyPointer === -1 || JSON.stringify(currentState) !== JSON.stringify(historyStack[historyPointer]);
 
-    // Only push if the current state is different from the last saved state
-    if (historyStack.length === 0 || JSON.stringify(currentState) !== JSON.stringify(historyStack[historyStack.length - 1])) {
-        historyStack.push(currentState, ...forwards);
-        console.log(historyStack);
-        if (historyStack.length > MAX_HISTORY_LENGTH) {
-            historyStack.shift(); // Remove the oldest state
+    if (isNewState) {
+        // If we are not at the end, discard future/redo states
+        if (historyPointer < historyStack.length - 1) {
+            historyStack = historyStack.slice(0, historyPointer + 1);
         }
-        
+
+        // Push the new state
+        historyStack.push(currentState);
+
+        // Enforce max history size
+        if (historyStack.length > MAX_HISTORY_LENGTH) {
+            historyStack.shift();
+            historyPointer = historyStack.length - 1; // Adjust pointer after shift
+        } else {
+            historyPointer++;
+        }
+
         console.log("State saved to history. History length:", historyStack.length, "Pointer:", historyPointer);
     }
-    updateHistoryButtonsState(); // Update button states after saving
+
+    updateHistoryButtonsState();
 }
 
 // Getter to easily access the current character
