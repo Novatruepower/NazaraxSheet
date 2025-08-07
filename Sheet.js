@@ -2489,9 +2489,8 @@ function applyHistoryState(state) {
     }
     updateDOM();
     populateCharacterSelector(); // Update selector in case character names changed
-    hasUnsavedChanges = false; // Reverted/Forwarded state is now considered "saved" locally
+    hasUnsavedChanges = historyPointer != historyStack.length - 1;
     updateHistoryButtonsState(); // Update button states after applying history
-    //character.isDistributingStats = false; // Exit distribution mode on history change
     updateRemainingPointsDisplay(); // Reset remaining points display
 }
 
