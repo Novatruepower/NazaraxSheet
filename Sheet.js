@@ -410,7 +410,7 @@ function saveCurrentStateToHistory() {
         if (historyStack.length > MAX_HISTORY_LENGTH) {
             historyStack.shift(); // Remove the oldest state
         }
-        historyPointer = historyStack.length - 1; // Update pointer to the new end
+        
         console.log("State saved to history. History length:", historyStack.length, "Pointer:", historyPointer);
     }
     updateHistoryButtonsState(); // Update button states after saving
