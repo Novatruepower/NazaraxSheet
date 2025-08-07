@@ -398,9 +398,9 @@ function saveCurrentStateToHistory() {
 
     // If the history pointer is not at the end, it means we reverted and are now making a new change.
     // In this case, discard all "future" states from the current pointer onwards.
-    if (historyPointer < historyStack.length - 1) {
-        historyStack.splice(historyPointer + 1);
-    }
+    //if (historyPointer < historyStack.length - 1) {
+        //historyStack.splice(historyPointer + 1);
+    //}
 
     // Only push if the current state is different from the last saved state
     if (historyStack.length === 0 || JSON.stringify(currentState) !== JSON.stringify(historyStack[historyStack.length - 1])) {
