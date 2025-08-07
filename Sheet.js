@@ -2665,6 +2665,7 @@ function handleGoogleDriveAuthClickThenCall(functionToCall) {
         // Update UI
         if(maybeEnableGoogleDriveButtons()) {
             functionToCall();
+            console.log("test");
         }
     };
     window.tokenClient.requestAccessToken({ prompt: 'consent' });
