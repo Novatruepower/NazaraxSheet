@@ -1561,7 +1561,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     }
 
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
-    console.log(fullAutoPassives);
+
     if (fullAutoPassives && Object.keys(fullAutoPassives).length > 0) {
         renderContainer(passivesContainer, "Full Auto Passives", id);
         const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
@@ -1582,8 +1582,8 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
             }
         }
     } else {
-      //  passivesContainer.classList.add('hidden');
-      //  passivesContainer.innerHTML = '';
+        passivesContainer.classList.add('hidden');
+        passivesContainer.innerHTML = '';
     }
 }
 
