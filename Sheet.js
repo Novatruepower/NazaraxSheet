@@ -2399,10 +2399,17 @@ function removeItem(event) {
 // Function to reset the current character to default data
 function resetSheets() {
     showConfirmationModal("Are you sure you want to reset all current sheets? All data will be lost.", () => {
+        currentGoogleDriveFileId = null;
+        characters = [defaultCharacterData()];
+        currentCharacterIndex = 0; // Set the active character to the new, single sheet
+
+        updateDOM(); // Update the UI with the new default character
+        populateCharacterSelector(); // Re-populate the character selector with the single sheet
+
         historyStack = []; // Clear history after a full reset
         historyPointer = -1; // Reset history pointer
         hasUnsavedChanges = false; // Reset unsaved changes flag after reset
-        initPage();
+
         showStatusMessage("Sheets reset successfully!");
     });
 }
@@ -3455,7 +3462,6 @@ function attachEventListeners() {
 }
 
 function initPage() {
-    currentGoogleDriveFileId = null;
     // Assign DOM elements to variables here, after the DOM is loaded
     statusMessageElement = document.getElementById('status-message');
     googleDriveAuthStatusSpan = document.getElementById('google-drive-auth-status');
