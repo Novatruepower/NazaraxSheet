@@ -1560,23 +1560,25 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
         }
     }
 
-    renderContainer(passivesContainer, "Full Auto Passives", id);
-    const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
+    if (fullAutoPassives.length > 0) {
+        renderContainer(passivesContainer, "Full Auto Passives", id);
+        const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
 
-    for (const abilityKey in fullAutoPassives) {
-        if (fullAutoPassives.hasOwnProperty(abilityKey)) {
-            const abilityData = fullAutoPassives[abilityKey];
-            const abilityTitle = document.createElement('h2');
-            abilityTitle.className = 'text-sm font-medium text-gray-700 dark:text-gray-300 w-32';
-            abilityTitle.textContent = abilityData.name;
-            fullAutoPassivesList.appendChild(abilityTitle);
-            const abilityDescription = document.createElement('p');
-            abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
-            abilityDescription.textContent = abilityData.description;
-            fullAutoPassivesList.appendChild(abilityDescription);
+        for (const abilityKey in fullAutoPassives) {
+            if (fullAutoPassives.hasOwnProperty(abilityKey)) {
+                const abilityData = fullAutoPassives[abilityKey];
+                const abilityTitle = document.createElement('h2');
+                abilityTitle.className = 'text-sm font-medium text-gray-700 dark:text-gray-300 w-32';
+                abilityTitle.textContent = abilityData.name;
+                fullAutoPassivesList.appendChild(abilityTitle);
+                const abilityDescription = document.createElement('p');
+                abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
+                abilityDescription.textContent = abilityData.description;
+                fullAutoPassivesList.appendChild(abilityDescription);
 
-            processRacialFullAutoPassiveChange(category, abilityData);
+                processRacialFullAutoPassiveChange(category, abilityData);
+            }
         }
     }
 }
