@@ -1703,6 +1703,8 @@ function renderGenericRacialPassives(oldRace, race, category) {
         fullAutoPassivesContainer.innerHTML = '';
     }
 
+    updateHtmlVisibility();
+
     attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
         button.addEventListener('click', (event) => {
