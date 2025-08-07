@@ -2628,16 +2628,19 @@ function maybeEnableGoogleDriveButtons() {
             authorizeGoogleDriveButton.classList.add('hidden');
             signoutGoogleDriveButton.classList.remove('hidden');
             localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Ensure local storage is updated
+            return true;
         } else if (wasAuthorizedInLocalStorage) {
             // User was authorized previously, but session might have expired
             googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized (Session Expired)';
             authorizeGoogleDriveButton.classList.remove('hidden'); // Show authorize to re-auth
             signoutGoogleDriveButton.classList.remove('hidden'); // Still allow sign out
+            return null;
         } else {
             // User is not authorized and never was (or explicitly signed out)
             googleDriveAuthStatusSpan.textContent = 'Google Drive: Not Authorized';
             authorizeGoogleDriveButton.classList.remove('hidden');
             signoutGoogleDriveButton.classList.add('hidden');
+            return false;
         }
     }
 }
@@ -2659,8 +2662,10 @@ function handleGoogleDriveAuthClickThenCall(functionToCall) {
         gapi.client.setToken(resp);
         localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
         showStatusMessage("Google Drive authorized successfully!");
-        maybeEnableGoogleDriveButtons(); // Update UI
-        functionToCall();
+        // Update UI
+        if(maybeEnableGoogleDriveButtons()) {
+            functionToCall();
+        }
     };
     window.tokenClient.requestAccessToken({ prompt: 'consent' });
 }
