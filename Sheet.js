@@ -1575,7 +1575,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 const abilityTarget = abilityData.identifier;
 
                 const abilityWrapper = document.createElement('div');
-                abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2 cursor-pointer';
+                abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
 
                 const abilityHeader = document.createElement('div');
                 abilityHeader.className = 'flex items-center justify-between';
