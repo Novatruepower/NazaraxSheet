@@ -2909,7 +2909,8 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    const effects = character[statName].temporaryEffects;
+    const noManualEffectsLength = character[statName].temporaryEffects.filter(e => e.category != 'manual').length;
+    const manualEffects = character[statName].temporaryEffects.filter(e => e.category == 'manual');
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
@@ -2928,22 +2929,20 @@ function renderTemporaryEffects(statName) {
     existingEffectDivs.forEach((div, index) => {
         // If an element exists at this index and it's not a temporary effect div (e.g., the "No effects" message), remove it.
         // Or if it's an excess div beyond the current number of effects, remove it.
-        if (index >= effects.length || !div.classList.contains('flex')) {
+        if (index >= manualEffects.length || !div.classList.contains('flex')) {
             tempEffectsList.removeChild(div);
         }
     });
 
-    if (effects.length === 0) {
+    if (manualEffects.length === 0) {
         tempEffectsList.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No temporary effects added yet.</p>';
         return;
     }
 
-    effects.forEach((effect, index) => {
-        if (effects.category != 'manual')
-            return;
-
+    manualEffects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
         let valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
+        const manualIndex = noManualEffectsLength + index;
 
         // If the div doesn't exist or isn't the correct type, create it
         if (!effectDiv || !effectDiv.classList.contains('flex')) {
@@ -2967,15 +2966,15 @@ function renderTemporaryEffects(statName) {
                 <div class="flex flex-col min-w-[8rem] gap-y-1">
                     <label class="${labelBase}">Value</label>
                     <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
-                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${index}" data-field="values" class="${inputBase} flex-grow" />
-                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${index}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
+                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="values" class="${inputBase} flex-grow" />
+                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
                         <span class="${labelBase}">%</span> <!-- Added a span for the percentage symbol -->
                     </div>
                 </div>
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Type</label>
-                    <select data-stat-name="${statName}" data-effect-index="${index}" data-field="type" class="${inputBase}">
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="type" class="${inputBase}">
                         <option value="+">+</option>
                         <option value="*">*</option>
                     </select>
@@ -2983,7 +2982,7 @@ function renderTemporaryEffects(statName) {
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Applies To</label>
-                    <select data-stat-name="${statName}" data-effect-index="${index}" data-field="appliesTo" class="${inputBase}">
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="appliesTo" class="${inputBase}">
                         <option value="initial-value">initial value</option>
                         <option value="base-value">base value</option>
                         <option value="total">Total</option>
@@ -2992,11 +2991,11 @@ function renderTemporaryEffects(statName) {
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Duration</label>
-                    <input type="number" data-stat-name="${statName}" data-effect-index="${index}" data-field="duration" class="${inputBase}" />
+                    <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="duration" class="${inputBase}" />
                 </div>
 
                 <div class="flex items-end">
-                    <button type="button" data-stat-name="${statName}" data-effect-index="${index}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                         Remove
                     </button>
                 </div>
@@ -3018,12 +3017,12 @@ function renderTemporaryEffects(statName) {
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
 
             // Update data-effect-index for consistency if order changes (though it shouldn't often here)
-            valueInput.dataset.effectIndex = index;
-            isPercentCheckbox.dataset.effectIndex = index;
-            durationInput.dataset.effectIndex = index;
-            typeSelect.dataset.effectIndex = index;
-            appliesToSelect.dataset.effectIndex = index;
-            removeButton.dataset.effectIndex = index;
+            valueInput.dataset.effectIndex = manualIndex;
+            isPercentCheckbox.dataset.effectIndex = manualIndex;
+            durationInput.dataset.effectIndex = manualIndex;
+            typeSelect.dataset.effectIndex = manualIndex;
+            appliesToSelect.dataset.effectIndex = manualIndex;
+            removeButton.dataset.effectIndex = manualIndex;
         }
 
         // Always update the input values directly to reflect the current data
@@ -3054,7 +3053,7 @@ function renderTemporaryEffects(statName) {
     });
 
     // Remove any excess divs if the number of effects has decreased
-    while (tempEffectsList.children.length > effects.length) {
+    while (tempEffectsList.children.length > manualEffects.length) {
         tempEffectsList.removeChild(tempEffectsList.lastChild);
     }
 
