@@ -1574,11 +1574,14 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 const abilityData = fullAutoPassives[abilityKey];
                 const abilityTarget = abilityData.identifier;
 
-                const abilityElement = document.createElement('div');
-                abilityElement.className = 'flex items-start justify-between p-3 bg-white dark:bg-gray-900 rounded-md shadow-sm transition hover:shadow-md';
+                const abilityWrapper = document.createElement('div');
+                abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2 cursor-pointer';
+
+                const abilityHeader = document.createElement('div');
+                abilityHeader.className = 'flex items-center justify-between';
 
                 const abilityTitle = document.createElement('h2');
-                abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100';
+                abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors';
                 abilityTitle.textContent = abilityData.name;
 
                 const toggableBtn = document.createElement('button');
@@ -1590,15 +1593,18 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 </svg>
                 `;
 
-                abilityElement.appendChild(abilityTitle);
-                abilityElement.appendChild(toggableBtn);
-                fullAutoPassivesList.appendChild(abilityElement);
+                abilityHeader.appendChild(abilityTitle);
+                abilityHeader.appendChild(toggableBtn);
 
                 const abilityDescription = document.createElement('p');
                 abilityDescription.id = abilityTarget;
-                abilityDescription.className = 'ml-2 text-sm text-gray-600 dark:text-gray-400';
+                abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
                 abilityDescription.textContent = abilityData.description;
-                fullAutoPassivesList.appendChild(abilityDescription);
+
+                abilityWrapper.appendChild(abilityHeader);
+                abilityWrapper.appendChild(abilityDescription);
+
+                fullAutoPassivesList.appendChild(abilityWrapper);
 
                 processRacialFullAutoPassiveChange(category, abilityData);
             }
