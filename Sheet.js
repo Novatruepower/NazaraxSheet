@@ -1235,11 +1235,11 @@ function handleChangeRace(oldRace) {
         updateRacialChange(oldRace, statName);
     });
 
-    // Update maxHealth, maxMana, maxRacialPower, and totalDefense when race changes
-    recalculateSmallUpdateCharacter(character, true);
-
     // Re-render the racial passives UI
     renderRacialPassives(oldRace);
+
+    // Update maxHealth, maxMana, maxRacialPower, and totalDefense when race changes
+    recalculateSmallUpdateCharacter(character, true);
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
@@ -1970,8 +1970,9 @@ function handleChange(event) {
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             if (newValue < oldLevel)
                 removePassivesLevel();
-            recalculateCharacterDerivedProperties(character, true);
+            
             renderRacialPassives();
+            recalculateCharacterDerivedProperties(character, true);
         } else if (id === 'race') {
             let oldRace = character.race;
             character.race = newValue;
