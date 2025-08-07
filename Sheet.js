@@ -404,7 +404,7 @@ function saveCurrentStateToHistory() {
 
     // Only push if the current state is different from the last saved state
     if (historyStack.length === 0 || JSON.stringify(currentState) !== JSON.stringify(historyStack[historyStack.length - 1])) {
-        historyStack[historyPointer] = currentState;
+        historyStack[historyPointer + 1] = currentState;
         //historyStack.push(currentState);
         if (historyStack.length > MAX_HISTORY_LENGTH) {
             historyStack.shift(); // Remove the oldest state
