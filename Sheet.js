@@ -1521,14 +1521,17 @@ function renderTagManualRacialPassive(race, category, abilityKey, abilityData, a
 function renderContainer(passivesContainer, title, id) {
     const race = character.race;
     passivesContainer.classList.remove('hidden');
-    passivesContainer.innerHTML = `<div class="flex items-center justify-between mb-4">
-        <h4 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">${race} ${title}</h4>
-            <button class="toggle-container-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="${race}-${id}-list">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
-        </div>
-        <div id="${race}-${id}-list" class="space-y-4">
-        </div>
+    passivesContainer.innerHTML = `
+    <div class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-md shadow-sm mb-4">
+        <h4 class="text-lg font-bold text-gray-900 dark:text-white">${race} ${title}</h4>
+        <button class="toggle-container-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors duration-200" data-target="${race}-${id}-list">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+        </button>
+    </div>
+    <div id="${race}-${id}-list" class="space-y-4 px-2">
+    </div>
     `;
 }
 
@@ -1570,21 +1573,30 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
             if (fullAutoPassives.hasOwnProperty(abilityKey)) {
                 const abilityData = fullAutoPassives[abilityKey];
                 const abilityTarget = abilityData.identifier;
+
                 const abilityElement = document.createElement('div');
-                abilityElement.className = 'flex items-center justify-between mb-4';
+                abilityElement.className = 'flex items-start justify-between p-3 bg-white dark:bg-gray-900 rounded-md shadow-sm transition hover:shadow-md';
+
                 const abilityTitle = document.createElement('h2');
-                abilityTitle.className = 'text-sm font-medium text-gray-700 dark:text-gray-300 w-32';
+                abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100';
                 abilityTitle.textContent = abilityData.name;
-                abilityElement.appendChild(abilityTitle);
+
                 const toggableBtn = document.createElement('button');
-                toggableBtn.className = `toggle-element-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200"`;
+                toggableBtn.className = 'toggle-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
                 toggableBtn.dataset.target = abilityTarget;
-                toggableBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+                toggableBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+                `;
+
+                abilityElement.appendChild(abilityTitle);
                 abilityElement.appendChild(toggableBtn);
                 fullAutoPassivesList.appendChild(abilityElement);
+
                 const abilityDescription = document.createElement('p');
                 abilityDescription.id = abilityTarget;
-                abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
+                abilityDescription.className = 'ml-2 text-sm text-gray-600 dark:text-gray-400';
                 abilityDescription.textContent = abilityData.description;
                 fullAutoPassivesList.appendChild(abilityDescription);
 
