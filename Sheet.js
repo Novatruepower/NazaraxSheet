@@ -131,9 +131,20 @@ function calculateBaseMaxHealth(charData, effects) {
     return calculateBaseMaxValue(charData, effects, 'Health');
 }
 
+function getCategoriesTemporaryEffects(charData, statName) {
+    let categoriesTemporaryEffects = [];
+    const temporaryEffects = charData[statName].temporaryEffects
+
+    for (const category in temporaryEffects) {
+        categoriesTemporaryEffects.push(...temporaryEffects[category]);
+    }
+    
+    return categoriesTemporaryEffects;
+}
+
 // Function to calculate max health based on race, level, and bonus
 function calculateMaxHealth(charData, level) {
-    const effects = charData.Health.temporaryEffects;
+    const effects = getCategoriesTemporaryEffects(charData, 'Health');
 
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxHealth(charData, effects), 0));
 }
@@ -144,7 +155,7 @@ function calculateBaseMaxMana(charData, effects) {
 
 // Function to calculate max magic based on level
 function calculateMaxMana(charData, level) {
-    const effects = charData.Mana.temporaryEffects;
+    const effects = getCategoriesTemporaryEffects(charData, 'Mana');
 
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxMana(charData, effects), 0));
 }
@@ -155,7 +166,7 @@ function calculateBaseMaxRacialPower(charData, effects) {
 
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
-    const effects = charData.RacialPower.temporaryEffects;
+    const effects = getCategoriesTemporaryEffects(charData, 'RacialPower');
 
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
@@ -166,7 +177,7 @@ function calculateMaxRacialPower(charData, level) {
  * @returns {number} The calculated total defense.
  */
 function calculateTotalDefense(charData) {
-    const effects = charData.totalDefense.temporaryEffects;
+    const effects = getCategoriesTemporaryEffects(charData, 'totalDefense');
     const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
     let baseDefense = applyTemporaryEffects(charData, 0, effectsOnInitialValue);;
     charData.armorInventory.forEach(armor => {
@@ -324,9 +335,9 @@ const defaultCharacterData = function () {
     newCharacter['BaseMana'].value = 100;
     newCharacter['BaseRacialPower'].value = 100;
 
-    newCharacter['Health'].temporaryEffects = []; // Ensure Health has a temporaryEffects array
-    newCharacter['Mana'].temporaryEffects = []; // Ensure Mana has a temporaryEffects array
-    newCharacter['RacialPower'].temporaryEffects = []; // Ensure RacialPower has a temporaryEffects array
+    newCharacter['Health'].temporaryEffects = {}; // Ensure Health has a temporaryEffects array
+    newCharacter['Mana'].temporaryEffects = {}; // Ensure Mana has a temporaryEffects array
+    newCharacter['RacialPower'].temporaryEffects = {}; // Ensure RacialPower has a temporaryEffects array
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
@@ -474,7 +485,7 @@ function calculateRollStatTotal(char, statName) {
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
     const racialChange = getAppliedRacialChange(char, statName);
 
-    const effects = stat.temporaryEffects;
+    const effects = getCategoriesTemporaryEffects(char, statName);
     const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
     const baseStat = applyTemporaryEffects(char, combinedValue * racialChange, effectsOnInitialValue);;
 
@@ -614,9 +625,9 @@ function initLoadCharacter(loadedChar) {
                     if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
                         newChar[key].maxExperience = defaultStatMaxExperience;
                     }
-                    // Ensure temporaryEffects is initialized as an array for all relevant stats
+
                     if ((ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense') && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
-                        newChar[key].temporaryEffects = [];
+                        newChar[key].temporaryEffects = {};
                     }
                 }
             } else {
@@ -947,7 +958,6 @@ function quickRollStats() {
     character.isDistributingStats = false; // Exit distribution mode
     ExternalDataManager.rollStats.forEach(statName => {
         character[statName].baseValue = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'baseValue' property
-        // character[statName].temporaryEffects = []; // Removed: Do not clear temporary effects on quick roll
 
         // Update the DOM for value (combined) and total immediately
         document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus;
@@ -1114,8 +1124,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
                 formula['name'] = newAbilityData.name;
             }
 
-            formula['category'] = category;
-            addTemporaryEffect(character, formula, Infinity);
+            addTemporaryEffect(character, category, formula, Infinity);
         }
     }
 
@@ -1542,15 +1551,15 @@ function renderContainer(passivesContainer, title, id) {
     `;
 }
 
-function removeTemporaryEffectByIdentifier(oldAbilityData){
+function removeTemporaryEffectByIdentifier(oldAbilityData, category){
     if (oldAbilityData.identifier) {
         for (const formula of oldAbilityData.formulas) {
             if (formula.statsAffected) {
                 for (const statName of formula.statsAffected) {
-                    const effectIndex = character[statName].temporaryEffects.findIndex(e => e.identifier == oldAbilityData.identifier);
+                    const effectIndex = character[statName].temporaryEffects[category].findIndex(e => e.identifier == oldAbilityData.identifier);
 
                     if (effectIndex > -1)
-                        character[statName].temporaryEffects.splice(effectIndex, 1);
+                        character[statName].temporaryEffects[category].splice(effectIndex, 1);
                 }
             }
         }
@@ -1565,7 +1574,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
         const oldFullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(oldRace, character.level);
         for (const abilityKey in oldFullAutoPassives) {
             if (oldFullAutoPassives.hasOwnProperty(abilityKey)) {
-                removeTemporaryEffectByIdentifier(oldFullAutoPassives[abilityKey]);
+                removeTemporaryEffectByIdentifier(oldFullAutoPassives[abilityKey], category);
             }
         }
     }
@@ -1799,15 +1808,17 @@ function handlePlayerStatInputChange(event) {
         statName = dataset.statName;
         subProperty = dataset.field; // 'value', 'duration', 'type', 'appliesTo', or 'isPercent' for temporary effects
         const effectIndex = parseInt(dataset.effectIndex);
+        const category = dataset.effectIndex;
+        const categoryTemporaryEffects = character[statName].temporaryEffects[category];
 
-        if (character[statName].temporaryEffects[effectIndex]) {
+        if (categoryTemporaryEffects[effectIndex]) {
             if (subProperty === 'type' || subProperty === 'appliesTo') {
-                character[statName].temporaryEffects[effectIndex][subProperty] = value;
+                categoryTemporaryEffects[effectIndex][subProperty] = value;
             } else if (subProperty === 'isPercent') { // Handle the new isPercent checkbox
-                character[statName].temporaryEffects[effectIndex][subProperty] = checked;
+                categoryTemporaryEffects[effectIndex][subProperty] = checked;
             }
             else {
-                character[statName].temporaryEffects[effectIndex][subProperty] = [newValue];
+                categoryTemporaryEffects[effectIndex][subProperty] = [newValue];
             }
             
             // Re-render the temporary effects list and update the stat total immediately
@@ -3010,8 +3021,7 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    const manualEffects = character[statName].temporaryEffects.filter(e => e.category == 'manual');
-    const noManualEffectsLength = character[statName].temporaryEffects.length - manualEffects.length;
+    const manualEffects = character[statName].temporaryEffects['manual'];
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
@@ -3043,7 +3053,7 @@ function renderTemporaryEffects(statName) {
     manualEffects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
         let valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
-        const manualIndex = noManualEffectsLength + index;
+        const manualIndex = index;
 
         // If the div doesn't exist or isn't the correct type, create it
         if (!effectDiv || !effectDiv.classList.contains('flex')) {
@@ -3067,7 +3077,7 @@ function renderTemporaryEffects(statName) {
                 <div class="flex flex-col min-w-[8rem] gap-y-1">
                     <label class="${labelBase}">Value</label>
                     <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
-                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="values" class="${inputBase} flex-grow" />
+                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="values" class="${inputBase} flex-grow" />
                         <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
                         <span class="${labelBase}">%</span> <!-- Added a span for the percentage symbol -->
                     </div>
@@ -3075,7 +3085,7 @@ function renderTemporaryEffects(statName) {
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Type</label>
-                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="type" class="${inputBase}">
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="type" class="${inputBase}">
                         <option value="+">+</option>
                         <option value="*">*</option>
                     </select>
@@ -3083,7 +3093,7 @@ function renderTemporaryEffects(statName) {
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Applies To</label>
-                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="appliesTo" class="${inputBase}">
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="appliesTo" class="${inputBase}">
                         <option value="initial-value">initial value</option>
                         <option value="base-value">base value</option>
                         <option value="total">Total</option>
@@ -3092,11 +3102,11 @@ function renderTemporaryEffects(statName) {
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Duration</label>
-                    <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="duration" class="${inputBase}" />
+                    <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="duration" class="${inputBase}" />
                 </div>
 
                 <div class="flex items-end">
-                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                         Remove
                     </button>
                 </div>
@@ -3179,7 +3189,7 @@ function renderTemporaryEffects(statName) {
 * @param {object} effect The effect object to add. Must contain 'value', 'statsAffected', 'type' ('+', '*'), and 'appliesTo' ('initial-value', 'base-value', 'total').
 * @param {number} duration The duration of the effect in turns. Use Infinity for a permanent effect.
 */
-function addTemporaryEffect(char, effect, duration) {
+function addTemporaryEffect(char, category, effect, duration) {
     for (const statName of effect.statsAffected) {
         const stat = char[statName];
         if (!stat) {
@@ -3187,13 +3197,16 @@ function addTemporaryEffect(char, effect, duration) {
             return;
         }
 
-        // If the stat doesn't have a temporaryEffects array, initialize it
         if (!stat.temporaryEffects) {
-            stat.temporaryEffects = [];
+            stat.temporaryEffects = {};
         }
 
+        // If the stat doesn't have a temporaryEffects array, initialize it
+        if (!stat.temporaryEffects[category])
+            stat.temporaryEffects[category] = [];
+
         // Add the effect with its duration
-        stat.temporaryEffects.push({ ...effect,
+        stat.temporaryEffects[category].push({ ...effect,
             duration: duration
         });
     }
@@ -3205,7 +3218,7 @@ function addTemporaryEffect(char, effect, duration) {
 function addManualTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        addTemporaryEffect(character, {statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total', category: 'manual' }, 1);
+        addTemporaryEffect(character, 'manual', {statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
@@ -3224,10 +3237,11 @@ function addManualTemporaryEffect() {
  */
 function removeTemporaryEffect(event) {
     const statName = event.target.dataset.statName;
+    const category =  event.target.dataset.category;
     const effectIndex = parseInt(event.target.dataset.effectIndex);
 
-    if (statName && character[statName] && character[statName].temporaryEffects[effectIndex] !== undefined) {
-        character[statName].temporaryEffects.splice(effectIndex, 1);
+    if (statName && character[statName] && character[statName].temporaryEffects[category][effectIndex] !== undefined) {
+        character[statName][category].temporaryEffects[category].splice(effectIndex, 1);
         renderTemporaryEffects(statName); // This will now preserve focus
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
@@ -3251,19 +3265,26 @@ function endTurn() {
         const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'racialPower', 'totalDefense'];
 
         statsWithEffects.forEach(statName => {
-            if (character[statName] && Array.isArray(character[statName].temporaryEffects)) {
-                const initialLength = character[statName].temporaryEffects.length;
+            if (character[statName] && character[statName].temporaryEffects) {
 
-                // Decrement duration and filter out expired effects
-                character[statName].temporaryEffects = character[statName].temporaryEffects.filter(effect => {
-                    if (effect.duration !== undefined && effect.duration !== null) {
-                        effect.duration--;
+                const temporaryEffects = character[statName].temporaryEffects;
+                for (const category in temporaryEffects) {
+                    const categoryTemporaryEffects = temporaryEffects[category];
+                    if (Array.isArray(categoryTemporaryEffects)) {
+                        const initialLength = categoryTemporaryEffects.length;
+
+                        // Decrement duration and filter out expired effects
+                        character[statName].temporaryEffects[category] = categoryTemporaryEffects.filter(effect => {
+                            if (effect.duration !== undefined && effect.duration !== null) {
+                                effect.duration--;
+                            }
+                            return effect.duration === undefined || effect.duration > 0;
+                        });
+
+                        if (character[statName].temporaryEffects[category].length !== initialLength) {
+                            effectsChanged = true;
+                        }
                     }
-                    return effect.duration === undefined || effect.duration > 0;
-                });
-
-                if (character[statName].temporaryEffects.length !== initialLength) {
-                    effectsChanged = true;
                 }
             }
         });
