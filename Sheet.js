@@ -3091,6 +3091,7 @@ function renderTemporaryEffects(statName) {
         focusedElementDataset = {
             statName: focusedElement.dataset.statName,
             effectIndex: parseInt(focusedElement.dataset.effectIndex),
+            category: focusedElement.dataset.category,
             field: focusedElement.dataset.field
         };
     }
@@ -3232,7 +3233,7 @@ function renderTemporaryEffects(statName) {
     // Restore focus
     if (focusedElementDataset) {
         const inputToRefocus = tempEffectsList.querySelector(
-            `[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-category="${category}"][data-field="${focusedElementDataset.field}"]`
+            `[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-category="${focusedElementDataset.category}"][data-field="${focusedElementDataset.field}"]`
         );
         if (inputToRefocus) {
             inputToRefocus.focus();
