@@ -3409,11 +3409,17 @@ function takeDamage() {
     if (setTakeTrueDamage.checked) {
         takeTrueDamage(value);
     } else if (character.uniqueIdentifiers['Clay Skin']) {
-        const newRacialPower = Math.max(0, character.RacialPower.value - value);
+        let damage = value;
+
+        if (setHealthCheckbox.checked) {
+            damage = character.Health.value - value;
+        }
+
+        const newRacialPower = Math.max(0, character.RacialPower.value - damage);
         character.RacialPower.value = newRacialPower;
 
         if (newRacialPower == 0)
-            takeTrueDamage(value - character.maxRacialPower);
+            takeTrueDamage(damage - character.maxRacialPower);
     }
     else {
         takeTrueDamage(value);
