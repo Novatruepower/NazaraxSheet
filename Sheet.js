@@ -226,7 +226,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 
     if (isDisplay) {
         document.getElementById('maxHealth').value = character.maxHealth;
-        document.getElementById('Health').value = character.Health.value;
+        healthInput.value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
         document.getElementById('Mana').value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
@@ -2628,7 +2628,15 @@ let tempEffectsModalTitle;
 let tempEffectsList;
 let addTempEffectBtn;
 let endTurnBtn; // Declare the new button
+let takeDamageBtn;
+let takeDamageModal;
+let closeTakeDamageModal;
+let cancelTakeDamage;
+let applyTakeDamage;
+let setHealthCheckbox;
+let damageTakeAmountInput;
 let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
+let healthInput;
 
 // Key for local storage to persist Google Drive authorization status
 const GOOGLE_DRIVE_AUTH_STATUS_KEY = 'googleDriveAuthorized';
@@ -3379,6 +3387,26 @@ function updatePersonalNotesPanelPosition() {
     }
 }
 
+function closeDamageModal() {
+    takeDamageModal.classList.add("hidden");
+}
+
+function takeDamage() {
+    const value = parseInt(damageTakeAmountInput.value, 10);
+    if (isNaN(value)) return alert("Please enter a valid number");
+
+    let currentHealth = parseInt(healthInput.value, 10) || 0;
+
+    if (setHealthCheckbox.checked) {
+        currentHealth = value;
+    } else {
+        currentHealth = Math.max(0, currentHealth - value);
+    }
+
+    healthInput.value = currentHealth;
+    saveCurrentStateToHistory(); // so we can undo
+    closeDamageModal();
+}
 
 // Attach event listeners to all relevant input fields
 function attachEventListeners() {
@@ -3569,6 +3597,17 @@ function attachEventListeners() {
 
     // Add resize listener for the personal notes panel
     window.addEventListener('resize', updatePersonalNotesPanelPosition);
+
+    takeDamageBtn.addEventListener("click", () => {
+        damageTakeAmountInput.value = "";
+        setHealthCheckbox.checked = false;
+        takeDamageModal.classList.remove("hidden");
+    });
+
+    closeTakeDamageModal.addEventListener("click", closeDamageModal);
+    cancelTakeDamage.addEventListener("click", closeDamageModal);
+
+    applyTakeDamage.addEventListener("click", takeDamage);
 }
 
 function initPage() {
@@ -3588,7 +3627,15 @@ function initPage() {
     tempEffectsModalTitle = document.getElementById('temp-effects-modal-title');
     tempEffectsList = document.getElementById('temp-effects-list');
     addTempEffectBtn = document.getElementById('add-temp-effect-btn');
-    endTurnBtn = document.getElementById('end-turn-btn'); // Initialize the new button
+    endTurnBtn = document.getElementById('end-turn-btn');
+    takeDamageBtn = document.getElementById("take-damage-btn");
+    takeDamageModal = document.getElementById("take-damage-modal");
+    closeTakeDamageModal = document.getElementById("close-take-damage-modal");
+    cancelTakeDamage = document.getElementById("cancel-take-damage");
+    applyTakeDamage = document.getElementById("apply-take-damage");
+    setHealthCheckbox = document.getElementById("set-health-checkbox");
+    damageTakeAmountInput = document.getElementById("take-damage-amount");
+    healthInput = document.getElementById('Health');
 
 
     characters = [defaultCharacterData()];
