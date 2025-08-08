@@ -3395,15 +3395,13 @@ function takeDamage() {
     const value = parseInt(damageTakeAmountInput.value, 10);
     if (isNaN(value)) return alert("Please enter a valid number");
 
-    let currentHealth = parseInt(healthInput.value, 10) || 0;
-
     if (setHealthCheckbox.checked) {
-        currentHealth = value;
+        character.Health.value = Math.min(value, character.maxHealth);
     } else {
-        currentHealth = Math.max(0, currentHealth - value);
+        character.Health.value = Math.max(0, character.Health.value - value);
     }
 
-    healthInput.value = currentHealth;
+    healthInput.value = character.Health.value;
     saveCurrentStateToHistory(); // so we can undo
     closeDamageModal();
 }
