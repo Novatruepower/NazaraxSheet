@@ -3597,6 +3597,7 @@ function attachEventListeners() {
     window.addEventListener('resize', updatePersonalNotesPanelPosition);
 
     takeDamageBtn.addEventListener("click", () => {
+        damageTakeAmountInput.max = character.maxHealth;
         damageTakeAmountInput.value = "";
         setHealthCheckbox.checked = false;
         takeDamageModal.classList.remove("hidden");
