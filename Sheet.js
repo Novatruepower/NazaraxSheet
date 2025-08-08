@@ -3232,7 +3232,7 @@ function renderTemporaryEffects(statName) {
     // Restore focus
     if (focusedElementDataset) {
         const inputToRefocus = tempEffectsList.querySelector(
-            `[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-field="${focusedElementDataset.field}"]`
+            `[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-category="${category}"][data-field="${focusedElementDataset.field}"]`
         );
         if (inputToRefocus) {
             inputToRefocus.focus();
