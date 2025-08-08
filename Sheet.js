@@ -208,27 +208,17 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
  * @param {boolean} char The character object to update the DOM.
  */
 function recalculateSmallUpdateCharacter(char, isDisplay = false) {
-    console.log(char.Health.value);
     let oldMaxValue = char.maxHealth;
-    console.log(oldMaxValue);
     char.maxHealth = calculateMaxHealth(char, char.level); // Removed healthBonus parameter
-    console.log(char.maxHealth);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
-    console.log(char.Health.value);
 
     oldMaxValue = char.maxMana;
     char.maxMana = calculateMaxMana(char, char.level);
     char.Mana.value = adjustValue(oldMaxValue, char.Mana.value, char.maxMana);
 
-    console.log('Racial ------------->');
-
-    console.log(char.RacialPower.value);
     oldMaxValue = char.maxRacialPower;
-    console.log(oldMaxValue);
     char.maxRacialPower = calculateMaxRacialPower(char, char.level);
-    console.log(char.maxRacialPower);
     char.RacialPower.value = adjustValue(oldMaxValue, char.RacialPower.value, char.maxRacialPower);
-    console.log(char.RacialPower.value);
 
     // Recalculate totalDefense
     char.totalDefense.value = calculateTotalDefense(char);
