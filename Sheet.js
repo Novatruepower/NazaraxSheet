@@ -277,7 +277,7 @@ const defaultCharacterData = function () {
         levelMaxExperience: calculateLevelMaxExperience(1),
         maxHealth: 0, // Will be calculated dynamically
         maxMana: 0, // Will be calculated dynamically
-        maxRacialPower: 100,
+        maxRacialPower: 0,
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         skills: '',
         personalNotes: '',
