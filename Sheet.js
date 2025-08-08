@@ -3419,7 +3419,7 @@ function takeDamage() {
         character.RacialPower.value = newRacialPower;
 
         if (newRacialPower == 0)
-            character.Health.value = Math.max(0, damage - character.maxRacialPower);
+            character.Health.value = Math.max(0, character.Health.value + character.maxRacialPower - damage);
     }
     else {
         takeTrueDamage(value);
