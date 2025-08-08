@@ -3079,7 +3079,10 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    const manualEffects = character[statName].temporaryEffects['manual'] || [];
+    if (!character[statName].temporaryEffects['manual'])
+        character[statName].temporaryEffects['manual'] = [];
+
+    const manualEffects = character[statName].temporaryEffects['manual'];
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
