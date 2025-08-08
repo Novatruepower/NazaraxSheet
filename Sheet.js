@@ -209,20 +209,19 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
  */
 function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     let oldMaxValue = char.maxHealth;
+    console.log(oldMaxValue);
     char.maxHealth = calculateMaxHealth(char, char.level); // Removed healthBonus parameter
+    console.log(char.Health.value);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
+    console.log(char.Health.value);
 
     oldMaxValue = char.maxMana;
     char.maxMana = calculateMaxMana(char, char.level);
     char.Mana.value = adjustValue(oldMaxValue, char.Mana.value, char.maxMana);
 
     oldMaxValue = char.maxRacialPower;
-    console.log(oldMaxValue);
     char.maxRacialPower = calculateMaxRacialPower(char, char.level);
-    console.log(char.maxRacialPower);
-    console.log(char.RacialPower.value);
     char.RacialPower.value = adjustValue(oldMaxValue, char.RacialPower.value, char.maxRacialPower);
-    console.log(char.RacialPower.value);
 
     // Recalculate totalDefense
     char.totalDefense.value = calculateTotalDefense(char);
