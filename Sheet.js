@@ -3415,11 +3415,12 @@ function takeDamage() {
             damage = character.Health.value - value;
         }
 
-        const newRacialPower = Math.max(0, character.RacialPower.value - damage);
+        const calculation = character.RacialPower.value - damage;
+        const newRacialPower = Math.max(0, calculation);
         character.RacialPower.value = newRacialPower;
 
         if (newRacialPower == 0)
-            character.Health.value = Math.max(0, character.Health.value + character.maxRacialPower - damage);
+            character.Health.value = Math.max(0, character.Health.value + calculation);
     }
     else {
         takeTrueDamage(value);
