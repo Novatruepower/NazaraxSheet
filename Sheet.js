@@ -217,8 +217,12 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     char.Mana.value = adjustValue(oldMaxValue, char.Mana.value, char.maxMana);
 
     oldMaxValue = char.maxRacialPower;
+    console.log(oldMaxValue);
     char.maxRacialPower = calculateMaxRacialPower(char, char.level);
+    console.log(char.maxRacialPower);
+    console.log(char.RacialPower.value);
     char.RacialPower.value = adjustValue(oldMaxValue, char.RacialPower.value, char.maxRacialPower);
+    console.log(char.RacialPower.value);
 
     // Recalculate totalDefense
     char.totalDefense.value = calculateTotalDefense(char);
