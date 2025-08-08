@@ -228,9 +228,9 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         document.getElementById('maxHealth').value = character.maxHealth;
         healthInput.value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
-        document.getElementById('Mana').value = character.Mana.value;
+        manaInput.value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        document.getElementById('RacialPower').value = character.RacialPower.value;
+        racialPowerInput.value = character.RacialPower.value;
         document.getElementById('total-defense').value = character.totalDefense.value; // Update totalDefense display
     }
 }
@@ -2107,10 +2107,10 @@ function handleChange(event) {
             healthInput.value = character.Health.value;
         } else if (id === 'Mana') {
             character.Mana.value = Math.min(newValue, character.maxMana);
-            document.getElementById('Mana').value = character.Mana.value;
+            manaInput.value = character.Mana.value;
         } else if (id === 'RacialPower') {
             character.RacialPower.value = Math.min(newValue, character.maxRacialPower);
-            document.getElementById('RacialPower').value = character.RacialPower.value;
+            racialPowerInput.value = character.RacialPower.value;
         } else if (id === 'totalDefense') {
             // Allow direct input for totalDefense.value but it will be recalculated
             character.totalDefense.value = newValue;
@@ -2638,6 +2638,8 @@ let setTakeTrueDamage;
 let damageTakeAmountInput;
 let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
 let healthInput;
+let manaInput;
+let racialPowerInput;
 
 // Key for local storage to persist Google Drive authorization status
 const GOOGLE_DRIVE_AUTH_STATUS_KEY = 'googleDriveAuthorized';
@@ -3418,6 +3420,8 @@ function takeDamage() {
     }
 
     healthInput.value = character.Health.value;
+    manaInput.value = character.Mana.value;
+    racialPowerInput.value = character.RacialPower.value;
     saveCurrentStateToHistory(); // so we can undo
     closeDamageModal();
 }
@@ -3652,6 +3656,8 @@ function initPage() {
     setTakeTrueDamage = document.getElementById("set-take-true-damage-checkbox");
     damageTakeAmountInput = document.getElementById("take-damage-amount");
     healthInput = document.getElementById('Health');
+    manaInput = document.getElementById('Mana');
+    racialPowerInput = document.getElementById('RacialPower');
 
 
     characters = [defaultCharacterData()];
