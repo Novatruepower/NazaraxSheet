@@ -292,6 +292,9 @@ const defaultCharacterData = function () {
             'racial-passives-content': true, // Make racial passives section visible by default
         },
 
+        //uniqueIdentifier: {...}
+        uniqueIdentifiers: [],
+
         // Refactored properties for stat choices and affected stats
         // StatChoices: { category: { uniqueIdentifier: { slotId: { type, value?, statName?, level?, label?, unique? } } } }
         StatChoices: {},
@@ -1551,21 +1554,77 @@ function renderContainer(passivesContainer, title, id) {
     `;
 }
 
-function removeTemporaryEffectByIdentifier(oldAbilityData, category){
-    if (oldAbilityData.identifier) {
-        for (const formula of oldAbilityData.formulas) {
-            if (formula.statsAffected) {
-                for (const statName of formula.statsAffected) {
-                    const categoryTemporaryEffects = character[statName].temporaryEffects[category];
-                    if (Array.isArray(categoryTemporaryEffects)) {
-                        const effectIndex = categoryTemporaryEffects.findIndex(e => e.identifier == oldAbilityData.identifier);
+/**
+ * Removes a specific temporary effect from all stats it affects, identified by a unique string.
+ * This is optimized by first collecting all unique stats affected to avoid redundant searches.
+ *
+ * @param {object} abilityData The ability object containing an identifier and formulas.
+ * @param {string} category The category of the temporary effect to remove.
+ */
+function removeTemporaryEffectByIdentifier(abilityData, category) {
+    const { identifier, formulas } = abilityData;
 
-                        if (effectIndex > -1)
-                            character[statName].temporaryEffects[category].splice(effectIndex, 1);
-                    }
-                }
+    if (!identifier) {
+        return;
+    }
+
+    delete character.uniqueIdentifiers[identifier];
+
+    // 1. Collect all unique stats affected by this ability's formulas.
+    const uniqueStats = new Set(
+        formulas?.flatMap(formula => formula.statsAffected || []) ?? []
+    );
+
+    // 2. Iterate over the unique stats and remove the effect.
+    for (const statName of uniqueStats) {
+        const effectsArray = character[statName]?.temporaryEffects?.[category];
+        if (!Array.isArray(effectsArray)) {
+            continue;
+        }
+
+        const effectIndex = effectsArray.findIndex(e => e.identifier === identifier);
+
+        if (effectIndex > -1) {
+            effectsArray.splice(effectIndex, 1);
+        }
+    }
+}
+
+/**
+ * Removes all temporary effects of a specific category that are granted by a given set of abilities.
+ * This is optimized by collecting all unique stats and identifiers first, then performing deletions.
+ *
+ * @param {object} abilities An object where keys are ability names and values are ability data objects.
+ * @param {string} category The category of temporary effects to remove (e.g., 'race', 'class').
+ */
+function removeTemporaryEffectByCategory(abilities, category) {
+    if (!abilities || typeof abilities !== 'object') {
+        return;
+    }
+
+    const uniqueStats = new Set();
+    const uniqueIdentifiers = new Set();
+
+    // 1. First, iterate through all abilities to collect unique stats and identifiers.
+    for (const ability of Object.values(abilities)) {
+        if (ability.identifier) {
+            uniqueIdentifiers.add(ability.identifier);
+        }
+        for (const formula of ability.formulas ?? []) {
+            for (const statName of formula.statsAffected ?? []) {
+                uniqueStats.add(statName);
             }
         }
+    }
+
+    // 2. Now, perform the deletions in targeted loops.
+    for (const identifier of uniqueIdentifiers) {
+        delete character.uniqueIdentifiers[identifier];
+    }
+
+    for (const statName of uniqueStats) {
+        // Deleting the property is a clean way to remove all effects for that category.
+        delete character[statName]?.temporaryEffects?.[category];
     }
 }
 
@@ -1575,11 +1634,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
 
     if (oldRace) {
         const oldFullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(oldRace, character.level);
-        for (const abilityKey in oldFullAutoPassives) {
-            if (oldFullAutoPassives.hasOwnProperty(abilityKey)) {
-                removeTemporaryEffectByIdentifier(oldFullAutoPassives[abilityKey], oldRace);
-            }
-        }
+        removeTemporaryEffectByCategory(oldFullAutoPassives, oldRace);
     }
 
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
