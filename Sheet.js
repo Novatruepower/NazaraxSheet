@@ -293,7 +293,7 @@ const defaultCharacterData = function () {
         },
 
         //uniqueIdentifier: {...}
-        uniqueIdentifiers: [],
+        uniqueIdentifiers: {},
 
         // Refactored properties for stat choices and affected stats
         // StatChoices: { category: { uniqueIdentifier: { slotId: { type, value?, statName?, level?, label?, unique? } } } }
@@ -1564,7 +1564,7 @@ function renderContainer(passivesContainer, title, id) {
 function removeTemporaryEffectByIdentifier(abilityData, category) {
     const { identifier, formulas } = abilityData;
 
-    if (!identifier) {
+    if (!identifier || !character.uniqueIdentifiers[identifier]) {
         return;
     }
 
@@ -3079,7 +3079,7 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    const manualEffects = character[statName].temporaryEffects['manual'];
+    const manualEffects = character[statName].temporaryEffects['manual'] || [];
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
@@ -3248,6 +3248,9 @@ function renderTemporaryEffects(statName) {
 * @param {number} duration The duration of the effect in turns. Use Infinity for a permanent effect.
 */
 function addTemporaryEffect(char, category, effect, duration) {
+    if (effect.identifier)
+        character.uniqueIdentifiers[effect.identifier] = effect;
+
     for (const statName of effect.statsAffected) {
         const stat = char[statName];
         if (!stat) {
