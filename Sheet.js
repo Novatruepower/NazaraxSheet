@@ -3079,10 +3079,7 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    if (!character[statName].temporaryEffects['manual'])
-        character[statName].temporaryEffects['manual'] = [];
-
-    const manualEffects = character[statName].temporaryEffects['manual'];
+    const manualEffects = character[statName].temporaryEffects['manual'] || [];
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
@@ -3305,7 +3302,7 @@ function removeTemporaryEffect(event) {
     const effectIndex = parseInt(event.target.dataset.effectIndex);
 
     if (statName && character[statName] && character[statName].temporaryEffects[category][effectIndex] !== undefined) {
-        character[statName][category].temporaryEffects[category].splice(effectIndex, 1);
+        character[statName].temporaryEffects[category].splice(effectIndex, 1);
         renderTemporaryEffects(statName); // This will now preserve focus
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
