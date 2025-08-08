@@ -1867,9 +1867,7 @@ function handlePlayerStatInputChange(event) {
         statName = dataset.statName;
         subProperty = dataset.field; // 'value', 'duration', 'type', 'appliesTo', or 'isPercent' for temporary effects
         const effectIndex = parseInt(dataset.effectIndex);
-        const category = dataset.effectIndex;
-        console.log(category);
-        console.log(character[statName].temporaryEffects);
+        const category = dataset.category;
         const categoryTemporaryEffects = character[statName].temporaryEffects[category];
 
         if (categoryTemporaryEffects[effectIndex]) {
