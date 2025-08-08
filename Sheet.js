@@ -1561,7 +1561,7 @@ function removeTemporaryEffectByIdentifier(oldAbilityData, category){
                         const effectIndex = categoryTemporaryEffects.findIndex(e => e.identifier == oldAbilityData.identifier);
 
                         if (effectIndex > -1)
-                            categoryTemporaryEffects.splice(effectIndex, 1);
+                            character[statName].temporaryEffects[category].splice(effectIndex, 1);
                     }
                 }
             }
