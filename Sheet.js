@@ -2104,7 +2104,7 @@ function handleChange(event) {
             handleChangeRace(oldRace);
         } else if (id === 'Health') {
             character.Health.value = Math.min(newValue, character.maxHealth);
-            document.getElementById('Health').value = character.Health.value;
+            healthInput.value = character.Health.value;
         } else if (id === 'Mana') {
             character.Mana.value = Math.min(newValue, character.maxMana);
             document.getElementById('Mana').value = character.Mana.value;
@@ -2634,6 +2634,7 @@ let closeTakeDamageModal;
 let cancelTakeDamage;
 let applyTakeDamage;
 let setHealthCheckbox;
+let setTakeTrueDamage;
 let damageTakeAmountInput;
 let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
 let healthInput;
@@ -3391,14 +3392,29 @@ function closeDamageModal() {
     takeDamageModal.classList.add("hidden");
 }
 
-function takeDamage() {
-    const value = parseInt(damageTakeAmountInput.value, 10);
-    if (isNaN(value)) return alert("Please enter a valid number");
-
+function takeTrueDamage(value) {
     if (setHealthCheckbox.checked) {
         character.Health.value = Math.min(value, character.maxHealth);
     } else {
         character.Health.value = Math.max(0, character.Health.value - value);
+    }
+}
+
+function takeDamage() {
+    const value = parseInt(damageTakeAmountInput.value, 10);
+    if (isNaN(value)) return alert("Please enter a valid number");
+
+    if (setTakeTrueDamage.checked) {
+        takeTrueDamage(value);
+    } else if (uniqueIdentifiers['Clay Skin']) {
+        const newRacialPower = Math.max(0, character.RacialPower.value - value);
+        character.RacialPower.value = newRacialPower;
+
+        if (newRacialPower == 0)
+            takeTrueDamage(value - character.maxRacialPower);
+    }
+    else {
+        takeTrueDamage(value);
     }
 
     healthInput.value = character.Health.value;
@@ -3633,6 +3649,7 @@ function initPage() {
     cancelTakeDamage = document.getElementById("cancel-take-damage");
     applyTakeDamage = document.getElementById("apply-take-damage");
     setHealthCheckbox = document.getElementById("set-health-checkbox");
+    setTakeTrueDamage = document.getElementById("set-take-true-damage-checkbox");
     damageTakeAmountInput = document.getElementById("take-damage-amount");
     healthInput = document.getElementById('Health');
 
