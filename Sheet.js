@@ -3081,7 +3081,8 @@ function closeTemporaryEffectsModal() {
  * @param {string} statName The name of the stat.
  */
 function renderTemporaryEffects(statName) {
-    const manualEffects = character[statName].temporaryEffects['manual'] || [];
+    const category = 'manual';
+    const manualEffects = character[statName].temporaryEffects[category] || [];
 
     // Store the currently focused element's ID if it's within the temp effects list
     const focusedElement = document.activeElement;
@@ -3137,15 +3138,15 @@ function renderTemporaryEffects(statName) {
                 <div class="flex flex-col min-w-[8rem] gap-y-1">
                     <label class="${labelBase}">Value</label>
                     <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
-                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="values" class="${inputBase} flex-grow" />
-                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
+                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="values" class="${inputBase} flex-grow" />
+                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
                         <span class="${labelBase}">%</span> <!-- Added a span for the percentage symbol -->
                     </div>
                 </div>
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Type</label>
-                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="type" class="${inputBase}">
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="type" class="${inputBase}">
                         <option value="+">+</option>
                         <option value="*">*</option>
                     </select>
@@ -3153,7 +3154,7 @@ function renderTemporaryEffects(statName) {
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Applies To</label>
-                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="appliesTo" class="${inputBase}">
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="appliesTo" class="${inputBase}">
                         <option value="initial-value">initial value</option>
                         <option value="base-value">base value</option>
                         <option value="total">Total</option>
@@ -3162,11 +3163,11 @@ function renderTemporaryEffects(statName) {
 
                 <div class="flex flex-col min-w-[9rem] gap-y-1">
                     <label class="${labelBase}">Duration</label>
-                    <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" data-field="duration" class="${inputBase}" />
+                    <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="duration" class="${inputBase}" />
                 </div>
 
                 <div class="flex items-end">
-                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="manual" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                         Remove
                     </button>
                 </div>
