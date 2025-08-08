@@ -3406,7 +3406,7 @@ function takeDamage() {
 
     if (setTakeTrueDamage.checked) {
         takeTrueDamage(value);
-    } else if (uniqueIdentifiers['Clay Skin']) {
+    } else if (character.uniqueIdentifiers['Clay Skin']) {
         const newRacialPower = Math.max(0, character.RacialPower.value - value);
         character.RacialPower.value = newRacialPower;
 
