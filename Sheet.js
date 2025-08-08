@@ -1556,11 +1556,13 @@ function removeTemporaryEffectByIdentifier(oldAbilityData, category){
         for (const formula of oldAbilityData.formulas) {
             if (formula.statsAffected) {
                 for (const statName of formula.statsAffected) {
-                    console.log(character[statName].temporaryEffects);
-                    const effectIndex = character[statName].temporaryEffects[category].findIndex(e => e.identifier == oldAbilityData.identifier);
+                    const categoryTemporaryEffects = character[statName].temporaryEffects[category];
+                    if (Array.isArray(categoryTemporaryEffects)) {
+                        const effectIndex = categoryTemporaryEffects.findIndex(e => e.identifier == oldAbilityData.identifier);
 
-                    if (effectIndex > -1)
-                        character[statName].temporaryEffects[category].splice(effectIndex, 1);
+                        if (effectIndex > -1)
+                            categoryTemporaryEffects.splice(effectIndex, 1);
+                    }
                 }
             }
         }
