@@ -1856,7 +1856,6 @@ function handleInventoryInputChange(event) {
  */
 function handlePlayerStatInputChange(event) {
     const { name, value, type, dataset, checked } = event.target;
-    console.log(event.target);
     let newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
     let statName = '';
