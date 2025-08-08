@@ -1577,7 +1577,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
         const oldFullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(oldRace, character.level);
         for (const abilityKey in oldFullAutoPassives) {
             if (oldFullAutoPassives.hasOwnProperty(abilityKey)) {
-                removeTemporaryEffectByIdentifier(oldFullAutoPassives[abilityKey], category);
+                removeTemporaryEffectByIdentifier(oldFullAutoPassives[abilityKey], oldRace);
             }
         }
     }
