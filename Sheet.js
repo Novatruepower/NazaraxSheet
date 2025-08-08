@@ -3408,7 +3408,7 @@ function takeDamage() {
 
     if (setTakeTrueDamage.checked) {
         takeTrueDamage(value);
-    } else if (character.uniqueIdentifiers['Clay Skin']) {
+    } else if (character.uniqueIdentifiers['Clay Skin'] && character.RacialPower.value > 0) {
         let damage = value;
 
         if (setHealthCheckbox.checked) {
