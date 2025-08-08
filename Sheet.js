@@ -212,7 +212,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     let oldMaxValue = char.maxHealth;
     console.log(oldMaxValue);
     char.maxHealth = calculateMaxHealth(char, char.level); // Removed healthBonus parameter
-    console.log(char.Health.value);
+    console.log(char.maxHealth);
     char.Health.value = adjustValue(oldMaxValue, char.Health.value, char.maxHealth);
     console.log(char.Health.value);
 
