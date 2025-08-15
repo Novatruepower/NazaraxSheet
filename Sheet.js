@@ -700,6 +700,18 @@ function loadCharacterFromFile(event) {
     reader.readAsText(file);
 }
 
+function getCharacterStatesActive() {
+    const states = Object.keys(character.states);
+    let statesActive = [];
+
+    states.forEach(state => {
+        if(character.states[state])
+            statesActive.add(state);
+    });
+
+    return statesActive;
+}
+
 // Function to update the DOM elements with the current character data
 function updateDOM() {
     // Basic Info
@@ -754,12 +766,7 @@ function updateDOM() {
     const stateDisplayInput = document.getElementById('state-display');
     const stateDropdownOptions = document.getElementById('state-dropdown-options');
     const states = Object.keys(character.states);
-    let statesActive = [];
-
-    states.forEach(state => {
-        if(character.states[state])
-            statesActive.add(state);
-    });
+    const statesActive = getCharacterStatesActive();
 
     stateDisplayInput.value = statesActive.join(', ');
 
@@ -2210,7 +2217,7 @@ function handleStateCheckboxChange(event) {
     character.states[value] = checked;
 
     // Update the displayed value in the input field
-    document.getElementById('state-display').value = character.class.join(', ');
+    document.getElementById('state-display').value = getCharacterStatesActive().join(', ');
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
