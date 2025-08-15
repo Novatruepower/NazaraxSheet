@@ -1100,7 +1100,7 @@ function applyChoiceRacialChange(char, statName, value, calc) {
         else
             char[statName].racialChange += value;
     }
-    else if (choice.calc == "count")
+    else if (calc == "count")
         --char[statName];
 }
 
