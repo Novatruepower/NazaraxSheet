@@ -3384,6 +3384,7 @@ function removeTemporaryEffect(event) {
  */
 function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
+        console.log(character.permHealthRegenActive);
         const permHealthRegenActive = character.permHealthRegenActive.length > 0;
         const permManaRegenActive = character.permManaRegenActive.length > 0;
 
