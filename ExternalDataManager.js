@@ -155,10 +155,6 @@ export const ExternalDataManager = {
                                     formulaData.statsAffected = this.replaceDataStats(formulaData.statsAffected);
                                 }
                             }
-
-                            if (abilityData.values){
-                                abilityData.values = this.replaceDataStats(formulaData.values);
-                            }
                         }
                     }
                 }
@@ -391,6 +387,7 @@ export const ExternalDataManager = {
         }
 
         if (ability.values) {
+            console.log(template.values);
             const valuesLength = ability.values.length;
             for(let index = 0; index < valuesLength; ++index) {
                 const value = ability.values[index];
