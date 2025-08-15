@@ -225,13 +225,13 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     // No adjustment needed for totalDefense as it's not a current/max value like health/mana
 
     if (isDisplay) {
-        document.getElementById('maxHealth').value = character.maxHealth;
-        healthInput.value = character.Health.value;
-        document.getElementById('maxMana').value = character.maxMana;
-        manaInput.value = character.Mana.value;
-        document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        racialPowerInput.value = character.RacialPower.value;
-        document.getElementById('total-defense').value = character.totalDefense.value; // Update totalDefense display
+        document.getElementById('maxHealth').value = char.maxHealth;
+        healthInput.value = char.Health.value;
+        document.getElementById('maxMana').value = char.maxMana;
+        manaInput.value = char.Mana.value;
+        document.getElementById('maxRacialPower').value = char.maxRacialPower;
+        racialPowerInput.value = char.RacialPower.value;
+        document.getElementById('total-defense').value = char.totalDefense.value; // Update totalDefense display
     }
 }
 
@@ -3440,9 +3440,7 @@ function endTurn() {
         character.Mana.value += character.naturalManaRegen * character.maxMana;
         character.RacialPower.value += character.naturalRacialPowerRegen * character.maxRacialPower;
 
-        console.log(character.Health.value);
         recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
-        console.log(character.Health.value);
         updateDOM(); // Update the UI to reflect changes
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
