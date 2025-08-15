@@ -283,6 +283,21 @@
                     </button>
                 </div>
                 <div id="health-combat-content" class="section-content">
+                    <div>
+                        <label for="state-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">States</label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="state-display"
+                                name="state-display"
+                                readonly
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 cursor-pointer"
+                                placeholder="Select states..."
+                            />
+                            <div id="state-dropdown-options" class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
+                            </div>
+                        </div>
+                    </div>
                     <button id="take-damage-btn"
                         class="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         💥 Take Damage

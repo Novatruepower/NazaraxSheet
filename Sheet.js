@@ -303,6 +303,14 @@ const defaultCharacterData = function () {
         isDistributingStats: false, // Flag to indicate if in distribution mode
         remainingDistributionPoints: 0,
 
+        states: {
+            'In Fight': false,
+            'Unconscious': false,
+            'Sleeping': false,
+            'Hands Covered': false,
+            'Feet Covered': false,
+        },
+
         naturalHealthRegenActive: false,
         naturalManaRegenActive: false,
         healthRegenDoubled: false,
@@ -742,6 +750,37 @@ function updateDOM() {
 
     // Update Specialization dropdown
     updateSpecializationDropdownAndData();
+
+    const stateDisplayInput = document.getElementById('state-display');
+    const stateDropdownOptions = document.getElementById('state-dropdown-options');
+    const states = Object.keys(character.states);
+    let statesActive = [];
+
+    states.forEach(state => {
+        if(character.states[state])
+            statesActive.add(state);
+    });
+
+    stateDisplayInput.value = statesActive.join(', ');
+
+    stateDropdownOptions.innerHTML = '';
+
+    states.forEach(state => {
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
+        checkboxDiv.innerHTML = `
+           <input
+               type="checkbox"
+               id="class-${state.replace(/\s/g, '-')}"
+               name="class-option"
+               value="${state}"
+               class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
+               ${statesActive.includes(state) ? 'checked' : ''}
+           />
+           <label for="class-${state.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${state}</label>
+       `;
+        stateDropdownOptions.appendChild(checkboxDiv);
+    });
 
     // Render racial passives based on selected race
     renderRacialPassives();
