@@ -3435,9 +3435,14 @@ function endTurn() {
         character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange  * character.maxRacialPower;
 
         if (character.uniqueIdentifiers['Absorption']) {
-            if (!character.states['Hands Covered'] && !character.states['Feets Covered']) {
-                console.log(character.uniqueIdentifiers['Absorption']);
+            const data = character.uniqueIdentifiers['Absorption'];
+            let racialPowerRegen = data.values[0];
+
+            if (character.states['Hands Covered'] || character.states['Feets Covered']) {
+                racialPowerRegen = data.values[1];
             }
+
+            character.RacialPower.value += racialPowerRegen;
         }
 
         let effectsChanged = false;
