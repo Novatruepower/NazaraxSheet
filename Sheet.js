@@ -3407,10 +3407,8 @@ function removeTemporaryEffect(event) {
 function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
         character.Health.value += character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
-        character.Mana.value += character.naturalManaRegen * character.naturalManaRegen.racialChange  * character.maxMana;
-        character.RacialPower.value += character.naturalRacialPowerRegen * character.naturalRacialPowerRegen.racialChange  * character.maxRacialPower;
-        console.log(character.Mana.value);
-        console.log(character.RacialPower.value);
+        character.Mana.value += character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana;
+        character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange  * character.maxRacialPower;
 
 
         let effectsChanged = false;
