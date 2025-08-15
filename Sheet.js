@@ -3436,11 +3436,14 @@ function endTurn() {
             }
         });
 
+        console.log(character.naturalHealthRegen);
+        console.log(character.maxHealth);
+
         character.Health.value += character.naturalHealthRegen * character.maxHealth;
         character.Mana.value += character.naturalManaRegen * character.maxMana;
         character.RacialPower.value += character.naturalRacialPowerRegen * character.maxRacialPower;
 
-            recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
+        recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
         updateDOM(); // Update the UI to reflect changes
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
