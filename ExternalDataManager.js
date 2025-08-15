@@ -350,9 +350,7 @@ export const ExternalDataManager = {
             }
         }
         else if (ability.values) {
-            console.log(ability.values);
             for (const value of ability.values) {
-                console.log(value);
                 values.push(Math.abs(value));
             }
         }
@@ -385,6 +383,14 @@ export const ExternalDataManager = {
                         }
                     }
                 }
+            }
+        }
+
+        if (ability.values) {
+            const valuesLength = ability.values.length;
+            for(let index = 0; index < valuesLength; ++index) {
+                const value = ability.values[index];
+                template.values[index] = value;
             }
         }
 
