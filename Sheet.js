@@ -309,11 +309,11 @@ const defaultCharacterData = function () {
             'Sleeping': false,
             'Bleeding' : false,
             'Hands Covered': false,
-            'Feet Covered': false,
+            'Feets Covered': false,
         },
 
-        naturalHealthRegenActive: false,
-        naturalManaRegenActive: false,
+        permHealthRegenActive: false,
+        permManaRegenActive: false,
         healthRegenDoubled: false,
         manaRegenDoubled: false,
     });
@@ -1123,8 +1123,8 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
             // Revert other specific flags if they were set by the previous choice
             // Need to ensure previousChoice is defined to access its properties
             if (choice && choice.type === 'natural_regen_active') { // Check choice for type
-                char.naturalHealthRegenActive = false;
-                char.naturalManaRegenActive = false;
+                char.permHealthRegenActive = false;
+                char.permManaRegenActive = false;
             } else if (choice && choice.type === 'regen_doubled') { // Check choice for type
                 char.healthRegenDoubled = false;
                 char.manaRegenDoubled = false;
@@ -1172,18 +1172,23 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
     removeTemporaryEffectByIdentifier(newAbilityData, category);
 
-    for (const formula of newAbilityData.formulas) {
-        if (formula.statsAffected) {
-            if(newAbilityData.identifier) {
-                formula['identifier'] = newAbilityData.identifier;
-            }
+    if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
+        for (const formula of newAbilityData.formulas) {
+            if (formula.statsAffected) {
+                if(newAbilityData.identifier) {
+                    formula['identifier'] = newAbilityData.identifier;
+                }
 
-            if(newAbilityData.name) {
-                formula['name'] = newAbilityData.name;
-            }
+                if(newAbilityData.name) {
+                    formula['name'] = newAbilityData.name;
+                }
 
-            addTemporaryEffect(character, category, formula, Infinity);
+                addTemporaryEffect(character, category, formula, Infinity);
+            }
         }
+    }
+    else if (newAbilityData.identifier) {
+        character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
     }
 
     recalculateCharacterDerivedProperties(character, true);
@@ -1223,8 +1228,8 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
         }
         // Revert other specific flags if they were set by the previous choice
         if (previousChoice.type === 'natural_regen_active') {
-            character.naturalHealthRegenActive = false;
-            character.naturalManaRegenActive = false;
+            character.permHealthRegenActive = false;
+            character.permManaRegenActive = false;
         } else if (previousChoice.type === 'regen_doubled') {
             character.healthRegenDoubled = false;
             character.manaRegenDoubled = false;
@@ -1259,8 +1264,8 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
             if (newChoiceData.type === 'skill_choice') {
                 showStatusMessage(`'${newChoiceData.label}' (Skill Choice) is not fully implemented yet.`, false);
             } else if (newChoiceData.type === 'natural_regen_active') {
-                character.naturalHealthRegenActive = true;
-                character.naturalManaRegenActive = true;
+                character.permHealthRegenActive = true;
+                character.permManaRegenActive = true;
                 showStatusMessage(`'${newChoiceData.label}' (Natural Regeneration Active) applied.`, false);
             } else if (newChoiceData.type === 'regen_doubled') {
                 character.healthRegenDoubled = true;
@@ -2080,8 +2085,8 @@ function removePassivesLevel() {
                         }
                         // Revert other specific flags if they were set by the previous choice
                         if (choice.type === 'natural_regen_active') {
-                            character.naturalHealthRegenActive = false;
-                            character.naturalManaRegenActive = false;
+                            character.permHealthRegenActive = false;
+                            character.permManaRegenActive = false;
                         } else if (choice.type === 'regen_doubled') {
                             character.healthRegenDoubled = false;
                             character.manaRegenDoubled = false;
@@ -3407,14 +3412,14 @@ function removeTemporaryEffect(event) {
  */
 function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
-        const naturalHealthRegenActive = character.naturalHealthRegenActive;
-        const naturalManaRegenActive = character.naturalManaRegenActive;
+        const permHealthRegenActive = character.permHealthRegenActive;
+        const permManaRegenActive = character.permManaRegenActive;
 
-        if (!character.states['In Fight'] || naturalHealthRegenActive || naturalManaRegenActive) {
+        if (!character.states['In Fight'] || permHealthRegenActive || permManaRegenActive) {
             let naturalHealthRegen = 0;
             let naturalManaRegen = character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana;
 
-            if (!character.states['Bleeding'] || naturalHealthRegenActive) {
+            if (!character.states['Bleeding'] || permHealthRegenActive) {
                 naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
             }
 
@@ -3429,6 +3434,11 @@ function endTurn() {
 
         character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange  * character.maxRacialPower;
 
+        if (character.uniqueIdentifiers['Absorption']) {
+            if (!character.states['Hands Covered'] && !character.states['Feets Covered']) {
+                console.log(character.uniqueIdentifiers['Absorption']);
+            }
+        }
 
         let effectsChanged = false;
         // Iterate over all character properties that might have temporary effects
