@@ -23,6 +23,10 @@
               "formulas":[{"values": [40]}]
             }
           ]
+        },
+        "Magic Stabilisation": {
+          "level": 75,
+          "description": "You can now reshape magic or enchanted items while keeping the magic part of the item intact after your reshaping of the item depending on your luck and the quality of the enchantment."
         }
       }
     },
