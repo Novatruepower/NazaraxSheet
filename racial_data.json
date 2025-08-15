@@ -2,6 +2,11 @@
   "Races": {
     "Architect": {
       "fullAutoPassives": {
+        "Absorption": {
+          "level": 1,
+          "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate 5% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%. ",
+          "formulas":[]
+        },
         "Clay Skin": {
           "level": 1,
           "description": "You store up energy that you absorb from the air around you in a clay-like skin layer. This layer of skin counts as both your racial point pool and as a supplementary health bar which gets used up before your real health bar. You have {0} racial points per level.",

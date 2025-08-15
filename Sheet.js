@@ -345,10 +345,18 @@ const defaultCharacterData = function () {
     newCharacter['BaseHealth'].value = 100;
     newCharacter['BaseMana'].value = 100;
     newCharacter['BaseRacialPower'].value = 100;
+    newCharacter['naturalHealthRegen'].value = 0.05; //%
+    newCharacter['naturalManaRegen'].value = 0.05; //%
+    newCharacter['naturalRacialPowerRegen'].value = 0.05; //%
 
     newCharacter['Health'].temporaryEffects = {}; // Ensure Health has a temporaryEffects array
     newCharacter['Mana'].temporaryEffects = {}; // Ensure Mana has a temporaryEffects array
     newCharacter['RacialPower'].temporaryEffects = {}; // Ensure RacialPower has a temporaryEffects array
+
+    //See if useless
+    newCharacter['naturalHealthRegen'].temporaryEffects = {};
+    newCharacter['naturalManaRegen'].temporaryEffects = {};
+    newCharacter['naturalRacialPowerRegen'].temporaryEffects = {};
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
@@ -3401,7 +3409,7 @@ function endTurn() {
         let effectsChanged = false;
         // Iterate over all character properties that might have temporary effects
         // This includes rollStats, Health, Mana, RacialPower, and totalDefense
-        const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense'];
+        const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
 
         statsWithEffects.forEach(statName => {
             if (character[statName] && character[statName].temporaryEffects) {
@@ -3428,12 +3436,17 @@ function endTurn() {
             }
         });
 
+        character.Health.value += character.naturalHealthRegen * character.maxHealth;
+        character.mana.value += character.naturalManaRegen * character.maxMana;
+        character.RacialPower.value += character.naturalRacialPowerRegen * character.maxRacialPower;
+
+        recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
+        updateDOM(); // Update the UI to reflect changes
+        hasUnsavedChanges = true;
+        saveCurrentStateToHistory();
+
         if (effectsChanged) {
-            recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
-            updateDOM(); // Update the UI to reflect changes
             showStatusMessage("Turn ended. Temporary effects updated.");
-            hasUnsavedChanges = true;
-            saveCurrentStateToHistory();
         } else {
             showStatusMessage("No temporary effects to update.", false);
         }
