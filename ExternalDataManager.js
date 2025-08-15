@@ -349,6 +349,8 @@ export const ExternalDataManager = {
             for (const value of ability.values) {
                 values.push(Math.abs(value));
             }
+
+            console.log(values);
         }
 
         return values;
