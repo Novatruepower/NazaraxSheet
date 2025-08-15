@@ -3392,8 +3392,8 @@ function endTurn() {
         let naturalManaRegen = notFighting || permManaRegenActive ? character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana : 0;
 
         if (notFighting || permHealthRegenActive) {
-            if (permHealthRegenActive || !(character.states['Bleeding'] && character.states['Taking Damage'])) {
-                naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
+            if (permHealthRegenActive || !(character.states['Bleeding'] || character.states['Taking Damage'])) {
+                naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange * character.maxHealth;
             }
         }
 
@@ -3404,7 +3404,6 @@ function endTurn() {
 
         character.Health.value += naturalHealthRegen;
         character.Mana.value += naturalManaRegen;
-
         character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * character.maxRacialPower;
 
         if (character.uniqueIdentifiers['Absorption']) {
