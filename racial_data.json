@@ -81,7 +81,7 @@
               },
               { "label": "Natural mana or health regeneration become permanently active",
                 "type": "perm_regen_active",
-                "calc": "array",
+                "calc": "count",
                 "applicableStats": ["permManaRegenActive", "permHealthRegenActive"], 
                 "unique":"Mutation_Degeneration",
                 "setsOption": [1] 

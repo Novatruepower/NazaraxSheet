@@ -313,8 +313,8 @@ const defaultCharacterData = function () {
             'Feets Covered': false,
         },
 
-        permHealthRegenActive: [],
-        permManaRegenActive: [],
+        permHealthRegenActive: 0, //count
+        permManaRegenActive: 0, //count
     });
 
     // Initialize each stat with its rolled value, racial change, and calculated total
@@ -1085,11 +1085,11 @@ function revertChoiceRacialChange(char, statName, choice) {
     if (ExternalDataManager.stats.includes(statName)) {
         if (choice.calc == "mult")
             char[statName].racialChange /= choice.value;
-        else if (choice.calc == "array")
-            char[statName].push(choice.type);
         else
             char[statName].racialChange -= choice.value;
     }
+    else if (choice.calc == "count")
+        ++char[statName];
 }
 
 // Apply stat changes
@@ -1097,11 +1097,11 @@ function applyChoiceRacialChange(char, statName, value, calc) {
     if (ExternalDataManager.stats.includes(statName)) {
         if (calc == "mult")
             char[statName].racialChange *= value;
-        else if (choice.calc == "array")
-            char[statName].splice(char[statName].findIndex(e => e == choice.type), 1);
         else
             char[statName].racialChange += value;
     }
+    else if (choice.calc == "count")
+        --char[statName];
 }
 
 /**
@@ -3384,15 +3384,14 @@ function removeTemporaryEffect(event) {
  */
 function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
-        console.log(character.permHealthRegenActive);
-        const permHealthRegenActive = character.permHealthRegenActive.length > 0;
-        const permManaRegenActive = character.permManaRegenActive.length > 0;
+        const permHealthRegenActive = character.permHealthRegenActive > 0;
+        const permManaRegenActive = character.permManaRegenActive > 0;
 
         if (!character.states['In Fight'] || permHealthRegenActive || permManaRegenActive) {
             let naturalHealthRegen = 0;
             let naturalManaRegen = character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana;
 
-            if (permHealthRegenActive || !character.states['Bleeding'] || !character.states['Taking Damage']) {
+            if (permHealthRegenActive || (!character.states['Bleeding'] && !character.states['Taking Damage'])) {
                 naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
             }
 
