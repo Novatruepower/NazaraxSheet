@@ -21,6 +21,8 @@ export const ExternalDataManager = {
      * @returns {string} The formatted string.
      */
     formatString(str, ...args) {
+        console.log(str);
+        console.log(args);
         return str.replace(/{(\d+)}(%?)/g, (_, index, percent) => {
             let value = args[index];
             if (value == null) return 'null';
@@ -349,8 +351,6 @@ export const ExternalDataManager = {
             for (const value of ability.values) {
                 values.push(Math.abs(value));
             }
-
-            console.log(values);
         }
 
         return values;
@@ -362,6 +362,7 @@ export const ExternalDataManager = {
         const template = { ...copy };
         template['identifier'] = name;
         template['name'] = name;
+        
         // Check if there are options to process.
         if (copy.upgrades) {
             delete template.upgrades; 
