@@ -390,6 +390,7 @@ export const ExternalDataManager = {
             const valuesLength = ability.values.length;
             for(let index = 0; index < valuesLength; ++index) {
                 const value = ability.values[index];
+                console.log(value);
                 template.values[index] = value;
             }
         }
