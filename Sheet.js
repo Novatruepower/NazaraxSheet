@@ -3432,7 +3432,7 @@ function endTurn() {
             character.Mana.value += naturalManaRegen;
         }
 
-        character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange  * character.maxRacialPower;
+        character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * character.maxRacialPower;
 
         if (character.uniqueIdentifiers['Absorption']) {
             const data = character.uniqueIdentifiers['Absorption'];
@@ -3442,7 +3442,7 @@ function endTurn() {
                 racialPowerRegen = data.values[1];
             }
 
-            character.RacialPower.value += racialPowerRegen;
+            character.RacialPower.value += racialPowerRegen * character.maxRacialPower;
         }
 
         let effectsChanged = false;
