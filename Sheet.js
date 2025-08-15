@@ -3386,24 +3386,24 @@ function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
         const permHealthRegenActive = character.permHealthRegenActive > 0;
         const permManaRegenActive = character.permManaRegenActive > 0;
-        console.log(permHealthRegenActive);
+        const notFighting = !character.states['In Fight'];
 
-        if (!character.states['In Fight'] || permHealthRegenActive || permManaRegenActive) {
-            let naturalHealthRegen = 0;
-            let naturalManaRegen = character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana;
+        let naturalHealthRegen = 0;
+        let naturalManaRegen = notFighting || permManaRegenActive ? character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana : 0;
 
-            if (permHealthRegenActive || (!character.states['Bleeding'] && !character.states['Taking Damage'])) {
+        if (notFighting || permHealthRegenActive) {
+            if (permHealthRegenActive || !(character.states['Bleeding'] && character.states['Taking Damage'])) {
                 naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
             }
-
-            if (character.states['Sleeping']) {
-                naturalHealthRegen *= 2;
-                naturalManaRegen *= 2;
-            }
-
-            character.Health.value += naturalHealthRegen;
-            character.Mana.value += naturalManaRegen;
         }
+
+        if (character.states['Sleeping']) {
+            naturalHealthRegen *= 2;
+            naturalManaRegen *= 2;
+        }
+
+        character.Health.value += naturalHealthRegen;
+        character.Mana.value += naturalManaRegen;
 
         character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * character.maxRacialPower;
 
