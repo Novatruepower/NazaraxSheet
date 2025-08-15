@@ -307,6 +307,7 @@ const defaultCharacterData = function () {
             'In Fight': false,
             'Unconscious': false,
             'Sleeping': false,
+            'Taking Damage': false,
             'Bleeding' : false,
             'Hands Covered': false,
             'Feets Covered': false,
@@ -314,8 +315,6 @@ const defaultCharacterData = function () {
 
         permHealthRegenActive: false,
         permManaRegenActive: false,
-        healthRegenDoubled: false,
-        manaRegenDoubled: false,
     });
 
     // Initialize each stat with its rolled value, racial change, and calculated total
@@ -1125,9 +1124,6 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
             if (choice && choice.type === 'natural_regen_active') { // Check choice for type
                 char.permHealthRegenActive = false;
                 char.permManaRegenActive = false;
-            } else if (choice && choice.type === 'regen_doubled') { // Check choice for type
-                char.healthRegenDoubled = false;
-                char.manaRegenDoubled = false;
             }
         }
         delete char.StatChoices[category][uniqueIdentifier];
@@ -1230,10 +1226,8 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
         if (previousChoice.type === 'natural_regen_active') {
             character.permHealthRegenActive = false;
             character.permManaRegenActive = false;
-        } else if (previousChoice.type === 'regen_doubled') {
-            character.healthRegenDoubled = false;
-            character.manaRegenDoubled = false;
         }
+
         delete character.StatChoices[category][uniqueIdentifier][slotId];
         console.log(`  Removed previous choice for slot ${slotId}.`);
     }
@@ -1260,17 +1254,13 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
             character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName].add(slotId);
             console.log(`  Added '${newChoiceData.statName}' to StatsAffected for slot ${slotId}.`);
         } else {
-            // Handle non-stat affecting choices (e.g., skill_choice, natural_regen_active, regen_doubled)
+            // Handle non-stat affecting choices (e.g., skill_choice, natural_regen_active)
             if (newChoiceData.type === 'skill_choice') {
                 showStatusMessage(`'${newChoiceData.label}' (Skill Choice) is not fully implemented yet.`, false);
             } else if (newChoiceData.type === 'natural_regen_active') {
                 character.permHealthRegenActive = true;
                 character.permManaRegenActive = true;
                 showStatusMessage(`'${newChoiceData.label}' (Natural Regeneration Active) applied.`, false);
-            } else if (newChoiceData.type === 'regen_doubled') {
-                character.healthRegenDoubled = true;
-                character.manaRegenDoubled = true;
-                showStatusMessage(`'${newChoiceData.label}' (Regeneration Doubled) applied.`, false);
             }
         }
 
@@ -2087,9 +2077,6 @@ function removePassivesLevel() {
                         if (choice.type === 'natural_regen_active') {
                             character.permHealthRegenActive = false;
                             character.permManaRegenActive = false;
-                        } else if (choice.type === 'regen_doubled') {
-                            character.healthRegenDoubled = false;
-                            character.manaRegenDoubled = false;
                         }
                         // Remove the choice from StatChoices
                         delete character.StatChoices[category][uniqueIdentifier][slotId];
@@ -3419,7 +3406,7 @@ function endTurn() {
             let naturalHealthRegen = 0;
             let naturalManaRegen = character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana;
 
-            if (!character.states['Bleeding'] || permHealthRegenActive) {
+            if (permHealthRegenActive || !character.states['Bleeding'] || !character.states['Taking Damage']) {
                 naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
             }
 

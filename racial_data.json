@@ -79,8 +79,18 @@
                 "unique":"Mutation_Degeneration",
                 "setsOption": [1]
               },
-              { "label": "Natural mana or health regeneration become permanently active", "type": "natural_regen_active", "unique":"Mutation_Degeneration", "setsOption": [1] },
-              { "label": "Mana or health regeneration be doubled", "type": "regen_doubled", "unique":"Mutation_Degeneration", "setsOption": [1] }
+              { "label": "Natural mana or health regeneration become permanently active",
+                "type": "perm_regen_active",
+                "unique":"Mutation_Degeneration",
+                "setsOption": [1] 
+              },
+              { "label": "Mana or health regeneration be doubled",
+                "type": "regen_doubled",
+                "calc": "mult", "value": 2,
+                "applicableStats": ["naturalManaRegen", "naturalHealthRegen"], 
+                "unique":"Mutation_Degeneration",
+                "setsOption": [1]
+              }
             ]
           },
           "Degeneration": {
