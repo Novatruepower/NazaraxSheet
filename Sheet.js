@@ -771,13 +771,13 @@ function updateDOM() {
         checkboxDiv.innerHTML = `
            <input
                type="checkbox"
-               id="class-${state.replace(/\s/g, '-')}"
-               name="class-option"
+               id="state-${state.replace(/\s/g, '-')}"
+               name="state-option"
                value="${state}"
                class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
                ${statesActive.includes(state) ? 'checked' : ''}
            />
-           <label for="class-${state.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${state}</label>
+           <label for="state-${state.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${state}</label>
        `;
         stateDropdownOptions.appendChild(checkboxDiv);
     });
@@ -2197,6 +2197,19 @@ function handleClassCheckboxChange(event) {
     saveCurrentStateToHistory(); // Save state after modification
 }
 
+// Function to handle changes in the state checkboxes
+function handleStateCheckboxChange(event) {
+    const { value, checked } = event.target;
+
+    character.states[value] = checked;
+
+    // Update the displayed value in the input field
+    document.getElementById('state-display').value = character.class.join(', ');
+
+    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    saveCurrentStateToHistory(); // Save state after modification
+}
+
 // Function to handle changes in the specialization checkboxes
 function handleSpecializationCheckboxChange(event) {
     const { value, checked } = event.target;
@@ -3509,6 +3522,12 @@ function attachEventListeners() {
     document.getElementById('class-dropdown-options').addEventListener('change', function (event) {
         if (event.target.type === 'checkbox' && event.target.name === 'class-option') {
             handleClassCheckboxChange(event);
+        }
+    });
+
+    document.getElementById('state-dropdown-options').addEventListener('change', function (event) {
+        if (event.target.type === 'checkbox' && event.target.name === 'state-option') {
+            handleStateCheckboxChange(event);
         }
     });
 
