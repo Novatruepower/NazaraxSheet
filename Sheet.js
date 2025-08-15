@@ -1089,7 +1089,7 @@ function revertChoiceRacialChange(char, statName, choice) {
             char[statName].racialChange -= choice.value;
     }
     else if (choice.calc == "count")
-        ++char[statName];
+        --char[statName];
 }
 
 // Apply stat changes
@@ -1101,7 +1101,7 @@ function applyChoiceRacialChange(char, statName, value, calc) {
             char[statName].racialChange += value;
     }
     else if (calc == "count")
-        --char[statName];
+        ++char[statName];
 }
 
 /**
