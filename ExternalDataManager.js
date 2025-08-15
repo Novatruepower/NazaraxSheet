@@ -386,18 +386,6 @@ export const ExternalDataManager = {
             }
         }
 
-        if (ability.values) {
-            console.log(template.values);
-            const valuesLength = ability.values.length;
-            for(let index = 0; index < valuesLength; ++index) {
-                const value = ability.values[index];
-                console.log(value);
-                template.values[index] = value;
-            }
-
-            console.log(template.values);
-        }
-
         template.description = this.formatString(template.description, this.processedFormulaValues(template));
         
         return template;
