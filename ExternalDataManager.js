@@ -21,12 +21,12 @@ export const ExternalDataManager = {
      * @returns {string} The formatted string.
      */
     formatString(str, ...args) {
-        console.log(str);
-        console.log(args);
+        if (Array.isArray(args[0])) {
+            args = args[0];
+        }
+            
         return str.replace(/{(\d+)}(%?)/g, (_, index, percent) => {
             let value = args[index];
-            console.log(index);
-            console.log(value);
             if (value == null) return 'null';
 
             if (percent === '%') {
@@ -385,8 +385,6 @@ export const ExternalDataManager = {
                 }
             }
         }
-        
-        console.log(this.processedFormulaValues(template));
 
         template.description = this.formatString(template.description, this.processedFormulaValues(template));
         
