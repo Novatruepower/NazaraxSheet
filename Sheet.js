@@ -2171,6 +2171,12 @@ function toggleClassDropdown() {
     dropdown.classList.toggle('hidden');
 }
 
+// Function to toggle the visibility of the class dropdown options
+function toggleStateDropdown() {
+    const dropdown = document.getElementById('state-dropdown-options');
+    dropdown.classList.toggle('hidden');
+}
+
 // Function to toggle the visibility of the specialization dropdown options
 function toggleSpecializationDropdown() {
     const dropdown = document.getElementById('specialization-dropdown-options');
@@ -3517,6 +3523,7 @@ function attachEventListeners() {
 
     // Attach event listener for the custom class display input to toggle dropdown
     document.getElementById('class-display').addEventListener('click', toggleClassDropdown);
+    document.getElementById('state-display').addEventListener('click', toggleStateDropdown);
 
     // Attach event listeners to the dynamically created class checkboxes (delegation)
     document.getElementById('class-dropdown-options').addEventListener('change', function (event) {
