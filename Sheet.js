@@ -2427,7 +2427,6 @@ function switchCharacter(event) {
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new character's state as the first history entry
             hasUnsavedChanges = false; // Reset unsaved changes flag after switching
-            character.isDistributingStats = false; // Exit distribution mode when switching characters
             updateRemainingPointsDisplay(); // Reset remaining points display
         }, () => {
             // If user cancels, revert the dropdown selection
@@ -2439,7 +2438,6 @@ function switchCharacter(event) {
         historyStack = []; // Clear previous history
         historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the new character's state as the first history entry
-        character.isDistributingStats = false; // Exit distribution mode when switching characters
         updateRemainingPointsDisplay(); // Reset remaining points display
     }
 }
