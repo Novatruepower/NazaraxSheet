@@ -155,6 +155,10 @@ export const ExternalDataManager = {
                                     formulaData.statsAffected = this.replaceDataStats(formulaData.statsAffected);
                                 }
                             }
+
+                            if (abilityData.values){
+                                abilityData.values = this.replaceDataStats(formulaData.values);
+                            }
                         }
                     }
                 }
