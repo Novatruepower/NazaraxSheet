@@ -706,7 +706,7 @@ function getCharacterStatesActive() {
 
     states.forEach(state => {
         if(character.states[state])
-            statesActive.add(state);
+            statesActive.push(state);
     });
 
     return statesActive;
