@@ -3443,7 +3443,7 @@ function endTurn() {
 
 
         recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
-        updateDOM(); // Update the UI to reflect changes
+        //updateDOM(); // Update the UI to reflect changes
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
 
