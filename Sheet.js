@@ -3386,6 +3386,7 @@ function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
         const permHealthRegenActive = character.permHealthRegenActive > 0;
         const permManaRegenActive = character.permManaRegenActive > 0;
+        console.log(permHealthRegenActive);
 
         if (!character.states['In Fight'] || permHealthRegenActive || permManaRegenActive) {
             let naturalHealthRegen = 0;
