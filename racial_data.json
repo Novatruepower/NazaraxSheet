@@ -5,7 +5,7 @@
         "Absorption": {
           "level": 1,
           "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%. ",
-          "values":[5, 4]
+          "values":[0.05, 0.04]
         },
         "Clay Skin": {
           "level": 1,

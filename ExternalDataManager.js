@@ -338,8 +338,15 @@ export const ExternalDataManager = {
     processedFormulaValues(ability) {
         const values = [];
 
-        for (const formula of ability.formulas) {
-            for (const value of formula.values) {
+        if (ability.formulas) {
+            for (const formula of ability.formulas) {
+                for (const value of formula.values) {
+                    values.push(Math.abs(value));
+                }
+            }
+        }
+        else if (ability.values) {
+            for (const value of ability.values) {
                 values.push(Math.abs(value));
             }
         }
