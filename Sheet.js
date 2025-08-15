@@ -307,6 +307,7 @@ const defaultCharacterData = function () {
             'In Fight': false,
             'Unconscious': false,
             'Sleeping': false,
+            'Bleeding' : false,
             'Hands Covered': false,
             'Feet Covered': false,
         },
@@ -3406,8 +3407,26 @@ function removeTemporaryEffect(event) {
  */
 function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
-        character.Health.value += character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
-        character.Mana.value += character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana;
+        const naturalHealthRegenActive = character.naturalHealthRegenActive;
+        const naturalManaRegenActive = character.naturalManaRegenActive;
+
+        if (!character.states['In Fight'] || naturalHealthRegenActive || naturalManaRegenActive) {
+            let naturalHealthRegen = 0;
+            let naturalManaRegen = character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana;
+
+            if (!character.states['Bleeding'] || naturalHealthRegenActive) {
+                naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange  * character.maxHealth;
+            }
+
+            if (character.states['Sleeping']) {
+                naturalHealthRegen *= 2;
+                naturalManaRegen *= 2;
+            }
+
+            character.Health.value += naturalHealthRegen;
+            character.Mana.value += naturalManaRegen;
+        }
+
         character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange  * character.maxRacialPower;
 
 
