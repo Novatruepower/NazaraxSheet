@@ -3410,10 +3410,6 @@ function endTurn() {
         character.Mana.value += character.naturalManaRegen * character.naturalManaRegen.racialChange  * character.maxMana;
         character.RacialPower.value += character.naturalRacialPowerRegen * character.naturalRacialPowerRegen.racialChange  * character.maxRacialPower;
 
-        console.log(character.Health.value);
-        recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
-        console.log(character.Health.value);
-
 
         let effectsChanged = false;
         // Iterate over all character properties that might have temporary effects
@@ -3445,7 +3441,9 @@ function endTurn() {
             }
         });
 
-        //updateDOM(); // Update the UI to reflect changes
+
+        recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
+        updateDOM(); // Update the UI to reflect changes
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
 
