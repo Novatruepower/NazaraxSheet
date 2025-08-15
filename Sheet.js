@@ -3436,6 +3436,7 @@ function endTurn() {
             }
         });
 
+        console.log(character.Health.value);
         character.Health.value += character.naturalHealthRegen * character.maxHealth;
         character.Mana.value += character.naturalManaRegen * character.maxMana;
         character.RacialPower.value += character.naturalRacialPowerRegen * character.maxRacialPower;
