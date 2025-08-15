@@ -313,8 +313,8 @@ const defaultCharacterData = function () {
             'Feets Covered': false,
         },
 
-        permHealthRegenActive: false,
-        permManaRegenActive: false,
+        permHealthRegenActive: [],
+        permManaRegenActive: [],
     });
 
     // Initialize each stat with its rolled value, racial change, and calculated total
@@ -353,10 +353,10 @@ const defaultCharacterData = function () {
     newCharacter['Mana'].temporaryEffects = {}; // Ensure Mana has a temporaryEffects array
     newCharacter['RacialPower'].temporaryEffects = {}; // Ensure RacialPower has a temporaryEffects array
 
-    //See if useless
-    newCharacter['naturalHealthRegen'].temporaryEffects = {};
-    newCharacter['naturalManaRegen'].temporaryEffects = {};
-    newCharacter['naturalRacialPowerRegen'].temporaryEffects = {};
+    //See if usefull
+    //newCharacter['naturalHealthRegen'].temporaryEffects = {};
+    //newCharacter['naturalManaRegen'].temporaryEffects = {};
+    //newCharacter['naturalRacialPowerRegen'].temporaryEffects = {};
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
@@ -1085,6 +1085,8 @@ function revertChoiceRacialChange(char, statName, choice) {
     if (ExternalDataManager.stats.includes(statName)) {
         if (choice.calc == "mult")
             char[statName].racialChange /= choice.value;
+        else if (choice.calc == "array")
+            char[statName].push(choice.type);
         else
             char[statName].racialChange -= choice.value;
     }
@@ -1095,6 +1097,8 @@ function applyChoiceRacialChange(char, statName, value, calc) {
     if (ExternalDataManager.stats.includes(statName)) {
         if (calc == "mult")
             char[statName].racialChange *= value;
+        else if (choice.calc == "array")
+            char[statName].splice(char[statName].findIndex(e => e == choice.type), 1);
         else
             char[statName].racialChange += value;
     }
@@ -1118,12 +1122,6 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
                         delete char.StatsAffected[category][uniqueIdentifier][choice.statName];
                     }
                 }
-            }
-            // Revert other specific flags if they were set by the previous choice
-            // Need to ensure previousChoice is defined to access its properties
-            if (choice && choice.type === 'natural_regen_active') { // Check choice for type
-                char.permHealthRegenActive = false;
-                char.permManaRegenActive = false;
             }
         }
         delete char.StatChoices[category][uniqueIdentifier];
@@ -1222,11 +1220,6 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
                 }
             }
         }
-        // Revert other specific flags if they were set by the previous choice
-        if (previousChoice.type === 'natural_regen_active') {
-            character.permHealthRegenActive = false;
-            character.permManaRegenActive = false;
-        }
 
         delete character.StatChoices[category][uniqueIdentifier][slotId];
         console.log(`  Removed previous choice for slot ${slotId}.`);
@@ -1254,13 +1247,9 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
             character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName].add(slotId);
             console.log(`  Added '${newChoiceData.statName}' to StatsAffected for slot ${slotId}.`);
         } else {
-            // Handle non-stat affecting choices (e.g., skill_choice, natural_regen_active)
+            // Handle non-stat affecting choices (e.g., skill_choice)
             if (newChoiceData.type === 'skill_choice') {
                 showStatusMessage(`'${newChoiceData.label}' (Skill Choice) is not fully implemented yet.`, false);
-            } else if (newChoiceData.type === 'natural_regen_active') {
-                character.permHealthRegenActive = true;
-                character.permManaRegenActive = true;
-                showStatusMessage(`'${newChoiceData.label}' (Natural Regeneration Active) applied.`, false);
             }
         }
 
@@ -2073,11 +2062,7 @@ function removePassivesLevel() {
                                 }
                             }
                         }
-                        // Revert other specific flags if they were set by the previous choice
-                        if (choice.type === 'natural_regen_active') {
-                            character.permHealthRegenActive = false;
-                            character.permManaRegenActive = false;
-                        }
+
                         // Remove the choice from StatChoices
                         delete character.StatChoices[category][uniqueIdentifier][slotId];
                         passivesReverted = true;
@@ -3399,8 +3384,8 @@ function removeTemporaryEffect(event) {
  */
 function endTurn() {
     showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
-        const permHealthRegenActive = character.permHealthRegenActive;
-        const permManaRegenActive = character.permManaRegenActive;
+        const permHealthRegenActive = character.permHealthRegenActive.length > 0;
+        const permManaRegenActive = character.permManaRegenActive.length > 0;
 
         if (!character.states['In Fight'] || permHealthRegenActive || permManaRegenActive) {
             let naturalHealthRegen = 0;
