@@ -25,6 +25,8 @@ export const ExternalDataManager = {
         console.log(args);
         return str.replace(/{(\d+)}(%?)/g, (_, index, percent) => {
             let value = args[index];
+            console.log(index);
+            console.log(value);
             if (value == null) return 'null';
 
             if (percent === '%') {
