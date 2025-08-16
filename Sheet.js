@@ -238,7 +238,6 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 
     oldMaxValue = char.levelMaxExperience;
     char.levelMaxExperience = calculateLevelMaxExperience(char);
-    char.levelExperience = adjustValue(oldMaxValue, char.levelExperience, char.levelMaxExperience);
 
     // Recalculate totalDefense
     char.totalDefense.value = calculateTotalDefense(char);
