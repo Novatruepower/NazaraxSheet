@@ -313,6 +313,7 @@ const defaultCharacterData = function () {
             'Sleeping': false,
             'Taking Damage': false,
             'Bleeding' : false,
+            'Active Racial Skill': false,
             'Hands Covered': false,
             'Feets Covered': false,
         },

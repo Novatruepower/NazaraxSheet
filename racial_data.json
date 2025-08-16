@@ -69,6 +69,35 @@
         }
       }
     },
+    "Dragonkin": {
+      "fullAutoPassives": {
+        "Foul Blood": {
+          "level": 1,
+          "description": "Because of your impure blood and weak body, most dragons will see you as an insult to their race and will want to kill you on sight no matter what."
+        },
+        "Genetic Impurity": {
+          "level": 1,
+          "description": "Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a 50/50 chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a 25/75 chance of being human/dragonkin and if their partner is a dragon, their child will have a 75/25 chance of being dragonkin/dragon."
+        },
+        "Frail Body": {
+          "level": 1,
+          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage (Even one damage from poison is enough to cause your liver to fail), some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage. "
+        },
+        "Dragon’s Metabolism": {
+          "level": 1,
+          "description": "Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in 3 to 5 turns and so that you can recover any limbs in 10-20 turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body.",
+          "values": [0.1]
+        },
+        "Dragon’s Pride": {
+          "level": 1,
+          "description": "A dragon’s pride seems to be hereditary, as it seems completely impossible to intimidate dragonkin. Any intimidation confrontation against a you will not work; however, you can still lose intimidation confrontations that you start."
+        },
+        "Proof of Strength": {
+          "level": 50,
+          "description": "You have become strong enough to have your existence be acknowledged as legitimate by most dragons. This means that a majority of dragons will now at least tolerate your existence, while some might even accept to converse with you or teach you, though some will still try to end your life no matter what."
+        }
+      }
+    },
     "Mutant": {
       "manualPassives": {
           "Mutation": {
