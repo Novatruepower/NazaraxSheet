@@ -351,7 +351,7 @@ const defaultCharacterData = function () {
         permHealthRegenActive: 0, //count
         permManaRegenActive: 0, //count
 
-        purse: starterItems["Coins"] ?? 0,
+        purse: starterItems && starterItems["Coins"] ? starterItems["Coins"] : 0,
         bank: 0,
         backstory: "",
     });
