@@ -1618,6 +1618,8 @@ function removeTemporaryEffectByIdentifier(abilityData, category) {
         return;
     }
 
+    console.log(identifier);
+
     delete character.uniqueIdentifiers[identifier];
 
     // 1. Collect all unique stats affected by this ability's formulas.
