@@ -304,14 +304,21 @@ const defaultCharacterData = function () {
         maxRacialPower: 0,
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         skills: '',
-        personalNotes: '',
-        // Store layout as percentages (0.0 - 1.0) for responsiveness
-        personalNoteLayout: { // Default values in percentages
-            x: 0.8031800601633003,
-            y: 0.025295109612141653,
-            width: 0.1826385904598195,
-            height: 0.2318718381112985
+        
+        layouts: {
+            // Store layout as percentages (0.0 - 1.0) for responsiveness
+            personalNotes: { // Default values in percentages
+                x: 0.8031800601633003,
+                y: 0.025295109612141653,
+                width: 0.1826385904598195,
+                height: 0.2318718381112985,
+                text: ''
+            },
+            backstory: {
+                text: ''
+            }
         },
+        
         weaponInventory: [],
         armorInventory: [],
         generalInventory: [],
@@ -353,7 +360,6 @@ const defaultCharacterData = function () {
 
         purse: starterItems && starterItems["Coins"] ? starterItems["Coins"] : 0,
         bank: 0,
-        backstory: "",
     });
 
     newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter);
@@ -650,17 +656,23 @@ function initLoadCharacter(loadedChar) {
             if (key === 'class' || key === 'specialization' || key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
                 // Ensure these are arrays, even if loaded data has non-array
                 newChar[key] = Array.isArray(loadedChar[key]) ? loadedChar[key] : [];
-            }   else if (key === 'personalNoteLayout') {
+            }   else if (key === 'layouts') {
                 newChar[key] = { ...newChar[key], ...loadedChar[key] };
-                // If loaded values are likely pixel values (e.g., > 1), convert them to percentages
-                if (newChar[key].x > 1 || newChar[key].y > 1 || newChar[key].width > 1 || newChar[key].height > 1) {
-                    const currentViewportWidth = window.innerWidth;
-                    const currentViewportHeight = window.innerHeight;
+                const layouts = Object.key(newChar[key]);
+                
+                for (const layout of layouts) {
+                    // If loaded values are likely pixel values (e.g., > 1), convert them to percentages
+                    const layoutData = newChar[key][layout];
+                    if (layoutData.x > 1 || layoutData.y > 1 || layoutData.width > 1 || layoutData.height > 1) {
+                        const currentViewportWidth = window.innerWidth;
+                        const currentViewportHeight = window.innerHeight;
 
-                    newChar[key].x = (loadedChar[key].x / currentViewportWidth);
-                    newChar[key].y = (loadedChar[key].y / currentViewportHeight);
-                    newChar[key].width = (loadedChar[key].width / currentViewportWidth);
-                    newChar[key].height = (loadedChar[key].height / currentViewportHeight);
+                        const loadedData = loadedChar[key][layout];
+                        newChar[key][layout].x = (loadedData.x / currentViewportWidth);
+                        newChar[key][layout].y = (loadedData.y / currentViewportHeight);
+                        newChar[key][layout].width = (loadedData.width / currentViewportWidth);
+                        newChar[key][layout].height = (loadedData.height / currentViewportHeight);
+                    }
                 }
             } else if (typeof newChar[key] === 'object' && newChar[key] !== null && !Array.isArray(newChar[key]) && !(newChar[key] instanceof Set)) {
                 // Handle nested objects (like stat objects)
@@ -907,10 +919,10 @@ function updateDOM() {
     renderGeneralTable();
 
     // Personal Notes
-    document.getElementById('personalNotes').value = character.personalNotes;
+    document.getElementById('personalNotes').value = character.layouts.personalNotes.text;
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     if (personalNotesPanel) {
-        const layout = character.personalNoteLayout;
+        const layout = character.layouts.personalNotes;
         // Apply position and size using viewport units (vw/vh)
         personalNotesPanel.style.left = `${layout.x * 100}vw`;
         personalNotesPanel.style.top = `${layout.y * 100}vh`;
@@ -2203,9 +2215,10 @@ function handleChange(event) {
             // Allow direct input for totalDefense.value but it will be recalculated
             character.totalDefense.value = newValue;
             document.getElementById('total-defense').value = character.totalDefense.value;
-        }
-        else if (id === 'personalNotes') {
-            character.personalNotes = newValue;
+        } else if (id === 'personalNotes' || id === 'backstory') {
+            character.layouts[id].text = newValue;
+        } else if(id === 'purse' || id === 'bank') {
+            character[id] = newValue;
         } else if (id !== 'class-display' && id !== 'specialization-display') {
             character[name || id] = newValue;
         }
@@ -2336,11 +2349,11 @@ function togglePersonalNotesPanel() {
 
     if (notesPanel.classList.contains('hidden')) {
         // Show panel: populate textarea with current notes
-        personalNotesTextarea.value = character.personalNotes;
+        personalNotesTextarea.value = character.layouts.personalNotes.text;
         notesPanel.classList.remove('hidden');
     } else {
         // Hide panel: save textarea content to character data
-        character.personalNotes = personalNotesTextarea.value;
+        character.layouts.personalNotes.text = personalNotesTextarea.value;
         notesPanel.classList.add('hidden');
         hasUnsavedChanges = true; // Mark that there are unsaved changes
         saveCurrentStateToHistory(); // Save state after modification
@@ -2354,10 +2367,10 @@ function savePersonalNotePositionAndSize() {
     const personalNotesContainer = document.getElementById('personal-notes-panel');
     if (personalNotesContainer) {
         // Save position and size as percentages of the viewport
-        character.personalNoteLayout.x = personalNotesContainer.offsetLeft / window.innerWidth;
-        character.personalNoteLayout.y = personalNotesContainer.offsetTop / window.innerHeight;
-        character.personalNoteLayout.width = personalNotesContainer.offsetWidth / window.innerWidth;
-        character.personalNoteLayout.height = personalNotesContainer.offsetHeight / window.innerHeight;
+        character.layouts.personalNotes.x = personalNotesContainer.offsetLeft / window.innerWidth;
+        character.layouts.personalNotes.y = personalNotesContainer.offsetTop / window.innerHeight;
+        character.layouts.personalNotes.width = personalNotesContainer.offsetWidth / window.innerWidth;
+        character.layouts.personalNotes.height = personalNotesContainer.offsetHeight / window.innerHeight;
         saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
@@ -3529,7 +3542,7 @@ function endTurn() {
 function updatePersonalNotesPanelPosition() {
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     if (personalNotesPanel) {
-        const layout = character.personalNoteLayout;
+        const layout = character.layouts.personalNotes;
         personalNotesPanel.style.left = `${layout.x * 100}vw`;
         personalNotesPanel.style.top = `${layout.y * 100}vh`;
         personalNotesPanel.style.width = `${layout.width * 100}vw`;
@@ -3584,7 +3597,7 @@ function takeDamage() {
 function attachEventListeners() {
     // Attach listeners for standard inputs and the race selector
     const inputs = document.querySelectorAll(
-        '#name, #level, #levelExperience, #race, #Health, #Mana, #RacialPower, #skills, #personalNotes, #total-defense'
+        '#name, #level, #levelExperience, #race, #Health, #Mana, #RacialPower, #skills, #personalNotes, #total-defense, #backstory, #purse, #bank'
     ); // Added #total-defense, Removed #healthBonus
     inputs.forEach(input => {
         if (!input.readOnly) {
@@ -3786,7 +3799,6 @@ function attachEventListeners() {
 
     closeTakeDamageModal.addEventListener("click", closeDamageModal);
     cancelTakeDamage.addEventListener("click", closeDamageModal);
-
     applyTakeDamage.addEventListener("click", takeDamage);
 }
 
