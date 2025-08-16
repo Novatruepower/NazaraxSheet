@@ -2390,29 +2390,36 @@ function savePositionAndSize(Container) {
     }
 }
 
+/**
+ * Makes an element vertically resizable by dragging a handle.
+ * @param {HTMLElement} element - The element to resize (e.g. textarea).
+ * @param {HTMLElement} handle - The handle element that user drags.
+ */
 function makeHeightResizable(element, handle) {
+    let isResizing = false;
+    let startY, startHeight;
+
     handle.addEventListener("mousedown", function (e) {
-        console.log(e);
         e.preventDefault();
+        isResizing = true;
+        startY = e.clientY;
+        startHeight = parseInt(window.getComputedStyle(element).height, 10);
 
-        const startY = e.clientY;
-        const startHeight = element.offsetHeight;
-
-        function resize(e) {
-            const newHeight = Math.max(100, startHeight + (e.clientY - startY));
-
-            element.style.height = newHeight + "px";
-        }
-
-        function stopResize() {
-            window.removeEventListener("mousemove", resize);
-            window.removeEventListener("mouseup", stopResize);
-            saveHeightPositionAndSize(element);
-        }
-
-        window.addEventListener("mousemove", resize);
-        window.addEventListener("mouseup", stopResize);
+        document.addEventListener("mousemove", resize);
+        document.addEventListener("mouseup", stopResize);
     });
+
+    function resize(e) {
+        if (!isResizing) return;
+        const newHeight = startHeight + (e.clientY - startY);
+        element.style.height = Math.max(newHeight, 50) + "px"; // min height 50px
+    }
+
+    function stopResize() {
+        isResizing = false;
+        document.removeEventListener("mousemove", resize);
+        document.removeEventListener("mouseup", stopResize);
+    }
 }
 
 function makeResizable(element, handle) {
@@ -3894,7 +3901,8 @@ function initPage() {
     makeResizable(personalNotesPanel, personalNotesResizer);
 
     const backstory = document.getElementById("backstory");
-    makeHeightResizable(backstory, backstory);
+    const backstoryPanel = document.getElementById("backstory-panel");
+    makeHeightResizable(backstory, backstoryPanel);
 
     // Initialize Google API libraries
     gapiLoaded();
