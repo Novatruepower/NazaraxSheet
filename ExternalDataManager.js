@@ -367,6 +367,7 @@ export const ExternalDataManager = {
         
         // Check if there are options to process.
         if (copy.upgrades) {
+            console.log(copy);
             delete template.upgrades; 
             if (copy.upgrades.some(u => u.formulas.some(f => f.values))) {
                 const data = ability.upgrades.findLast(e => e.level <= level);
@@ -383,6 +384,7 @@ export const ExternalDataManager = {
                         }
                     }
                 }
+                console.log(copy);
             }
         }
 
