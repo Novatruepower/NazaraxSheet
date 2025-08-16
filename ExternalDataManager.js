@@ -131,9 +131,12 @@ export const ExternalDataManager = {
             for (const [characterKey, characterData] of Object.entries(racialData)) {
                 const characterTarget = this._data[characterKey] ||= {};
                 for (const [categoryKey, categoryData] of Object.entries(characterData)) {
-                    if (categoryData.hasOwnProperty('manualPassives')) {
-                        characterTarget[categoryKey]['manualPassives'] = categoryData.manualPassives;
+                    const dataKeys = Object.keys(categoryData);
+                    dataKeys.forEach(key => {
+                        characterTarget[categoryKey][key] = categoryData[key];
+                    })
 
+                    if (categoryData.hasOwnProperty('manualPassives')) {
                         const abilities = categoryData.manualPassives || {};
                         for (const abilityData of Object.values(abilities)) {
                             const options = abilityData.options || {};
@@ -145,7 +148,6 @@ export const ExternalDataManager = {
                         }
                     }
                     if (categoryData.hasOwnProperty('fullAutoPassives')) {
-                        characterTarget[categoryKey]['fullAutoPassives'] = categoryData.fullAutoPassives;
                         const abilities = categoryData.fullAutoPassives || {};
                         for (const abilityData of Object.values(abilities)) {
                             const formulas = abilityData.formulas || {};
@@ -155,10 +157,6 @@ export const ExternalDataManager = {
                                 }
                             }
                         }
-                    }
-
-                    if (categoryData.hasOwnProperty('Starting items')) {
-                        characterTarget[categoryKey]['Starting items'] = categoryData['Starting items'];
                     }
                 }
             }

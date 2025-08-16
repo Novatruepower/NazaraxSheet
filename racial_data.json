@@ -28,6 +28,24 @@
           "level": 75,
           "description": "You can now reshape magic or enchanted items while keeping the magic part of the item intact after your reshaping of the item depending on your luck and the quality of the enchantment."
         }
+      },
+      "Actives": {
+        "Rough Reshaping": {
+          "level": 1,
+          "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch  at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts (Both the original item and the final product have to meet all the criteria). This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform  for one turn before starting to change it."
+        },
+        "Controlled Reshaping": {
+          "level": 25,
+          "description": "You can now deform, and form items made from more than one part, more than one material (The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it), or that use a combination of different simple shapes (A basic gear or bicycle wheel with a frame would be possible for instance, while a sword with a guard, a complete shield or a crossbow would be impossible) at the expanse of more racial points."
+        },
+        "Reshaping Finesse": {
+          "level": 50,
+          "description": "You can now also deform, and form items with high levels of precision (This includes things such as recreating a weapon you know from it’s scraps, creating entire buildings out of iron (nails) and wood, and making crossbows), allowing you to manipulate items made from large amounts of different materials, parts, or even complex shapes (The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it), however, this costs tremendous amounts of racial points."
+        },
+        "Gift of Creation": {
+          "level": 100,
+          "description": "You can now reshape living beings as long as you have the necessary knowledge of the target’s body shape and materials. This can be used to repair organs and bones, close wounds, heal people, or to even damage them. However, this costs non-negligeable amounts of racial energy."
+        }
       }
     },
     "Demi-humans": {
