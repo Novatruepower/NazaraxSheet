@@ -278,5 +278,25 @@
         }
       }
     }
+  },
+  "Succubus": {
+      "fullAutoPassives": {
+        "Attraction": {
+          "level": 1,
+          "description": "Being a Succubus, you constantly emanate chaos magic that makes you seem more attractive to any creature that sees you and that you need to utilize all your skills, because of this, the more of your skin is hidden under armor or clothing, the less effective all your skills will become."
+        },
+        "Demonic Sight": {
+          "level": 1,
+          "description": "Being a demon, you possess pitch black eyes that are only capable of perceiving different shades of gray, however, they come with the advantage of allowing you to see perfectly in darkness, even while in areas where there not even a single beam of light can be found."
+        },
+        "Chaotic Tones": {
+          "level": 1,
+          "description": "You voice carries chaos magic, allowing you to be understood by most intelligent creatures who are capable of communication."
+        },
+        "Demon Bloods": {
+          "level": 1,
+          "description": "Being a demon yourself, certain demonic monsters will naturally be neutral towards. Being non-human, you can also interact considerable number of monsters who possess intelligence and social capabilities, and even possibly charm them."
+        }
+      }
   }
 }
