@@ -373,10 +373,8 @@ export const ExternalDataManager = {
             if (data) {
                 template['name'] = data.name;
                 template.level = data.level
-            }
 
-            if (copy.upgrades.some(u => u.formulas && u.formulas.some(f => f.values))) {
-                if (data) {
+                if (copy.upgrades.some(u => u.formulas && u.formulas.some(f => f.values))) {
                     const length = data.formulas.length;
 
                     for(let index = 0; index < length; ++index) {
@@ -386,12 +384,11 @@ export const ExternalDataManager = {
                             template.formulas[index]['values'][index2] = value;
                         }
                     }
-                }
-            } else if (copy.upgrades.some(u => u.values)) {
-                console.log((data));
-                const length = data.values.length;
-                for(let index = 0; index < length; ++index) {
-                    template.values[index] = data.values[index];
+                } else if (copy.upgrades.some(u => u.values)) {
+                    const length = data.values.length;
+                    for(let index = 0; index < length; ++index) {
+                        template.values[index] = data.values[index];
+                    }
                 }
             }
         }
