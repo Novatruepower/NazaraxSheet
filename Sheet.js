@@ -167,7 +167,7 @@ function calculateBaseMaxRacialPower(charData, effects) {
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = getCategoriesTemporaryEffects(charData, 'RacialPower');
-    
+
     if (charData.uniqueIdentifiers['Spatial Reserve']) {
         return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), charData.uniqueIdentifiers['Spatial Reserve'].values[1]));
     }
@@ -1170,7 +1170,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
     removeTemporaryEffectByIdentifier(newAbilityData, category);
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
-        character.BaseRacialPower += 90;
+        character.BaseRacialPower.value += 90;
     }
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
@@ -1191,8 +1191,11 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
     else if (newAbilityData.identifier) {
         character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
 
+        console.log(newAbilityData);
+
         if (newAbilityData.identifier == 'Spatial Reserve') {
-            character.BaseRacialPower -= 90;
+            character.BaseRacialPower.value -= 90;
+            console.log(character.BaseRacialPower);
         }
     }
 
