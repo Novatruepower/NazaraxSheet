@@ -1386,18 +1386,14 @@ function handleChangeRace(oldRace) {
 * Attaches event listeners to the dynamically created clear buttons for stat choices.
 */
 function attachClearChoiceListeners(query) {
-    const queries = document.querySelectorAll(query);
-
-    if (queries) {
-        queries.forEach(button => {
-            button.onclick = (event) => {
-                const choiceId = event.target.dataset.choiceId;
-                const category = event.target.dataset.category;
-                const uniqueIdentifier = event.target.dataset.uniqueIdentifier;
-                processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
-            };
-        });
-    }
+    document.querySelectorAll(query).forEach(button => {
+        button.onclick = (event) => {
+            const choiceId = event.target.dataset.choiceId;
+            const category = event.target.dataset.category;
+            const uniqueIdentifier = event.target.dataset.uniqueIdentifier;
+            processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
+        };
+    });
 }
 
 function getAvailablePoints(abilityData, currentLevel) {
@@ -1959,6 +1955,7 @@ function renderGenericRacialPassives(oldRace, race, category) {
 
     if (isCategoryValid && genericPassives) {
         renderManualRacialPassives(manualPassivesContainer, category);
+        attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     } else {
         manualPassivesContainer.classList.add('hidden');
         manualPassivesContainer.innerHTML = '';
@@ -1984,7 +1981,6 @@ function renderRacial(oldRace) {
     document.getElementById('racial-actives-container').classList.add('hidden');
     renderGenericRacialActives(oldRace, character.race, character.race);
 
-    attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
         button.addEventListener('click', (event) => {
             const targetId = event.currentTarget.dataset.target;
