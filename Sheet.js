@@ -1386,14 +1386,18 @@ function handleChangeRace(oldRace) {
 * Attaches event listeners to the dynamically created clear buttons for stat choices.
 */
 function attachClearChoiceListeners(query) {
-    document.querySelectorAll(query).forEach(button => {
-        button.onclick = (event) => {
-            const choiceId = event.target.dataset.choiceId;
-            const category = event.target.dataset.category;
-            const uniqueIdentifier = event.target.dataset.uniqueIdentifier;
-            processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
-        };
-    });
+    const queries = document.querySelectorAll(query);
+
+    if (queries) {
+        queries.forEach(button => {
+            button.onclick = (event) => {
+                const choiceId = event.target.dataset.choiceId;
+                const category = event.target.dataset.category;
+                const uniqueIdentifier = event.target.dataset.uniqueIdentifier;
+                processRacialChoiceChange(category, uniqueIdentifier, choiceId.replace('-type', ''), null);
+            };
+        });
+    }
 }
 
 function getAvailablePoints(abilityData, currentLevel) {
