@@ -2216,7 +2216,7 @@ function handleChange(event) {
             character.totalDefense.value = newValue;
             document.getElementById('total-defense').value = character.totalDefense.value;
         } else if (id === 'personalNotes' || id === 'backstory') {
-            character.layouts[id].text = newValue;
+            character.layouts[id]['text'] = newValue;
         } else if(id === 'purse' || id === 'bank') {
             character[id] = newValue;
         } else if (id !== 'class-display' && id !== 'specialization-display') {
