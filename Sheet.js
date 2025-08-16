@@ -356,8 +356,6 @@ const defaultCharacterData = function () {
         backstory: "",
     });
 
-    console.log(starterItems);
-
     newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter);
 
     // Initialize each stat with its rolled value, racial change, and calculated total
@@ -1356,6 +1354,15 @@ function handleChangeRace(oldRace) {
 
     // Update maxHealth, maxMana, maxRacialPower, and totalDefense when race changes
     recalculateSmallUpdateCharacter(character, true);
+
+    const starterItems = ExternalDataManager.getRaceStarterItems(character.race);
+    
+    if (starterItems) {
+        if (character.purse == 0) {
+            character.purse = starterItems["Coins"] ?? 0;
+            document.getElementById('purse').value = character.purse;
+        }
+    }
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
