@@ -921,7 +921,7 @@ function updateDOM() {
     const backstoryNotes = document.getElementById('backstory');
     if (backstoryNotes) {
         backstoryNotes.value = character.layouts.backstory.text;
-        backstoryNotes.style.height = `${layout.height * 100}vh`;
+        backstoryNotes.style.height = `${character. layout.height * 100}vh`;
     }
 
     // Personal Notes
