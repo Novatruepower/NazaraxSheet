@@ -289,7 +289,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
 
 const defaultCharacterData = function () {
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
-    const starterItems = getRaceStarterItems;
+    const starterItems = ExternalDataManager.getRaceStarterItems(firstRace);
 
     let newCharacter = ({
         name: '',
