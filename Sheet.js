@@ -1290,10 +1290,11 @@ function handleChangeRace(oldRace) {
     }
     if (character.StatsAffected[oldRace]) {
         delete character.StatsAffected[oldRace];
+    }
 
-        if (character.uniqueIdentifiers['Spatial Reserve']) {
-            character.BaseRacialPower.value += 90;
-        }
+    if (character.uniqueIdentifiers['Spatial Reserve']) {
+        character.BaseRacialPower.value += 90;
+        delete character.uniqueIdentifiers['Spatial Reserve'];
     }
 
     // Update racialChange for each stat based on the new race
