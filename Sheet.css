@@ -90,6 +90,19 @@ body {
     padding: 0.25rem 0.2rem;
 }
 
+.custom-heigth-resizer {
+    width: 100%;
+    height: 8px;
+    cursor: ns-resize;
+    background: linear-gradient(to right, #cbd5e0, #a0aec0); /* gray gradient */
+    border-radius: 0 0 4px 4px;
+    margin-top: 2px;
+}
+
+.custom-heigth-resizer:hover {
+    background: linear-gradient(to right, #a3bffa, #667eea); /* indigo on hover */
+}
+
 .custom-resizer {
     position: absolute;
     bottom: 0;

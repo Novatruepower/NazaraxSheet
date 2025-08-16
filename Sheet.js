@@ -920,11 +920,16 @@ function updateDOM() {
 
     // Backstory
     let layout = character.layouts.backstory;
-    document.getElementById('backstory').value = layout.text;
-    const backstoryNotesPanel = document.getElementById('backstory-content');
-    if (backstoryNotesPanel) {
-        backstoryNotesPanel.style.height = `${layout.height * 100}vh`;
+    const backstory = document.getElementById('backstory');
+    //document.getElementById('backstory').value = layout.text;
+    if (backstory) {
+        backstory.text = layout.text;
+        backstory.style.height = `${layout.height * 100}vh`;
     }
+    //const backstoryNotesPanel = document.getElementById('backstory-content');
+  //  if (backstoryNotesPanel) {
+     //   backstoryNotesPanel.style.height = `${layout.height * 100}vh`;
+   // }
 
     // Personal Notes
     layout = character.layouts.personalNotes;
@@ -2393,7 +2398,7 @@ function savePositionAndSize(Container) {
 
 /**
  * Makes an element vertically resizable by dragging a handle.
- * @param {HTMLElement} element - The element to resize (e.g. textarea).
+ * @param {HTMLElement} element - The element to resize (textarea).
  * @param {HTMLElement} handle - The handle element that user drags.
  */
 function makeHeightResizable(element, handle) {
@@ -2413,7 +2418,8 @@ function makeHeightResizable(element, handle) {
     function resize(e) {
         if (!isResizing) return;
         const newHeight = startHeight + (e.clientY - startY);
-        element.style.height = Math.max(newHeight, 50) + "px"; // min height 50px
+        element.style.height = Math.max(newHeight, 100) + "px"; // min height 100px
+        element.style.resize = "none"; // prevent native resizer conflict
     }
 
     function stopResize() {
