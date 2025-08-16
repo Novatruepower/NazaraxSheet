@@ -98,6 +98,74 @@
         }
       }
     },
+    "Dwarf": {
+      "fullAutoPassives": {
+        "Drunken Brawler": {
+          "level": 1,
+          "description": "Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by 50%), your statistical modifier for STR becomes 100% and you gain 25% damage resistance (Which is calculated after armors)."
+        },
+        "Alcoholic Desensitization": {
+          "level": 10,
+          "description": "Your body has grown strong enough to counteract the downsides of being drunk, allowing you to only lose 25% intelligence and accuracy when drunk instead of the usually 50% while also severely reducing the effects of hangover."
+        },
+        "The Vault": {
+          "level": 50,
+          "description": "Your body somehow developed an organ which seems to serve no purpose other than to store alcohol which had been ingested beforehand. This organ can be added to your inventory and store a volume equivalent to 5 bottles of alcohol. Alcohol inside this organ remains as what it was before being ingested and can be consumed at any time without counting as your action for the turn a turn (You can consume any amount of alcohol stored in “The Vault” instantly)."
+        }
+      }
+    },
+    "Elf": {
+      "fullAutoPassives": {
+        "Light-Footed": {
+          "level": 1,
+          "description": "Elves’ large feet, great balance, and low weight make it so that they naturally make very little noise from walking."
+        },
+        "Fragile": {
+          "level": 1,
+          "description": "Elves have naturally fragile bodies, that are more prone to physical injuries."
+        },
+        "Green Thumb": {
+          "level": 25,
+          "description": "Because of the relation between elves and nature, most plants, plant-based creatures, and animals will naturally be neutral towards Elves. Elves are able to converse with them to a very limited capacity."
+        }
+      }
+    },
+    "Gnome": {
+      "fullAutoPassives": {
+        "Magic Denial": {
+          "level": 1,
+          "description": "Because of their pride and the importance gnomic culture  gives to science, Gnomes naturally reject the very existence of unexplainable forces such as magic. This makes it so that Gnomes will avoid anything that relies on magic unless it is to try and explain it or using it as a simple source of energy, as doing otherwise would be acknowledging magic as a force that disregards all the fundamental rules of the universe discovered scientifically."
+        },
+        "Gnomic Literacy": {
+          "level": 1,
+          "description": "Being a Gnome, you are able to read and learn from blueprints made by other Gnomes. You can learn to create items in the list associated with the “Gnomic Craftsmanship” skill by reading their blueprint while meeting its statistical requirements. This skill also allows you to create your own contraptions or blueprints."
+        },
+        "Resourcefulness": {
+          "level": 1,
+          "description": "Your numerous experiments have lead you to become extremely resourceful, allowing you to substitute most professional parts found in real blueprints with parts made of random scraps  you find laying around. This skill allows you to create items from the “Gnomic Craftsmanship” list."
+        },
+        "Multitasker": {
+          "level": 5,
+          "description": "Having spent your whole life inventing, creating, and assembling small contraptions, doing so has become a mindless task. You can now craft items from the “Gnomic Craftsmanship” list while doing other actions that don’t require the use of your hands like walking or talking."
+        },
+        "Bookworm": {
+          "level": 10,
+          "description": "Being a Gnome, you have an abnormally high intellect, allowing you to read and finish books about twice as fast as most people."
+        },
+        "Unhinged": {
+          "level": 25,
+          "description": "Over time, your hate for magic has just grown stronger and stronger, making it so that you now are unable to feel any sort of empathy for a pure magic user. This indifference towards the treatment of mages allows you to create “reactors” out of them by imprisoning them and continuously pumping their mana out of their bodies."
+        },
+        "Fast Hands": {
+          "level": 50,
+          "description": "Yours hands have gotten so dexterous at this point that you don’t even need to use both hands to create items (or interact with most things in general). You can now only need to use one hand for complex actions (such as crafting), allowing you to do two per turn."
+        },
+        "Deranged Ideals": {
+          "level": 75,
+          "description": "Because of how powerful you have become and your strong sense of pride, your ideals have become so deformed and out of control that it has become debatable if you even have any humanity left. You can now enslave, torture, abuse, blackmail, kill, etc. anyone or anything as long as it ends up being beneficial for you or science without any negative effect on your mental state.  "
+        }
+      }
+    },
     "Mutant": {
       "manualPassives": {
           "Mutation": {
