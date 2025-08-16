@@ -9,8 +9,8 @@ const MIN_STAT_VALUE = 5;
 const MAX_STAT_VALUE = 20;
 
 // Function to calculate max experience for a given level
-function calculateLevelMaxExperience(level) {
-    return character.uniqueIdentifiers['Self reflection'] ? character.uniqueIdentifiers['Self reflection'].values[0] : 100;
+function calculateLevelMaxExperience(char, level) {
+    return char.uniqueIdentifiers['Self reflection'] ? char.uniqueIdentifiers['Self reflection'].values[0] : 100;
 }
 
 function applyOperator(v1, type, v2) {
@@ -268,7 +268,7 @@ const defaultCharacterData = function () {
         race: firstRace,
         level: 1,
         levelExperience: 0,
-        levelMaxExperience: calculateLevelMaxExperience(1),
+        levelMaxExperience: 100, // Will be calculated dynamically
         maxHealth: 0, // Will be calculated dynamically
         maxMana: 0, // Will be calculated dynamically
         maxRacialPower: 0,
@@ -321,6 +321,8 @@ const defaultCharacterData = function () {
         permHealthRegenActive: 0, //count
         permManaRegenActive: 0, //count
     });
+
+    newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter, 1);
 
     // Initialize each stat with its rolled value, racial change, and calculated total
     let maxExperience = defaultStatMaxExperience;
