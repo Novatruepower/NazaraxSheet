@@ -3420,8 +3420,8 @@ function endTurn() {
         character.Health.value += naturalHealthRegen;
         character.Mana.value += naturalManaRegen;
 
-        if (character.uniqueIdentifiers['Active Racial Skill'] && !character.states['Active Racial Skill']) {
-            character.Health.value += character.uniqueIdentifiers['Active Racial Skill'].values * character.maxHealth;
+        if (character.uniqueIdentifiers['Dragon’s Metabolism'] && !character.states['Active Racial Skill']) {
+            character.Health.value += character.uniqueIdentifiers['Dragon’s Metabolism'].values * character.maxHealth;
         }
 
         let data = character.uniqueIdentifiers['Spatial Capture'];
