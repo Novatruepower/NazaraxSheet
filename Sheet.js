@@ -2392,7 +2392,6 @@ function savePositionAndSize(Container) {
 
 function makeHeightResizable(element, handle) {
     handle.addEventListener("mousedown", function (e) {
-        console.log(e);
         //e.preventDefault();
 
         const startY = e.clientY;
@@ -3590,8 +3589,8 @@ function updatePanelPosition(panel, layout) {
 function updatePanelsPosition() {
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     updatePanelPosition(personalNotesPanel, character.layouts.personalNotes);
-    //const backstory = document.getElementById('backstory');
-    //updatePanelPosition(backstory, character.layouts.backstory);
+    const backstory = document.getElementById('backstory');
+    updatePanelPosition(backstory, character.layouts.backstory);
 }
 
 function closeDamageModal() {
