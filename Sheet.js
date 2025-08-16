@@ -920,8 +920,9 @@ function updateDOM() {
     // Backstory
     const backstoryNotes = document.getElementById('backstory');
     if (backstoryNotes) {
-        backstoryNotes.value = character.layouts.backstory.text;
-        backstoryNotes.style.height = `${character.layouts.backstory.height * 100}vh`;
+        const layout = character.layouts.backstory;
+        backstoryNotes.value = layout.text;
+        backstoryNotes.style.height = `${layout.height * 100}vh`;
     }
 
     // Personal Notes
@@ -2379,6 +2380,30 @@ function savePositionAndSize(Container) {
         saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
+}
+
+function makeHeightResizable(element, handle) {
+    handle.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+
+        const startY = e.clientY;
+        const startHeight = element.offsetHeight;
+
+        function resize(e) {
+            const newHeight = Math.max(250, startHeight + (e.clientY - startY));
+
+            element.style.height = newHeight + "px";
+        }
+
+        function stopResize() {
+            window.removeEventListener("mousemove", resize);
+            window.removeEventListener("mouseup", stopResize);
+            savePositionAndSize(element);
+        }
+
+        window.addEventListener("mousemove", resize);
+        window.addEventListener("mouseup", stopResize);
+    });
 }
 
 function makeResizable(element, handle) {
@@ -3861,7 +3886,7 @@ function initPage() {
     makeResizable(personalNotesPanel, personalNotesResizer);
 
     const backstory = document.getElementById("backstory");
-    makeResizable(backstory, backstory);
+    makeHeightResizable(backstory, backstory);
 
     // Initialize Google API libraries
     gapiLoaded();
