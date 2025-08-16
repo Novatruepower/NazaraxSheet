@@ -156,6 +156,10 @@ export const ExternalDataManager = {
                             }
                         }
                     }
+
+                    if (categoryData.hasOwnProperty('Starting items')) {
+                        characterTarget[categoryKey]['Starting items'] = categoryData['Starting items'];
+                    }
                 }
             }
 
