@@ -264,12 +264,16 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     recalculateSmallUpdateCharacter(char, isSmallDisplay);
 
+    const maxExperience = charData.uniqueIdentifiers['Growth'] ? charData.uniqueIdentifiers['Growth'].values[0] : defaultStatMaxExperience;
+
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
         if (char[statName]) {
             const total = document.getElementById(`${statName}-total`);
             if (total)
                 total.value = calculateRollStatTotal(char, statName);
+
+            char[statName].maxExperience = maxExperience;
         }
     });
 }
