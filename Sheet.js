@@ -3598,8 +3598,8 @@ function updatePanelPosition(panel, layout) {
 function updatePanelsPosition() {
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     updatePanelPosition(personalNotesPanel, character.layouts.personalNotes);
-    const backstory = document.getElementById('backstory');
-    updatePanelPosition(backstory, character.layouts.backstory);
+    const backstoryPanel = document.getElementById('backstory-content');
+    updatePanelPosition(backstoryPanel, character.layouts.backstory);
 }
 
 function closeDamageModal() {
