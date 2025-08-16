@@ -250,7 +250,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         document.getElementById('maxMana').value = character.maxMana;
         manaInput.value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        levelUp();
+        levelUp(char.levelExperience);
         racialPowerInput.value = character.RacialPower.value;
         document.getElementById('total-defense').value = character.totalDefense.value; // Update totalDefense display
     }
@@ -2140,7 +2140,7 @@ function handleChange(event) {
         newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
         if (id === 'levelExperience') {
-            levelUp();
+            levelUp(newValue);
         } else if (id === 'level') {
             const oldLevel = character.level;
             character.level = newValue;
