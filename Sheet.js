@@ -921,15 +921,10 @@ function updateDOM() {
     // Backstory
     let layout = character.layouts.backstory;
     const backstory = document.getElementById('backstory');
-    //document.getElementById('backstory').value = layout.text;
     if (backstory) {
         backstory.value = layout.text;
         backstory.style.height = `${layout.height * 100}vh`;
     }
-    //const backstoryNotesPanel = document.getElementById('backstory-content');
-  //  if (backstoryNotesPanel) {
-     //   backstoryNotesPanel.style.height = `${layout.height * 100}vh`;
-   // }
 
     // Personal Notes
     layout = character.layouts.personalNotes;
@@ -2426,6 +2421,7 @@ function makeHeightResizable(element, handle) {
         isResizing = false;
         document.removeEventListener("mousemove", resize);
         document.removeEventListener("mouseup", stopResize);
+        saveHeightPositionAndSize(element);
     }
 }
 
