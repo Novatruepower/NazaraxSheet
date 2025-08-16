@@ -102,9 +102,6 @@ body {
     z-index: 10;
 }
 
-#backstory {
-    resize: none;
-}
 
 /* Personal Notes Panel Styles */
 .personal-notes-panel {
