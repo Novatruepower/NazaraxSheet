@@ -315,6 +315,7 @@ const defaultCharacterData = function () {
                 text: ''
             },
             backstory: {
+                height: 0,
                 text: ''
             }
         },
