@@ -4,7 +4,7 @@
       "fullAutoPassives": {
         "Absorption": {
           "level": 1,
-          "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%. ",
+          "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%.",
           "values":[0.05, 0.04]
         },
         "Clay Skin": {
@@ -49,6 +49,22 @@
       }
     },
     "Demi-humans": {
+      "fullAutoPassives": {
+        "Savagery": {
+          "level": 1,
+          "description": "Before the start of every turn you lose {0}d{1} racial points. If after a roll, the racial point’s value of a character is less than {2} (This value can go into the negatives), you have to roll a d{3} to see which of your character’s animals you will have to turn into (Your health and stats stay the same whatever your form, however, animals can only speak in their own languages and their attacks and armors’ depend on their species and your level, these can vary depending on the animal’s personality and experience and have no formal rules surrounding their values). Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {4} racial points per turn, once you reach {5} (This number is a hard cap which cannot be increased in any way), you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them (Conversely, your inner animals are partially conscious of what is happening while you are in human form).",
+          "values": [1, 6, 1, 4, 20, 100]
+        },
+        "Fractured mind": {
+          "level": 1,
+          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one d{0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn (As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in). Whenever this happens, you regenerate {1} racial points. You can also purposefully let a random (As per usual, this is decided via a d{2} throw) come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points.",
+          "values": [20, 10, 4]
+        },
+        "Domination": {
+          "level": 100,
+          "description": "You have now mastered your transformation and can now decide into which animal you want to transform (This includes Disfigurement but not Fractured mind)."
+        }
+      },
       "manualPassives": {
         "Stat Adjustments": {
           "description": "Demi-humans can choose to apply stat modifiers to their character.",
