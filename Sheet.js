@@ -1173,6 +1173,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 
 function revertRacialFullAutoPassiveChange(newAbilityData) {
     const { identifier, formulas } = newAbilityData;
+    console.log(newAbilityData);
 
     if (!identifier || !character.uniqueIdentifiers[identifier]) {
         return;
@@ -1180,14 +1181,12 @@ function revertRacialFullAutoPassiveChange(newAbilityData) {
 
     delete character.uniqueIdentifiers[identifier];
 
-    if (formulas) {
-        for (const formula of formulas) {
-            if (formula.statsAffected) {
-                const length = formula.statsAffected.length;
+    for (const formula of formulas) {
+        if (formula.statsAffected) {
+            const length = formula.statsAffected.length;
 
-                for (let index = 0; index < length; ++index) {
-                    revertBaseChange(character, formula.statsAffected[index], formula.values[index], formula.calc[index]);
-                }
+            for (let index = 0; index < length; ++index) {
+                revertBaseChange(character, formula.statsAffected[index], formula.values[index], formula.calc[index]);
             }
         }
     }
