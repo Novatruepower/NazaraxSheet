@@ -852,7 +852,7 @@ function updateDOM() {
     });
 
     // Render racial passives based on selected race
-    renderRacialPassives();
+    renderRacial();
 
 
     // Player Stats
@@ -1364,7 +1364,7 @@ function handleChangeRace(oldRace) {
     });
 
     // Re-render the racial passives UI
-    renderRacialPassives(oldRace);
+    renderRacial(oldRace);
 
     // Update maxHealth, maxMana, maxRacialPower, and totalDefense when race changes
     recalculateSmallUpdateCharacter(character, true);
@@ -1777,7 +1777,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 abilityTitle.textContent = abilityData.name;
 
                 const toggableBtn = document.createElement('button');
-                toggableBtn.className = 'toggle-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
+                toggableBtn.className = 'toggle-full-auto-passive-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
                 toggableBtn.dataset.target = abilityTarget;
                 toggableBtn.innerHTML = `
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1795,14 +1795,13 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
 
                 abilityWrapper.appendChild(abilityHeader);
                 abilityWrapper.appendChild(abilityDescription);
-
                 fullAutoPassivesList.appendChild(abilityWrapper);
 
                 processRacialFullAutoPassiveChange(category, abilityData);
             }
         }
         
-        updateSpecificHtmlVisibility('element');
+        updateSpecificHtmlVisibility('full-auto-passive-element');
     } else {
         passivesContainer.classList.add('hidden');
         passivesContainer.innerHTML = '';
@@ -1871,6 +1870,79 @@ function renderManualRacialPassives(passivesContainer, category) {
     }
 }
 
+function renderRacialActives(activesContainer, category) {
+    const race = character.race;
+    const id = 'racial-actives';
+
+    const racialActives = ExternalDataManager.getRaceActives(race, character.level);
+
+    if (racialActives && Object.keys(racialActives).length > 0) {
+        renderContainer(activesContainer, "Racial Actives", id);
+        const racialActiveList = document.getElementById(`${race}-${id}-list`);
+
+        for (const abilityKey in racialActives) {
+            if (racialActives.hasOwnProperty(abilityKey)) {
+                const abilityData = racialActives[abilityKey];
+                const abilityTarget = abilityData.identifier;
+
+                const abilityWrapper = document.createElement('div');
+                abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
+
+                const abilityHeader = document.createElement('div');
+                abilityHeader.className = 'flex items-center justify-between';
+
+                const abilityTitle = document.createElement('h2');
+                abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors';
+                abilityTitle.textContent = abilityData.name;
+
+                const toggableBtn = document.createElement('button');
+                toggableBtn.className = 'toggle-racial-actives-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
+                toggableBtn.dataset.target = abilityTarget;
+                toggableBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+                `;
+
+                abilityHeader.appendChild(abilityTitle);
+                abilityHeader.appendChild(toggableBtn);
+
+                const abilityDescription = document.createElement('p');
+                abilityDescription.id = abilityTarget;
+                abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
+                abilityDescription.textContent = abilityData.description;
+
+                abilityWrapper.appendChild(abilityHeader);
+                abilityWrapper.appendChild(abilityDescription);
+                racialActiveList.appendChild(abilityWrapper);
+            }
+        }
+        
+        updateSpecificHtmlVisibility('racial-actives-element');
+    } else {
+        activesContainer.classList.add('hidden');
+        activesContainer.innerHTML = '';
+    }
+}
+
+/**
+ * Renders the generic racial passives for races that don't have manual choices.
+ * @param {string} race The name of the race.
+ */
+function renderGenericRacialActives(oldRace, race, category) {
+    const activesContainer = document.getElementById('racial-actives-container');
+
+    const genericActives = ExternalDataManager.getRaceActives(race);
+    const isCategoryValid = race === category;
+
+    if (isCategoryValid && genericActives) {
+        renderRacialActives(activesContainer, category);
+    } else {
+        activesContainer.classList.add('hidden');
+        activesContainer.innerHTML = '';
+    }
+}
+
 /**
  * Renders the generic racial passives for races that don't have manual choices.
  * @param {string} race The name of the race.
@@ -1916,10 +1988,12 @@ function renderGenericRacialPassives(oldRace, race, category) {
 /**
 * Orchestrates the rendering of all racial passive sections based on the current race.
 */
-function renderRacialPassives(oldRace) {
+function renderRacial(oldRace) {
     // Hide all specific containers first
     document.getElementById('racial-manual-passives-container').classList.add('hidden');
     renderGenericRacialPassives(oldRace, character.race, character.race);
+    document.getElementById('racial-actives-container').classList.add('hidden');
+    renderGenericRacialActives(oldRace, character.race, character.race);
 }
 
 /**
@@ -2192,7 +2266,7 @@ function handleChange(event) {
             if (newValue < oldLevel)
                 removePassivesLevel();
             
-            renderRacialPassives();
+            renderRacial();
             recalculateCharacterDerivedProperties(character, true);
         } else if (id === 'race') {
             let oldRace = character.race;

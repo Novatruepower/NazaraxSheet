@@ -29,7 +29,7 @@
           "description": "You can now reshape magic or enchanted items while keeping the magic part of the item intact after your reshaping of the item depending on your luck and the quality of the enchantment."
         }
       },
-      "Actives": {
+      "actives": {
         "Rough Reshaping": {
           "level": 1,
           "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch  at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts (Both the original item and the final product have to meet all the criteria). This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform  for one turn before starting to change it."

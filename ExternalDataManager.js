@@ -433,5 +433,26 @@ export const ExternalDataManager = {
             return processedPassives;
         }
         return null;
+    },
+
+    /**
+     * Retrieves the actives for a specific race.
+     * @param {string} raceName The name of the race.
+     * @returns {Object|null} actives object for the race, or null if not found.
+     */
+    getRaceActives(raceName) {
+        const raceData = this.getRaceData(raceName);
+        if (raceData && raceData.actives) {
+            const processedPassives = {};
+            for (const passiveName in raceData.actives) {
+                const ability = raceData.actives[passiveName];
+                if (ability.level <= level) {
+                    processedPassives[passiveName] = this.processedUpgrades(passiveName, raceData.actives[passiveName], level);
+                }
+            }
+
+            return processedPassives;
+        }
+        return null;
     }
 };
