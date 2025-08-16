@@ -1173,7 +1173,6 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 
 function revertRacialFullAutoPassiveChange(newAbilityData) {
     const { identifier, formulas } = newAbilityData;
-    console.log(newAbilityData);
 
     if (!identifier || !character.uniqueIdentifiers[identifier]) {
         return;
