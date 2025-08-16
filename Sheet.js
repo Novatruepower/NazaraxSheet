@@ -658,7 +658,7 @@ function initLoadCharacter(loadedChar) {
                 newChar[key] = Array.isArray(loadedChar[key]) ? loadedChar[key] : [];
             }   else if (key === 'layouts') {
                 newChar[key] = { ...newChar[key], ...loadedChar[key] };
-                const layouts = Object.key(newChar[key]);
+                const layouts = Object.keys(newChar[key]);
                 
                 for (const layout of layouts) {
                     // If loaded values are likely pixel values (e.g., > 1), convert them to percentages
