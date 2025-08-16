@@ -782,7 +782,7 @@ function updateDOM() {
     document.getElementById('levelMaxExperience').value = character.levelMaxExperience; // This is readonly
     document.getElementById('purse').value = character.purse;
     document.getElementById('bank').value = character.bank;
-    document.getElementById('backstory').value = character.backstory;
+    document.getElementById('backstory').value = character.layouts.backstory.text;
 
     // Handle race selector placeholder color and update max Health
     const raceSelect = document.getElementById('race');
@@ -2216,7 +2216,7 @@ function handleChange(event) {
             character.totalDefense.value = newValue;
             document.getElementById('total-defense').value = character.totalDefense.value;
         } else if (id === 'personalNotes' || id === 'backstory') {
-            character.layouts[id]['text'] = newValue;
+            character.layouts[id].text = newValue;
         } else if(id === 'purse' || id === 'bank') {
             character[id] = newValue;
         } else if (id !== 'class-display' && id !== 'specialization-display') {
