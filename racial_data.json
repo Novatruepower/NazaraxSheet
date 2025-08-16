@@ -245,6 +245,38 @@
             ]
           }
       }
+    },
+    "Noki": {
+      "fullAutoPassives": {
+        "Good Fortune": {
+          "level": 1,
+          "description": "Nokis will naturally have mild success in any normal luck-based confrontation or check unless they are confronted with another Noki."
+        },
+        "Gold Hands": {
+          "level": 10,
+          "description": "You gain {0} coins for every point of damage you deal on purpose to an enemy rounded up.",
+          "values": [0.04],
+          "upgrades": [
+            {
+              "name":"Diamond Hands",
+              "level": 50,
+              "values": [0.1]
+            }
+          ]
+        },
+        "Prosperity": {
+          "level": 10,
+          "description": "You naturally have great success in any normal luck-based confrontation or check unless they are confronted with another Noki."
+        },
+        "Beating the Odds": {
+          "level": 75,
+          "description": "You naturally have tremendous success in any normal luck-based confrontation or check unless they are confronted with another Noki."
+        },
+        "Devil’s Dices": {
+          "level": 100,
+          "description": "When your health reaches 0, throw a coin, if it lands on heads, you survive and your health will be fully replenished, while if you land on tails you die."
+        }
+      }
     }
   }
 }
