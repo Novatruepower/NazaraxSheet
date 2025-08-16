@@ -168,6 +168,12 @@ function calculateBaseMaxRacialPower(charData, effects) {
 function calculateMaxRacialPower(charData, level) {
     const effects = getCategoriesTemporaryEffects(charData, 'RacialPower');
 
+    const data = character.uniqueIdentifiers['Spatial Reserve'];
+
+    if (data) {
+        return Math.floor(calculateMaxTotal(charData, effects, 1, calculateBaseMaxRacialPower(charData, effects), 100));
+    }
+
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
 
@@ -3402,11 +3408,14 @@ function endTurn() {
 
         character.Health.value += naturalHealthRegen;
         character.Mana.value += naturalManaRegen;
-        character.RacialPower.value += character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * character.maxRacialPower;
+
+        let data = character.uniqueIdentifiers['Spatial Capture'];
+        let racialPowerRegen = data ? data.values[0] + character.level : character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * character.maxRacialPower;
+        character.RacialPower.value += racialPowerRegen;
 
         if (character.uniqueIdentifiers['Absorption']) {
-            const data = character.uniqueIdentifiers['Absorption'];
-            let racialPowerRegen = data.values[0];
+            data = character.uniqueIdentifiers['Absorption'];
+            racialPowerRegen = data.values[0];
 
             if (character.states['Hands Covered'] || character.states['Feets Covered']) {
                 racialPowerRegen = data.values[1];
