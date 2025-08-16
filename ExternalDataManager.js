@@ -440,7 +440,7 @@ export const ExternalDataManager = {
      * @param {string} raceName The name of the race.
      * @returns {Object|null} actives object for the race, or null if not found.
      */
-    getRaceActives(raceName) {
+    getRaceActives(raceName, level) {
         const raceData = this.getRaceData(raceName);
         console.log(raceData);
         if (raceData && raceData.actives) {

@@ -1932,8 +1932,7 @@ function renderRacialActives(activesContainer, category) {
 function renderGenericRacialActives(oldRace, race, category) {
     const activesContainer = document.getElementById('racial-actives-container');
 
-    const genericActives = ExternalDataManager.getRaceActives(race);
-    console.log(genericActives);
+    const genericActives = ExternalDataManager.getRaceActives(race, character.level);
     const isCategoryValid = race === category;
 
     if (isCategoryValid && genericActives) {
