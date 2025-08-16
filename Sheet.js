@@ -1168,12 +1168,10 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
-    removeTemporaryEffectByIdentifier(newAbilityData, category);
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += 90;
     }
-
-    console.log(newAbilityData);
+    removeTemporaryEffectByIdentifier(newAbilityData, category);
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
@@ -1193,11 +1191,8 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
     else if (newAbilityData.identifier) {
         character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
 
-        console.log(newAbilityData);
-
         if (newAbilityData.identifier == 'Spatial Reserve') {
             character.BaseRacialPower.value -= 90;
-            console.log(character.BaseRacialPower);
         }
     }
 
