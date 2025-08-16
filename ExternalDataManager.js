@@ -388,6 +388,7 @@ export const ExternalDataManager = {
                     }
                 }
             } else if (copy.upgrades.some(u => u.values)) {
+                console.log((data));
                 const length = data.values.length;
                 for(let index = 0; index < length; ++index) {
                     template.values[index] = data.values[index];
