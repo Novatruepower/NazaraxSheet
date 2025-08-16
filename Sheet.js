@@ -264,7 +264,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     recalculateSmallUpdateCharacter(char, isSmallDisplay);
 
-    const maxExperience = charData.uniqueIdentifiers['Growth'] ? charData.uniqueIdentifiers['Growth'].values[0] : defaultStatMaxExperience;
+    const maxExperience = char.uniqueIdentifiers['Growth'] ? char.uniqueIdentifiers['Growth'].values[0] : defaultStatMaxExperience;
 
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
