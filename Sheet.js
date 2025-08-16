@@ -922,7 +922,6 @@ function updateDOM() {
     document.getElementById('backstory').value = layout.text;
     const backstoryNotesPanel = document.getElementById('backstory-content');
     if (backstoryNotesPanel) {
-        backstoryNotes.value = layout.text;
         backstoryNotesPanel.style.height = `${layout.height * 100}vh`;
     }
 
