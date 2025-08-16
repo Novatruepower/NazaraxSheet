@@ -167,10 +167,9 @@ function calculateBaseMaxRacialPower(charData, effects) {
 // Function to calculate max racial power based on level
 function calculateMaxRacialPower(charData, level) {
     const effects = getCategoriesTemporaryEffects(charData, 'RacialPower');
-    const data = charData.uniqueIdentifiers['Spatial Reserve'];
-
-    if (data) {
-        return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), data.values[1]));
+    
+    if (charData.uniqueIdentifiers['Spatial Reserve']) {
+        return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), charData.uniqueIdentifiers['Spatial Reserve'].values[1]));
     }
 
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
