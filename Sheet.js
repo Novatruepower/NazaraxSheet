@@ -274,6 +274,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
                 total.value = calculateRollStatTotal(char, statName);
 
             char[statName].maxExperience = maxExperience;
+            document.getElementById(`${statName}-maxExperience`).value = char[statName].maxExperience;
         }
     });
 }
