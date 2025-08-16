@@ -3893,7 +3893,7 @@ function initPage() {
     makeResizable(personalNotesPanel, personalNotesResizer);
 
     const backstory = document.getElementById("backstory");
-    //makeHeightResizable(backstory, backstory);
+    makeHeightResizable(backstory, backstory);
 
     // Initialize Google API libraries
     gapiLoaded();
