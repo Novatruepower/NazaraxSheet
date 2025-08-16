@@ -59,8 +59,8 @@
       "fullAutoPassives": {
         "Spatial Reserve": {
           "level": 1,
-          "description": "As a dimensional, your body has the innate ability to store abnormal quantities of spatial energy. You can have up to [100+level*{0}] racial points stocked up.",
-          "formulas": [{"values": [10]}]
+          "description": "As a dimensional, your body has the innate ability to store abnormal quantities of spatial energy. You can have up to [{0}+level*{1}] racial points stocked up.",
+          "formulas": [{"values": [100, 10]}]
         },
         "Spatial Capture": {
           "level": 1,
