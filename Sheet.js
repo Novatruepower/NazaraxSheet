@@ -224,6 +224,10 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     char.maxRacialPower = calculateMaxRacialPower(char, char.level);
     char.RacialPower.value = adjustValue(oldMaxValue, char.RacialPower.value, char.maxRacialPower);
 
+    oldMaxValue = char.levelMaxExperience;
+    char.levelMaxExperience = calculateLevelMaxExperience(char);
+    char.levelExperience = adjustValue(oldMaxValue, char.levelExperience, char.levelMaxExperience);
+
     // Recalculate totalDefense
     char.totalDefense.value = calculateTotalDefense(char);
     // No adjustment needed for totalDefense as it's not a current/max value like health/mana
@@ -234,6 +238,9 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         document.getElementById('maxMana').value = character.maxMana;
         manaInput.value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
+        document.getElementById('levelExperience').value = character.levelExperience;
+        racialPowerInput.value = character.RacialPower.value;
+        document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
         racialPowerInput.value = character.RacialPower.value;
         document.getElementById('total-defense').value = character.totalDefense.value; // Update totalDefense display
     }
@@ -325,12 +332,6 @@ const defaultCharacterData = function () {
     newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter);
 
     // Initialize each stat with its rolled value, racial change, and calculated total
-    let maxExperience = defaultStatMaxExperience;
-
-    if (newCharacter.uniqueIdentifiers['Self reflection']) {
-        maxExperience -= character.uniqueIdentifiers['Growth'].values[0];
-    }
-
     ExternalDataManager.rollStats.forEach(statName => {
         const result = newCharacter.isDistributingStats ? MIN_STAT_VALUE : roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Initialize with MIN_STAT_VALUE if distributing
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
@@ -341,7 +342,7 @@ const defaultCharacterData = function () {
             equipment: 0,
             temporaryEffects: [], // Initialize as an empty array for temporary effects
             experience: 0,
-            maxExperience: maxExperience,
+            maxExperience: defaultStatMaxExperience,
         };
     });
 
