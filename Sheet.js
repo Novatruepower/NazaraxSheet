@@ -3573,9 +3573,8 @@ function endTurn() {
     });
 }
 
-function updatePanelPosition(panel) {
+function updatePanelPosition(panel, layout) {
     if (panel) {
-        const layout = character.layouts.personalNotes;
         panel.style.left = `${layout.x * 100}vw`;
         panel.style.top = `${layout.y * 100}vh`;
         panel.style.width = `${layout.width * 100}vw`;
@@ -3589,9 +3588,9 @@ function updatePanelPosition(panel) {
  */
 function updatePanelsPosition() {
     const personalNotesPanel = document.getElementById('personal-notes-panel');
-    updatePanelPosition(personalNotesPanel);
+    updatePanelPosition(personalNotesPanel, character.layouts.personalNotes);
     const backstory = document.getElementById('backstory');
-    updatePanelPosition(backstory);
+    updatePanelPosition(backstory, character.layouts.backstory);
 }
 
 function closeDamageModal() {
