@@ -1933,6 +1933,7 @@ function renderGenericRacialActives(oldRace, race, category) {
     const activesContainer = document.getElementById('racial-actives-container');
 
     const genericActives = ExternalDataManager.getRaceActives(race);
+    console.log(genericActives);
     const isCategoryValid = race === category;
 
     if (isCategoryValid && genericActives) {
