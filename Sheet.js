@@ -204,6 +204,18 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
     return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
 }
 
+function levelUp(levelExperience) {
+    character.levelExperience = levelExperience;
+    while (character.levelExperience >= character.levelMaxExperience) {
+        character.level++;
+        character.levelExperience -= character.levelMaxExperience;
+        character.levelMaxExperience = calculateLevelMaxExperience(character);
+    }
+    document.getElementById('level').value = character.level;
+    document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
+    document.getElementById('levelExperience').value = character.levelExperience;
+}
+
 /**
  * Recalculates fews derived properties for a character.
  * This function updates the character's internal data and can directly update the DOM.
@@ -238,9 +250,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         document.getElementById('maxMana').value = character.maxMana;
         manaInput.value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        document.getElementById('levelExperience').value = character.levelExperience;
-        racialPowerInput.value = character.RacialPower.value;
-        document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
+        levelUp();
         racialPowerInput.value = character.RacialPower.value;
         document.getElementById('total-defense').value = character.totalDefense.value; // Update totalDefense display
     }
@@ -2117,7 +2127,6 @@ function removePassivesLevel() {
         }
 }
 
-
 // Event listener for all input changes
 function handleChange(event) {
     const { name, id, value, type, dataset, checked } = event.target;
@@ -2131,15 +2140,7 @@ function handleChange(event) {
         newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
         if (id === 'levelExperience') {
-            character.levelExperience = newValue;
-            while (character.levelExperience >= character.levelMaxExperience) {
-                character.level++;
-                character.levelExperience -= character.levelMaxExperience;
-                character.levelMaxExperience = calculateLevelMaxExperience(character);
-            }
-            document.getElementById('level').value = character.level;
-            document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
-            document.getElementById('levelExperience').value = character.levelExperience;
+            levelUp();
         } else if (id === 'level') {
             const oldLevel = character.level;
             character.level = newValue;
