@@ -2398,7 +2398,7 @@ function makeHeightResizable(element, handle) {
         const startHeight = element.offsetHeight;
 
         function resize(e) {
-            const newHeight = Math.max(250, startHeight + (e.clientY - startY));
+            const newHeight = Math.max(100, startHeight + (e.clientY - startY));
 
             element.style.height = newHeight + "px";
         }
