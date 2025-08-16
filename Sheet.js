@@ -1092,6 +1092,8 @@ function applyBaseChange(char, baseName, value, calc) {
         char[baseName] *= value;
     else
         char[baseName] += value;
+    
+    console.log(char[baseName]);
 }
 
 // Revert stat changes
@@ -1199,6 +1201,7 @@ function revertRacialFullAutoPassiveChange(newAbilityData) {
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
     //removeTemporaryEffectByIdentifier(newAbilityData, category);
+    revertRacialFullAutoPassiveChange(newAbilityData);
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
