@@ -1171,6 +1171,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += 90;
         delete character.uniqueIdentifiers[newAbilityData.identifier];
+        console.log(character.BaseRacialPower.value);
     }
     removeTemporaryEffectByIdentifier(newAbilityData, category);
 
