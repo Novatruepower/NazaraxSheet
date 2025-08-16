@@ -2366,10 +2366,10 @@ function togglePersonalNotesPanel() {
         saveCurrentStateToHistory(); // Save state after modification
     }
 }
-function saveHeightPositionAndSize(Container) {
-    if (Container) {
+function saveHeightPositionAndSize(container) {
+    if (container) {
         // Save position and size as percentages of the viewport
-        character.layouts.personalNotes.height = Container.offsetHeight / window.innerHeight;
+        character.layouts[container.id].height = container.offsetHeight / window.innerHeight;
         saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
@@ -2378,13 +2378,13 @@ function saveHeightPositionAndSize(Container) {
 /**
  * Saves the current position and size of the container to the character data.
  */
-function savePositionAndSize(Container) {
-    if (Container) {
+function savePositionAndSize(container) {
+    if (container) {
         // Save position and size as percentages of the viewport
-        character.layouts.personalNotes.x = Container.offsetLeft / window.innerWidth;
-        character.layouts.personalNotes.y = Container.offsetTop / window.innerHeight;
-        character.layouts.personalNotes.width = Container.offsetWidth / window.innerWidth;
-        character.layouts.personalNotes.height = Container.offsetHeight / window.innerHeight;
+        character.layouts.personalNotes.x = container.offsetLeft / window.innerWidth;
+        character.layouts.personalNotes.y = container.offsetTop / window.innerHeight;
+        character.layouts.personalNotes.width = container.offsetWidth / window.innerWidth;
+        character.layouts.personalNotes.height = container.offsetHeight / window.innerHeight;
         saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
