@@ -3420,6 +3420,10 @@ function endTurn() {
         character.Health.value += naturalHealthRegen;
         character.Mana.value += naturalManaRegen;
 
+        if (character.uniqueIdentifiers['Active Racial Skill'] && !character.states['Active Racial Skill']) {
+            character.Health.value += character.uniqueIdentifiers['Active Racial Skill'].values * character.maxHealth;
+        }
+
         let data = character.uniqueIdentifiers['Spatial Capture'];
         let racialPowerRegen = data ? data.values[0] + character.level : character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * character.maxRacialPower;
         character.RacialPower.value += racialPowerRegen;
