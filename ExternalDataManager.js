@@ -368,11 +368,15 @@ export const ExternalDataManager = {
         // Check if there are options to process.
         if (copy.upgrades) {
             delete template.upgrades; 
-            if (copy.upgrades.some(u => u.formulas.some(f => f.values))) {
-                const data = ability.upgrades.findLast(e => e.level <= level);
+            const data = ability.upgrades.findLast(e => e.level <= level);
+
+            if (data) {
+                template['name'] = data.name;
+                template.level = data.level
+            }
+
+            if (copy.upgrades.some(u => u.formulas && u.formulas.some(f => f.values))) {
                 if (data) {
-                    template['name'] = data.name;
-                    template.level = data.level
                     const length = data.formulas.length;
 
                     for(let index = 0; index < length; ++index) {
