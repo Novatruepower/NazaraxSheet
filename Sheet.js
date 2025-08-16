@@ -1173,6 +1173,8 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
         character.BaseRacialPower.value += 90;
     }
 
+    console.log(newAbilityData);
+
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
             if (formula.statsAffected) {
