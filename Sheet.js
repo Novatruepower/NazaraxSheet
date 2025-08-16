@@ -1080,20 +1080,6 @@ function updateRacialChange(oldRace, statName) {
     character[statName].racialChange += ExternalDataManager.getRacialChange(character.race, statName);
 }
 
-function revertBaseChange(char, baseName, value, calc) {
-    if (calc == "mult")
-        char[baseName] /= value;
-    else
-        char[baseName] -= value;
-}
-
-function applyBaseChange(char, baseName, value, calc) {
-    if (calc == "mult")
-        char[baseName] *= value;
-    else
-        char[baseName] += value;
-}
-
 // Revert stat changes
 function revertChoiceRacialChange(char, statName, choice) {
     if (ExternalDataManager.stats.includes(statName)) {
@@ -1171,26 +1157,6 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
     return applicableStats.length > count;
 }
 
-function revertRacialFullAutoPassiveChange(newAbilityData) {
-    const { identifier, formulas } = newAbilityData;
-
-    if (!identifier || !character.uniqueIdentifiers[identifier]) {
-        return;
-    }
-
-    delete character.uniqueIdentifiers[identifier];
-
-    for (const formula of formulas) {
-        if (formula.statsAffected) {
-            const length = formula.statsAffected.length;
-
-            for (let index = 0; index < length; ++index) {
-                revertBaseChange(character, formula.statsAffected[index], formula.values[index], statsAffected.calc[index]);
-            }
-        }
-    }
-}
-
 /**
  * Handles the application or removal of a racial passive choice, including stat effects and flags.
  * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
@@ -1198,7 +1164,7 @@ function revertRacialFullAutoPassiveChange(newAbilityData) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
-    //removeTemporaryEffectByIdentifier(newAbilityData, category);
+    removeTemporaryEffectByIdentifier(newAbilityData, category);
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
@@ -1211,16 +1177,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
                     formula['name'] = newAbilityData.name;
                 }
 
-                //addTemporaryEffect(character, category, formula, Infinity);
-                const length = formula.statsAffected.length;
-
-                for (let index = 0; index < length; ++index) {
-                    applyBaseChange(character, formula.statsAffected[index], formula.values[index], statsAffected.calc[index]);
-                }
-
-                formula['category'] = category;
-
-                character.uniqueIdentifiers[formula.identifier] = formula;
+                addTemporaryEffect(character, category, formula, Infinity);
             }
         }
     }
