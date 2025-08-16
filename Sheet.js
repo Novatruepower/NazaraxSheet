@@ -3901,7 +3901,7 @@ function initPage() {
     makeResizable(personalNotesPanel, personalNotesResizer);
 
     const backstory = document.getElementById("backstory");
-    const backstoryPanel = document.getElementById("backstory-panel");
+    const backstoryPanel = document.getElementById("backstory-content");
     makeHeightResizable(backstory, backstoryPanel);
 
     // Initialize Google API libraries
