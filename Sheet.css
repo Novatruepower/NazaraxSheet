@@ -90,7 +90,7 @@ body {
     padding: 0.25rem 0.2rem;
 }
 
-#custom-resizer {
+.custom-resizer {
     position: absolute;
     bottom: 0;
     right: 0;
@@ -101,7 +101,6 @@ body {
     cursor: se-resize;
     z-index: 10;
 }
-
 
 /* Personal Notes Panel Styles */
 .personal-notes-panel {

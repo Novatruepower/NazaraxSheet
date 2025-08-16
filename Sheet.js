@@ -3896,13 +3896,13 @@ function initPage() {
     // Make the personal notes panel draggable and resizable
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     const personalNotesHeader = document.querySelector('.personal-notes-header');
-    const personalNotesResizer = document.getElementById("custom-resizer");
+    const personalNotesResizer = document.getElementById("personalNotes-resizer");
     makeDraggable(personalNotesPanel, personalNotesHeader);
     makeResizable(personalNotesPanel, personalNotesResizer);
 
     const backstory = document.getElementById("backstory");
-    const backstoryPanel = document.getElementById("backstory-content");
-    makeHeightResizable(backstory, backstoryPanel);
+    const backstoryRezizer = document.getElementById("backstory-resizer");
+    makeHeightResizable(backstory, backstoryRezizer);
 
     // Initialize Google API libraries
     gapiLoaded();
