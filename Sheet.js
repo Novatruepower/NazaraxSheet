@@ -1185,7 +1185,7 @@ function revertRacialFullAutoPassiveChange(newAbilityData) {
             const length = formula.statsAffected.length;
 
             for (let index = 0; index < length; ++index) {
-                revertBaseChange(character, formula.statsAffected[index], formula.values[index], statsAffected.calc[index]);
+                revertBaseChange(character, formula.statsAffected[index], formula.values[index], formula.calc[index]);
             }
         }
     }
@@ -1215,11 +1215,10 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
                 const length = formula.statsAffected.length;
 
                 for (let index = 0; index < length; ++index) {
-                    applyBaseChange(character, formula.statsAffected[index], formula.values[index], statsAffected.calc[index]);
+                    applyBaseChange(character, formula.statsAffected[index], formula.values[index], formula.calc[index]);
                 }
 
                 formula['category'] = category;
-
                 character.uniqueIdentifiers[formula.identifier] = formula;
             }
         }
