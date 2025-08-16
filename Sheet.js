@@ -2392,7 +2392,7 @@ function savePositionAndSize(Container) {
 
 function makeHeightResizable(element, handle) {
     handle.addEventListener("mousedown", function (e) {
-        e.preventDefault();
+        //e.preventDefault();
 
         const startY = e.clientY;
         const startHeight = element.offsetHeight;
