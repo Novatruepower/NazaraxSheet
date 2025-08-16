@@ -3589,8 +3589,8 @@ function updatePanelPosition(panel, layout) {
 function updatePanelsPosition() {
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     updatePanelPosition(personalNotesPanel, character.layouts.personalNotes);
-    const backstory = document.getElementById('backstory');
-    updatePanelPosition(backstory, character.layouts.backstory);
+    //const backstory = document.getElementById('backstory');
+    //updatePanelPosition(backstory, character.layouts.backstory);
 }
 
 function closeDamageModal() {
@@ -3893,7 +3893,7 @@ function initPage() {
     makeResizable(personalNotesPanel, personalNotesResizer);
 
     const backstory = document.getElementById("backstory");
-    makeHeightResizable(backstory, backstory);
+    //makeHeightResizable(backstory, backstory);
 
     // Initialize Google API libraries
     gapiLoaded();
