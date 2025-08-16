@@ -1170,8 +1170,6 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += 90;
-        delete character.uniqueIdentifiers[newAbilityData.identifier];
-        console.log(newAbilityData);
     }
     removeTemporaryEffectByIdentifier(newAbilityData, category);
 
@@ -1292,6 +1290,10 @@ function handleChangeRace(oldRace) {
     }
     if (character.StatsAffected[oldRace]) {
         delete character.StatsAffected[oldRace];
+
+        if (character.uniqueIdentifiers['Spatial Reserve']) {
+            character.BaseRacialPower.value += 90;
+        }
     }
 
     // Update racialChange for each stat based on the new race
