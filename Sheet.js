@@ -923,7 +923,7 @@ function updateDOM() {
     const backstory = document.getElementById('backstory');
     //document.getElementById('backstory').value = layout.text;
     if (backstory) {
-        backstory.text = layout.text;
+        backstory.value = layout.text;
         backstory.style.height = `${layout.height * 100}vh`;
     }
     //const backstoryNotesPanel = document.getElementById('backstory-content');
