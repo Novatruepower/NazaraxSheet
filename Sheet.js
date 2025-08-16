@@ -289,6 +289,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
 
 const defaultCharacterData = function () {
     const firstRace = Object.keys(ExternalDataManager._data.Races)[0];
+    const starterItems = getRaceStarterItems;
 
     let newCharacter = ({
         name: '',
@@ -349,6 +350,10 @@ const defaultCharacterData = function () {
 
         permHealthRegenActive: 0, //count
         permManaRegenActive: 0, //count
+
+        purse: starterItems["Coins"] ?? 0,
+        bank: 0,
+        backstory: "",
     });
 
     newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter);
@@ -763,6 +768,9 @@ function updateDOM() {
     document.getElementById('level').value = character.level;
     document.getElementById('levelExperience').value = character.levelExperience;
     document.getElementById('levelMaxExperience').value = character.levelMaxExperience; // This is readonly
+    document.getElementById('purse').value = character.purse;
+    document.getElementById('bank').value = character.bank;
+    document.getElementById('backstory').value = character.backstory;
 
     // Handle race selector placeholder color and update max Health
     const raceSelect = document.getElementById('race');

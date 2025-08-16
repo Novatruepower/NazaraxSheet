@@ -241,6 +241,21 @@ export const ExternalDataManager = {
     },
 
     /**
+     * Retrieves all data associated with a specific race from the internal data.
+     * @param {string} raceName The name of the race (e.g., "Human", "Elf").
+     * @returns {Object|null} An object containing all data for the specified race,
+     * or null if the race is not found.
+     */
+    getRaceStarterItems(raceName) {
+        const raceData = this.getRaceData(raceName);
+
+        if (!raceData)
+            return {};
+
+        return raceData["Starting items"];
+    },
+
+    /**
      * Retrieves the racial multiplier for a specific stat of a given race from the internal data.
      * @param {string} raceName The name of the race.
      * @param {string} statName The name of the stat (e.g., "Strength", "Agility").
