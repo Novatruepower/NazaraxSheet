@@ -276,7 +276,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
             const maxExperience = document.getElementById(`${statName}-maxExperience`);
 
             if (maxExperience) {
-                char[statName].maxExperience = maxExperience;
+                char[statName].maxExperience = newMaxExperience;
                 document.getElementById(`${statName}-maxExperience`).value = char[statName].maxExperience;
             }
         }
