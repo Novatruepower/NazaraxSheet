@@ -303,7 +303,6 @@ const defaultCharacterData = function () {
         maxMana: 0, // Will be calculated dynamically
         maxRacialPower: 0,
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
-        skills: '',
         
         layouts: {
             // Store layout as percentages (0.0 - 1.0) for responsiveness
@@ -326,7 +325,7 @@ const defaultCharacterData = function () {
             'basic-info-content': true,
             'player-stats-content': true,
             'health-combat-content': true,
-            'skills-content': true,
+            'actives-content': true,
             'weapon-inventory-content': true,
             'armor-inventory-content': true,
             'general-inventory-content': true,
@@ -907,10 +906,6 @@ function updateDOM() {
     // document.getElementById('healthBonus').value = character.healthBonus; // Removed this line
     // totalDefense is now updated via recalculateSmallUpdateCharacter
     document.getElementById('total-defense').value = character.totalDefense.value;
-
-
-    // Skills
-    document.getElementById('skills').value = character.skills;
 
     // Render new inventory tables
     renderWeaponTable();
@@ -3650,7 +3645,7 @@ function takeDamage() {
 function attachEventListeners() {
     // Attach listeners for standard inputs and the race selector
     const inputs = document.querySelectorAll(
-        '#name, #level, #levelExperience, #race, #Health, #Mana, #RacialPower, #skills, #personalNotes, #total-defense, #backstory, #purse, #bank'
+        '#name, #level, #levelExperience, #race, #Health, #Mana, #RacialPower, #personalNotes, #total-defense, #backstory, #purse, #bank'
     ); // Added #total-defense, Removed #healthBonus
     inputs.forEach(input => {
         if (!input.readOnly) {

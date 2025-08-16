@@ -134,7 +134,7 @@ export const ExternalDataManager = {
                     const dataKeys = Object.keys(categoryData);
                     dataKeys.forEach(key => {
                         characterTarget[categoryKey][key] = categoryData[key];
-                    })
+                    });
 
                     if (categoryData.hasOwnProperty('manualPassives')) {
                         const abilities = categoryData.manualPassives || {};
