@@ -1082,18 +1082,16 @@ function updateRacialChange(oldRace, statName) {
 
 function revertBaseChange(char, baseName, value, calc) {
     if (calc == "mult")
-        char[baseName] /= value;
+        char[baseName].value /= value;
     else
-        char[baseName] -= value;
+        char[baseName].value -= value;
 }
 
 function applyBaseChange(char, baseName, value, calc) {
     if (calc == "mult")
-        char[baseName] *= value;
+        char[baseName].value *= value;
     else
-        char[baseName] += value;
-    
-    console.log(char[baseName]);
+        char[baseName].value += value;
 }
 
 // Revert stat changes
