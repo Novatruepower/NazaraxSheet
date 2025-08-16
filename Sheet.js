@@ -1760,6 +1760,8 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     if (fullAutoPassives && Object.keys(fullAutoPassives).length > 0) {
         renderContainer(passivesContainer, "Full Auto Passives", id);
         const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
+        const btnShortId = 'racial-active-element';
+        const btnId = `toggle-${btnShortId}-btn`;
 
         for (const abilityKey in fullAutoPassives) {
             if (fullAutoPassives.hasOwnProperty(abilityKey)) {
@@ -1777,7 +1779,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 abilityTitle.textContent = abilityData.name;
 
                 const toggableBtn = document.createElement('button');
-                toggableBtn.className = 'toggle-full-auto-passive-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
+                toggableBtn.className = `${btnId} p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200`;
                 toggableBtn.dataset.target = abilityTarget;
                 toggableBtn.innerHTML = `
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1801,7 +1803,13 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
             }
         }
         
-        updateSpecificHtmlVisibility('full-auto-passive-element');
+        updateSpecificHtmlVisibility(btnShortId);
+        document.querySelectorAll(`.${btnId}`).forEach(button => {
+            button.addEventListener('click', (event) => {
+                const targetId = event.currentTarget.dataset.target;
+                toggleHtml(targetId, 'element');
+            });
+        });
     } else {
         passivesContainer.classList.add('hidden');
         passivesContainer.innerHTML = '';
@@ -1879,6 +1887,8 @@ function renderRacialActives(activesContainer, category) {
     if (racialActives && Object.keys(racialActives).length > 0) {
         renderContainer(activesContainer, "Racial Actives", id);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
+        const btnShortId = 'full-auto-passive-element';
+        const btnId = `toggle-${btnShortId}-btn`;
 
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
@@ -1896,7 +1906,7 @@ function renderRacialActives(activesContainer, category) {
                 abilityTitle.textContent = abilityData.name;
 
                 const toggableBtn = document.createElement('button');
-                toggableBtn.className = 'toggle-racial-actives-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
+                toggableBtn.className = `${btnId} p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200`;
                 toggableBtn.dataset.target = abilityTarget;
                 toggableBtn.innerHTML = `
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1917,8 +1927,14 @@ function renderRacialActives(activesContainer, category) {
                 racialActiveList.appendChild(abilityWrapper);
             }
         }
-        
-        updateSpecificHtmlVisibility('racial-actives-element');
+
+        updateSpecificHtmlVisibility(btnShortId);
+        document.querySelectorAll(`.${btnId}`).forEach(button => {
+            button.addEventListener('click', (event) => {
+                const targetId = event.currentTarget.dataset.target;
+                toggleHtml(targetId, 'element');
+            });
+        });
     } else {
         activesContainer.classList.add('hidden');
         activesContainer.innerHTML = '';
@@ -1974,13 +1990,6 @@ function renderGenericRacialPassives(oldRace, race, category) {
         button.addEventListener('click', (event) => {
             const targetId = event.currentTarget.dataset.target;
             toggleHtml(targetId, 'container');
-        });
-    });
-
-    document.querySelectorAll('.toggle-element-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const targetId = event.currentTarget.dataset.target;
-            toggleHtml(targetId, 'element');
         });
     });
 }

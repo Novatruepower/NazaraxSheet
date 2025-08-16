@@ -442,7 +442,6 @@ export const ExternalDataManager = {
      */
     getRaceActives(raceName, level) {
         const raceData = this.getRaceData(raceName);
-        console.log(raceData);
         if (raceData && raceData.actives) {
             const processedActives = {};
             for (const activeName in raceData.actives) {
