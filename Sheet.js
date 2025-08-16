@@ -918,18 +918,19 @@ function updateDOM() {
     renderGeneralTable();
 
     // Backstory
-    const backstoryNotes = document.getElementById('backstory');
-    if (backstoryNotes) {
-        const layout = character.layouts.backstory;
+    let layout = character.layouts.backstory;
+    document.getElementById('backstory').value = layout.text;
+    const backstoryNotesPanel = document.getElementById('backstory-content');
+    if (backstoryNotesPanel) {
         backstoryNotes.value = layout.text;
-        backstoryNotes.style.height = `${layout.height * 100}vh`;
+        backstoryNotesPanel.style.height = `${layout.height * 100}vh`;
     }
 
     // Personal Notes
-    document.getElementById('personalNotes').value = character.layouts.personalNotes.text;
+    layout = character.layouts.personalNotes;
+    document.getElementById('personalNotes').value = layout.text;
     const personalNotesPanel = document.getElementById('personal-notes-panel');
     if (personalNotesPanel) {
-        const layout = character.layouts.personalNotes;
         // Apply position and size using viewport units (vw/vh)
         personalNotesPanel.style.left = `${layout.x * 100}vw`;
         personalNotesPanel.style.top = `${layout.y * 100}vh`;
