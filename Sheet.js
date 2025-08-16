@@ -2392,7 +2392,7 @@ function savePositionAndSize(Container) {
 
 function makeHeightResizable(element, handle) {
     handle.addEventListener("mousedown", function (e) {
-        //e.preventDefault();
+        e.preventDefault();
 
         const startY = e.clientY;
         const startHeight = element.offsetHeight;
@@ -3893,7 +3893,8 @@ function initPage() {
     makeResizable(personalNotesPanel, personalNotesResizer);
 
     const backstory = document.getElementById("backstory");
-    makeHeightResizable(backstory, backstory);
+    const backstoryPannel = document.getElementById("backstory-panel");
+    makeHeightResizable(backstory, backstoryPannel);
 
     // Initialize Google API libraries
     gapiLoaded();
