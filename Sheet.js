@@ -782,7 +782,6 @@ function updateDOM() {
     document.getElementById('levelMaxExperience').value = character.levelMaxExperience; // This is readonly
     document.getElementById('purse').value = character.purse;
     document.getElementById('bank').value = character.bank;
-    document.getElementById('backstory').value = character.layouts.backstory.text;
 
     // Handle race selector placeholder color and update max Health
     const raceSelect = document.getElementById('race');
@@ -917,6 +916,13 @@ function updateDOM() {
     renderWeaponTable();
     renderArmorTable();
     renderGeneralTable();
+
+    // Backstory
+    const backstoryNotes = document.getElementById('backstory');
+    if (backstoryNotes) {
+        backstoryNotes.value = character.layouts.backstory.text;
+        backstoryNotes.style.height = `${layout.height * 100}vh`;
+    }
 
     // Personal Notes
     document.getElementById('personalNotes').value = character.layouts.personalNotes.text;
@@ -2363,14 +2369,13 @@ function togglePersonalNotesPanel() {
 /**
  * Saves the current position and size of the personal notes container to the character data.
  */
-function savePersonalNotePositionAndSize() {
-    const personalNotesContainer = document.getElementById('personal-notes-panel');
-    if (personalNotesContainer) {
+function savePositionAndSize(Container) {
+    if (Container) {
         // Save position and size as percentages of the viewport
-        character.layouts.personalNotes.x = personalNotesContainer.offsetLeft / window.innerWidth;
-        character.layouts.personalNotes.y = personalNotesContainer.offsetTop / window.innerHeight;
-        character.layouts.personalNotes.width = personalNotesContainer.offsetWidth / window.innerWidth;
-        character.layouts.personalNotes.height = personalNotesContainer.offsetHeight / window.innerHeight;
+        character.layouts.personalNotes.x = Container.offsetLeft / window.innerWidth;
+        character.layouts.personalNotes.y = Container.offsetTop / window.innerHeight;
+        character.layouts.personalNotes.width = Container.offsetWidth / window.innerWidth;
+        character.layouts.personalNotes.height = Container.offsetHeight / window.innerHeight;
         saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
@@ -2396,7 +2401,7 @@ function makeResizable(element, handle) {
         function stopResize() {
             window.removeEventListener("mousemove", resize);
             window.removeEventListener("mouseup", stopResize);
-            savePersonalNotePositionAndSize();
+            savePositionAndSize(element);
         }
 
         window.addEventListener("mousemove", resize);
@@ -2445,7 +2450,7 @@ function makeDraggable(element, handle) {
         element.style.cursor = 'grab';
         document.removeEventListener("mousemove", drag);
         document.removeEventListener("mouseup", dragEnd);
-        savePersonalNotePositionAndSize(); // Save the final position
+        savePositionAndSize(element);
     }
 }
 
@@ -3535,19 +3540,25 @@ function endTurn() {
     });
 }
 
+function updatePanelPosition(panel) {
+    if (panel) {
+        const layout = character.layouts.personalNotes;
+        panel.style.left = `${layout.x * 100}vw`;
+        panel.style.top = `${layout.y * 100}vh`;
+        panel.style.width = `${layout.width * 100}vw`;
+        panel.style.height = `${layout.height * 100}vh`;
+    }
+}
+
 /**
  * Updates the personal notes panel's position and size based on stored percentage values.
  * This function should be called on window resize.
  */
-function updatePersonalNotesPanelPosition() {
+function updatePanelsPosition() {
     const personalNotesPanel = document.getElementById('personal-notes-panel');
-    if (personalNotesPanel) {
-        const layout = character.layouts.personalNotes;
-        personalNotesPanel.style.left = `${layout.x * 100}vw`;
-        personalNotesPanel.style.top = `${layout.y * 100}vh`;
-        personalNotesPanel.style.width = `${layout.width * 100}vw`;
-        personalNotesPanel.style.height = `${layout.height * 100}vh`;
-    }
+    updatePanelPosition(personalNotesPanel);
+    const backstory = document.getElementById('backstory');
+    updatePanelPosition(backstory);
 }
 
 function closeDamageModal() {
@@ -3788,7 +3799,7 @@ function attachEventListeners() {
     });
 
     // Add resize listener for the personal notes panel
-    window.addEventListener('resize', updatePersonalNotesPanelPosition);
+    window.addEventListener('resize', updatePanelsPosition);
 
     takeDamageBtn.addEventListener("click", () => {
         damageTakeAmountInput.max = character.maxHealth;
@@ -3848,6 +3859,9 @@ function initPage() {
     const personalNotesResizer = document.getElementById("custom-resizer");
     makeDraggable(personalNotesPanel, personalNotesHeader);
     makeResizable(personalNotesPanel, personalNotesResizer);
+
+    const backstory = document.getElementById("backstory");
+    makeResizable(backstory, backstory);
 
     // Initialize Google API libraries
     gapiLoaded();
