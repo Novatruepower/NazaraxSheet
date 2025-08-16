@@ -247,6 +247,9 @@
       }
     },
     "Noki": {
+      "Starting items": {
+        "Coins": 180
+      },
       "fullAutoPassives": {
         "Good Fortune": {
           "level": 1,

@@ -117,7 +117,6 @@ export const ExternalDataManager = {
             });
 
             await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.ClassesRelated.gid, googleDriveFileFetcher.My_Sheet.ClassesRelated.range).then(arr => {
-
                 arr.forEach(value => {
                     let charClass = value[0]; // The first element is the class name
                     if (charClass) { // Ensure class name is not empty
