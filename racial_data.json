@@ -166,6 +166,20 @@
         }
       }
     },
+    "Human": {
+      "fullAutoPassives": {
+        "Growth": {
+          "level": 1,
+          "description": "Humans are able to grow their abilities ever so slightly faster than the other intelligent races. You need {0} less stat experience before it increases.",
+          "values": [1]
+        },
+        "Self reflection": {
+          "level": 1,
+          "description": "Humans are known to be able to learn slightly faster than other intelligent races from their past experiences. You only need {0} experience to level up.",
+          "values": [80]
+        }
+      }
+    },
     "Mutant": {
       "manualPassives": {
           "Mutation": {

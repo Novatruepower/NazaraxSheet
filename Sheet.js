@@ -10,7 +10,7 @@ const MAX_STAT_VALUE = 20;
 
 // Function to calculate max experience for a given level
 function calculateLevelMaxExperience(level) {
-    return 100;
+    return character.uniqueIdentifiers['Self reflection'] ? character.uniqueIdentifiers['Self reflection'].values[0] : 100;
 }
 
 function applyOperator(v1, type, v2) {
@@ -323,6 +323,12 @@ const defaultCharacterData = function () {
     });
 
     // Initialize each stat with its rolled value, racial change, and calculated total
+    let maxExperience = defaultStatMaxExperience;
+
+    if (character.uniqueIdentifiers['Self reflection']) {
+        maxExperience -= character.uniqueIdentifiers['Growth'].values[0];
+    }
+
     ExternalDataManager.rollStats.forEach(statName => {
         const result = newCharacter.isDistributingStats ? MIN_STAT_VALUE : roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Initialize with MIN_STAT_VALUE if distributing
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
@@ -333,7 +339,7 @@ const defaultCharacterData = function () {
             equipment: 0,
             temporaryEffects: [], // Initialize as an empty array for temporary effects
             experience: 0,
-            maxExperience: defaultStatMaxExperience,
+            maxExperience: maxExperience,
         };
     });
 
