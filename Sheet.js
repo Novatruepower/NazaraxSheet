@@ -356,6 +356,8 @@ const defaultCharacterData = function () {
         backstory: "",
     });
 
+    console.log(starterItems);
+
     newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter);
 
     // Initialize each stat with its rolled value, racial change, and calculated total
