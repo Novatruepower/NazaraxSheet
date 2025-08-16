@@ -264,7 +264,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     recalculateSmallUpdateCharacter(char, isSmallDisplay);
 
-    const maxExperience = char.uniqueIdentifiers['Growth'] ? char.uniqueIdentifiers['Growth'].values[0] : defaultStatMaxExperience;
+    const newMaxExperience = char.uniqueIdentifiers['Growth'] ? char.uniqueIdentifiers['Growth'].values[0] : defaultStatMaxExperience;
 
     // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
     ExternalDataManager.rollStats.forEach(statName => {
@@ -273,8 +273,12 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
             if (total)
                 total.value = calculateRollStatTotal(char, statName);
 
-            char[statName].maxExperience = maxExperience;
-            document.getElementById(`${statName}-maxExperience`).value = char[statName].maxExperience;
+            const maxExperience = document.getElementById(`${statName}-maxExperience`);
+
+            if (maxExperience) {
+                char[statName].maxExperience = maxExperience;
+                document.getElementById(`${statName}-maxExperience`).value = char[statName].maxExperience;
+            }
         }
     });
 }
