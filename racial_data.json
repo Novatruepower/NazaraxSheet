@@ -280,9 +280,8 @@
           "description": "When your health reaches 0, throw a coin, if it lands on heads, you survive and your health will be fully replenished, while if you land on tails you die."
         }
       }
-    }
-  },
-  "Succubus": {
+    },
+    "Succubus": {
       "fullAutoPassives": {
         "Attraction": {
           "level": 1,
@@ -301,5 +300,6 @@
           "description": "Being a demon yourself, certain demonic monsters will naturally be neutral towards. Being non-human, you can also interact considerable number of monsters who possess intelligence and social capabilities, and even possibly charm them."
         }
       }
+    }
   }
 }
