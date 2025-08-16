@@ -9,7 +9,7 @@ const MIN_STAT_VALUE = 5;
 const MAX_STAT_VALUE = 20;
 
 // Function to calculate max experience for a given level
-function calculateLevelMaxExperience(char, level) {
+function calculateLevelMaxExperience(char) {
     return char.uniqueIdentifiers['Self reflection'] ? char.uniqueIdentifiers['Self reflection'].values[0] : 100;
 }
 
@@ -322,12 +322,12 @@ const defaultCharacterData = function () {
         permManaRegenActive: 0, //count
     });
 
-    newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter, 1);
+    newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter);
 
     // Initialize each stat with its rolled value, racial change, and calculated total
     let maxExperience = defaultStatMaxExperience;
 
-    if (character.uniqueIdentifiers['Self reflection']) {
+    if (newCharacter.uniqueIdentifiers['Self reflection']) {
         maxExperience -= character.uniqueIdentifiers['Growth'].values[0];
     }
 
@@ -2134,7 +2134,7 @@ function handleChange(event) {
             while (character.levelExperience >= character.levelMaxExperience) {
                 character.level++;
                 character.levelExperience -= character.levelMaxExperience;
-                character.levelMaxExperience = calculateLevelMaxExperience(character.level);
+                character.levelMaxExperience = calculateLevelMaxExperience(character);
             }
             document.getElementById('level').value = character.level;
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
@@ -2142,7 +2142,7 @@ function handleChange(event) {
         } else if (id === 'level') {
             const oldLevel = character.level;
             character.level = newValue;
-            character.levelMaxExperience = calculateLevelMaxExperience(character.level);
+            character.levelMaxExperience = calculateLevelMaxExperience(character);
             document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
             if (newValue < oldLevel)
                 removePassivesLevel();
