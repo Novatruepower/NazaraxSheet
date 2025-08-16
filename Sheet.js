@@ -2366,9 +2366,17 @@ function togglePersonalNotesPanel() {
         saveCurrentStateToHistory(); // Save state after modification
     }
 }
+function saveHeightPositionAndSize(Container) {
+    if (Container) {
+        // Save position and size as percentages of the viewport
+        character.layouts.personalNotes.height = Container.offsetHeight / window.innerHeight;
+        saveCurrentStateToHistory(); // Save the state after an update
+        hasUnsavedChanges = true; // Mark as unsaved
+    }
+}
 
 /**
- * Saves the current position and size of the personal notes container to the character data.
+ * Saves the current position and size of the container to the character data.
  */
 function savePositionAndSize(Container) {
     if (Container) {
@@ -2398,7 +2406,7 @@ function makeHeightResizable(element, handle) {
         function stopResize() {
             window.removeEventListener("mousemove", resize);
             window.removeEventListener("mouseup", stopResize);
-            savePositionAndSize(element);
+            saveHeightPositionAndSize(element);
         }
 
         window.addEventListener("mousemove", resize);
