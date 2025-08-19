@@ -2,6 +2,7 @@ import { ExternalDataManager } from './ExternalDataManager.js';
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
+const defaultRacialPointScale = 100;
 
 // Constants for point distribution
 const TOTAL_DISTRIBUTION_POINTS = 97;
@@ -1223,7 +1224,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  */
 function processRacialFullAutoPassiveChange(category, newAbilityData) {
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
-        character.BaseRacialPower.value += 90;
+        character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
     }
     removeTemporaryEffectByIdentifier(newAbilityData, category);
 
@@ -1246,7 +1247,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
         character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
 
         if (newAbilityData.identifier == 'Spatial Reserve') {
-            character.BaseRacialPower.value -= 90;
+            character.BaseRacialPower.value += newAbilityData.values[1] - defaultRacialPointScale;
         }
     }
 

@@ -128,6 +128,9 @@
           "description": "Dimensionals have the unusual ability to use the muscle like fibers that serves as their skin as a sort of net which lets spatial energy pass into their bodies, but not back out of them, giving them the ability to create a store of this energy. You regenerate [{0}+level] racial points at the start of every one of your turns.",
           "values": [10]
         }
+      },
+      "actives": {
+        
       }
     },
     "Dragonkin": {
