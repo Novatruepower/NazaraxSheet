@@ -13,6 +13,19 @@ export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
     _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
+    formatHrefFootNotes(str, container) {
+        return str.replace().replace(/<sup>(\d+)<sup>/g, (_, index) => {
+            let value = args[index];
+            if (value == null) return 'null';
+
+            if (percent === '%') {
+                value = `${Number(value) * 100}%`;
+            }
+
+            return `<a href="#${container.id}-foot_notes-${key}">↩︎</a>`;
+        })
+    },
+
     /**
      * Replaces placeholders like {0}, {1} in a string with provided arguments.
      *

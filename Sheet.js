@@ -1750,7 +1750,7 @@ function removeTemporaryEffectByCategory(abilities, category) {
     }
 }
 
-function renderFootNotes(race, category, numbersFootNotes, container) {
+function renderFootNotes(race, numbersFootNotes, container) {
     const dataKeys = Object.keys(numbersFootNotes);
     if (dataKeys.length > 0) {
         const footNotesHTML = document.createElement('ul');
@@ -1758,7 +1758,7 @@ function renderFootNotes(race, category, numbersFootNotes, container) {
 
         dataKeys.forEach(key => {
             const element = document.createElement('li');
-            element.id = `${race}-${category}-foot_notes-${key}`;
+            element.id = `${container.id}-foot_notes-${key}`;
             element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
             const paragraphe = document.createElement('p');
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
@@ -1814,7 +1814,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
 
                 const abilityDescription = document.createElement('p');
-                abilityDescription.innerHTML = abilityData.description;
+                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, fullAutoPassivesList);
                 abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
 
@@ -1833,7 +1833,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
             }
         }
 
-        renderFootNotes(race, category, numbersFootNotes, fullAutoPassivesList);
+        renderFootNotes(race, numbersFootNotes, fullAutoPassivesList);
         updateSpecificHtmlVisibility('element');
     } else {
         passivesContainer.classList.add('hidden');
@@ -1909,7 +1909,7 @@ function renderManualRacialPassives(passivesContainer, category) {
         }
     }
 
-    renderFootNotes(race, category, numbersFootNotes, manualPassivesList);
+    renderFootNotes(race, numbersFootNotes, manualPassivesList);
     updateSpecificHtmlVisibility('element');
 }
 
@@ -1965,7 +1965,7 @@ function renderRacialActives(activesContainer, category) {
 
 
                 const abilityDescription = document.createElement('p');
-                abilityDescription.innerHTML = abilityData.description;
+                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, racialActiveList);
                 abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
 
@@ -1980,8 +1980,7 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
-        renderFootNotes(race, category, numbersFootNotes, racialActiveList);
-        
+        renderFootNotes(race, numbersFootNotes, racialActiveList);
         updateSpecificHtmlVisibility('element');
     } else {
         activesContainer.classList.add('hidden');
