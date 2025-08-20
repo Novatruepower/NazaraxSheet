@@ -1888,6 +1888,11 @@ function renderRacialActives(activesContainer, category) {
             if (racialActives.hasOwnProperty(abilityKey)) {
                 const abilityData = racialActives[abilityKey];
                 const abilityTarget = abilityData.identifier;
+                let turnsCooldown = 0;
+
+                if (abilityData.cooldown && abilityData.cooldown.turns) {
+                    turnsCooldown = abilityData.cooldown.turns;
+                }
 
                 const abilityWrapper = document.createElement('div');
                 abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
@@ -1898,10 +1903,6 @@ function renderRacialActives(activesContainer, category) {
                 const abilityTitle = document.createElement('h2');
                 abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors';
                 abilityTitle.textContent = abilityData.name;
-
-                if (abilityData.cooldown && abilityData.cooldown.turns) {
-                    abilityTitle.textContent += `Cooldown: ${abilityData.cooldown.turns} turns`;
-                }
 
 
                 const toggableBtn = document.createElement('button');
@@ -1917,7 +1918,7 @@ function renderRacialActives(activesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
 
                 const abilityDescription = document.createElement('p');
-                abilityDescription.id = abilityTarget;
+                abilityDescription.id = turnsCooldown > 0 ? `Cooldown: ${abilityData.cooldown.turns} turns ${abilityTarget}` : abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
                 abilityDescription.textContent = abilityData.description;
 
