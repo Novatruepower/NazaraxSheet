@@ -1982,11 +1982,10 @@ function renderRacialActives(activesContainer, category) {
         const raceData = ExternalDataManager.getRaceData(race);
 
         if (raceData.foot_notes && raceData.foot_notes.actives) {
-            numbersFootNotes['actives'] = true;
-            //const activesKeys = Object.keys(raceData.foot_notes.actives);
-            //activesKeys.forEach(key => {
-            //    numbersFootNotes[key] = true;
-            //});
+            const activesKeys = Object.keys(raceData.foot_notes.actives);
+            activesKeys.forEach(key => {
+                numbersFootNotes['actives.' + key] = true;
+            });
         }
 
         renderFootNotes(race, numbersFootNotes, racialActiveList);
