@@ -1913,13 +1913,15 @@ function renderRacialActives(activesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
                 abilityWrapper.appendChild(abilityHeader);
 
-                const dataKeys = Object.keys(abilityData.cooldown);
-                dataKeys.forEach(key => {
-                    const abilityCooldown = document.createElement('p');
-                    abilityCooldown.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                    abilityCooldown.textContent = `Cooldown: ${abilityData.cooldown[key]} turns`;
-                    abilityWrapper.appendChild(abilityCooldown);
-                });
+                if (abilityData.cooldown) {
+                    const dataKeys = Object.keys(abilityData.cooldown);
+                    dataKeys.forEach(key => {
+                        const abilityCooldown = document.createElement('p');
+                        abilityCooldown.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
+                        abilityCooldown.textContent = `Cooldown: ${abilityData.cooldown[key]} turns`;
+                        abilityWrapper.appendChild(abilityCooldown);
+                    });
+                }
 
 
                 const abilityDescription = document.createElement('p');
