@@ -1883,6 +1883,7 @@ function renderRacialActives(activesContainer, category) {
     if (racialActives && Object.keys(racialActives).length > 0) {
         renderContainer(activesContainer, "Racial Actives", id);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
+        const footNotes = {};
 
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
@@ -1931,8 +1932,28 @@ function renderRacialActives(activesContainer, category) {
 
                 abilityWrapper.appendChild(abilityDescription);
                 racialActiveList.appendChild(abilityWrapper);
+
+                if (abilityData.foot_notes) {
+                    const dataKeys = Object.keys(abilityData.foot_notes);
+                    dataKeys.forEach(key => {
+                        footNotes[key] = abilityData.foot_notes[key];
+                    });
+                }
             }
         }
+
+        const footNotesHTML = document.createElement('ol');
+        const dataKeys = Object.keys(footNotes);
+        dataKeys.forEach(key => {
+            const element = document.createElement('li');
+            element.id = `${race}-${category}-foot_notes-${key}`;
+            const paragraphe = document.createElement('p');
+            paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
+            paragraphe.textContent = footNotes[key];
+            element.appendChild(paragraphe);
+            footNotesHTML.appendChild(element);
+        });
+        racialActiveList.appendChild(footNotesHTML);
         
         updateSpecificHtmlVisibility('element');
     } else {
