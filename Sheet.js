@@ -1750,6 +1750,26 @@ function removeTemporaryEffectByCategory(abilities, category) {
     }
 }
 
+function renderFootNotes(race, category, numbersFootNotes, container) {
+    const dataKeys = Object.keys(numbersFootNotes);
+    if (dataKeys.length > 0) {
+        const footNotesHTML = document.createElement('ul');
+        const FootNotesData = ExternalDataManager.getRaceFootNotes(race);
+
+        dataKeys.forEach(key => {
+            const element = document.createElement('li');
+            element.id = `${race}-${category}-foot_notes-${key}`;
+            element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
+            const paragraphe = document.createElement('p');
+            paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
+            paragraphe.textContent = `${key}. ${FootNotesData[key]}`;
+            element.appendChild(paragraphe);
+            footNotesHTML.appendChild(element);
+        });
+        container.appendChild(footNotesHTML);
+    }
+}
+
 function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     const race = character.race;
     const id = 'full-auto-passives';
@@ -1764,6 +1784,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     if (fullAutoPassives && Object.keys(fullAutoPassives).length > 0) {
         renderContainer(passivesContainer, "Full Auto Passives", id);
         const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
+        const numbersFootNotes = {};
 
         for (const abilityKey in fullAutoPassives) {
             if (fullAutoPassives.hasOwnProperty(abilityKey)) {
@@ -1793,16 +1814,27 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
 
                 const abilityDescription = document.createElement('p');
+                abilityDescription.innerHTML = abilityData.description;
                 abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                abilityDescription.textContent = abilityData.description;
 
                 abilityWrapper.appendChild(abilityHeader);
                 abilityWrapper.appendChild(abilityDescription);
                 fullAutoPassivesList.appendChild(abilityWrapper);
 
                 processRacialFullAutoPassiveChange(category, abilityData);
+
+                if (abilityData.foot_notes) {
+                    abilityData.foot_notes.forEach(key => {
+                        numbersFootNotes[key] = true;
+                    });
+                }
             }
+        }
+
+        const dataKeys = Object.keys(numbersFootNotes);
+        if (dataKeys.length > 0) {
+            renderFootNotes(race, category, numbersFootNotes, fullAutoPassivesList);
         }
         
         updateSpecificHtmlVisibility('element');
@@ -1943,20 +1975,7 @@ function renderRacialActives(activesContainer, category) {
 
         const dataKeys = Object.keys(numbersFootNotes);
         if (dataKeys.length > 0) {
-            const footNotesHTML = document.createElement('ul');
-            const FootNotesData = ExternalDataManager.getRaceFootNotes(race);
-
-            dataKeys.forEach(key => {
-                const element = document.createElement('li');
-                element.id = `${race}-${category}-foot_notes-${key}`;
-                element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
-                const paragraphe = document.createElement('p');
-                paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                paragraphe.textContent = `${key}. ${FootNotesData[key]}`;
-                element.appendChild(paragraphe);
-                footNotesHTML.appendChild(element);
-            });
-            racialActiveList.appendChild(footNotesHTML);
+            renderFootNotes(race, category, numbersFootNotes, racialActiveList);
         }
         
         updateSpecificHtmlVisibility('element');
