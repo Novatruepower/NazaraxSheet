@@ -1826,6 +1826,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
 
                 console.log(abilityData);
                 if (abilityData.foot_notes) {
+                    console.log(abilityData.foot_notes);
                     abilityData.foot_notes.forEach(key => {
                         numbersFootNotes[key] = true;
                     });
@@ -1833,7 +1834,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
             }
         }
 
-        console.log(dataKeys);
+        const dataKeys = Object.keys(numbersFootNotes);
         if (dataKeys.length > 0) {
             renderFootNotes(race, category, numbersFootNotes, fullAutoPassivesList);
         }
