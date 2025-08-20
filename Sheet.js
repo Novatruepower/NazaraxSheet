@@ -1828,18 +1828,12 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                     console.log(abilityData.foot_notes);
                     abilityData.foot_notes.forEach(key => {
                         numbersFootNotes[key] = true;
-                        console.log(numbersFootNotes);
                     });
                 }
             }
         }
 
-        console.log(numbersFootNotes);
-        const dataKeys = Object.keys(numbersFootNotes);
-        if (dataKeys.length > 0) {
-            renderFootNotes(race, category, numbersFootNotes, fullAutoPassivesList);
-        }
-        
+        renderFootNotes(race, category, numbersFootNotes, fullAutoPassivesList);
         updateSpecificHtmlVisibility('element');
     } else {
         passivesContainer.classList.add('hidden');
@@ -1858,6 +1852,7 @@ function renderManualRacialPassives(passivesContainer, category) {
 
     character.StatChoices[category] = character.StatChoices[category] || {};
     character.StatsAffected[category] = character.StatsAffected[category] || {};
+    const numbersFootNotes = {};
 
     for (const abilityKey in manualPassives) {
         if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
@@ -1905,8 +1900,17 @@ function renderManualRacialPassives(passivesContainer, category) {
                     ++countLevel;
                 } while(availableOptions.length > 0);
             }
+
+            if (abilityData.foot_notes) {
+                abilityData.foot_notes.forEach(key => {
+                    numbersFootNotes[key] = true;
+                });
+            }
         }
     }
+
+    renderFootNotes(race, category, numbersFootNotes, manualPassivesList);
+    updateSpecificHtmlVisibility('element');
 }
 
 function renderRacialActives(activesContainer, category) {
@@ -1976,10 +1980,7 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
-        const dataKeys = Object.keys(numbersFootNotes);
-        if (dataKeys.length > 0) {
-            renderFootNotes(race, category, numbersFootNotes, racialActiveList);
-        }
+        renderFootNotes(race, category, numbersFootNotes, racialActiveList);
         
         updateSpecificHtmlVisibility('element');
     } else {
