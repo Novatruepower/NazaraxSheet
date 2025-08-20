@@ -1783,9 +1783,8 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
 
 function getTitle(title, numbersFootNotes, container) {
     const keys = Object.keys(numbersFootNotes);
-    const href = `<a href="#${container.id}-foot_notes-${value}" rel="nofollow">`;
-
     let notes = keys.join('</a> <a>');
+    
     if (notes.length > 0)
         notes = `<a>${notes}</a>`;
 
