@@ -210,9 +210,9 @@
         },
         "Dragon’s Gag": {
           "level": 75,
-          "description": "You have gained the strength required to be call upon powers comparable to young true dragons. Focus (You have gained the strength required to be call upon powers comparable to young true dragons. Focus (Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption) and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out (Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath) a pseudo-dragon’s breath composed of pure magic, dealing ({0}d{1}/{2} * (S (can be your strength, agility, or magic) * {3} + Level * {16})) damage of a random element (The element is chosen by throwing one d{5} with numbers being associated with an element each, {6} for darkness, {7} for chaos, {8} for wind, {9} for ice, {10} for fire, {11} for earth, {12} for nature, {13} for thunder and {14} for light, {15}/{16}/{5} are rerolls) in a wide area (The resulting attack lingers for a bit before dissipating, so if you move in any direction except backwards while the skill is still in use, you will walk into the damage zone) in front of you for three turns in a row.",
+          "description": "You have gained the strength required to be call upon powers comparable to young true dragons. Focus<a>0</a> and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out<a>1</a> a pseudo-dragon’s breath composed of pure magic, dealing <code>({0}d{1}/{2} * (S<a>2</a> * {3} + Level * {16}))</code> damage of a random element<a>3<sup/> in a wide area<a>4</a> in front of you for three turns in a row<a>5</a>.",
           "values": [1, 4, 2, 10, 20],
-          "foot_notes" : [3, 5, 6, 9]
+          "foot_notes" : [3, 4, 5, 6, 7, 8]
         },
         "Retribution": {
           "level": 100,
