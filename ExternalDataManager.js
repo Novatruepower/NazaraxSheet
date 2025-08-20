@@ -260,7 +260,7 @@ export const ExternalDataManager = {
         if (!raceData)
             return {};
 
-        return raceData["Foot notes"];
+        return raceData.foot_notes;
     },
 
     /**
