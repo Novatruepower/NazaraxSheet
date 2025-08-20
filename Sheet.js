@@ -1934,7 +1934,11 @@ function renderRacialActives(activesContainer, category) {
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'actives', numbersFootNotes);
         const activeskeys = Object.keys(numbersFootNotes);
-        title = `${title}<sup>${activeskeys.join('</sup>, <sup>')}</sup>`;
+        let activesNotes = activeskeys.join('</a> <a>');
+        if (activesNotes.length > 0)
+            activesNotes = `<a>${activesNotes}</a>`;
+
+        title = ExternalDataManager.formatHrefFootNotes(title + activesNotes);
 
         renderContainer(activesContainer, title, id);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
