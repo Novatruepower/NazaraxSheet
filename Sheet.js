@@ -1947,6 +1947,7 @@ function renderRacialActives(activesContainer, category) {
         dataKeys.forEach(key => {
             const element = document.createElement('li');
             element.id = `${race}-${category}-foot_notes-${key}`;
+            element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
             const paragraphe = document.createElement('p');
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
             paragraphe.textContent = `${key}. ${footNotes[key]}`;
