@@ -117,7 +117,7 @@
         }
       },
       "foot_notes": {
-        "passives" : {
+        "manual_passives" : {
           "1": "Since the players are in control of both their human and animal parts, this race is very roleplay heavy, often forcing them to make wrong decisions or to compromise on their actions and is not recommended for those who want to play optimally.",
           "2": "The number of animals in a character is decided by a throw of a d4, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1 to 4. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
         },

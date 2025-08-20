@@ -1893,6 +1893,7 @@ function renderManualRacialPassives(passivesContainer, category) {
     const race = character.race;
     const id = 'manual-passives';
     const numbersFootNotes = {};
+    pushRaceFootNotes(race, 'manual_passives', numbersFootNotes);
     renderContainer(passivesContainer, "Manual Passives", id, numbersFootNotes);
 
     const manualPassivesList = document.getElementById(`${race}-${id}-list`);
@@ -1906,8 +1907,8 @@ function renderManualRacialPassives(passivesContainer, category) {
         if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
             const abilityData = manualPassives[abilityKey];
             const abilityDescription = document.createElement('p');
+            abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, manualPassivesList, abilityData.foot_notes);
             abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
-            abilityDescription.textContent = ExternalDataManager.formatHrefFootNotes(abilityData.description, manualPassivesList, abilityData.foot_notes);
             manualPassivesList.appendChild(abilityDescription);
 
             //+1 and 2 because i start at 1
