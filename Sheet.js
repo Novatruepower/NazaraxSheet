@@ -1762,11 +1762,22 @@ function renderFootNotes(race, numbersFootNotes, container) {
             element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
             const paragraphe = document.createElement('p');
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-            paragraphe.textContent = `${key}. ${FootNotesData[key]}`;
+            paragraphe.textContent = `${key}. ${FootNotesData[key] ?? FootNotesData[numbersFootNotes[key]][key]}`;
             element.appendChild(paragraphe);
             footNotesHTML.appendChild(element);
         });
         container.appendChild(footNotesHTML);
+    }
+}
+
+function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
+    const raceData = ExternalDataManager.getRaceData(race);
+
+    if (raceData.foot_notes && raceData.foot_notes[dataKey]) {
+        const Keys = Object.keys(raceData.foot_notes[dataKey]);
+        Keys.forEach(key => {
+            numbersFootNotes[key] = dataKey;
+        });
     }
 }
 
@@ -1979,14 +1990,7 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
-        const raceData = ExternalDataManager.getRaceData(race);
-
-        if (raceData.foot_notes && raceData.foot_notes.actives) {
-            const activesKeys = Object.keys(raceData.foot_notes.actives);
-            activesKeys.forEach(key => {
-                numbersFootNotes['actives.' + key] = true;
-            });
-        }
+        pushRaceFootNotes(race, 'actives', numbersFootNotes);
 
         renderFootNotes(race, numbersFootNotes, racialActiveList);
         updateSpecificHtmlVisibility('element');
