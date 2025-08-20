@@ -169,6 +169,9 @@ function calculateBaseMaxRacialPower(charData, effects) {
 function calculateMaxRacialPower(charData, level) {
     const effects = getCategoriesTemporaryEffects(charData, 'RacialPower');
 
+    if (character.uniqueIdentifiers['Savagery'])
+        return character.uniqueIdentifiers['Savagery'].values[5];
+
     if (charData.uniqueIdentifiers['Spatial Reserve']) {
         return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), charData.uniqueIdentifiers['Spatial Reserve'].values[0]));
     }
@@ -1348,7 +1351,7 @@ function handleChangeRace(oldRace) {
     }
 
     if (character.uniqueIdentifiers['Spatial Reserve']) {
-        character.BaseRacialPower.value += 90;
+        character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
         delete character.uniqueIdentifiers['Spatial Reserve'];
     }
 
@@ -3594,8 +3597,9 @@ function endTurn() {
             character.Health.value += character.uniqueIdentifiers['Dragon’s Metabolism'].values * character.maxHealth;
         }
 
+        const maxRacialPower = document.getElementById('maxRacialPower').value;
         let data = character.uniqueIdentifiers['Spatial Capture'];
-        let racialPowerRegen = data ? data.values[0] + character.level : character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * character.maxRacialPower;
+        let racialPowerRegen = data ? data.values[0] + character.level : character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * maxRacialPower;
         character.RacialPower.value += racialPowerRegen;
 
         if (character.uniqueIdentifiers['Absorption']) {
@@ -3606,8 +3610,9 @@ function endTurn() {
                 racialPowerRegen = data.values[1];
             }
 
-            character.RacialPower.value += racialPowerRegen * character.maxRacialPower;
+            character.RacialPower.value += racialPowerRegen * maxRacialPower;
         }
+        character.RacialPower.value = Math.min(character.RacialPower.value, maxRacialPower);
 
         let effectsChanged = false;
         // Iterate over all character properties that might have temporary effects
