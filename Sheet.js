@@ -1790,7 +1790,7 @@ function getTitle(title, numbersFootNotes, container) {
         notes = `<a>${notes}</a>`;
 
     notes = notes.replace(/<a>(\d+)<\/a>/g, (_, value) => {
-        ExternalDataManager.getHrefFootNotes(container, value);
+        return ExternalDataManager.getHrefFootNotes(container, value);
     });
 
     return `${title}${notes}`.replace;
