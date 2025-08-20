@@ -58,12 +58,14 @@
         },
         "Fractured mind": {
           "level": 1,
-          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one d{0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn (As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in). Whenever this happens, you regenerate {1} racial points. You can also purposefully let a random (As per usual, this is decided via a d{2} throw) come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points.",
-          "values": [20, 10, 4]
+          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one d{0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {1} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points.",
+          "values": [20, 10],
+          "foot_notes" : [14, 15]
         },
         "Domination": {
           "level": 100,
-          "description": "You have now mastered your transformation and can now decide into which animal you want to transform (This includes Disfigurement but not Fractured mind)."
+          "description": "You have now mastered your transformation and can now decide into which animal you want to transform<a>0</a>.",
+          "foot_notes" : [16]
         }
       },
       "manualPassives": {
