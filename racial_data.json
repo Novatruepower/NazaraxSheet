@@ -175,7 +175,8 @@
         },
         "Frail Body": {
           "level": 1,
-          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<sup>1</sup>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage. "
+          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<sup>1</sup>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.",
+          "foot_notes" : [1]
         },
         "Dragon’s Metabolism": {
           "level": 1,
