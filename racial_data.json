@@ -130,7 +130,21 @@
         }
       },
       "actives": {
-        
+        "Anomaly": {
+          "level": 1,
+          "description": "You focus your spatial energy into an efficient, yet simple line, allowing for single use, one-way (Only the side from which the portal was cast can be used as an entrance, however, until someone fully enters the portal, they can always come back out of it) portal that lasts until the start of your next turn. This spell takes {0} turns to cast and costs {1} racial points per map tile of movement. This portal’s destination is defined by the direction and length of the line of spatial energy created, thus, specific locations are impossible to teleport to, and it teleports to a random place (This also means that anything such as enemy spawn chance dices have to be rerolled when someone enters the portal) within the desired tile. Walking into the portal does not count as your action for the turn",
+          "values": [2, 20]
+        },
+        "Spatial Distortion": {
+          "level": 10,
+          "description": "Having experience, you are now able to create a rope from multiple twisted lines of special energy. This creates a one-way portal that can be used by groups of people (up to {0}) after casting it for {1} turns, this portal costs {2} racial points per tile of movement to create, it lasts for {3} turns (closing at the start of your turn) and cannot be closed on demand. Even though this spatial link makes sure to transport everyone to the same area by twisting different lines of energy together, the exits aren’t stuck together, and so, everyone who walks through this portal will get transported to a different location (This means that a dice for events such as enemy spawn has to be thrown for each person that walks trough a portal) in the same tile.",
+          "values": [8, 3, 50, 2]
+        },
+        "Depature": {
+          "level": 25,
+          "description": "Construct a link between two places in the world at great speeds at the cost of efficiency, instantly creating a portal that can be used by one person at the cost of {0} racial points plus {1} racial points per tile of movement. Both sides of the portals can be used as entrances. Creating this portal doesn’t count as your action for the turn and it can be done multiple times per turn. Portals last until the start of your next turn. The destination of these portals is almost always safe.",
+          "values": [100, 50]
+        }
       }
     },
     "Dragonkin": {
@@ -141,7 +155,8 @@
         },
         "Genetic Impurity": {
           "level": 1,
-          "description": "Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a 50/50 chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a 25/75 chance of being human/dragonkin and if their partner is a dragon, their child will have a 75/25 chance of being dragonkin/dragon."
+          "description": "Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a {0}/{0} chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a {1}/{2} chance of being human/dragonkin and if their partner is a dragon, their child will have a {2}/{1} chance of being dragonkin/dragon.",
+          "values": [50, 25, 75]
         },
         "Frail Body": {
           "level": 1,
