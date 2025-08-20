@@ -1941,9 +1941,9 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
-        const footNotesHTML = document.createElement('ol');
         const dataKeys = Object.keys(numbersFootNotes);
         if (dataKeys.length > 0) {
+            const footNotesHTML = document.createElement('ol');
             const FootNotesData = ExternalDataManager.getRaceFootNotes(race);
 
             dataKeys.forEach(key => {
