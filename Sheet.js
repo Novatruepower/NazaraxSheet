@@ -1659,6 +1659,20 @@ function renderTagManualRacialPassive(race, category, abilityKey, abilityData, a
     }
 }
 
+function getTitle(title, numbersFootNotes, id) {
+    const keys = Object.keys(numbersFootNotes);
+    let notes = keys.join('</a> <a>');
+
+    if (notes.length > 0)
+        notes = `<a>${notes}</a>`;
+
+    notes = notes.replace(/<a>(\d+)<\/a>/g, (_, value) => {
+        return ExternalDataManager.getHrefFootNotes(id, value);
+    });
+
+    return `${title}${notes}`;
+}
+
 function renderContainer(passivesContainer, title, id, numbersFootNotes) {
     const race = character.race;
     const listId = `${race}-${id}-list`;
@@ -1780,20 +1794,6 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
             numbersFootNotes[key] = dataKey;
         });
     }
-}
-
-function getTitle(title, numbersFootNotes, id) {
-    const keys = Object.keys(numbersFootNotes);
-    let notes = keys.join('</a> <a>');
-
-    if (notes.length > 0)
-        notes = `<a>${notes}</a>`;
-
-    notes = notes.replace(/<a>(\d+)<\/a>/g, (_, value) => {
-        return ExternalDataManager.getHrefFootNotes(id, value);
-    });
-
-    return `${title}${notes}`.replace;
 }
 
 function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
