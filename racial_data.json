@@ -199,7 +199,13 @@
         "Equalizer": {
           "level": 10,
           "description": "You have started to become stronger, and thus, your body can finally withstand a dragon’s power. Temporarily call upon the power hidden withing your dragon’s blood, changing all your own racial statistical modifiers except for health and mana to {0}% and ignoring your Frail Body passive for a total of {1} turns. Activating this skill requires you to roar but does not count as an action. You lose {2}% of your health at the end of every turn this skill is active for.",
-          "values": [100, 5, 0.1]
+          "values": [1, 5, 0.1]
+        },
+        "Restoration": {
+          "level": 25,
+          "cooldown": {"turns": 10},
+          "description": "Dragons always existed, and thus, the natural laws of this world that came to be after them hold no meaning to the proud race and their children. Remind the world of its former shape with a powerful roar, nullifying everyone’s statistical multipliers (This skill nullifies every statistical multiplier that come from races, skills, and items with the only exceptions being that it cannot affect dragons and racial changes to health or mana), including those related to items or skills, around yourself for {0} turns. This roar, however, puts a great strain on your body, costing you {1}% of your maximum health.",
+          "values": [3, 0.5]
         }
       }
     },

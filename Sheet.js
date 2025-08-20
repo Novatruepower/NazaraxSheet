@@ -1899,6 +1899,11 @@ function renderRacialActives(activesContainer, category) {
                 abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors';
                 abilityTitle.textContent = abilityData.name;
 
+                if (abilityData.cooldown && abilityData.cooldown.turns) {
+                    abilityTitle.textContent += `Cooldown: ${abilityData.cooldown.turns} turns`;
+                }
+
+
                 const toggableBtn = document.createElement('button');
                 toggableBtn.className = 'toggle-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
                 toggableBtn.dataset.target = abilityTarget;
