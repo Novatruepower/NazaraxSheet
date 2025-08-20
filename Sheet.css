@@ -428,7 +428,7 @@ body {
     display: none;
 }
 
-a {
+a sup {
     color: initial; /* A standard blue color, similar to Tailwind's 'blue-500' */
     text-decoration: underline; /* Optional: adds an underline for better visibility */
 }
