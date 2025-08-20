@@ -1772,12 +1772,23 @@ function renderFootNotes(race, numbersFootNotes, container) {
         const FootNotesData = ExternalDataManager.getRaceFootNotes(race);
 
         dataKeys.forEach(key => {
+            const toggableBtn = document.createElement('button');
+            toggableBtn.className = 'toggle-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
+            toggableBtn.dataset.target = abilityTarget;
+            toggableBtn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+            `;
+
             const element = document.createElement('li');
             element.id = `${container.id}-foot_notes-${key}`;
             element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
             const paragraphe = document.createElement('p');
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
             paragraphe.textContent = `${key}. ${isNaN(numbersFootNotes[key]) ? FootNotesData[numbersFootNotes[key]][key] : FootNotesData[key]}`;
+
+            element.appendChild(toggableBtn);
             element.appendChild(paragraphe);
             footNotesHTML.appendChild(element);
         });
