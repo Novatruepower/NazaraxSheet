@@ -1831,6 +1831,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
 
     if (fullAutoPassives && Object.keys(fullAutoPassives).length > 0) {
         const numbersFootNotes = {};
+        pushRaceFootNotes(race, 'passives', numbersFootNotes);
         renderContainer(passivesContainer, "Full Auto Passives", id, numbersFootNotes);
         const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
 
@@ -1906,7 +1907,7 @@ function renderManualRacialPassives(passivesContainer, category) {
             const abilityData = manualPassives[abilityKey];
             const abilityDescription = document.createElement('p');
             abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
-            abilityDescription.textContent = abilityData.description;
+            abilityDescription.textContent = ExternalDataManager.formatHrefFootNotes(abilityData.description, manualPassivesList, abilityData.foot_notes);
             manualPassivesList.appendChild(abilityDescription);
 
             //+1 and 2 because i start at 1

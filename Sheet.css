@@ -436,7 +436,3 @@ a sup {
 a:hover {
     color: #2563eb; /* A darker blue on hover, similar to 'blue-600' */
 }
-
-code {
-    font-family: monospace;
-}

@@ -67,10 +67,10 @@
       },
       "manualPassives": {
         "Stat Adjustments": {
-          "description": "Demi-humans can choose to apply stat modifiers to their character.",
+          "description": "Demi-humans can choose to apply stat<a>0</a> <a>1</a> modifiers to their character.",
           "options": [
             {
-              "label": "+{0}% to any stat",
+              "label": "+{0}% to any stat<a>0</a> <a>1</a>",
               "type": "stat_increase",
               "calc": "add",
               "options": {"values":[0.25, 0.5], "counts": [1, 2]}, 
@@ -78,14 +78,15 @@
               "unique": "Stat Adjustments"
             },
             {
-              "label": "-{0}% to any stat",
+              "label": "-{0}% to any stat<a>0</a> <a>1</a>",
               "type": "stat_reduction",
               "calc": "add",
               "options": {"values":[-0.25, -0.5], "counts": [1, 2]}, 
               "applicableStats": ["Roll", "Health", "Mana"],
               "unique": "Stat Adjustments"
             }
-          ]
+          ],
+          "foot_notes" : [7, 8]
         }
       },
       "actives": {
@@ -114,6 +115,23 @@
           "description": "You have now mastered your transformation and can turn back into your human form at any time (This skill cannot be used to cancel Disfigurement). This skill requires your racial points to be above {0} to be used and turning back into a human makes you extremely dizzy for {1} turn and dizzy for another.",
           "values": [40, 1]
         }
+      },
+      "foot_notes": {
+        "passives" : {
+          "1": "Since the players are in control of both their human and animal parts, this race is very roleplay heavy, often forcing them to make wrong decisions or to compromise on their actions and is not recommended for those who want to play optimally.",
+          "2": "The number of animals in a character is decided by a throw of a d4, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1 to 4. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
+        },
+        "7": "Cannot be used on a stat that has already been increased or decreased.",
+        "8": "This can include health or magic, but it has to make sense in relation to the chosen animals.",
+        "9": "A magic necklace or crown (akin to flower crowns) made from chains that creates a prison of sorts in your mind, stopping the Savagery, Disfigurement, and Shapeshift skills from ever being activated as long as it is worn, however it does not stop your racial points from decreasing over time (even letting them go into the negatives), it also makes your animal parts more stressed and aggressive.",
+        "10": "This value can go into the negatives.",
+        "11": "Your health and stats stay the same whatever your form, however, animals can only speak in their own languages and their attacks and armors’ depend on their species and your level, these can vary depending on the animal’s personality and experience and have no formal rules surrounding their values.",
+        "12": "This number is a hard cap which cannot be increased in any way.",
+        "13": "Conversely, your inner animals are partially conscious of what is happening while you are in human form.",
+        "14": "As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in.",
+        "15": "As per usual, this is decided via a d4 throw.",
+        "16": "This includes Disfigurement but not Fractured mind.",
+        "17": "This skill cannot be used to cancel Disfigurement."
       }
     },
     "Dimensional": {
