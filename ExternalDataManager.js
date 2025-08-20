@@ -14,7 +14,7 @@ export const ExternalDataManager = {
     _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
     formatHrefFootNotes(str, container) {
-        return str.replace(/<sup>(\d+)<sup>/g, (_, key) => {
+        return str.replace(/<sup>\d+<\/sup>/g, (_, key) => {
             return `<a href="#${container.id}-foot_notes-${key}"><sup>${key}</sup></a>`;
         })
     },
