@@ -1888,11 +1888,6 @@ function renderRacialActives(activesContainer, category) {
             if (racialActives.hasOwnProperty(abilityKey)) {
                 const abilityData = racialActives[abilityKey];
                 const abilityTarget = abilityData.identifier;
-                let turnsCooldown = 0;
-
-                if (abilityData.cooldown && abilityData.cooldown.turns) {
-                    turnsCooldown = abilityData.cooldown.turns;
-                }
 
                 const abilityWrapper = document.createElement('div');
                 abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
@@ -1918,12 +1913,13 @@ function renderRacialActives(activesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
                 abilityWrapper.appendChild(abilityHeader);
 
-                if (turnsCooldown > 0) {
+                const dataKeys = Object.keys(abilityData.cooldown);
+                dataKeys.forEach(key => {
                     const abilityCooldown = document.createElement('p');
                     abilityCooldown.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                    abilityCooldown.textContent = `Cooldown: ${abilityData.cooldown.turns} turns`;
+                    abilityCooldown.textContent = `Cooldown: ${abilityData.cooldown[key]} turns`;
                     abilityWrapper.appendChild(abilityCooldown);
-                }
+                });
 
 
                 const abilityDescription = document.createElement('p');
