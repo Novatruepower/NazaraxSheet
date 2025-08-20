@@ -190,6 +190,17 @@
           "level": 50,
           "description": "You have become strong enough to have your existence be acknowledged as legitimate by most dragons. This means that a majority of dragons will now at least tolerate your existence, while some might even accept to converse with you or teach you, though some will still try to end your life no matter what."
         }
+      },
+      "actives": {
+        "Flight": {
+          "level": 1,
+          "description": "Open up your wings and soar through the sky at blistering speeds. Allows you to move around the overworld at two tiles per turn while having no enemy spawn chance. This can be used while in combat to escape."
+        },
+        "Equalizer": {
+          "level": 10,
+          "description": "You have started to become stronger, and thus, your body can finally withstand a dragon’s power. Temporarily call upon the power hidden withing your dragon’s blood, changing all your own racial statistical modifiers except for health and mana to {0}% and ignoring your Frail Body passive for a total of {1} turns. Activating this skill requires you to roar but does not count as an action. You lose {2}% of your health at the end of every turn this skill is active for.",
+          "values": [100, 5, 0.1]
+        }
       }
     },
     "Dwarf": {
