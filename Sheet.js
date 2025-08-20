@@ -1787,9 +1787,9 @@ function renderFootNotes(race, numbersFootNotes, container) {
             element.id = footnoteId;
             element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
             const paragraphe = document.createElement('p');
+            paragraphe.innerHTML = `${isNaN(numbersFootNotes[key]) ? footNotesData[numbersFootNotes[key]][key] : footNotesData[key]}`;
             paragraphe.id = footnoteParaId;
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-            paragraphe.textContent = `${isNaN(numbersFootNotes[key]) ? footNotesData[numbersFootNotes[key]][key] : footNotesData[key]}`;
 
             const header = document.createElement('div');
             header.className = 'flex items-center justify-between';
