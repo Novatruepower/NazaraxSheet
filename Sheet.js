@@ -1833,7 +1833,9 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
         }
 
         const dataKeys = Object.keys(numbersFootNotes);
+        console.log(dataKeys);
         if (dataKeys.length > 0) {
+            console.log(numbersFootNotes);
             renderFootNotes(race, category, numbersFootNotes, fullAutoPassivesList);
         }
         
