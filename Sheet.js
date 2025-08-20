@@ -1781,6 +1781,21 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
     }
 }
 
+function getTitle(title, numbersFootNotes, container) {
+    const keys = Object.keys(numbersFootNotes);
+    const href = `<a href="#${container.id}-foot_notes-${value}" rel="nofollow">`;
+
+    let notes = keys.join('</a> <a>');
+    if (notes.length > 0)
+        notes = `<a>${notes}</a>`;
+
+    notes = notes.replace(/<a>(\d+)<\/a>/g, (_, value) => {
+        ExternalDataManager.getHrefFootNotes(container, value);
+    });
+
+    return `${title}${notes}`.replace;
+}
+
 function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     const race = character.race;
     const id = 'full-auto-passives';
@@ -1930,17 +1945,9 @@ function renderRacialActives(activesContainer, category) {
     const racialActives = ExternalDataManager.getRaceActives(race, character.level);
 
     if (racialActives && Object.keys(racialActives).length > 0) {
-        let title = 'Racial Actives';
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'actives', numbersFootNotes);
-        const activeskeys = Object.keys(numbersFootNotes);
-        let activesNotes = activeskeys.join('</a> <a>');
-        if (activesNotes.length > 0)
-            activesNotes = `<a>${activesNotes}</a>`;
-
-        title = ExternalDataManager.formatHrefFootNotes(title + activesNotes);
-
-        renderContainer(activesContainer, title, id);
+        renderContainer(activesContainer, getTitle('Racial Actives', numbersFootNotes), id);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
 
         for (const abilityKey in racialActives) {
