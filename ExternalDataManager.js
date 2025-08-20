@@ -238,7 +238,7 @@ export const ExternalDataManager = {
         return this._data.Races[raceName];
     },
 
-    getRaceFootNotes(raceData) {
+    getRaceFootNotes(raceName) {
         const raceData = this.getRaceData(raceName);
 
         if (!raceData)
