@@ -1949,7 +1949,7 @@ function renderRacialActives(activesContainer, category) {
             element.id = `${race}-${category}-foot_notes-${key}`;
             const paragraphe = document.createElement('p');
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-            paragraphe.textContent = footNotes[key];
+            paragraphe.textContent = `${key}. ${footNotes[key]}`;
             element.appendChild(paragraphe);
             footNotesHTML.appendChild(element);
         });
