@@ -1979,8 +1979,10 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
-        if (abilityData.foot_notes && abilityData.foot_notes.actives) {
-            abilityData.foot_notes.actives.forEach(key => {
+        const raceData = ExternalDataManager.getRaceData(raceName);;
+
+        if (raceData.foot_notes && raceData.foot_notes.actives) {
+            raceData.foot_notes.actives.forEach(key => {
                 numbersFootNotes[key] = true;
             });
         }
