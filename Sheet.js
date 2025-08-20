@@ -1979,7 +1979,8 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
-        const raceData = ExternalDataManager.getRaceData(race);;
+        const raceData = ExternalDataManager.getRaceData(race);
+        console.log(raceData);
 
         if (raceData.foot_notes && raceData.foot_notes.actives) {
             raceData.foot_notes.actives.forEach(key => {
