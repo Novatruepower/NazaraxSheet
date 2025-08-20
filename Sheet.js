@@ -1979,6 +1979,12 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
+        if (abilityData.foot_notes && abilityData.foot_notes.actives) {
+            abilityData.foot_notes.actives.forEach(key => {
+                numbersFootNotes[key] = true;
+            });
+        }
+
         renderFootNotes(race, numbersFootNotes, racialActiveList);
         updateSpecificHtmlVisibility('element');
     } else {
