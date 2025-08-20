@@ -1814,7 +1814,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
 
                 const abilityDescription = document.createElement('p');
-                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, fullAutoPassivesList);
+                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, fullAutoPassivesList, abilityData.foot_notes);
                 abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
 
@@ -1965,7 +1965,7 @@ function renderRacialActives(activesContainer, category) {
 
 
                 const abilityDescription = document.createElement('p');
-                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, racialActiveList);
+                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, racialActiveList, abilityData.foot_notes);
                 abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
 

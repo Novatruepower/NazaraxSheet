@@ -175,7 +175,7 @@
         },
         "Frail Body": {
           "level": 1,
-          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<sup>1</sup>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.",
+          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<sup>0</sup>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.",
           "foot_notes" : [1]
         },
         "Dragon’s Metabolism": {
@@ -216,7 +216,7 @@
         },
         "Retribution": {
           "level": 100,
-          "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<sup>3</sup> on converting your body and soul into mana for {0} turns<sup></sup>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{2}d{3}/{4} * (S<sup>5</sup> * {5} + Level * {6})<code> damage of a random element<sup>6</sup> to anything in its path.",
+          "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<sup>0</sup> on converting your body and soul into mana for {0} turns<sup>1</sup>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{2}d{3}/{4} * (S<sup>2</sup> * {5} + Level * {6})<code> damage of a random element<sup>3</sup> to anything in its path.",
           "values" : [3, 25, 1, 4, 2, 20, 50],
           "foot_notes" : [3, 5, 6, 9]
         }

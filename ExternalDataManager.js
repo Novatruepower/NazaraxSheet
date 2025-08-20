@@ -13,9 +13,19 @@ export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
     _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
-    formatHrefFootNotes(str, container) {
-        return str.replace(/<sup>(\d+)<\/sup>/g, (_, key) => {
-            return `<a href="#${container.id}-foot_notes-${key}" rel="nofollow"><sup>${key}</sup></a>`;
+    formatHrefFootNotes(str, container, ...args) {
+        if (!args)
+            return str;
+
+        if (Array.isArray(args[0])) {
+            args = args[0];
+        }
+
+        return str.replace(/<sup>(\d+)<\/sup>/g, (_, index) => {
+            let value = args[index];
+            if (value == null) return 'null';
+
+            return `<a href="#${container.id}-foot_notes-${value}" rel="nofollow"><sup>${value}</sup></a>`;
         })
     },
 
