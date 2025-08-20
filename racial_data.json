@@ -216,10 +216,14 @@
           "level": 100,
           "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing (Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath) on converting your body and soul into mana for {0} turns (The attack is launched at the start of the fourth turn if the first turn is when the skill is used), you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing [{2}d{3}/{4} * (S (can be your strength, agility, or magic) * {5} + Level * {6})] damage of a random element (The element is chosen by throwing one d{7} with numbers being associated with an element each, {8} for darkness, {9} for chaos, {10} for wind, {11} for ice, {12} for fire, {13} for earth, {14} for nature, {15} for thunder and {16} for light, {17}/{18}/{7} are rerolls) to anything in its path.",
           "values" : [3, 25, 1, 4, 2, 20, 50, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-          "foot_notes" : {
-            "7": "The resulting attack lingers for a bit before dissipating, so if you move in any direction except backwards while the skill is still in use, you will walk into the damage zone."
-          }
+          "foot_notes" : [3, 5, 6, 9]
         }
+      },
+      "Foot notes" : {
+        "3": "Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption.",
+        "5": "S can be your strength, agility, or magic.",
+        "6": "The element is chosen by throwing one d12 with numbers being associated with an element each, 1 for darkness, 2 for chaos, 3 for wind, 4 for ice, 5 for fire, 6 for earth, 7 for nature, 8 for thunder and 9 for light, 10/11/12 are rerolls.",
+        "9": "The attack is launched at the start of the fourth turn if the first turn is when the skill is used."
       }
     },
     "Dwarf": {

@@ -238,6 +238,15 @@ export const ExternalDataManager = {
         return this._data.Races[raceName];
     },
 
+    getRaceFootNotes(raceData) {
+        const raceData = this.getRaceData(raceName);
+
+        if (!raceData)
+            return {};
+
+        return raceData["Foot notes"];
+    },
+
     /**
      * Retrieves all data associated with a specific race from the internal data.
      * @param {string} raceName The name of the race (e.g., "Human", "Elf").

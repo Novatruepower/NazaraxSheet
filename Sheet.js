@@ -1883,7 +1883,7 @@ function renderRacialActives(activesContainer, category) {
     if (racialActives && Object.keys(racialActives).length > 0) {
         renderContainer(activesContainer, "Racial Actives", id);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
-        const footNotes = {};
+        const numbersFootNotes = {};
 
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
@@ -1934,27 +1934,30 @@ function renderRacialActives(activesContainer, category) {
                 racialActiveList.appendChild(abilityWrapper);
 
                 if (abilityData.foot_notes) {
-                    const dataKeys = Object.keys(abilityData.foot_notes);
-                    dataKeys.forEach(key => {
-                        footNotes[key] = abilityData.foot_notes[key];
+                    abilityData.foot_notes.forEach(key => {
+                        numbersFootNotes[key] = true;
                     });
                 }
             }
         }
 
         const footNotesHTML = document.createElement('ol');
-        const dataKeys = Object.keys(footNotes);
-        dataKeys.forEach(key => {
-            const element = document.createElement('li');
-            element.id = `${race}-${category}-foot_notes-${key}`;
-            element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
-            const paragraphe = document.createElement('p');
-            paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-            paragraphe.textContent = `${key}. ${footNotes[key]}`;
-            element.appendChild(paragraphe);
-            footNotesHTML.appendChild(element);
-        });
-        racialActiveList.appendChild(footNotesHTML);
+        const dataKeys = Object.keys(numbersFootNotes);
+        if (dataKeys.length > 0) {
+            const FootNotesData = ExternalDataManager.getRaceFootNotes(race);
+
+            dataKeys.forEach(key => {
+                const element = document.createElement('li');
+                element.id = `${race}-${category}-foot_notes-${key}`;
+                element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
+                const paragraphe = document.createElement('p');
+                paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
+                paragraphe.textContent = `${key}. ${FootNotesData[key]}`;
+                element.appendChild(paragraphe);
+                footNotesHTML.appendChild(element);
+            });
+            racialActiveList.appendChild(footNotesHTML);
+        }
         
         updateSpecificHtmlVisibility('element');
     } else {
