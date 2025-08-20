@@ -427,3 +427,22 @@ body {
 .hidden {
     display: none;
 }
+
+/* Style the ordered list container */
+ol {
+    list-style-type: decimal; /* Ensures numbered list */
+    padding-left: 20px; /* Adds space on the left */
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Style each list item */
+li {
+    margin-bottom: 10px; /* Adds space between each footnote */
+}
+
+/* Style the paragraph inside each list item */
+li p {
+    margin: 0; /* Remove default paragraph margin */
+    display: inline; /* Keep the paragraph on the same line as the number */
+}
