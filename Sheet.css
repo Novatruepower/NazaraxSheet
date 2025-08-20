@@ -427,3 +427,12 @@ body {
 .hidden {
     display: none;
 }
+
+a {
+    color: #3b82f6; /* A standard blue color, similar to Tailwind's 'blue-500' */
+    text-decoration: underline; /* Optional: adds an underline for better visibility */
+}
+
+a:hover {
+    color: #2563eb; /* A darker blue on hover, similar to 'blue-600' */
+}

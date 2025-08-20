@@ -15,7 +15,7 @@ export const ExternalDataManager = {
 
     formatHrefFootNotes(str, container) {
         return str.replace(/<sup>(\d+)<\/sup>/g, (_, key) => {
-            return `<a href="#${container.id}-foot_notes-${key}"><sup>${key}</sup></a>`;
+            return `<a href="#${container.id}-foot_notes-${key}" rel="nofollow"><sup>${key}</sup></a>`;
         })
     },
 
