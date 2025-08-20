@@ -1930,9 +1930,14 @@ function renderRacialActives(activesContainer, category) {
     const racialActives = ExternalDataManager.getRaceActives(race, character.level);
 
     if (racialActives && Object.keys(racialActives).length > 0) {
-        renderContainer(activesContainer, "Racial Actives", id);
-        const racialActiveList = document.getElementById(`${race}-${id}-list`);
+        let title = 'Racial Actives';
         const numbersFootNotes = {};
+        pushRaceFootNotes(race, 'actives', numbersFootNotes);
+        const activeskeys = Object.keys(numbersFootNotes);
+        title = `${title}<sup>${activeskeys.join('</sup>, <sup>')}</sup>`;
+
+        renderContainer(activesContainer, title, id);
+        const racialActiveList = document.getElementById(`${race}-${id}-list`);
 
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
@@ -1990,7 +1995,6 @@ function renderRacialActives(activesContainer, category) {
             }
         }
 
-        pushRaceFootNotes(race, 'actives', numbersFootNotes);
         renderFootNotes(race, numbersFootNotes, racialActiveList);
         updateSpecificHtmlVisibility('element');
     } else {
