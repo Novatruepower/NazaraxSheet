@@ -1906,6 +1906,10 @@ function renderManualRacialPassives(passivesContainer, category) {
     for (const abilityKey in manualPassives) {
         if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
             const abilityData = manualPassives[abilityKey];
+            abilityData.options.forEach(option => {
+                option.label = ExternalDataManager.formatHrefFootNotes(option.label, manualPassivesList, abilityData.foot_notes)
+            });
+
             const abilityDescription = document.createElement('p');
             abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, manualPassivesList, abilityData.foot_notes);
             abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 mb-2';
@@ -1939,7 +1943,7 @@ function renderManualRacialPassives(passivesContainer, category) {
 
                     const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
-                    renderTagManualRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualPassivesList, countLevel, tagToPass);
+                    renderTagManualRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualPassivesList, countLevel, tagToPass, numbersFootNotes);
 
                     if (tagToPass)
                         usedSetOptions.add(tagToPass);
