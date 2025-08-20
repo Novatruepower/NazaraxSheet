@@ -1351,7 +1351,7 @@ function handleChangeRace(oldRace) {
     }
 
     if (character.uniqueIdentifiers['Spatial Reserve']) {
-        character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
+        character.BaseRacialPower.value += defaultRacialPointScale - character.uniqueIdentifiers['Spatial Reserve'].values[1];
         delete character.uniqueIdentifiers['Spatial Reserve'];
     }
 
