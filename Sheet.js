@@ -1824,16 +1824,17 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
 
                 processRacialFullAutoPassiveChange(category, abilityData);
 
-                console.log(abilityData);
                 if (abilityData.foot_notes) {
                     console.log(abilityData.foot_notes);
                     abilityData.foot_notes.forEach(key => {
                         numbersFootNotes[key] = true;
+                        console.log(numbersFootNotes);
                     });
                 }
             }
         }
 
+        console.log(numbersFootNotes);
         const dataKeys = Object.keys(numbersFootNotes);
         if (dataKeys.length > 0) {
             renderFootNotes(race, category, numbersFootNotes, fullAutoPassivesList);
