@@ -1784,7 +1784,7 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
 function getTitle(title, numbersFootNotes, container) {
     const keys = Object.keys(numbersFootNotes);
     let notes = keys.join('</a> <a>');
-    
+
     if (notes.length > 0)
         notes = `<a>${notes}</a>`;
 
@@ -1946,8 +1946,8 @@ function renderRacialActives(activesContainer, category) {
     if (racialActives && Object.keys(racialActives).length > 0) {
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'actives', numbersFootNotes);
-        renderContainer(activesContainer, getTitle('Racial Actives', numbersFootNotes), id);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
+        renderContainer(activesContainer, getTitle('Racial Actives', numbersFootNotes, racialActiveList), id);
 
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
