@@ -175,7 +175,7 @@
         },
         "Frail Body": {
           "level": 1,
-          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage (Even one damage from poison is enough to cause your liver to fail), some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage. "
+          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<sup>1</sup>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage. "
         },
         "Dragon’s Metabolism": {
           "level": 1,
@@ -210,19 +210,25 @@
         "Dragon’s Gag": {
           "level": 75,
           "description": "You have gained the strength required to be call upon powers comparable to young true dragons. Focus (You have gained the strength required to be call upon powers comparable to young true dragons. Focus (Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption) and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out (Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath) a pseudo-dragon’s breath composed of pure magic, dealing ({0}d{1}/{2} * (S (can be your strength, agility, or magic) * {3} + Level * {16})) damage of a random element (The element is chosen by throwing one d{5} with numbers being associated with an element each, {6} for darkness, {7} for chaos, {8} for wind, {9} for ice, {10} for fire, {11} for earth, {12} for nature, {13} for thunder and {14} for light, {15}/{16}/{5} are rerolls) in a wide area (The resulting attack lingers for a bit before dissipating, so if you move in any direction except backwards while the skill is still in use, you will walk into the damage zone) in front of you for three turns in a row.",
-          "values": [1, 4, 2, 10, 20, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+          "values": [1, 4, 2, 10, 20],
+          "foot_notes" : [3, 5, 6, 9]
         },
         "Retribution": {
           "level": 100,
           "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing (Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath) on converting your body and soul into mana for {0} turns (The attack is launched at the start of the fourth turn if the first turn is when the skill is used), you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing [{2}d{3}/{4} * (S (can be your strength, agility, or magic) * {5} + Level * {6})] damage of a random element (The element is chosen by throwing one d{7} with numbers being associated with an element each, {8} for darkness, {9} for chaos, {10} for wind, {11} for ice, {12} for fire, {13} for earth, {14} for nature, {15} for thunder and {16} for light, {17}/{18}/{7} are rerolls) to anything in its path.",
-          "values" : [3, 25, 1, 4, 2, 20, 50, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+          "values" : [3, 25, 1, 4, 2, 20, 50],
           "foot_notes" : [3, 5, 6, 9]
         }
       },
       "Foot notes" : {
+        "1": "Even one damage from poison is enough to cause your liver to fail.",
+        "2": "This skill nullifies every statistical multiplier that come from races, skills, and items with the only exceptions being that it cannot affect dragons and racial changes to health or mana",
         "3": "Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption.",
+        "4": "Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath.",
         "5": "S can be your strength, agility, or magic.",
         "6": "The element is chosen by throwing one d12 with numbers being associated with an element each, 1 for darkness, 2 for chaos, 3 for wind, 4 for ice, 5 for fire, 6 for earth, 7 for nature, 8 for thunder and 9 for light, 10/11/12 are rerolls.",
+        "7": "The resulting attack lingers for a bit before dissipating, so if you move in any direction except backwards while the skill is still in use, you will walk into the damage zone.",
+        "8": "The element stays the same for the three turns.",
         "9": "The attack is launched at the start of the fourth turn if the first turn is when the skill is used."
       }
     },

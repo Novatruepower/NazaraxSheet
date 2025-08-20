@@ -1926,9 +1926,9 @@ function renderRacialActives(activesContainer, category) {
 
 
                 const abilityDescription = document.createElement('p');
+                abilityDescription.innerHTML = abilityData.description;
                 abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                abilityDescription.textContent = abilityData.description;
 
                 abilityWrapper.appendChild(abilityDescription);
                 racialActiveList.appendChild(abilityWrapper);
@@ -1943,7 +1943,7 @@ function renderRacialActives(activesContainer, category) {
 
         const dataKeys = Object.keys(numbersFootNotes);
         if (dataKeys.length > 0) {
-            const footNotesHTML = document.createElement('ol');
+            const footNotesHTML = document.createElement('ul');
             const FootNotesData = ExternalDataManager.getRaceFootNotes(race);
 
             dataKeys.forEach(key => {
