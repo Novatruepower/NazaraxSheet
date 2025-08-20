@@ -21,7 +21,7 @@ export const ExternalDataManager = {
             args = args[0];
         }
 
-        return str.replace(/<sup>(\d+)<\/sup>/g, (_, index) => {
+        return str.replace(/<a>(\d+)<\/a>/g, (_, index) => {
             let value = args[index];
             if (value == null) return 'null';
 

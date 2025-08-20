@@ -1825,7 +1825,6 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 processRacialFullAutoPassiveChange(category, abilityData);
 
                 if (abilityData.foot_notes) {
-                    console.log(abilityData.foot_notes);
                     abilityData.foot_notes.forEach(key => {
                         numbersFootNotes[key] = true;
                     });
