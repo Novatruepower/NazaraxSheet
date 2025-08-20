@@ -144,6 +144,21 @@
           "level": 25,
           "description": "Construct a link between two places in the world at great speeds at the cost of efficiency, instantly creating a portal that can be used by one person at the cost of {0} racial points plus {1} racial points per tile of movement. Both sides of the portals can be used as entrances. Creating this portal doesn’t count as your action for the turn and it can be done multiple times per turn. Portals last until the start of your next turn. The destination of these portals is almost always safe.",
           "values": [100, 50]
+        },
+        "Exodus": {
+          "level": 50,
+          "description": "Release great amounts of dimensional energy, creating a semi-permanent link between two locations, making an unlimited use, two-way portal that lasts {0} turns (breaks at the start of your turn). This portal takes {1} turn and {2} racial points per tile of map movement to create. The portal’s exit can either be a random location within a certain tile, or, for the cost of an additional {4} racial points per tile of movement, can teleport you to an exact location within a tile (This can be a type of location (safe area, shore, next to a landmark), but if the location is a specific landmark is chosen, luck and intelligence will determine if you will even be able to land in the right tile, if you are unable to, you will instead be teleported to a random location within a random tile in the landmark’s surroundings). Because of the way energy is haphazardly released, the portal’s location can be felt by creatures within the same tile.",
+          "values": [3, 5, 50, 10]
+        },
+        "Nowhere": {
+          "level": 75,
+          "description": "With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them (You cannot close “Nowhere” while inside of it since you cannot think or act) or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
+          "values": [200]
+        },
+        "Black hole": {
+          "level": 100,
+          "description": "Forcefully distort the spatial energy around you, making every entity within your current tile (One map tile is a square around {0} km in length) aware of each other’s presence and making distance completely irrelevant (within the limits of the current tile), turning any distance into melee range, as well as far enough away to use any attacks with a required range or to use attacks with an area of effect smaller than the entire tile safe to use for the next {1} turns. This costs {2} racial points to use and takes {3} turns to cast, if your focus breaks during this time, your racial points will still be consumed.",
+          "values": [6, 3, 1000, 3]
         }
       }
     },
