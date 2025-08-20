@@ -1659,19 +1659,20 @@ function renderTagManualRacialPassive(race, category, abilityKey, abilityData, a
     }
 }
 
-function renderContainer(passivesContainer, title, id) {
+function renderContainer(passivesContainer, title, id, numbersFootNotes) {
     const race = character.race;
+    const listId = `${race}-${id}-list`;
     passivesContainer.classList.remove('hidden');
     passivesContainer.innerHTML = `
     <div class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-md shadow-sm mb-4">
-        <h4 class="text-lg font-bold text-gray-900 dark:text-white">${race} ${title}</h4>
+        <h4 class="text-lg font-bold text-gray-900 dark:text-white">${race} ${getTitle(title, numbersFootNotes, listId)}</h4>
         <button class="toggle-container-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors duration-200" data-target="${race}-${id}-list">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
         </button>
     </div>
-    <div id="${race}-${id}-list" class="space-y-4 px-2">
+    <div id="${listId}" class="space-y-4 px-2">
     </div>
     `;
 }
@@ -1781,7 +1782,7 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
     }
 }
 
-function getTitle(title, numbersFootNotes, container) {
+function getTitle(title, numbersFootNotes, id) {
     const keys = Object.keys(numbersFootNotes);
     let notes = keys.join('</a> <a>');
 
@@ -1789,7 +1790,7 @@ function getTitle(title, numbersFootNotes, container) {
         notes = `<a>${notes}</a>`;
 
     notes = notes.replace(/<a>(\d+)<\/a>/g, (_, value) => {
-        return ExternalDataManager.getHrefFootNotes(container, value);
+        return ExternalDataManager.getHrefFootNotes(id, value);
     });
 
     return `${title}${notes}`.replace;
@@ -1807,9 +1808,9 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
 
     if (fullAutoPassives && Object.keys(fullAutoPassives).length > 0) {
-        renderContainer(passivesContainer, "Full Auto Passives", id);
-        const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
         const numbersFootNotes = {};
+        renderContainer(passivesContainer, "Full Auto Passives", id, numbersFootNotes);
+        const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
 
         for (const abilityKey in fullAutoPassives) {
             if (fullAutoPassives.hasOwnProperty(abilityKey)) {
@@ -1868,7 +1869,8 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
 function renderManualRacialPassives(passivesContainer, category) {
     const race = character.race;
     const id = 'manual-passives';
-    renderContainer(passivesContainer, "Manual Passives", id);
+    const numbersFootNotes = {};
+    renderContainer(passivesContainer, "Manual Passives", id, numbersFootNotes);
 
     const manualPassivesList = document.getElementById(`${race}-${id}-list`);
     const manualPassives = ExternalDataManager.getRaceManualPassives(race);
@@ -1876,7 +1878,6 @@ function renderManualRacialPassives(passivesContainer, category) {
 
     character.StatChoices[category] = character.StatChoices[category] || {};
     character.StatsAffected[category] = character.StatsAffected[category] || {};
-    const numbersFootNotes = {};
 
     for (const abilityKey in manualPassives) {
         if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
@@ -1940,14 +1941,13 @@ function renderManualRacialPassives(passivesContainer, category) {
 function renderRacialActives(activesContainer, category) {
     const race = character.race;
     const id = 'racial-actives';
-
     const racialActives = ExternalDataManager.getRaceActives(race, character.level);
 
     if (racialActives && Object.keys(racialActives).length > 0) {
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'actives', numbersFootNotes);
+        renderContainer(activesContainer, 'Racial Actives', id, numbersFootNotes);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
-        renderContainer(activesContainer, getTitle('Racial Actives', numbersFootNotes, racialActiveList), id);
 
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
