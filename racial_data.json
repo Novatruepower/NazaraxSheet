@@ -32,20 +32,32 @@
       "actives": {
         "Rough Reshaping": {
           "level": 1,
-          "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch  at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts (Both the original item and the final product have to meet all the criteria). This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform  for one turn before starting to change it."
+          "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch<a>0</a> at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts<a>1</a>. This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform  for one turn before starting to change it.",
+          "foot_notes" : [1, 2]
         },
         "Controlled Reshaping": {
           "level": 25,
-          "description": "You can now deform, and form items made from more than one part, more than one material (The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it), or that use a combination of different simple shapes (A basic gear or bicycle wheel with a frame would be possible for instance, while a sword with a guard, a complete shield or a crossbow would be impossible) at the expanse of more racial points."
+          "description": "You can now deform, and form items made from more than one part, more than one material<a>0</a>, or that use a combination of different simple shapes<a>1</a> at the expanse of more racial points.",
+          "foot_notes" : [4, 5]
         },
         "Reshaping Finesse": {
           "level": 50,
-          "description": "You can now also deform, and form items with high levels of precision (This includes things such as recreating a weapon you know from it’s scraps, creating entire buildings out of iron (nails) and wood, and making crossbows), allowing you to manipulate items made from large amounts of different materials, parts, or even complex shapes (The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it), however, this costs tremendous amounts of racial points."
+          "description": "You can now also deform, and form items with high levels of precision<a>0</a>, allowing you to manipulate items made from large amounts of different materials, parts, or even complex shapes<a>1</a>, however, this costs tremendous amounts of racial points.",
+          "foot_notes" : [6, 7]
         },
         "Gift of Creation": {
           "level": 100,
           "description": "You can now reshape living beings as long as you have the necessary knowledge of the target’s body shape and materials. This can be used to repair organs and bones, close wounds, heal people, or to even damage them. However, this costs non-negligeable amounts of racial energy."
         }
+      },
+      "foot_notes":{
+        "1": "An item here is any singular “grouping” of an item type, if you put your hand in a box of nails, you can manipulate all the nails since they are all the same and in contact with each other, the same rule would apply to gold coins in a bag or logs roped together.",
+        "2": "Both the original item and the final product have to meet all the criteria.",
+        "3": "This doesn’t apply to simple things like dirt, simple wooden walls (as long as they are made of logs and nothing else), and so on.",
+        "4": "The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it.",
+        "5": "A basic gear or bicycle wheel with a frame would be possible for instance, while a sword with a guard, a complete shield or a crossbow would be impossible.",
+        "6": "This includes things such as recreating a weapon you know from it’s scraps, creating entire buildings out of iron (nails) and wood, and making crossbows.",
+        "7": "The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it."
       }
     },
     "Demi-humans": {
@@ -263,7 +275,7 @@
           "foot_notes" : [3, 5, 6, 9]
         }
       },
-      "Foot notes" : {
+      "foot_notes" : {
         "1": "Even one damage from poison is enough to cause your liver to fail.",
         "2": "This skill nullifies every statistical multiplier that come from races, skills, and items with the only exceptions being that it cannot affect dragons and racial changes to health or mana",
         "3": "Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption.",
@@ -289,6 +301,11 @@
           "level": 50,
           "description": "Your body somehow developed an organ which seems to serve no purpose other than to store alcohol which had been ingested beforehand. This organ can be added to your inventory and store a volume equivalent to 5 bottles of alcohol. Alcohol inside this organ remains as what it was before being ingested and can be consumed at any time without counting as your action for the turn a turn (You can consume any amount of alcohol stored in “The Vault” instantly)."
         }
+      },
+      "foot_notes": {
+        "1": "Which is calculated after armors.",
+        "2": "You can consume any amount of alcohol stored in “The Vault” instantly.",
+        "3": "For instance, skill has a stronger effect while in confined rooms and a weaker effect while outside if there’s wind."
       }
     },
     "Elf": {
