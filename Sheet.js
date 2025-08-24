@@ -2596,6 +2596,7 @@ function updateSpecializationDropdownAndData() {
         }
     });
 
+    console.log(character.specializations);
     specializationDisplayInput.value = renderSpecializations(character.specializations);
 
     // 4. Populate and update checkboxes in the dropdown options
