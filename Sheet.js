@@ -2006,6 +2006,13 @@ function renderRacialActives(activesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
                 abilityWrapper.appendChild(abilityHeader);
 
+                if (abilityData.cast_time) {
+                    const abilityCastTime = document.createElement('p');
+                    abilityCastTime.innerHTML = `<b>Cast time:</b> ${abilityData.cast_time}`;
+                    abilityCastTime.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
+                    abilityWrapper.appendChild(abilityCastTime);
+                }
+
                 if (abilityData.cooldown) {
                     const dataKeys = Object.keys(abilityData.cooldown);
                     dataKeys.forEach(key => {

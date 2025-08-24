@@ -315,7 +315,7 @@
         "Wasted Rage": {
           "level": 25,
           "cooldown": {"turns": {"value": 50, "shared": ["Weaning Rage"]} },
-          "conditions": "Having been drunk for at least the past  {0} turns",
+          "conditions": "Having been drunk for at least the past {0} turns",
           "description": "Having been drunk for so long, your brain just gives up on you, forcing you into an uncontrollable rage for {1} turns. While in this state of rage, your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.",
           "values": [50, 5, 1.5, -0.75]
         },
@@ -350,6 +350,34 @@
           "level": 25,
           "description": "Because of the relation between elves and nature, most plants, plant-based creatures, and animals will naturally be neutral towards Elves. Elves are able to converse with them to a very limited capacity."
         }
+      },
+      "actives": {
+        "Agronomy" : {
+          "level": 10,
+          "cooldown": {"turns": {"value": 20} },
+          "description": "Enchant a small area (around half a meter in diameter) for a full day ({0} turns), making it suitable for plant growth<a>0</a>. The enchanted area also heals most plants within its boundaries.",
+          "values": [20],
+          "foot_notes": [1]
+        },
+        "Impatience" : {
+          "level": 25,
+          "cooldown": {"turns": {"value": 10} },
+          "description": "While touching a plant, you are able to forcibly increase the speed of its<a>0</a> metabolism, causing it to grow, heal, bloom, age, and rot at about {0} times its usual rate. This spell can be stopped before the full {1} turns.",
+          "values" : [60, 60],
+          "foot_notes": [2]
+        },
+        "Healroots" : {
+          "level": 50,
+          "cast_time": 1,
+          "description" : "Summon Healroots from the earth to protect you and your allies. After the cast time is over, Healroots will pop out of the ground, and wrap around your target’s<a>0</a> wound(s), healing them for [(Caster LVL) * {0}] HP, and causing skin to quickly grow back to close the wound(s). After having healed a target, Healroots can be moved onto a new target without having to wait for the cast time. This skill requires both the caster and target to be immobile for and can only be cast while a target has fresh wounds.",
+          "values": 25,
+          "foot_notes": [3]
+        }
+      },
+      "foot_notes" : {
+        "1": "Depending on your location, this can mean different thing, like watering ground, creating a small source of light, making the area darker, making the ground more fertile, making it colder or hotter, increasing the moisture levels, etc.",
+        "2": "This skill will also affect plants that are connected to your target, like mosses, and mushrooms, and also causes diseases affecting your target to be sped up.",
+        "3": "This skill can also target yourself."
       }
     },
     "Gnome": {
