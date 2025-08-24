@@ -1970,6 +1970,7 @@ function renderRacialActives(activesContainer, category) {
     const race = character.race;
     const id = 'racial-actives';
     const racialActives = ExternalDataManager.getRaceActives(race, character.level);
+    console.log(racialActives);
 
     if (racialActives && Object.keys(racialActives).length > 0) {
         const numbersFootNotes = {};
@@ -1980,7 +1981,6 @@ function renderRacialActives(activesContainer, category) {
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
                 const abilityData = racialActives[abilityKey];
-                console.log(abilityData);
                 if (abilityData.unlockRequirements) {
                     const statsKeys = Object.keys(abilityData.unlockRequirements);
                     let isValid = true;
