@@ -2075,8 +2075,6 @@ function renderGenericRacialActives(race) {
         activesContainer.classList.add('hidden');
         activesContainer.innerHTML = '';
     }
-
-    renderGenericClassesPassives();
 }
 
 function renderGenericClassesPassives() {
