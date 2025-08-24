@@ -1991,7 +1991,7 @@ function renderRacialActives(activesContainer, category) {
                         }
                     }
                     if (!isValid)
-                        return;
+                        break;
                 }
 
                 const abilityTarget = abilityData.identifier;
