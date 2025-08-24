@@ -1908,6 +1908,7 @@ function renderManualRacialPassives(passivesContainer, category) {
         if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
             const abilityData = manualPassives[abilityKey];
             abilityData.options.forEach(option => {
+                console.log(option);
                 option.label = ExternalDataManager.formatHrefFootNotes(option.label, manualPassivesList, abilityData.foot_notes);
             });
             console.log(abilityData);
