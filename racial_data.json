@@ -384,15 +384,18 @@
       "fullAutoPassives": {
         "Magic Denial": {
           "level": 1,
-          "description": "Because of their pride and the importance gnomic culture  gives to science, Gnomes naturally reject the very existence of unexplainable forces such as magic. This makes it so that Gnomes will avoid anything that relies on magic unless it is to try and explain it or using it as a simple source of energy, as doing otherwise would be acknowledging magic as a force that disregards all the fundamental rules of the universe discovered scientifically."
+          "description": "Because of their pride and the importance gnomic culture<a>0</a> gives to science, Gnomes naturally reject the very existence of unexplainable forces such as magic. This makes it so that Gnomes will avoid anything that relies on magic unless it is to try and explain it or using it as a simple source of energy, as doing otherwise would be acknowledging magic as a force that disregards all the fundamental rules of the universe discovered scientifically.",
+          "foot_notes": [1]
         },
         "Gnomic Literacy": {
           "level": 1,
-          "description": "Being a Gnome, you are able to read and learn from blueprints made by other Gnomes. You can learn to create items in the list associated with the “Gnomic Craftsmanship” skill by reading their blueprint while meeting its statistical requirements. This skill also allows you to create your own contraptions or blueprints."
+          "description": "Being a Gnome<a>0</a>, you are able to read and learn from blueprints made by other Gnomes. You can learn to create items in the list associated with the “Gnomic Craftsmanship” skill by reading their blueprint while meeting its statistical requirements. This skill also allows you to create your own contraptions or blueprints<a>1</a>.",
+          "foot_notes": [2, 3]
         },
         "Resourcefulness": {
           "level": 1,
-          "description": "Your numerous experiments have lead you to become extremely resourceful, allowing you to substitute most professional parts found in real blueprints with parts made of random scraps  you find laying around. This skill allows you to create items from the “Gnomic Craftsmanship” list."
+          "description": "Your numerous experiments<a>0</a> have lead you to become extremely resourceful, allowing you to substitute most professional parts found in real blueprints<a>1</a> with parts made of random scraps<a>2</a> you find laying around. This skill allows you to create items from the “Gnomic Craftsmanship” list.",
+          "foot_notes": [4, 5, 6]
         },
         "Multitasker": {
           "level": 5,
@@ -404,7 +407,8 @@
         },
         "Unhinged": {
           "level": 25,
-          "description": "Over time, your hate for magic has just grown stronger and stronger, making it so that you now are unable to feel any sort of empathy for a pure magic user. This indifference towards the treatment of mages allows you to create “reactors” out of them by imprisoning them and continuously pumping their mana out of their bodies."
+          "description": "Over time, your hate for magic has just grown stronger and stronger, making it so that you now are unable to feel any sort of empathy for a pure magic user<a>0</a>. This indifference towards the treatment of mages allows you to create “reactors” out of them by imprisoning them and continuously pumping their mana out of their bodies.",
+          "foot_notes": [7]
         },
         "Fast Hands": {
           "level": 50,
@@ -412,8 +416,44 @@
         },
         "Deranged Ideals": {
           "level": 75,
-          "description": "Because of how powerful you have become and your strong sense of pride, your ideals have become so deformed and out of control that it has become debatable if you even have any humanity left. You can now enslave, torture, abuse, blackmail, kill, etc. anyone or anything as long as it ends up being beneficial for you or science without any negative effect on your mental state.  "
+          "description": "Because of how powerful you have become and your strong sense of pride, your ideals have become so deformed and out of control that it has become debatable if you even have any humanity left. You can now enslave, torture, abuse, blackmail, kill, etc. anyone or anything<a>0</a> as long as it ends up being beneficial for you or science without any negative effect on your mental state.",
+          "foot_notes": [8]
         }
+      },
+      "actives": {
+        "Gnomic Craftsmanship": {
+          "level": 1,
+          "description" : "This ability<a>0</a> allows you to create items. Crafting any items form that list<a>10</a> will increases your CRA while using these items increases your INT, however, this does not happen if you are mass producing the same item continuously for no reason. Damage is always calculated upon use rather than upon crafting<a>2</a>.",
+          "foot_notes": [9, 10, 11]
+        },
+        "Manipulation": {
+          "level": 100,
+          "description": "Intelligence can be a weapon in and of itself. Make up believable reasons for the actions you have taken over your entire lifespan to change the people’s perception of you. Once this skill is used, you can decide how to redistribute all of your reputation points. Rumors about the reasons behind your actions take three days ({0} turns) to spread<a>0</a> from the point you stopped talking to the original target<a>1</a> of this skill. Once rumors start to spread, they cannot be stopped, however, using this skill a second time while rumors are still being spread around will cause the effects of Manipulation to be canceled from confusion being born. If this skill is used too often, it will eventually stop working.",
+          "values": [60],
+          "foot_notes": [19, 20]
+        }
+      },
+      "foot_notes": {
+        "1": "This skill can be ignored if your backstory is able to work around your character growing up with Gnomes, but also that this skill can be forced on characters who aren’t Gnomes but did grow up with them.",
+        "2": "Similarly to Magic Denial, this skill can also be taken away from a Gnome or given to another race depending on a specific character’s backstory.",
+        "3": "Player-made contraptions have to be approved by a DM. An item without a complete description, similar to what can be found in pre-existing items from the “Gnomic Craftsmanship” list cannot be approved. If an item is invented, it won’t be added to the “Gnomic Craftsmanship” list until a blueprint of it is made.",
+        "4": "Similarly to Magic Denial, this skill can also be taken away from a Gnome or given to another race depending on a specific character’s backstory.",
+        "5": "It should be noted that real gnomic blueprints all ask for unrealistically high-quality materials and precise instructions, and that even an item’s inventor will never truly follow it’s blueprint.",
+        "6": "The word “random” here should be taken almost literally, as the scraps can be torn paper on the street, rocks, rubble, tree branches, moss, crushed herbs, manure, whatever you find in trash, broken weapons, etc. This is essentially your average gnome: https://coub.com/view/dzk2v . However, this does mean that you cannot create items if you aren’t moving around to find materials, unless you keep random garbage on you.",
+        "7": "A “pure” magic user would be mages and non-religious archers. Priests and paladins think their power comes from gods, who objectively exist, so they are not an issue (though scripts and enchantments can still be unacceptable depending on how extreme your character is).",
+        "8": "This even includes characters you might have been partying with since level 1.",
+        "9": "This skill is associated with “Resourcefulness”, thus if “Gnomic Craftsmanship” is disabled, so is “Resourcefulness”, and if “Resourcefulness” is disabled, so is “Gnomic Craftsmanship”.",
+        "10": "Items from this list have to be pulled out of your inventory to be used, so using them takes one turn.",
+        "11": "This is to reduce inventory clutter.",
+        "12": "Running around is enough to make it fall off someone.",
+        "13": "When health is drained, it doesn’t serve any purpose for the creation of magic crystals.",
+        "14": " If a target’s muscles are tense, the contraption won’t be able to stick itself to their body properly and will break.",
+        "15": "A strong or lucky enough person can survive this in some cases.",
+        "16": "Around the hit area, this can be around a rock, around an arm, around a neck, around a weapon, etc.",
+        "17": "This includes magic effects such as enchantments on items or even just existence for some magic items.",
+        "18": "This force can be as weak as being picked up.",
+        "19": "The eventual reputation distribution change is decided upon use, and not upon the effect taking place.",
+        "20": "The skill doesn’t work if you have already used it on the target. The skill won’t work if the target is socially isolated."
       }
     },
     "Human": {
