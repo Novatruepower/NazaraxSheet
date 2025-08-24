@@ -427,6 +427,7 @@
           "foot_notes": [9, 10, 11]
         },
         "Magnetic Launcher": {
+          "level": 1,
           "unlockRequirements": {
             "Intelligence": 20
           },
