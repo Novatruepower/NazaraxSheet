@@ -2609,7 +2609,7 @@ function updateSpecializationDropdownAndData() {
     } else {
         specializationDisplayInput.placeholder = 'Select specializations...';
         availableSpecializationsKeys.forEach(classe => {
-            const specName = availableSpecializations[classe];
+            availableSpecializations[classe].forEach(specName => {
             const checkboxDiv = document.createElement('div');
             checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
             checkboxDiv.innerHTML = `
@@ -2625,6 +2625,7 @@ function updateSpecializationDropdownAndData() {
                <label for="specializations-${classe}-${specName}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
            `;
             specializationDropdownOptions.appendChild(checkboxDiv);
+            });
         });
     }
 }
