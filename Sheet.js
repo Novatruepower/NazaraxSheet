@@ -1624,6 +1624,7 @@ function renderTagManualRacialPassive(race, category, abilityKey, abilityData, a
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
     const deepCopy = [...availableOptions];
     let newAvailableOptions = deepCopy;
+    console.log(newAvailableOptions);
 
     let count = 0;
     while (newAvailableOptions.length > 0) {
