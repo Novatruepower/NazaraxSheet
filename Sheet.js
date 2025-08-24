@@ -2597,6 +2597,8 @@ function updateSpecializationDropdownAndData() {
         }
     });
 
+    console.log(displayValues);
+    console.log(Object.values(displayValues));
     // 3. Update the displayed value for specializations
     specializationDisplayInput.value = Object.values(displayValues).join(', ');
 
