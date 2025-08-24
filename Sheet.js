@@ -2576,6 +2576,7 @@ function updateSpecializationDropdownAndData() {
 
     // 1. Determine available specializations based on selected classes
     const availableSpecializations = {};
+    console.log(character.classes);
     character.classes.forEach(selectedClass => {
         const specs = ExternalDataManager.getClassSpecs(selectedClass);
         if (specs) {
