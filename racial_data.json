@@ -309,7 +309,7 @@
           "level": 25,
           "cooldown": {"turns": {"value": 50, "shared": ["Wasted Rage"]} },
           "conditions": "Having not touched a single drop of alcohol for at least the past {0} turns",
-          "description": "Having not touched alcohol in so long, your mind breaks, throwing you into a rage that lasts for the next {1} turns. While in this state of rage, you become uncontrollable and your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to {3}% for {1} turns. Activating this skill does not count as your action for the turn.",
+          "description": "Having not touched alcohol in so long, your mind breaks, throwing you into a rage that lasts for the next {1} turns. While in this state of rage, you become uncontrollable and your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.",
           "values": [50, 5, 1.5, -0.75]
         }
       },
