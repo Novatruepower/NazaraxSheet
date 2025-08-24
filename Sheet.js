@@ -2571,7 +2571,7 @@ function updateSpecializationDropdownAndData() {
         const specs = ExternalDataManager.getClassSpecs(selectedClass);
         if (specs) {
             specs.forEach(spec => { 
-                availableSpecializations[selectedClass].add(spec);
+                availableSpecializations[selectedClass].push(spec);
                 displayValues.push(`${selectedClass}→${spec}`);
             });
         }
