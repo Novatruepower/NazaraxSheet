@@ -517,8 +517,9 @@ export const ExternalDataManager = {
         if (raceData && raceData.regularPassives) {
             const processedPassives = {};
             const copy = JSON.parse(JSON.stringify(raceData.regularPassives));
-            const regularPassives = [...copy];
-            console.log(regularPassives);
+            console.log(copy);
+            const regularPassives = {...copy};
+            console.log(regularPassives)
 
             specializations.forEach(spec => {
                 if (raceData[spec] && raceData[spec].regularPassives) {

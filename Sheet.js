@@ -803,7 +803,6 @@ function updateDOM() {
     const classDropdownOptions = document.getElementById('classes-dropdown-options');
 
     // Set the displayed value for classes
-    console.log(character.classes);
     classDisplayInput.value = character.classes.join(', ');
 
     // Populate and update checkboxes in the dropdown options
