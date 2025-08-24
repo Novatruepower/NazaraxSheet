@@ -2581,7 +2581,7 @@ function updateSpecializationDropdownAndData() {
                 availableSpecializations[selectedClass].push(spec);
 
                 if (character.specializations[selectedClass]) {
-                    displayValues[selectedClass] = `${selectedClass}→${spec}`;
+                    displayValues[selectedClass].push(`${selectedClass}→${spec}`);
                 }
             });
         }
@@ -2597,8 +2597,6 @@ function updateSpecializationDropdownAndData() {
         }
     });
 
-    console.log(displayValues);
-    console.log(Object.values(displayValues));
     // 3. Update the displayed value for specializations
     specializationDisplayInput.value = Object.values(displayValues).join(', ');
 
