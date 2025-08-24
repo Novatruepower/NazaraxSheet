@@ -94,6 +94,41 @@ export const ExternalDataManager = {
         return statNames.flatMap(name => this.replaceDataStat(name));
     },
 
+    initJsonData(data) {
+        for (const [characterKey, characterData] of Object.entries(data)) {
+            const characterTarget = this._data[characterKey] ||= {};
+            for (const [categoryKey, categoryData] of Object.entries(characterData)) {
+                const dataKeys = Object.keys(categoryData);
+                dataKeys.forEach(key => {
+                    characterTarget[categoryKey][key] = categoryData[key];
+                });
+
+                if (categoryData.hasOwnProperty('manualPassives')) {
+                    const abilities = categoryData.manualPassives || {};
+                    for (const abilityData of Object.values(abilities)) {
+                        const options = abilityData.options || {};
+                        for (const optionData of Object.values(options)) {
+                            if (optionData.applicableStats) {
+                                optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
+                            }
+                        }
+                    }
+                }
+                if (categoryData.hasOwnProperty('regularPassives')) {
+                    const abilities = categoryData.regularPassives || {};
+                    for (const abilityData of Object.values(abilities)) {
+                        const formulas = abilityData.formulas || {};
+                        for (const formulaData of Object.values(formulas)) {
+                            if (formulaData.statsAffected) {
+                                formulaData.statsAffected = this.replaceDataStats(formulaData.statsAffected);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+
     /**
      * Fetches external data from Google Sheets and populates the internal `_data` object.
      * This method is asynchronous and should be awaited before using other methods
@@ -163,39 +198,11 @@ export const ExternalDataManager = {
 
             const racialResponse = await fetch('./racial_data.json');
             const racialData = await racialResponse.json();
+            this.initJsonData(racialData);
 
-            for (const [characterKey, characterData] of Object.entries(racialData)) {
-                const characterTarget = this._data[characterKey] ||= {};
-                for (const [categoryKey, categoryData] of Object.entries(characterData)) {
-                    const dataKeys = Object.keys(categoryData);
-                    dataKeys.forEach(key => {
-                        characterTarget[categoryKey][key] = categoryData[key];
-                    });
-
-                    if (categoryData.hasOwnProperty('manualPassives')) {
-                        const abilities = categoryData.manualPassives || {};
-                        for (const abilityData of Object.values(abilities)) {
-                            const options = abilityData.options || {};
-                            for (const optionData of Object.values(options)) {
-                                if (optionData.applicableStats) {
-                                    optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
-                                }
-                            }
-                        }
-                    }
-                    if (categoryData.hasOwnProperty('fullAutoPassives')) {
-                        const abilities = categoryData.fullAutoPassives || {};
-                        for (const abilityData of Object.values(abilities)) {
-                            const formulas = abilityData.formulas || {};
-                            for (const formulaData of Object.values(formulas)) {
-                                if (formulaData.statsAffected) {
-                                    formulaData.statsAffected = this.replaceDataStats(formulaData.statsAffected);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            const classesResponse = await fetch('./classes_data.json');
+            const classesData = await classesResponse.json();
+            this.initJsonData(classesData);
 
             console.log("External data loaded successfully into ExternalDataManager.");
             console.log(this._data);
@@ -468,14 +475,14 @@ export const ExternalDataManager = {
      * @param {string} className The name of the class.
      * @returns {Object|null} The full auto passive choices object for the class, or null if not found.
      */
-    getRaceFullAutoPassives(raceName, level) {
+    getRaceregularPassives(raceName, level) {
         const raceData = this.getRaceData(raceName);
-        if (raceData && raceData.fullAutoPassives) {
+        if (raceData && raceData.regularPassives) {
             const processedPassives = {};
-            for (const passiveName in raceData.fullAutoPassives) {
-                const ability = raceData.fullAutoPassives[passiveName];
+            for (const passiveName in raceData.regularPassives) {
+                const ability = raceData.regularPassives[passiveName];
                 if (ability.level <= level) {
-                    processedPassives[passiveName] = this.processedUpgrades(passiveName, raceData.fullAutoPassives[passiveName], level);
+                    processedPassives[passiveName] = this.processedUpgrades(passiveName, raceData.regularPassives[passiveName], level);
                 }
             }
 

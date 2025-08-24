@@ -1,7 +1,7 @@
 {
   "Races": {
     "Architect": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Absorption": {
           "level": 1,
           "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%.",
@@ -61,7 +61,7 @@
       }
     },
     "Demi-humans": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Savagery": {
           "level": 1,
           "description": "Before the start of every turn you lose {0}d{1} racial points. If after a roll, the racial point’s value of a character is less than {2}<a>0</a>, you have to roll a d{3} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {4} racial points per turn, once you reach {5}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>.",
@@ -152,7 +152,7 @@
       }
     },
     "Dimensional": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Spatial Reserve": {
           "level": 1,
           "description": "As a dimensional, your body has the innate ability to store abnormal quantities of spatial energy. You can have up to [{0}+level*{1}] racial points stocked up.",
@@ -216,7 +216,7 @@
       }
     },
     "Dragonkin": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Foul Blood": {
           "level": 1,
           "description": "Because of your impure blood and weak body, most dragons will see you as an insult to their race and will want to kill you on sight no matter what."
@@ -288,7 +288,7 @@
       }
     },
     "Dwarf": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Drunken Brawler": {
           "level": 1,
           "description": "Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by 50%), your statistical modifier for STR becomes 100% and you gain 25% damage resistance<a>0</a>.",
@@ -337,7 +337,7 @@
       }
     },
     "Elf": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Light-Footed": {
           "level": 1,
           "description": "Elves’ large feet, great balance, and low weight make it so that they naturally make very little noise from walking."
@@ -381,7 +381,7 @@
       }
     },
     "Gnome": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Magic Denial": {
           "level": 1,
           "description": "Because of their pride and the importance gnomic culture<a>0</a> gives to science, Gnomes naturally reject the very existence of unexplainable forces such as magic. This makes it so that Gnomes will avoid anything that relies on magic unless it is to try and explain it or using it as a simple source of energy, as doing otherwise would be acknowledging magic as a force that disregards all the fundamental rules of the universe discovered scientifically.",
@@ -457,7 +457,7 @@
       }
     },
     "Human": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Growth": {
           "level": 1,
           "description": "Humans are able to grow their abilities ever so slightly faster than the other intelligent races. You need {0} less stat experience before it increases.",
@@ -545,7 +545,7 @@
       "Starting items": {
         "Coins": 180
       },
-      "fullAutoPassives": {
+      "regularPassives": {
         "Good Fortune": {
           "level": 1,
           "description": "Nokis will naturally have mild success in any normal luck-based confrontation or check unless they are confronted with another Noki."
@@ -601,7 +601,7 @@
       }
     },
     "Succubus": {
-      "fullAutoPassives": {
+      "regularPassives": {
         "Attraction": {
           "level": 1,
           "description": "Being a Succubus, you constantly emanate chaos magic that makes you seem more attractive to any creature that sees you and that you need to utilize all your skills, because of this, the more of your skin is hidden under armor or clothing, the less effective all your skills will become."

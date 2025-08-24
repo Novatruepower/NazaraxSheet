@@ -1821,24 +1821,24 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
 
 function renderFullAutoRacialPassives(oldRace, passivesContainer) {
     const race = character.race;
-    const id = 'full-auto-passives';
+    const id = 'regular-passives';
 
     if (oldRace) {
-        const oldFullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(oldRace, character.level);
-        removeTemporaryEffectByCategory(oldFullAutoPassives, oldRace);
+        const oldregularPassives = ExternalDataManager.getRaceregularPassives(oldRace, character.level);
+        removeTemporaryEffectByCategory(oldregularPassives, oldRace);
     }
 
-    const fullAutoPassives = ExternalDataManager.getRaceFullAutoPassives(race, character.level);
+    const regularPassives = ExternalDataManager.getRaceregularPassives(race, character.level);
 
-    if (fullAutoPassives && Object.keys(fullAutoPassives).length > 0) {
+    if (regularPassives && Object.keys(regularPassives).length > 0) {
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'passives', numbersFootNotes);
-        renderContainer(passivesContainer, "Full Auto Passives", id, numbersFootNotes);
-        const fullAutoPassivesList = document.getElementById(`${race}-${id}-list`);
+        renderContainer(passivesContainer, "Regular passives", id, numbersFootNotes);
+        const regularPassivesList = document.getElementById(`${race}-${id}-list`);
 
-        for (const abilityKey in fullAutoPassives) {
-            if (fullAutoPassives.hasOwnProperty(abilityKey)) {
-                const abilityData = fullAutoPassives[abilityKey];
+        for (const abilityKey in regularPassives) {
+            if (regularPassives.hasOwnProperty(abilityKey)) {
+                const abilityData = regularPassives[abilityKey];
                 const abilityTarget = abilityData.identifier;
 
                 const abilityWrapper = document.createElement('div');
@@ -1864,13 +1864,13 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer) {
                 abilityHeader.appendChild(toggableBtn);
 
                 const abilityDescription = document.createElement('p');
-                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, fullAutoPassivesList, abilityData.foot_notes);
+                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, regularPassivesList, abilityData.foot_notes);
                 abilityDescription.id = abilityTarget;
                 abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
 
                 abilityWrapper.appendChild(abilityHeader);
                 abilityWrapper.appendChild(abilityDescription);
-                fullAutoPassivesList.appendChild(abilityWrapper);
+                regularPassivesList.appendChild(abilityWrapper);
 
                 processRacialFullAutoPassiveChange(race, abilityData);
 
@@ -1882,7 +1882,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer) {
             }
         }
 
-        renderFootNotes(race, numbersFootNotes, fullAutoPassivesList);
+        renderFootNotes(race, numbersFootNotes, regularPassivesList);
         updateSpecificHtmlVisibility('element');
     } else {
         passivesContainer.classList.add('hidden');
@@ -2091,13 +2091,13 @@ function renderGenericRacialPassives(oldRace, race) {
         manualPassivesContainer.innerHTML = '';
     }
 
-    const fullAutoPassivesContainer = document.getElementById('racial-full-auto-passives-container');
+    const regularPassivesContainer = document.getElementById('racial-regular-passives-container');
 
-    if (fullAutoPassivesContainer) {
-        renderFullAutoRacialPassives(oldRace, fullAutoPassivesContainer, race);
+    if (regularPassivesContainer) {
+        renderFullAutoRacialPassives(oldRace, regularPassivesContainer, race);
     } else {
-        fullAutoPassivesContainer.classList.add('hidden');
-        fullAutoPassivesContainer.innerHTML = '';
+        regularPassivesContainer.classList.add('hidden');
+        regularPassivesContainer.innerHTML = '';
     }
 }
 
