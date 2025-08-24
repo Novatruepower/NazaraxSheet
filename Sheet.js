@@ -1966,6 +1966,15 @@ function renderManualRacialPassives(passivesContainer, category) {
     updateSpecificHtmlVisibility('element');
 }
 
+function renderProperties(wrapper, data, innerHTML, className) {
+    if (data) {
+        const element = document.createElement('p');
+        element.innerHTML = innerHTML;
+        element.className = className;
+        wrapper.appendChild(element);
+    };
+}
+
 function renderRacialActives(activesContainer, category) {
     const race = character.race;
     const id = 'racial-actives';
@@ -2005,30 +2014,18 @@ function renderRacialActives(activesContainer, category) {
                 abilityHeader.appendChild(toggableBtn);
                 abilityWrapper.appendChild(abilityHeader);
 
-                if (abilityData.cast_time) {
-                    const abilityCastTime = document.createElement('p');
-                    abilityCastTime.innerHTML = `<b>Cast time:</b> ${abilityData.cast_time}`;
-                    abilityCastTime.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                    abilityWrapper.appendChild(abilityCastTime);
-                }
+                renderProperties(abilityWrapper, abilityData.cast_time, `<b>Cast time:</b> ${abilityData.cast_time}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
+                renderProperties(abilityWrapper, abilityData.channel_time, `<b>Channel time:</b> ${abilityData.channel_time}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
 
                 if (abilityData.cooldown) {
                     const dataKeys = Object.keys(abilityData.cooldown);
                     dataKeys.forEach(key => {
-                        const abilityCooldown = document.createElement('p');
                         const abilityCooldownData = abilityData.cooldown[key];
-                        abilityCooldown.innerHTML = `<b>Cooldown:</b> ${abilityCooldownData.value} ${key} ${abilityCooldownData.shared ? `shared with ${abilityCooldownData.shared.join(', ')}` : ''}`;
-                        abilityCooldown.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                        abilityWrapper.appendChild(abilityCooldown);
+                        renderProperties(abilityWrapper, abilityData.cooldown, `<b>Cooldown:</b> ${abilityCooldownData.value} ${key} ${abilityCooldownData.shared ? `shared with ${abilityCooldownData.shared.join(', ')}` : ''}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
                     });
                 }
 
-                if (abilityData.conditions) {
-                    const abilityCondition = document.createElement('p');
-                    abilityCondition.innerHTML = `<b>Conditions:</b> ${ExternalDataManager.formatString(abilityData.conditions, abilityData.values)}`;
-                    abilityCondition.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                    abilityWrapper.appendChild(abilityCondition);
-                }
+                renderProperties(abilityWrapper, abilityData.conditions, `<b>Conditions:</b> ${ExternalDataManager.formatString(abilityData.conditions, abilityData.values)}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
 
                 const abilityDescription = document.createElement('p');
                 abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, racialActiveList, abilityData.foot_notes);

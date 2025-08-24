@@ -435,6 +435,10 @@ export const ExternalDataManager = {
                 template['name'] = data.name;
                 template.level = data.level
 
+                if (data.description) {
+                    template.description = data.description;
+                }
+
                 if (copy.upgrades.some(u => u.formulas && u.formulas.some(f => f.values))) {
                     const length = data.formulas.length;
 
