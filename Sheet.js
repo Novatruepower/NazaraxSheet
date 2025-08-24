@@ -2549,7 +2549,7 @@ function handleSpecializationCheckboxChange(event) {
             character.specializations[classe].push(value);
         }
     } else {
-        character.specializations = character.specializations[classe].filter(s => s !== value);
+        character.specializations[classe] = character.specializations[classe].filter(s => s !== value);
     }
     const displayValues = [];
     const specializationsKeys = Object.keys(character.specializations);
