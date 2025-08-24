@@ -1984,7 +1984,7 @@ function renderRacialActives(activesContainer, category) {
                     const statsKeys = Object.keys(abilityData.unlockRequirements);
                     let isValid = true;
                     for (const statName of statsKeys) {
-                        if (calculateRollStatTotal(character, statName) < abilityData.unlockRequirements[kestatNamey]) {
+                        if (calculateRollStatTotal(character, statName) < abilityData.unlockRequirements[statName]) {
                             isValid = false;
                             break;
                         }
