@@ -517,19 +517,18 @@ export const ExternalDataManager = {
         if (raceData && raceData.regularPassives) {
             const processedPassives = {};
             const copy = JSON.parse(JSON.stringify(raceData.regularPassives));
-            console.log(copy);
             const regularPassives = {...copy};
-            console.log(regularPassives)
 
-            specializations.forEach(spec => {
-                if (raceData[spec] && raceData[spec].regularPassives) {
-                    const newData = raceData[spec].regularPassives;
-                    for (const name in newData) {
-                        regularPassives.push(name);
+            if (specializations[className]) {
+                    specializations[className].forEach(spec => {
+                    if (raceData[spec] && raceData[spec].regularPassives) {
+                        const newData = raceData[spec].regularPassives;
+                        for (const name in newData) {
+                            regularPassives[name] = newData[name];
+                        }
                     }
-                }
-            });
-            console.log(regularPassives);
+                });
+            }
 
             for (const passiveName in regularPassives) {
                 const ability = regularPassives[passiveName];

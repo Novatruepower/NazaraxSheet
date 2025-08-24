@@ -298,7 +298,7 @@ const defaultCharacterData = function () {
     let newCharacter = ({
         name: '',
         classes: [],
-        specializations: [],
+        specializations: {},
         race: firstRace,
         level: 1,
         levelExperience: 0,
@@ -656,10 +656,12 @@ function initLoadCharacter(loadedChar) {
     // Deep merge loaded properties into the new character
     for (const key in newChar) {
         if (loadedChar.hasOwnProperty(key)) {
-            if (key === 'classes' || key === 'specializations' || key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
+            if (key === 'classes'|| key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
                 // Ensure these are arrays, even if loaded data has non-array
                 newChar[key] = Array.isArray(loadedChar[key]) ? loadedChar[key] : [];
-            }   else if (key === 'layouts') {
+            } else if (key === 'specializations' ) {
+                newChar[key] = { ...newChar[key], ...loadedChar[key] };
+            } else if (key === 'layouts') {
                 newChar[key] = { ...newChar[key], ...loadedChar[key] };
                 const layouts = Object.keys(newChar[key]);
                 
@@ -1871,8 +1873,8 @@ function renderRegularRacialPassives(oldRace, passivesContainer) {
     const id = 'regular-passives';
 
     if (oldRace) {
-        const oldregularPassives = ExternalDataManager.getRaceRegularPassives(oldRace, character.level);
-        removeTemporaryEffectByCategory(oldregularPassives, oldRace);
+        const oldRegularPassives = ExternalDataManager.getRaceRegularPassives(oldRace, character.level);
+        removeTemporaryEffectByCategory(oldRegularPassives, oldRace);
     }
 
     const regularPassives = ExternalDataManager.getRaceRegularPassives(race, character.level);
@@ -2076,9 +2078,33 @@ function renderGenericRacialActives(race) {
     }
 }
 
+function renderRegularClasesPassives(oldClass, passivesContainer) {
+    const race = character.race;
+    const id = 'regular-passives';
+
+    if (oldClass) {
+        const oldRegularPassives = ExternalDataManager.getClassRegularPassives(oldClass, character.level);
+        removeTemporaryEffectByCategory(oldRegularPassives, oldClass);
+    }
+
+    const regularPassives = ExternalDataManager.getClassRegularPassives(race, character.level);
+
+    if (regularPassives && Object.keys(regularPassives).length > 0) {
+        const numbersFootNotes = {};
+        pushRaceFootNotes(race, 'passives', numbersFootNotes);
+        renderContainer(passivesContainer, "Regular passives", id, numbersFootNotes);
+        const regularPassivesList = document.getElementById(`${race}-${id}-list`);
+        renderRegularPassives(regularPassives, regularPassivesList, numbersFootNotes);
+        renderFootNotes(race, numbersFootNotes, regularPassivesList);
+        updateSpecificHtmlVisibility('element');
+    } else {
+        passivesContainer.classList.add('hidden');
+        passivesContainer.innerHTML = '';
+    }
+}
+
 function renderGenericClassesPassives() {
     const manualPassivesContainer = document.getElementById('classes-manual-passives-container');
-
     const genericPassives = ExternalDataManager.getClassRegularPassives(character.classes, character.specializations, character.level);
 
     if (genericPassives) {
@@ -2512,16 +2538,23 @@ function handleStateCheckboxChange(event) {
 // Function to handle changes in the specializations checkboxes
 function handleSpecializationCheckboxChange(event) {
     const { value, checked } = event.target;
+    const classe = event.target.dataset.classe;
 
     if (checked) {
-        if (!character.specializations.includes(value)) {
-            character.specializations.push(value);
+        if (!character.specializations[classe].includes(value)) {
+            character.specializations[classe].push(value);
         }
     } else {
-        character.specializations = character.specializations.filter(s => s !== value);
+        character.specializations = character.specializations[classe].filter(s => s !== value);
     }
+    const displayValues = [];
+    const specializationsKeys = Object.keys(character.specializations);
+    specializationsKeys.forEach(classe => {
+        displayValues.push(`${classe}→${character.specializations[classe]}`);
+    });
+
     // Update the displayed value in the input field
-    document.getElementById('specializations-display').value = character.specializations.join(', ');
+    document.getElementById('specializations-display').value = displayValues.join(', ');
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
@@ -2532,39 +2565,54 @@ function updateSpecializationDropdownAndData() {
     const specializationDropdownOptions = document.getElementById('specializations-dropdown-options');
 
     // 1. Determine available specializations based on selected classes
-    const availableSpecializationsSet = new Set();
+    const availableSpecializations = {};
+    const displayValues = [];
     character.classes.forEach(selectedClass => {
         const specs = ExternalDataManager.getClassSpecs(selectedClass);
         if (specs) {
-            specs.forEach(spec => availableSpecializationsSet.add(selectedClass + "→" + spec));
+            specs.forEach(spec => { 
+                availableSpecializations[selectedClass].add(spec);
+                displayValues.push(`${selectedClass}→${spec}`);
+            });
         }
     });
-    const availableSpecializations = Array.from(availableSpecializationsSet).sort();
 
-    // 2. Filter character.specializations to keep only valid ones
-    character.specializations = character.specializations.filter(spec => availableSpecializations.includes(spec));
+    const specializationsClasses = Object.keys(character.specializations);
+    specializationsClasses.forEach(classe => {
+        if (!availableSpecializations[classe]) {
+            delete character.specializations[classe];
+        } else {
+            // 2. Filter character.specializations to keep only valid ones
+            character.specializations[classe] = character.specializations[classe].filter(spec => availableSpecializations[classe].includes(spec));
+        }
+    });
+
+    displayValues.sort();
 
     // 3. Update the displayed value for specializations
-    specializationDisplayInput.value = character.specializations.join(', ');
+    specializationDisplayInput.value = displayValues.join(', ');
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
-    if (availableSpecializations.length === 0) {
+
+    if (specializationsClasses.length === 0) {
         specializationDropdownOptions.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No specializations available for selected classes.</div>';
         specializationDisplayInput.placeholder = 'No specializations available';
     } else {
         specializationDisplayInput.placeholder = 'Select specializations...';
-        availableSpecializations.forEach(specName => {
+        specializationsClasses.forEach(classe => {
+            const specName = availableSpecializations[classe];
             const checkboxDiv = document.createElement('div');
             checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
             checkboxDiv.innerHTML = `
                <input
                    type="checkbox"
-                   id="specializations-${specName.replace(/\s/g, '-')}"
+                   id="specializations-${classe}→${specName.replace(/\s/g, '-')}"
                    name="specializations-option"
                    value="${specName}"
+                    data-classe="${classe}"
                    class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-                   ${character.specializations.includes(specName) ? 'checked' : ''}
+                   ${character.specializations[classe].includes(specName) ? 'checked' : ''}
                />
                <label for="specializations-${specName.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
            `;
