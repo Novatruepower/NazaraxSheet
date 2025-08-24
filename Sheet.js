@@ -2541,6 +2541,10 @@ function handleSpecializationCheckboxChange(event) {
     const classe = event.target.dataset.classe;
 
     if (checked) {
+        if (!character.specializations[classe]) {
+            character.specializations[classe] = [];
+        }
+
         if (!character.specializations[classe].includes(value)) {
             character.specializations[classe].push(value);
         }
