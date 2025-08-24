@@ -1980,16 +1980,16 @@ function renderRacialActives(activesContainer, category) {
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
                 const abilityData = racialActives[abilityKey];
+                console.log(abilityData);
                 if (abilityData.unlockRequirements) {
                     const statsKeys = Object.keys(abilityData.unlockRequirements);
                     let isValid = true;
                     for (const key of statsKeys) {
-                        if (character[statsKeys] < abilityData.unlockRequirements[statsKeys]) {
+                        if (character[key] < abilityData.unlockRequirements[key]) {
                             isValid = false;
                             break;
                         }
                     }
-
                     if (!isValid)
                         return;
                 }
