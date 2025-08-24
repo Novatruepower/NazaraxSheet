@@ -19,21 +19,14 @@ export const ExternalDataManager = {
           '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
         };
       
-        // Convert the number to a string to iterate over each digit
+        // Convert the number to a string
         const numString = String(number);
-        let superscriptString = '';
       
-        for (let i = 0; i < numString.length; i++) {
-          const digit = numString[i];
-          if (superscriptMap[digit]) {
-            superscriptString += superscriptMap[digit];
-          } else {
-            // Handle cases where the character is not a digit (e.g., a decimal point)
-            superscriptString += digit;
-          }
-        }
-      
-        return superscriptString;
+        // Use a regular expression to find all digits and replace them
+        // The regex /\d/g matches every digit (0-9) in the string globally
+        return numString.replace(/\d/g, (match) => {
+          return superscriptMap[match];
+        });
     },
 
     getHrefFootNotes(id, value) {
