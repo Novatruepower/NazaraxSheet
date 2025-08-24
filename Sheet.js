@@ -2554,7 +2554,7 @@ function handleSpecializationCheckboxChange(event) {
     const displayValues = [];
     const specializationsKeys = Object.keys(character.specializations);
     specializationsKeys.forEach(classe => {
-        displayValues.push(`${classe}→${character.specializations[classe]}`);
+        displayValues.push(`${classe}→${character.specializations[classe].join(', ')}`);
     });
 
     // Update the displayed value in the input field
@@ -2588,7 +2588,7 @@ function updateSpecializationDropdownAndData() {
     const specializationsClasses = Object.keys(character.specializations);
     specializationsClasses.forEach(classe => {
         if (!availableSpecializations[classe]) {
-            character.specializations[classe] = [];
+            delete character.specializations[classe];
         } else {
             // 2. Filter character.specializations to keep only valid ones
             character.specializations[classe] = character.specializations[classe].filter(spec => availableSpecializations[classe].includes(spec));
