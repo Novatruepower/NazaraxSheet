@@ -290,7 +290,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
         }
     });
 
-    if (character)
+    if (character.race)
         renderRacial();
 }
 
