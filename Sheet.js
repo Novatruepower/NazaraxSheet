@@ -289,6 +289,8 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
             }
         }
     });
+
+    renderRacial();
 }
 
 const defaultCharacterData = function () {
@@ -1984,8 +1986,6 @@ function renderRacialActives(activesContainer, category) {
                     const statsKeys = Object.keys(abilityData.unlockRequirements);
                     let isValid = true;
                     for (const statName of statsKeys) {
-                        console.log(calculateRollStatTotal(character, statName));
-                        console.log(abilityData.unlockRequirements[statName]);
                         if (calculateRollStatTotal(character, statName) < abilityData.unlockRequirements[statName]) {
                             isValid = false;
                             break;
