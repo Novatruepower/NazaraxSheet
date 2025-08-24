@@ -289,6 +289,10 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
             }
         }
     });
+
+    if (char === character) {
+        renderRacial();
+    }
 }
 
 const defaultCharacterData = function () {
@@ -1255,7 +1259,6 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
     }
 
     recalculateCharacterDerivedProperties(character, true);
-    renderRacial();
     hasUnsavedChanges = true;
     saveCurrentStateToHistory();
 }
@@ -2222,7 +2225,6 @@ function handlePlayerStatInputChange(event) {
                 recalculateSmallUpdateCharacter(character, true); // Update max values and their DOM elements
             } else { // For rollStats, update their total
                 document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
-                renderRacial();
             }
             hasUnsavedChanges = true;
             saveCurrentStateToHistory();
@@ -2411,7 +2413,6 @@ function handleChange(event) {
             if (newValue < oldLevel)
                 removePassivesLevel();
             
-            renderRacial();
             recalculateCharacterDerivedProperties(character, true);
         } else if (id === 'race') {
             let oldRace = character.race;
@@ -3679,7 +3680,6 @@ function addManualTemporaryEffect() {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
             document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
-            renderRacial();
         }
         hasUnsavedChanges = true;
         saveCurrentStateToHistory();
