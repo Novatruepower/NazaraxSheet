@@ -2580,6 +2580,10 @@ function updateSpecializationDropdownAndData() {
                 displayValues[selectedClass] = `${selectedClass}→${spec}`;
             });
         }
+
+        if (!character.specializations[selectedClass]) {
+            delete displayValues[classe];
+        }
     });
 
     const specializationsClasses = Object.keys(character.specializations);
@@ -2591,10 +2595,6 @@ function updateSpecializationDropdownAndData() {
             character.specializations[classe] = character.specializations[classe].filter(spec => availableSpecializations[classe].includes(spec));
         }
     });
-
-    //if (!character.specializations[classe]) {
-   //     delete displayValues[classe];
-    //}
 
     // 3. Update the displayed value for specializations
     specializationDisplayInput.value = Object.values(displayValues).join(', ');
