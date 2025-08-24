@@ -289,10 +289,6 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
             }
         }
     });
-
-    if (char === character) {
-        renderRacial();
-    }
 }
 
 const defaultCharacterData = function () {
@@ -2413,6 +2409,7 @@ function handleChange(event) {
             if (newValue < oldLevel)
                 removePassivesLevel();
             
+            renderRacial();
             recalculateCharacterDerivedProperties(character, true);
         } else if (id === 'race') {
             let oldRace = character.race;
