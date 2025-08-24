@@ -2618,7 +2618,7 @@ function updateSpecializationDropdownAndData() {
                    id="specializations-${classe}-${specName}"
                    name="specializations-option"
                    spec="${specName}"
-                   value="${selectedClass}→${specName}"
+                   value="${classe}→${specName}"
                     data-classe="${classe}"
                    class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
                    ${character.specializations[classe] && character.specializations[classe].includes(specName) ? 'checked' : ''}
