@@ -798,13 +798,11 @@ function updateDOM() {
     // Update derived properties and then update their DOM elements
     recalculateCharacterDerivedProperties(character, true);
 
-
     // Handle custom multi-select for class
     const classDisplayInput = document.getElementById('classes-display');
     const classDropdownOptions = document.getElementById('classes-dropdown-options');
 
     // Set the displayed value for classes
-    console.log(character);
     classDisplayInput.value = character.classes.join(', ');
 
     // Populate and update checkboxes in the dropdown options
@@ -4116,6 +4114,7 @@ function initPage() {
 
 
     characters = [defaultCharacterData()];
+    console.log(characters[0]);
     // Initialize maxHealth, maxMana and maxRacialPower based on default race, level, and healthBonus for the first character
     recalculateCharacterDerivedProperties(characters[0]);
 
