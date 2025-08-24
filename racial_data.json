@@ -257,7 +257,7 @@
         },
         "Restoration": {
           "level": 25,
-          "cooldown": {"turns": 10},
+          "cooldown": {"turns": {"value": 10}},
           "description": "Dragons always existed, and thus, the natural laws of this world that came to be after them hold no meaning to the proud race and their children. Remind the world of its former shape with a powerful roar, nullifying everyone’s statistical multipliers<a>0</a>, including those related to items or skills, around yourself for {0} turns. This roar, however, puts a great strain on your body, costing you {1}% of your maximum health.",
           "values": [3, 0.5],
           "foot_notes" : [2]
@@ -291,7 +291,8 @@
       "fullAutoPassives": {
         "Drunken Brawler": {
           "level": 1,
-          "description": "Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by 50%), your statistical modifier for STR becomes 100% and you gain 25% damage resistance (Which is calculated after armors)."
+          "description": "Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by 50%), your statistical modifier for STR becomes 100% and you gain 25% damage resistance<a>0</a>.",
+          "foot_notes" : [1]
         },
         "Alcoholic Desensitization": {
           "level": 10,
@@ -299,7 +300,17 @@
         },
         "The Vault": {
           "level": 50,
-          "description": "Your body somehow developed an organ which seems to serve no purpose other than to store alcohol which had been ingested beforehand. This organ can be added to your inventory and store a volume equivalent to 5 bottles of alcohol. Alcohol inside this organ remains as what it was before being ingested and can be consumed at any time without counting as your action for the turn a turn (You can consume any amount of alcohol stored in “The Vault” instantly)."
+          "description": "Your body somehow developed an organ which seems to serve no purpose other than to store alcohol which had been ingested beforehand. This organ can be added to your inventory and store a volume equivalent to 5 bottles of alcohol. Alcohol inside this organ remains as what it was before being ingested and can be consumed at any time without counting as your action for the turn a turn<a>0</a>.",
+          "foot_notes" : [2]
+        }
+      },
+      "actives": {
+        "Weaning Rage": {
+          "level": 25,
+          "cooldown": {"turns": {"value": 50, "shared": ["Wasted Rage", "test"]} },
+          "condition": "Having not touched a single drop of alcohol for at least the past {0} turns",
+          "description": "Having not touched alcohol in so long, your mind breaks, throwing you into a rage that lasts for the next {1} turns. While in this state of rage, you become uncontrollable and your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to {3}% for {1} turns. Activating this skill does not count as your action for the turn.",
+          "values": [50, 5, 1.5, -0.75]
         }
       },
       "foot_notes": {
