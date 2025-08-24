@@ -2539,17 +2539,18 @@ function handleStateCheckboxChange(event) {
 function handleSpecializationCheckboxChange(event) {
     const { value, checked } = event.target;
     const classe = event.target.dataset.classe;
+    const spec = event.target.dataset.spec;
 
     if (checked) {
         if (!character.specializations[classe]) {
             character.specializations[classe] = [];
         }
 
-        if (!character.specializations[classe].includes(value)) {
-            character.specializations[classe].push(value);
+        if (!character.specializations[classe].includes(spec)) {
+            character.specializations[classe].push(spec);
         }
     } else {
-        character.specializations = character.specializations[classe].filter(s => s !== value);
+        character.specializations = character.specializations[classe].filter(s => s !== spec);
     }
     const displayValues = [];
     const specializationsKeys = Object.keys(character.specializations);
@@ -2577,12 +2578,11 @@ function updateSpecializationDropdownAndData() {
             specs.forEach(spec => { 
                 availableSpecializations[selectedClass] = availableSpecializations[selectedClass] ?? [];
                 availableSpecializations[selectedClass].push(spec);
-                displayValues[selectedClass] = `${selectedClass}→${spec}`;
-            });
-        }
 
-        if (!character.specializations[selectedClass]) {
-            delete displayValues[selectedClass];
+                if (character.specializations[selectedClass]) {
+                    displayValues[selectedClass] = `${selectedClass}→${spec}`;
+                }
+            });
         }
     });
 
@@ -2617,7 +2617,8 @@ function updateSpecializationDropdownAndData() {
                    type="checkbox"
                    id="specializations-${classe}-${specName}"
                    name="specializations-option"
-                   value="${specName}"
+                   spec="${specName}"
+                   value="${selectedClass}→${specName}"
                     data-classe="${classe}"
                    class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
                    ${character.specializations[classe] && character.specializations[classe].includes(specName) ? 'checked' : ''}
