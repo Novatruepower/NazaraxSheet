@@ -2539,18 +2539,17 @@ function handleStateCheckboxChange(event) {
 function handleSpecializationCheckboxChange(event) {
     const { value, checked } = event.target;
     const classe = event.target.dataset.classe;
-    const spec = event.target.dataset.spec;
 
     if (checked) {
         if (!character.specializations[classe]) {
             character.specializations[classe] = [];
         }
 
-        if (!character.specializations[classe].includes(spec)) {
-            character.specializations[classe].push(spec);
+        if (!character.specializations[classe].includes(value)) {
+            character.specializations[classe].push(value);
         }
     } else {
-        character.specializations = character.specializations[classe].filter(s => s !== spec);
+        character.specializations = character.specializations[classe].filter(s => s !== value);
     }
     const displayValues = [];
     const specializationsKeys = Object.keys(character.specializations);
@@ -2617,13 +2616,13 @@ function updateSpecializationDropdownAndData() {
                    type="checkbox"
                    id="specializations-${classe}-${specName}"
                    name="specializations-option"
-                   spec="${specName}"
-                   value="${classe}→${specName}"
+                   classe="${specName}"
+                   value="${selectedClass}→${specName}"
                     data-classe="${classe}"
                    class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
                    ${character.specializations[classe] && character.specializations[classe].includes(specName) ? 'checked' : ''}
                />
-               <label for="specializations-${classe}-${specName}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
+               <label for="specializations-${classe}-${specName}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${selectedClass}→${specName}</label>
            `;
             specializationDropdownOptions.appendChild(checkboxDiv);
             });
