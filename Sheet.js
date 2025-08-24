@@ -2586,11 +2586,11 @@ function updateSpecializationDropdownAndData() {
             // 2. Filter character.specializations to keep only valid ones
             character.specializations[classe] = character.specializations[classe].filter(spec => availableSpecializations[classe].includes(spec));
         }
-
-        if (!character.specializations[classe]) {
-            delete displayValues[classe];
-        }
     });
+
+    //if (!character.specializations[classe]) {
+   //     delete displayValues[classe];
+    //}
 
     // 3. Update the displayed value for specializations
     specializationDisplayInput.value = Object.values(displayValues).join(', ');
@@ -2616,7 +2616,7 @@ function updateSpecializationDropdownAndData() {
                    value="${specName}"
                     data-classe="${classe}"
                    class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-                   ${character.specializations[classe].includes(specName) ? 'checked' : ''}
+                   ${character.specializations[classe] && character.specializations[classe].includes(specName) ? 'checked' : ''}
                />
                <label for="specializations-${classe}-${specName}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
            `;
