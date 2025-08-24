@@ -30,7 +30,7 @@ export const ExternalDataManager = {
     },
 
     getHrefFootNotes(id, value) {
-        return `<a href="#${id}-foot_notes-${value}" rel="nofollow">${this.convertNumberToSuperscript(value)}</a>`;
+        return `<a href="#${id}-foot_notes-${value}" rel="nofollow" class="footnotes">${this.convertNumberToSuperscript(value)}</a>`;
     },
 
     formatHrefFootNotes(str, container, ...args) {
