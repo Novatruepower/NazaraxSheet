@@ -2588,7 +2588,7 @@ function updateSpecializationDropdownAndData() {
     const specializationsClasses = Object.keys(character.specializations);
     specializationsClasses.forEach(classe => {
         if (!availableSpecializations[classe]) {
-            delete character.specializations[classe];
+            character.specializations[classe] = [];
         } else {
             // 2. Filter character.specializations to keep only valid ones
             character.specializations[classe] = character.specializations[classe].filter(spec => availableSpecializations[classe].includes(spec));
