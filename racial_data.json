@@ -327,7 +327,7 @@
         "Prayer to Bacchus" : {
           "level": 100,
           "description" : "Trough an unknown process, you can now turn your kidneys into a fully functional distilleries! This allows you to become drunk on demand, for however long you want, however, the duration has to be at least {0} turns. Activating and disabling this skill doesn’t count as your action for the turn.",
-          "values" : [10]
+          "values": [10]
         }
       },
       "foot_notes": {
@@ -363,7 +363,7 @@
           "level": 25,
           "cooldown": {"turns": {"value": 10} },
           "description": "While touching a plant, you are able to forcibly increase the speed of its<a>0</a> metabolism, causing it to grow, heal, bloom, age, and rot at about {0} times its usual rate. This spell can be stopped before the full {1} turns.",
-          "values" : [60, 60],
+          "values": [60, 60],
           "foot_notes": [2]
         },
         "Healroots" : {
