@@ -426,14 +426,6 @@
           "description" : "This ability<a>0</a> allows you to create items. Crafting any items form that list<a>10</a> will increases your CRA while using these items increases your INT, however, this does not happen if you are mass producing the same item continuously for no reason. Damage is always calculated upon use rather than upon crafting<a>2</a>.",
           "foot_notes": [9, 10, 11]
         },
-        "Magnetic Launcher": {
-          "level": 1,
-          "unlockRequirements": {
-            "Intelligence": 20
-          },
-          "timeToCraft": 3,
-          "description": "This cannon-like contraption uses magnets to launch any metallic consumable item at high speeds at a target, making your throw accuracy become 100%. This item can be upgraded using 3 wind magic crystals, giving it the ability to shoot even non-metallic items. Every time it is used, throw a D12, if it falls on 1, the cannon breaks instead of throwing the item."
-        },
         "Manipulation": {
           "level": 100,
           "description": "Intelligence can be a weapon in and of itself. Make up believable reasons for the actions you have taken over your entire lifespan to change the people’s perception of you. Once this skill is used, you can decide how to redistribute all of your reputation points. Rumors about the reasons behind your actions take three days ({0} turns) to spread<a>0</a> from the point you stopped talking to the original target<a>1</a> of this skill. Once rumors start to spread, they cannot be stopped, however, using this skill a second time while rumors are still being spread around will cause the effects of Manipulation to be canceled from confusion being born. If this skill is used too often, it will eventually stop working.",
@@ -491,7 +483,7 @@
               "100": 6
             },
             "options": [
-              { "label": "One skill from any race", "type": "mutant_skill_choice", "setsOption": [1] },
+              { "label": "One skill<a>0<a> from any race", "type": "mutant_skill_choice", "setsOption": [1] },
               { "label": "A statistical multiplier to be set to {0}%",
                 "type": "stat_multiplier_set_50",
                 "calc": "add", "value": 0.50,
@@ -506,7 +498,7 @@
                 "unique":"Mutation_Degeneration",
                 "setsOption": [1]
               },
-              { "label": "Natural mana or health regeneration become permanently active",
+              { "label": "Natural mana or health regeneration become permanently<a>1</a> active",
                 "type": "perm_regen_active",
                 "calc": "count",
                 "applicableStats": ["permManaRegenActive", "permHealthRegenActive"], 
@@ -520,7 +512,8 @@
                 "unique":"Mutation_Degeneration",
                 "setsOption": [1]
               }
-            ]
+            ],
+            "foot_notes" : [1, 2]
           },
           "Degeneration": {
             "description": "Mutants gain Degeneration choices at specific levels.",
@@ -542,6 +535,10 @@
               }
             ]
           }
+      },
+      "foot_notes": {
+        "1": "You must meet the skill’s level requirement at the time of you unlocking it and all level 100 skills are banned.",
+        "2" : "This means that you will constantly be regenerating health, even when fighting, taking damage, or if affected by some health-regeneration disabling ability."
       }
     },
     "Noki": {

@@ -1980,19 +1980,6 @@ function renderRacialActives(activesContainer, category) {
         for (const abilityKey in racialActives) {
             if (racialActives.hasOwnProperty(abilityKey)) {
                 const abilityData = racialActives[abilityKey];
-                if (abilityData.unlockRequirements) {
-                    const statsKeys = Object.keys(abilityData.unlockRequirements);
-                    let isValid = true;
-                    for (const statName of statsKeys) {
-                        if (calculateRollStatTotal(character, statName) < abilityData.unlockRequirements[statName]) {
-                            isValid = false;
-                            break;
-                        }
-                    }
-                    if (!isValid)
-                        break;
-                }
-
                 const abilityTarget = abilityData.identifier;
 
                 const abilityWrapper = document.createElement('div');
