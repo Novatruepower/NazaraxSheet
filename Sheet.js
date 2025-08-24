@@ -2029,7 +2029,7 @@ function renderRacialActives(activesContainer, category) {
                 }
 
                 if (abilityData.conditions) {
-                    renderProperties(abilityWrapper, abilityData.conditions, `<b>Conditions:</b> ${ExternalDataManager.formatString(abilityData.conditions, abilityData.values)}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
+                    renderProperties(abilityWrapper, `<b>Conditions:</b> ${ExternalDataManager.formatString(abilityData.conditions, abilityData.values)}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
                 }
 
                 const abilityDescription = document.createElement('p');
