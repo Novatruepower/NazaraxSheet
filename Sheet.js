@@ -2017,7 +2017,7 @@ function renderRacialActives(activesContainer, category) {
                 }
 
                 if (abilityData.channel_time) {
-                    renderProperties(abilityWrapper, `<b>Channel time:</b> ${abilityData.channel_time}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
+                    renderProperties(abilityWrapper, `<b>Channel time:</b> ${ExternalDataManager.formatHrefFootNotes(abilityData.channel_time, racialActiveList, abilityData.foot_notes)}`, 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors');
                 }
 
                 if (abilityData.cooldown) {
