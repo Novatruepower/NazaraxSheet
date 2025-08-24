@@ -2593,7 +2593,7 @@ function updateSpecializationDropdownAndData() {
     });
 
     // 3. Update the displayed value for specializations
-    specializationDisplayInput.value = Object.values(displayValues.join(', '));
+    specializationDisplayInput.value = Object.values(displayValues).join(', ');
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
