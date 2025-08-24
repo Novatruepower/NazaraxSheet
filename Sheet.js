@@ -2566,14 +2566,14 @@ function updateSpecializationDropdownAndData() {
 
     // 1. Determine available specializations based on selected classes
     const availableSpecializations = {};
-    const displayValues = [];
+    const displayValues = {};
     character.classes.forEach(selectedClass => {
         const specs = ExternalDataManager.getClassSpecs(selectedClass);
         if (specs) {
             specs.forEach(spec => { 
                 availableSpecializations[selectedClass] = availableSpecializations[selectedClass] ?? [];
                 availableSpecializations[selectedClass].push(spec);
-                displayValues.push(`${selectedClass}→${spec}`);
+                displayValues[selectedClass] = `${selectedClass}→${spec}`;
             });
         }
     });
@@ -2586,12 +2586,14 @@ function updateSpecializationDropdownAndData() {
             // 2. Filter character.specializations to keep only valid ones
             character.specializations[classe] = character.specializations[classe].filter(spec => availableSpecializations[classe].includes(spec));
         }
+
+        if (!character.specializations[classe]) {
+            delete displayValues[classe];
+        }
     });
 
-    displayValues.sort();
-
     // 3. Update the displayed value for specializations
-    specializationDisplayInput.value = displayValues.join(', ');
+    specializationDisplayInput.value = Object.values(displayValues.join(', '));
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
