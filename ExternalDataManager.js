@@ -98,6 +98,7 @@ export const ExternalDataManager = {
         for (const [characterKey, characterData] of Object.entries(data)) {
             const characterTarget = this._data[characterKey] ||= {};
             for (const [categoryKey, categoryData] of Object.entries(characterData)) {
+                console.log(categoryData);
                 const dataKeys = Object.keys(categoryData);
                 dataKeys.forEach(key => {
                     characterTarget[categoryKey][key] = categoryData[key];
