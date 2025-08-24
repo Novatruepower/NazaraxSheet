@@ -2554,6 +2554,7 @@ function handleSpecializationCheckboxChange(event) {
     const displayValues = [];
     const specializationsKeys = Object.keys(character.specializations);
     specializationsKeys.forEach(classe => {
+        console.log(character.specializations[classe]);
         displayValues.push(`${classe}→${character.specializations[classe].join(', ')}`);
     });
 
