@@ -2582,7 +2582,7 @@ function updateSpecializationDropdownAndData() {
         }
 
         if (!character.specializations[selectedClass]) {
-            delete displayValues[classe];
+            delete displayValues[selectedClass];
         }
     });
 
