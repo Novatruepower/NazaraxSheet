@@ -428,7 +428,7 @@
         },
         "Magnetic Launcher": {
           "unlockRequirements": {
-            "intelligence": 20
+            "Intelligence": 20
           },
           "timeToCraft": 3,
           "description": "This cannon-like contraption uses magnets to launch any metallic consumable item at high speeds at a target, making your throw accuracy become 100%. This item can be upgraded using 3 wind magic crystals, giving it the ability to shoot even non-metallic items. Every time it is used, throw a D12, if it falls on 1, the cannon breaks instead of throwing the item."
