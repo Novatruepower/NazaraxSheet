@@ -95,13 +95,14 @@ export const ExternalDataManager = {
     },
 
     initJsonData(data) {
+        console.log(this._data);
         for (const [characterKey, characterData] of Object.entries(data)) {
             const characterTarget = this._data[characterKey] ||= {};
+            console.log(characterTarget);
             for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                 console.log(categoryData);
                 const dataKeys = Object.keys(categoryData);
                 console.log(dataKeys);
-                console.log(characterTarget);
                 dataKeys.forEach(key => {
                     characterTarget[categoryKey][key] = categoryData[key];
                 });

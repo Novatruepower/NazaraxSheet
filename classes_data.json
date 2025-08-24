@@ -1,6 +1,6 @@
 {
   "Classes": {
-    "archers": {
+    "Archer": {
         "regularPassives": {
             "Take aim": {
                 "level": 1,
