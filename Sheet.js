@@ -2581,6 +2581,10 @@ function updateSpecializationDropdownAndData() {
                 availableSpecializations[selectedClass].push(spec);
 
                 if (character.specializations[selectedClass]) {
+                    if (!displayValues[selectedClass]) {
+                        displayValues[selectedClass] = [];
+                    }
+
                     displayValues[selectedClass].push(`${selectedClass}→${spec}`);
                 }
             });
