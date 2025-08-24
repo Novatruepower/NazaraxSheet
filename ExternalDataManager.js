@@ -256,7 +256,7 @@ export const ExternalDataManager = {
     /**
      * Retrieves the specializations for a specific class from the internal data.
      * @param {string} className The name of the class.
-     * @returns {Array<string>|null} An array of specialization names, or null if not found.
+     * @returns {Array<string>|null} An array of specializations names, or null if not found.
      */
     getClassSpecs(className) {
         const classData = this.getClassData(className);
@@ -510,5 +510,35 @@ export const ExternalDataManager = {
             return processedActives;
         }
         return null;
-    }
+    },
+
+    getClassRegularPassives(className, specializations, level) {
+        const raceData = this.getClassData(className);
+        if (raceData && raceData.regularPassives) {
+            const processedPassives = {};
+            const copy = JSON.parse(JSON.stringify(raceData.regularPassives));
+            const regularPassives = [...copy];
+            console.log(regularPassives);
+
+            specializations.forEach(spec => {
+                if (raceData[spec] && raceData[spec].regularPassives) {
+                    const newData = raceData[spec].regularPassives;
+                    for (const name in newData) {
+                        regularPassives.push(name);
+                    }
+                }
+            });
+            console.log(regularPassives);
+
+            for (const passiveName in regularPassives) {
+                const ability = regularPassives[passiveName];
+                if (ability.level <= level) {
+                    processedPassives[passiveName] = this.processedUpgrades(passiveName, regularPassives[passiveName], level);
+                }
+            }
+
+            return processedPassives;
+        }
+        return null;
+    },
 };

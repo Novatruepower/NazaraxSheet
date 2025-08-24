@@ -297,8 +297,8 @@ const defaultCharacterData = function () {
 
     let newCharacter = ({
         name: '',
-        class: [],
-        specialization: [],
+        classes: [],
+        specializations: [],
         race: firstRace,
         level: 1,
         levelExperience: 0,
@@ -656,7 +656,7 @@ function initLoadCharacter(loadedChar) {
     // Deep merge loaded properties into the new character
     for (const key in newChar) {
         if (loadedChar.hasOwnProperty(key)) {
-            if (key === 'class' || key === 'specialization' || key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
+            if (key === 'classes' || key === 'specializations' || key === 'weaponInventory' || key === 'armorInventory' || key === 'generalInventory') {
                 // Ensure these are arrays, even if loaded data has non-array
                 newChar[key] = Array.isArray(loadedChar[key]) ? loadedChar[key] : [];
             }   else if (key === 'layouts') {
@@ -800,11 +800,11 @@ function updateDOM() {
 
 
     // Handle custom multi-select for class
-    const classDisplayInput = document.getElementById('class-display');
-    const classDropdownOptions = document.getElementById('class-dropdown-options');
+    const classDisplayInput = document.getElementById('classes-display');
+    const classDropdownOptions = document.getElementById('classes-dropdown-options');
 
     // Set the displayed value for classes
-    classDisplayInput.value = character.class.join(', ');
+    classDisplayInput.value = character.classes.join(', ');
 
     // Populate and update checkboxes in the dropdown options
     classDropdownOptions.innerHTML = ''; // Clear existing options
@@ -819,14 +819,14 @@ function updateDOM() {
                name="class-option"
                value="${className}"
                class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-               ${character.class.includes(className) ? 'checked' : ''}
+               ${character.classes.includes(className) ? 'checked' : ''}
            />
            <label for="class-${className.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${className}</label>
        `;
         classDropdownOptions.appendChild(checkboxDiv);
     });
 
-    // Update Specialization dropdown
+    // Update specializations dropdown
     updateSpecializationDropdownAndData();
 
     const stateDisplayInput = document.getElementById('state-display');
@@ -1967,6 +1967,7 @@ function renderManualRacialPassives(passivesContainer) {
 
     renderFootNotes(race, numbersFootNotes, manualPassivesList);
     updateSpecificHtmlVisibility('element');
+    attachClearChoiceListeners(`.clear-${race}-choice-btn`);
 }
 
 function renderProperties(wrapper, innerHTML, className) {
@@ -2074,6 +2075,31 @@ function renderGenericRacialActives(race) {
         activesContainer.classList.add('hidden');
         activesContainer.innerHTML = '';
     }
+
+    renderGenericClassesPassives();
+}
+
+function renderGenericClassesPassives() {
+    const manualPassivesContainer = document.getElementById('classes-manual-passives-container');
+
+    const genericPassives = ExternalDataManager.getClassRegularPassives(character.classes, character.specializations, character.level);
+
+    if (genericPassives) {
+        //renderManualRacialPassives(manualPassivesContainer, race);
+        //attachClearChoiceListeners(`.clear-${race}-choice-btn`);
+    } else {
+        manualPassivesContainer.classList.add('hidden');
+        manualPassivesContainer.innerHTML = '';
+    }
+
+    const regularPassivesContainer = document.getElementById('classes-regular-passives-container');
+
+    if (regularPassivesContainer) {
+        //renderRegularRacialPassives(oldRace, regularPassivesContainer, race);
+    } else {
+        regularPassivesContainer.classList.add('hidden');
+        regularPassivesContainer.innerHTML = '';
+    }
 }
 
 /**
@@ -2087,7 +2113,6 @@ function renderGenericRacialPassives(oldRace, race) {
 
     if (genericPassives) {
         renderManualRacialPassives(manualPassivesContainer, race);
-        attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     } else {
         manualPassivesContainer.classList.add('hidden');
         manualPassivesContainer.innerHTML = '';
@@ -2427,7 +2452,7 @@ function handleChange(event) {
             character.layouts[id].text = newValue;
         } else if(id === 'purse' || id === 'bank') {
             character[id] = newValue;
-        } else if (id !== 'class-display' && id !== 'specialization-display') {
+        } else if (id !== 'classes-display' && id !== 'specializations-display') {
             character[name || id] = newValue;
         }
     }
@@ -2437,7 +2462,7 @@ function handleChange(event) {
 
 // Function to toggle the visibility of the class dropdown options
 function toggleClassDropdown() {
-    const dropdown = document.getElementById('class-dropdown-options');
+    const dropdown = document.getElementById('classes-dropdown-options');
     dropdown.classList.toggle('hidden');
 }
 
@@ -2447,9 +2472,9 @@ function toggleStateDropdown() {
     dropdown.classList.toggle('hidden');
 }
 
-// Function to toggle the visibility of the specialization dropdown options
+// Function to toggle the visibility of the specializations dropdown options
 function toggleSpecializationDropdown() {
-    const dropdown = document.getElementById('specialization-dropdown-options');
+    const dropdown = document.getElementById('specializations-dropdown-options');
     dropdown.classList.toggle('hidden');
 }
 
@@ -2458,16 +2483,16 @@ function handleClassCheckboxChange(event) {
     const { value, checked } = event.target;
 
     if (checked) {
-        if (!character.class.includes(value)) {
-            character.class.push(value);
+        if (!character.classes.includes(value)) {
+            character.classes.push(value);
         }
     } else {
-        character.class = character.class.filter(c => c !== value);
+        character.classes = character.classes.filter(c => c !== value);
     }
     // Update the displayed value in the input field
-    document.getElementById('class-display').value = character.class.join(', ');
+    document.getElementById('classes-display').value = character.classes.join(', ');
 
-    // After class changes, update specialization dropdown
+    // After class changes, update specializations dropdown
     updateSpecializationDropdownAndData();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
@@ -2486,31 +2511,31 @@ function handleStateCheckboxChange(event) {
     saveCurrentStateToHistory(); // Save state after modification
 }
 
-// Function to handle changes in the specialization checkboxes
+// Function to handle changes in the specializations checkboxes
 function handleSpecializationCheckboxChange(event) {
     const { value, checked } = event.target;
 
     if (checked) {
-        if (!character.specialization.includes(value)) {
-            character.specialization.push(value);
+        if (!character.specializations.includes(value)) {
+            character.specializations.push(value);
         }
     } else {
-        character.specialization = character.specialization.filter(s => s !== value);
+        character.specializations = character.specializations.filter(s => s !== value);
     }
     // Update the displayed value in the input field
-    document.getElementById('specialization-display').value = character.specialization.join(', ');
+    document.getElementById('specializations-display').value = character.specializations.join(', ');
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
 
-// Function to update the specialization dropdown options and filter selected specializations
+// Function to update the specializations dropdown options and filter selected specializations
 function updateSpecializationDropdownAndData() {
-    const specializationDisplayInput = document.getElementById('specialization-display');
-    const specializationDropdownOptions = document.getElementById('specialization-dropdown-options');
+    const specializationDisplayInput = document.getElementById('specializations-display');
+    const specializationDropdownOptions = document.getElementById('specializations-dropdown-options');
 
     // 1. Determine available specializations based on selected classes
     const availableSpecializationsSet = new Set();
-    character.class.forEach(selectedClass => {
+    character.classes.forEach(selectedClass => {
         const specs = ExternalDataManager.getClassSpecs(selectedClass);
         if (specs) {
             specs.forEach(spec => availableSpecializationsSet.add(selectedClass + "→" + spec));
@@ -2518,11 +2543,11 @@ function updateSpecializationDropdownAndData() {
     });
     const availableSpecializations = Array.from(availableSpecializationsSet).sort();
 
-    // 2. Filter character.specialization to keep only valid ones
-    character.specialization = character.specialization.filter(spec => availableSpecializations.includes(spec));
+    // 2. Filter character.specializations to keep only valid ones
+    character.specializations = character.specializations.filter(spec => availableSpecializations.includes(spec));
 
     // 3. Update the displayed value for specializations
-    specializationDisplayInput.value = character.specialization.join(', ');
+    specializationDisplayInput.value = character.specializations.join(', ');
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
@@ -2537,13 +2562,13 @@ function updateSpecializationDropdownAndData() {
             checkboxDiv.innerHTML = `
                <input
                    type="checkbox"
-                   id="specialization-${specName.replace(/\s/g, '-')}"
-                   name="specialization-option"
+                   id="specializations-${specName.replace(/\s/g, '-')}"
+                   name="specializations-option"
                    value="${specName}"
                    class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-                   ${character.specialization.includes(specName) ? 'checked' : ''}
+                   ${character.specializations.includes(specName) ? 'checked' : ''}
                />
-               <label for="specialization-${specName.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
+               <label for="specializations-${specName.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${specName}</label>
            `;
             specializationDropdownOptions.appendChild(checkboxDiv);
         });
@@ -3880,11 +3905,11 @@ function attachEventListeners() {
 
 
     // Attach event listener for the custom class display input to toggle dropdown
-    document.getElementById('class-display').addEventListener('click', toggleClassDropdown);
+    document.getElementById('classes-display').addEventListener('click', toggleClassDropdown);
     document.getElementById('state-display').addEventListener('click', toggleStateDropdown);
 
     // Attach event listeners to the dynamically created class checkboxes (delegation)
-    document.getElementById('class-dropdown-options').addEventListener('change', function (event) {
+    document.getElementById('classes-dropdown-options').addEventListener('change', function (event) {
         if (event.target.type === 'checkbox' && event.target.name === 'class-option') {
             handleClassCheckboxChange(event);
         }
@@ -3896,22 +3921,22 @@ function attachEventListeners() {
         }
     });
 
-    // Attach event listener for the custom specialization display input to toggle dropdown
-    document.getElementById('specialization-display').addEventListener('click', toggleSpecializationDropdown);
+    // Attach event listener for the custom specializations display input to toggle dropdown
+    document.getElementById('specializations-display').addEventListener('click', toggleSpecializationDropdown);
 
-    // Attach event listeners to the dynamically created specialization checkboxes (delegation)
-    document.getElementById('specialization-dropdown-options').addEventListener('change', function (event) {
-        if (event.target.type === 'checkbox' && event.target.name === 'specialization-option') {
+    // Attach event listeners to the dynamically created specializations checkboxes (delegation)
+    document.getElementById('specializations-dropdown-options').addEventListener('change', function (event) {
+        if (event.target.type === 'checkbox' && event.target.name === 'specializations-option') {
             handleSpecializationCheckboxChange(event);
         }
     });
 
     // Close dropdowns if clicked outside
     document.addEventListener('click', function (event) {
-        const classDisplayInput = document.getElementById('class-display');
-        const classDropdownOptions = document.getElementById('class-dropdown-options');
-        const specializationDisplayInput = document.getElementById('specialization-display');
-        const specializationDropdownOptions = document.getElementById('specialization-dropdown-options');
+        const classDisplayInput = document.getElementById('classes-display');
+        const classDropdownOptions = document.getElementById('classes-dropdown-options');
+        const specializationDisplayInput = document.getElementById('specializations-display');
+        const specializationDropdownOptions = document.getElementById('specializations-dropdown-options');
         const saveDropdownBtn = document.getElementById('save-dropdown-btn');
         const saveDropdownMenu = document.getElementById('save-dropdown-menu');
         const loadDropdownBtn = document.getElementById('load-dropdown-btn');
