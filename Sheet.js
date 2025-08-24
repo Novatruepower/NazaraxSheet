@@ -2021,7 +2021,7 @@ function renderRacialActives(activesContainer, category) {
                     const abilityCondition = document.createElement('p');
                     abilityCondition.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
                     abilityCondition.textContent = abilityData.condition;
-                    abilityCondition.appendChild(abilityCooldown);
+                    abilityCondition.appendChild(abilityCondition);
                 }
 
                 const abilityDescription = document.createElement('p');
