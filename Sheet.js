@@ -2018,9 +2018,8 @@ function renderRacialActives(activesContainer, category) {
                 }
 
                 if (abilityData.conditions) {
-                    console.log(ExternalDataManager.formatHrefFootNotes(abilityData.conditions, racialActiveList, abilityData.foot_notes));
                     const abilityCondition = document.createElement('p');
-                    abilityCondition.innerHTML = `<b>Conditions:</b> ${ExternalDataManager.formatHrefFootNotes(abilityData.conditions, racialActiveList, abilityData.foot_notes)}`;
+                    abilityCondition.innerHTML = `<b>Conditions:</b> ${ExternalDataManager.formatString(abilityData.conditions, abilityData.values)}`;
                     abilityCondition.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
                     abilityWrapper.appendChild(abilityCondition);
                 }
