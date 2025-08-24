@@ -2596,7 +2596,7 @@ function updateSpecializationDropdownAndData() {
         }
     });
 
-    renderSpecializations(character.specializations);
+    //renderSpecializations(character.specializations);
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
