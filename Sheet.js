@@ -2010,17 +2010,17 @@ function renderRacialActives(activesContainer, category) {
                     const dataKeys = Object.keys(abilityData.cooldown);
                     dataKeys.forEach(key => {
                         const abilityCooldown = document.createElement('p');
-                        abilityCooldown.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
                         const abilityCooldownData = abilityData.cooldown[key];
-                        abilityCooldown.textContent = `Cooldown: ${abilityCooldownData.value} ${key} ${abilityCooldownData.shared ? `shared with ${abilityCooldownData.shared.join(', ')}` : ''}`;
+                        abilityCooldown.innerHTML = `<b>Cooldown:</b> ${abilityCooldownData.value} ${key} ${abilityCooldownData.shared ? `shared with ${abilityCooldownData.shared.join(', ')}` : ''}`;
+                        abilityCooldown.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
                         abilityWrapper.appendChild(abilityCooldown);
                     });
                 }
 
-                if (abilityData.condition) {
+                if (abilityData.conditions) {
                     const abilityCondition = document.createElement('p');
+                    abilityCondition.innerHTML = `<b>Conditions:</b> ${abilityData.conditions}`;
                     abilityCondition.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-                    abilityCondition.textContent = abilityData.condition;
                     abilityWrapper.appendChild(abilityCondition);
                 }
 
