@@ -513,7 +513,7 @@
                 "setsOption": [1]
               }
             ],
-            "foot_notes" : ["¹", "²"]
+            "foot_notes" : [1, 2]
           },
           "Degeneration": {
             "description": "Mutants gain Degeneration choices at specific levels.",
@@ -537,8 +537,8 @@
           }
       },
       "foot_notes": {
-        "¹": "You must meet the skill’s level requirement at the time of you unlocking it and all level 100 skills are banned.",
-        "²" : "This means that you will constantly be regenerating health, even when fighting, taking damage, or if affected by some health-regeneration disabling ability."
+        "1": "You must meet the skill’s level requirement at the time of you unlocking it and all level 100 skills are banned.",
+        "2" : "This means that you will constantly be regenerating health, even when fighting, taking damage, or if affected by some health-regeneration disabling ability."
       }
     },
     "Noki": {

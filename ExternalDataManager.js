@@ -13,8 +13,31 @@ export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
     _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
+    convertNumberToSuperscript(number) {
+        const superscriptMap = {
+          '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+          '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+        };
+      
+        // Convert the number to a string to iterate over each digit
+        const numString = String(number);
+        let superscriptString = '';
+      
+        for (let i = 0; i < numString.length; i++) {
+          const digit = numString[i];
+          if (superscriptMap[digit]) {
+            superscriptString += superscriptMap[digit];
+          } else {
+            // Handle cases where the character is not a digit (e.g., a decimal point)
+            superscriptString += digit;
+          }
+        }
+      
+        return superscriptString;
+    },
+
     getHrefFootNotes(id, value) {
-        return `<a href="#${id}-foot_notes-${value}" rel="nofollow"><sup>${value}</sup></a>`;
+        return `<a href="#${id}-foot_notes-${value}" rel="nofollow">${convertNumberToSuperscript(value)}</a>`;
     },
 
     formatHrefFootNotes(str, container, ...args) {
