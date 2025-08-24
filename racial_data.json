@@ -370,7 +370,7 @@
           "level": 50,
           "cast_time": 1,
           "description" : "Summon Healroots from the earth to protect you and your allies. After the cast time is over, Healroots will pop out of the ground, and wrap around your target’s<a>0</a> wound(s), healing them for [(Caster LVL) * {0}] HP, and causing skin to quickly grow back to close the wound(s). After having healed a target, Healroots can be moved onto a new target without having to wait for the cast time. This skill requires both the caster and target to be immobile for and can only be cast while a target has fresh wounds.",
-          "values": 25,
+          "values": [25],
           "foot_notes": [3]
         }
       },
