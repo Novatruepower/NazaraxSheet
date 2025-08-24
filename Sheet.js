@@ -2535,6 +2535,18 @@ function handleStateCheckboxChange(event) {
     saveCurrentStateToHistory(); // Save state after modification
 }
 
+function renderSpecializations(specializations) {
+    const displayValues = [];
+    const specializationsKeys = Object.keys(specializations);
+    specializationsKeys.forEach(classe => {
+        if (specializations[classe].length > 0) {
+            displayValues.push(`${classe}→${specializations[classe].join(', ')}`);
+        }
+    });
+
+    document.getElementById('specializations-display').value = displayValues.join(', ');
+}
+
 // Function to handle changes in the specializations checkboxes
 function handleSpecializationCheckboxChange(event) {
     const { value, checked } = event.target;
@@ -2551,16 +2563,8 @@ function handleSpecializationCheckboxChange(event) {
     } else {
         character.specializations[classe] = character.specializations[classe].filter(s => s !== value);
     }
-    const displayValues = [];
-    const specializationsKeys = Object.keys(character.specializations);
-    specializationsKeys.forEach(classe => {
-        if (character.specializations[classe].length > 0) {
-            displayValues.push(`${classe}→${character.specializations[classe].join(', ')}`);
-        }
-    });
 
-    // Update the displayed value in the input field
-    document.getElementById('specializations-display').value = displayValues.join(', ');
+    renderSpecializations(character.specializations);
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
@@ -2572,21 +2576,12 @@ function updateSpecializationDropdownAndData() {
 
     // 1. Determine available specializations based on selected classes
     const availableSpecializations = {};
-    const displayValues = {};
     character.classes.forEach(selectedClass => {
         const specs = ExternalDataManager.getClassSpecs(selectedClass);
         if (specs) {
             specs.forEach(spec => { 
                 availableSpecializations[selectedClass] = availableSpecializations[selectedClass] ?? [];
                 availableSpecializations[selectedClass].push(spec);
-
-                if (character.specializations[selectedClass]) {
-                    if (!displayValues[selectedClass]) {
-                        displayValues[selectedClass] = [];
-                    }
-
-                    displayValues[selectedClass].push(`${selectedClass}→${spec}`);
-                }
             });
         }
     });
@@ -2601,8 +2596,7 @@ function updateSpecializationDropdownAndData() {
         }
     });
 
-    // 3. Update the displayed value for specializations
-    specializationDisplayInput.value = Object.values(displayValues).join(', ');
+    specializationDisplayInput.value = renderSpecializations(character.specializations);
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
