@@ -1910,6 +1910,7 @@ function renderManualRacialPassives(passivesContainer, category) {
             abilityData.options.forEach(option => {
                 console.log(option);
                 option.label = ExternalDataManager.formatHrefFootNotes(option.label, manualPassivesList, abilityData.foot_notes);
+                console.log(option);
             });
             console.log(abilityData);
 
