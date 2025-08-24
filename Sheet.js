@@ -1225,7 +1225,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * @param {object} newAbilityData The data for the new choice to be applied (or null/undefined to clear).
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
-function processRacialFullAutoPassiveChange(newAbilityData) {
+function processRacialRegularPassiveChange(newAbilityData) {
     const race = character.race;
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
@@ -1819,69 +1819,71 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
     }
 }
 
-function renderFullAutoRacialPassives(oldRace, passivesContainer) {
+function renderRegularPassives(regularPassives, regularPassivesList, numbersFootNotes) {
+    for (const abilityKey in regularPassives) {
+        if (regularPassives.hasOwnProperty(abilityKey)) {
+            const abilityData = regularPassives[abilityKey];
+            const abilityTarget = abilityData.identifier;
+
+            const abilityWrapper = document.createElement('div');
+            abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
+
+            const abilityHeader = document.createElement('div');
+            abilityHeader.className = 'flex items-center justify-between';
+
+            const abilityTitle = document.createElement('h2');
+            abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors';
+            abilityTitle.textContent = abilityData.name;
+
+            const toggableBtn = document.createElement('button');
+            toggableBtn.className = 'toggle-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
+            toggableBtn.dataset.target = abilityTarget;
+            toggableBtn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+            `;
+
+            abilityHeader.appendChild(abilityTitle);
+            abilityHeader.appendChild(toggableBtn);
+
+            const abilityDescription = document.createElement('p');
+            abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, regularPassivesList, abilityData.foot_notes);
+            abilityDescription.id = abilityTarget;
+            abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
+
+            abilityWrapper.appendChild(abilityHeader);
+            abilityWrapper.appendChild(abilityDescription);
+            regularPassivesList.appendChild(abilityWrapper);
+
+            processRacialRegularPassiveChange(race, abilityData);
+
+            if (abilityData.foot_notes) {
+                abilityData.foot_notes.forEach(key => {
+                    numbersFootNotes[key] = true;
+                });
+            }
+        }
+    }
+}
+
+function renderRegularRacialPassives(oldRace, passivesContainer) {
     const race = character.race;
     const id = 'regular-passives';
 
     if (oldRace) {
-        const oldregularPassives = ExternalDataManager.getRaceregularPassives(oldRace, character.level);
+        const oldregularPassives = ExternalDataManager.getRaceRegularPassives(oldRace, character.level);
         removeTemporaryEffectByCategory(oldregularPassives, oldRace);
     }
 
-    const regularPassives = ExternalDataManager.getRaceregularPassives(race, character.level);
+    const regularPassives = ExternalDataManager.getRaceRegularPassives(race, character.level);
 
     if (regularPassives && Object.keys(regularPassives).length > 0) {
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'passives', numbersFootNotes);
         renderContainer(passivesContainer, "Regular passives", id, numbersFootNotes);
         const regularPassivesList = document.getElementById(`${race}-${id}-list`);
-
-        for (const abilityKey in regularPassives) {
-            if (regularPassives.hasOwnProperty(abilityKey)) {
-                const abilityData = regularPassives[abilityKey];
-                const abilityTarget = abilityData.identifier;
-
-                const abilityWrapper = document.createElement('div');
-                abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
-
-                const abilityHeader = document.createElement('div');
-                abilityHeader.className = 'flex items-center justify-between';
-
-                const abilityTitle = document.createElement('h2');
-                abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors';
-                abilityTitle.textContent = abilityData.name;
-
-                const toggableBtn = document.createElement('button');
-                toggableBtn.className = 'toggle-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
-                toggableBtn.dataset.target = abilityTarget;
-                toggableBtn.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-                `;
-
-                abilityHeader.appendChild(abilityTitle);
-                abilityHeader.appendChild(toggableBtn);
-
-                const abilityDescription = document.createElement('p');
-                abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, regularPassivesList, abilityData.foot_notes);
-                abilityDescription.id = abilityTarget;
-                abilityDescription.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
-
-                abilityWrapper.appendChild(abilityHeader);
-                abilityWrapper.appendChild(abilityDescription);
-                regularPassivesList.appendChild(abilityWrapper);
-
-                processRacialFullAutoPassiveChange(race, abilityData);
-
-                if (abilityData.foot_notes) {
-                    abilityData.foot_notes.forEach(key => {
-                        numbersFootNotes[key] = true;
-                    });
-                }
-            }
-        }
-
+        renderRegularPassives(regularPassives, regularPassivesList, numbersFootNotes);
         renderFootNotes(race, numbersFootNotes, regularPassivesList);
         updateSpecificHtmlVisibility('element');
     } else {
@@ -2094,7 +2096,7 @@ function renderGenericRacialPassives(oldRace, race) {
     const regularPassivesContainer = document.getElementById('racial-regular-passives-container');
 
     if (regularPassivesContainer) {
-        renderFullAutoRacialPassives(oldRace, regularPassivesContainer, race);
+        renderRegularRacialPassives(oldRace, regularPassivesContainer, race);
     } else {
         regularPassivesContainer.classList.add('hidden');
         regularPassivesContainer.innerHTML = '';
