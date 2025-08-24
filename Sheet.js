@@ -2538,7 +2538,7 @@ function handleStateCheckboxChange(event) {
 function renderSpecializations(specializations) {
     const displayValues = [];
     const specializationsKeys = Object.keys(specializations);
-    console.log(specializationsKeys);
+
     specializationsKeys.forEach(classe => {
         if (specializations[classe].length > 0) {
             displayValues.push(`${classe}→${specializations[classe].join(', ')}`);
@@ -2597,7 +2597,7 @@ function updateSpecializationDropdownAndData() {
         }
     });
 
-    specializationDisplayInput.value = renderSpecializations(character.specializations);
+    specializationDisplayInput.value = "";// renderSpecializations(character.specializations);
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
