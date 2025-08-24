@@ -1624,7 +1624,6 @@ function renderTagManualRacialPassive(race, category, abilityKey, abilityData, a
     const isLevelBased = abilityData.levels && Object.keys(abilityData.levels).length > 0;
     const deepCopy = [...availableOptions];
     let newAvailableOptions = deepCopy;
-    console.log(newAvailableOptions);
 
     let count = 0;
     while (newAvailableOptions.length > 0) {
@@ -1908,11 +1907,8 @@ function renderManualRacialPassives(passivesContainer, category) {
         if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
             const abilityData = manualPassives[abilityKey];
             abilityData.options.forEach(option => {
-                console.log(option);
                 option.label = ExternalDataManager.formatHrefFootNotes(option.label, manualPassivesList, abilityData.foot_notes);
-                console.log(option);
             });
-            console.log(abilityData);
 
             const abilityDescription = document.createElement('p');
             abilityDescription.innerHTML = ExternalDataManager.formatHrefFootNotes(abilityData.description, manualPassivesList, abilityData.foot_notes);
