@@ -2492,6 +2492,7 @@ function handleClassCheckboxChange(event) {
 
     // After class changes, update specializations dropdown
     updateSpecializationDropdownAndData();
+    renderGenericClassesPassives();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
     saveCurrentStateToHistory(); // Save state after modification
 }
