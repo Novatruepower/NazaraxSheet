@@ -1225,11 +1225,12 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * @param {object} newAbilityData The data for the new choice to be applied (or null/undefined to clear).
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
-function processRacialFullAutoPassiveChange(category, newAbilityData) {
+function processRacialFullAutoPassiveChange(newAbilityData) {
+    const race = character.race;
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
     }
-    removeTemporaryEffectByIdentifier(newAbilityData, category);
+    removeTemporaryEffectByIdentifier(newAbilityData, race);
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
@@ -1242,7 +1243,7 @@ function processRacialFullAutoPassiveChange(category, newAbilityData) {
                     formula['name'] = newAbilityData.name;
                 }
 
-                addTemporaryEffect(character, category, formula, Infinity);
+                addTemporaryEffect(character, race, formula, Infinity);
             }
         }
     }
@@ -1818,7 +1819,7 @@ function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
     }
 }
 
-function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
+function renderFullAutoRacialPassives(oldRace, passivesContainer) {
     const race = character.race;
     const id = 'full-auto-passives';
 
@@ -1871,7 +1872,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
                 abilityWrapper.appendChild(abilityDescription);
                 fullAutoPassivesList.appendChild(abilityWrapper);
 
-                processRacialFullAutoPassiveChange(category, abilityData);
+                processRacialFullAutoPassiveChange(race, abilityData);
 
                 if (abilityData.foot_notes) {
                     abilityData.foot_notes.forEach(key => {
@@ -1889,7 +1890,7 @@ function renderFullAutoRacialPassives(oldRace, passivesContainer, category) {
     }
 }
 
-function renderManualRacialPassives(passivesContainer, category) {
+function renderManualRacialPassives(passivesContainer) {
     const race = character.race;
     const id = 'manual-passives';
     const numbersFootNotes = {};
@@ -1900,8 +1901,8 @@ function renderManualRacialPassives(passivesContainer, category) {
     const manualPassives = ExternalDataManager.getRaceManualPassives(race);
     const currentLevel = character.level;
 
-    character.StatChoices[category] = character.StatChoices[category] || {};
-    character.StatsAffected[category] = character.StatsAffected[category] || {};
+    character.StatChoices[race] = character.StatChoices[race] || {};
+    character.StatsAffected[race] = character.StatsAffected[race] || {};
 
     for (const abilityKey in manualPassives) {
         if (manualPassives.hasOwnProperty(abilityKey) && manualPassives[abilityKey].options) {
@@ -1943,7 +1944,7 @@ function renderManualRacialPassives(passivesContainer, category) {
 
                     const tagToPass = nextOption.setsOption ? nextOption.setsOption.find(tag => !usedSetOptions.has(tag)) : undefined;
 
-                    renderTagManualRacialPassive(race, category, abilityKey, abilityData, availableOptions, manualPassivesList, countLevel, tagToPass, numbersFootNotes);
+                    renderTagManualRacialPassive(race, race, abilityKey, abilityData, availableOptions, manualPassivesList, countLevel, tagToPass, numbersFootNotes);
 
                     if (tagToPass)
                         usedSetOptions.add(tagToPass);
@@ -1973,7 +1974,7 @@ function renderProperties(wrapper, innerHTML, className) {
     wrapper.appendChild(element);
 }
 
-function renderRacialActives(activesContainer, category) {
+function renderRacialActives(activesContainer) {
     const race = character.race;
     const id = 'racial-actives';
     const racialActives = ExternalDataManager.getRaceActives(race, character.level);
@@ -2060,14 +2061,13 @@ function renderRacialActives(activesContainer, category) {
  * Renders the generic racial passives for races that don't have manual choices.
  * @param {string} race The name of the race.
  */
-function renderGenericRacialActives(oldRace, race, category) {
+function renderGenericRacialActives(race) {
     const activesContainer = document.getElementById('racial-actives-container');
 
     const genericActives = ExternalDataManager.getRaceActives(race, character.level);
-    const isCategoryValid = race === category;
 
-    if (isCategoryValid && genericActives) {
-        renderRacialActives(activesContainer, category);
+    if (genericActives) {
+        renderRacialActives(activesContainer, race);
     } else {
         activesContainer.classList.add('hidden');
         activesContainer.innerHTML = '';
@@ -2078,14 +2078,13 @@ function renderGenericRacialActives(oldRace, race, category) {
  * Renders the generic racial passives for races that don't have manual choices.
  * @param {string} race The name of the race.
  */
-function renderGenericRacialPassives(oldRace, race, category) {
+function renderGenericRacialPassives(oldRace, race) {
     const manualPassivesContainer = document.getElementById('racial-manual-passives-container');
 
     const genericPassives = ExternalDataManager.getRaceManualPassives(race);
-    const isCategoryValid = race === category;
 
-    if (isCategoryValid && genericPassives) {
-        renderManualRacialPassives(manualPassivesContainer, category);
+    if (genericPassives) {
+        renderManualRacialPassives(manualPassivesContainer, race);
         attachClearChoiceListeners(`.clear-${race}-choice-btn`);
     } else {
         manualPassivesContainer.classList.add('hidden');
@@ -2094,8 +2093,8 @@ function renderGenericRacialPassives(oldRace, race, category) {
 
     const fullAutoPassivesContainer = document.getElementById('racial-full-auto-passives-container');
 
-    if (isCategoryValid && fullAutoPassivesContainer) {
-        renderFullAutoRacialPassives(oldRace, fullAutoPassivesContainer, category);
+    if (fullAutoPassivesContainer) {
+        renderFullAutoRacialPassives(oldRace, fullAutoPassivesContainer, race);
     } else {
         fullAutoPassivesContainer.classList.add('hidden');
         fullAutoPassivesContainer.innerHTML = '';
@@ -2108,9 +2107,9 @@ function renderGenericRacialPassives(oldRace, race, category) {
 function renderRacial(oldRace) {
     // Hide all specific containers first
     document.getElementById('racial-manual-passives-container').classList.add('hidden');
-    renderGenericRacialPassives(oldRace, character.race, character.race);
+    renderGenericRacialPassives(oldRace, character.race);
     document.getElementById('racial-actives-container').classList.add('hidden');
-    renderGenericRacialActives(oldRace, character.race, character.race);
+    renderGenericRacialActives(character.race);
 
     document.querySelectorAll('.toggle-container-btn').forEach(button => {
         button.addEventListener('click', (event) => {
