@@ -290,7 +290,8 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
         }
     });
 
-    renderRacial();
+    if (character)
+        renderRacial();
 }
 
 const defaultCharacterData = function () {
