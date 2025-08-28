@@ -1238,7 +1238,7 @@ function processRacialRegularPassiveChange(newAbilityData) {
         character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
     }
     removeTemporaryEffectByIdentifier(newAbilityData, race);
-    console.log(newAbilityData);
+    console.log(newAbilityData.identifier);
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
