@@ -397,7 +397,7 @@ const defaultCharacterData = function () {
     newCharacter['BaseRacialPower'].value = 100;
     newCharacter['naturalHealthRegen'].value = 0.05; //%
     newCharacter['naturalManaRegen'].value = 0.05; //%
-    newCharacter['naturalRacialPowerRegen'].value = 0.05; //%
+    newCharacter['naturalRacialPowerRegen'].value = 0; //%
 
     newCharacter['Health'].temporaryEffects = {}; // Ensure Health has a temporaryEffects array
     newCharacter['Mana'].temporaryEffects = {}; // Ensure Mana has a temporaryEffects array
