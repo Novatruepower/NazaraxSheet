@@ -11,8 +11,6 @@ const MAX_STAT_VALUE = 20;
 
 // Function to calculate max experience for a given level
 function calculateLevelMaxExperience(char) {
-    console.log(char);
-    console.log(char.uniqueIdentifiers);
     return char.uniqueIdentifiers['Self reflection'] ? char.uniqueIdentifiers['Self reflection'].values[0] : 100;
 }
 
@@ -272,6 +270,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
 
     let newMaxExperience = defaultStatMaxExperience;
 
+    console.log(char.uniqueIdentifiers);
     if (char.uniqueIdentifiers['Growth']) {
         newMaxExperience -= char.uniqueIdentifiers['Growth'].values[0];
     }
