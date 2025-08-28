@@ -1237,8 +1237,8 @@ function processRacialRegularPassiveChange(newAbilityData) {
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
     }
+        console.log(newAbilityData);
     removeTemporaryEffectByIdentifier(newAbilityData, race);
-    console.log(newAbilityData.identifier);
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
