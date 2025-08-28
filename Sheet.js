@@ -1860,8 +1860,7 @@ function renderRegularPassives(regularPassives, regularPassivesList, numbersFoot
             abilityWrapper.appendChild(abilityDescription);
             regularPassivesList.appendChild(abilityWrapper);
 
-            console.log(abilityData);
-            processRacialRegularPassiveChange(race, abilityData);
+            processRacialRegularPassiveChange(abilityData);
 
             if (abilityData.foot_notes) {
                 abilityData.foot_notes.forEach(key => {
