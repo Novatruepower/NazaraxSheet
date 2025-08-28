@@ -1228,6 +1228,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
  * Expected properties: { type, calc?, value?, statName?, label?, level?, unique? }
  */
 function processRacialRegularPassiveChange(newAbilityData) {
+    console.log(newAbilityData);
     const race = character.race;
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
