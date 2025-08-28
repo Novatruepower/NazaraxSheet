@@ -270,7 +270,7 @@ function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
 
     let newMaxExperience = defaultStatMaxExperience;
 
-    console.log(char.uniqueIdentifiers);
+    console.log(Object.keys(char.uniqueIdentifiers));
     if (char.uniqueIdentifiers['Growth']) {
         newMaxExperience -= char.uniqueIdentifiers['Growth'].values[0];
     }
