@@ -1221,11 +1221,6 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
     return applicableStats.length > count;
 }
 
-function addUniqueIdentifier(char, effect) {
-    if (effect.identifier)
-        char.uniqueIdentifiers[effect.identifier] = effect;
-}
-
 /**
  * Handles the application or removal of a racial passive choice, including stat effects and flags.
  * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
@@ -1237,7 +1232,7 @@ function processRacialRegularPassiveChange(newAbilityData) {
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
         character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
     }
-        console.log(newAbilityData);
+
     removeTemporaryEffectByIdentifier(newAbilityData, race);
 
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
@@ -1864,6 +1859,7 @@ function renderRegularPassives(regularPassives, regularPassivesList, numbersFoot
             abilityWrapper.appendChild(abilityDescription);
             regularPassivesList.appendChild(abilityWrapper);
 
+            console.log(abilityData);
             processRacialRegularPassiveChange(race, abilityData);
 
             if (abilityData.foot_notes) {
@@ -3714,7 +3710,8 @@ function renderTemporaryEffects(statName) {
 * @param {number} duration The duration of the effect in turns. Use Infinity for a permanent effect.
 */
 function addTemporaryEffect(char, category, effect, duration) {
-    addUniqueIdentifier(char, effect);
+    if (effect.identifier)
+        char.uniqueIdentifiers[effect.identifier] = effect;
 
     for (const statName of effect.statsAffected) {
         const stat = char[statName];
