@@ -22,8 +22,8 @@ export const FireBaseDataManager = {
   db: null,
 
   async init() {
-    this.auth = getAuth();
-    this.db = getFirestore();
+    //this.auth = getAuth();
+    //this.db = getFirestore();
     //const docRef = doc(this.db, "Classes", "Archer");
     //const docSnap = await getDoc(docRef);
 
