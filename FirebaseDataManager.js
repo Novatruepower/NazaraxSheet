@@ -1,5 +1,8 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "./firebase/app";
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+  import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -19,20 +22,16 @@ export const FireBaseDataManager = {
   db: null,
 
   async init() {
-    this.auth = firebase.auth();
-    this.db = firebase.firestore();
-    const docRef = db.collection("Classes").doc("Archer");
+    this.auth = getAuth();
+    this.db = getFirestore();
+    const docRef = doc(this.db, "Classes", "Archer");
+    const docSnap = await getDoc(docRef);
 
-    // Check if the document exists
-    docRef.get().then((doc) => {
-        if (doc.exists) {
-            console.log("Document data:", doc.data());
-        } else {
-            // doc.data() will be undefined in this case
-            console.log("No such document!");
-        }
-    }).catch((error) => {
-        console.log("Error getting document:", error);
-    });
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+    } else {
+      // docSnap.data() will be undefined in this case
+      console.log("No such document!");
+    }
   }
 }
