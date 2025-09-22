@@ -32,8 +32,8 @@
       "actives": {
         "Rough Reshaping": {
           "level": 1,
-          "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch<a>0</a> at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts<a>1</a>. This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform  for one turn before starting to change it.",
-          "foot_notes" : [1, 2]
+          "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch<a>0</a> at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts<a>1</a>. This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform<a>2</a> for one turn before starting to change it.",
+          "foot_notes" : [1, 2, 3]
         },
         "Controlled Reshaping": {
           "level": 25,
