@@ -24,14 +24,14 @@ export const FireBaseDataManager = {
   async init() {
     this.auth = getAuth();
     this.db = getFirestore();
-    const docRef = doc(this.db, "Classes", "Archer");
-    const docSnap = await getDoc(docRef);
+    //const docRef = doc(this.db, "Classes", "Archer");
+    //const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-    } else {
-      // docSnap.data() will be undefined in this case
-      console.log("No such document!");
-    }
+    //if (docSnap.exists()) {
+    //  console.log("Document data:", docSnap.data());
+   // } else {
+    //  // docSnap.data() will be undefined in this case
+   //   console.log("No such document!");
+    //}
   }
 }
