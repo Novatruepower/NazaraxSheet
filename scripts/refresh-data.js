@@ -50,19 +50,30 @@ async function fetchDataAndSave() {
 
     // 5. Loop through the resolved data and merge
     firebaseDataArray.forEach(firebaseObject => {
-      // Use Object.keys to iterate over the collection IDs
-      Object.keys(firebaseObject).forEach(key => {
-        const dataFromFirebase = firebaseObject[key];
+      // Get the single collection key (e.g., 'Races') from the Firebase object
+      const collectionKey = Object.keys(firebaseObject)[0]; 
+      const dataFromFirebase = firebaseObject[collectionKey];
 
-        if (ExternalDataManager._data[key] && dataFromFirebase) {
-          ExternalDataManager._data[key] = {
-            ...dataFromFirebase,
-            ...ExternalDataManager._data[key]
-          };
-        } else {
-          ExternalDataManager._data[key] = dataFromFirebase;
-        }
-      });
+      // Check if the collection exists in the ExternalDataManager object
+      if (ExternalDataManager._data[collectionKey]) {
+        // Loop through each document (e.g., 'Human', 'Brawler') from Firebase
+        Object.keys(dataFromFirebase).forEach(documentId => {
+          // Check if the document exists in the ExternalDataManager object
+          if (ExternalDataManager._data[collectionKey][documentId]) {
+            // MERGE: Document exists in both sources. Merge properties.
+            ExternalDataManager._data[collectionKey][documentId] = {
+              ...ExternalDataManager._data[collectionKey][documentId],
+              ...dataFromFirebase[documentId]
+            };
+          } else {
+            // ADD: Document exists only in Firebase. Add it.
+            ExternalDataManager._data[collectionKey][documentId] = dataFromFirebase[documentId];
+          }
+        });
+      } else {
+        // ADD ENTIRE COLLECTION: Collection doesn't exist. Add it.
+        ExternalDataManager._data[collectionKey] = dataFromFirebase;
+      }
     });
 
     refreshData(ExternalDataManager._data, "test3");
