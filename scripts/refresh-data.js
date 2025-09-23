@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
-const { getFirestore, collection, getDocs } = require('firebase-admin/firestore');
 
 // Initialize Firebase Admin SDK first using the secret
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
@@ -11,7 +10,7 @@ admin.initializeApp({
 
 // Now that the SDK is initialized, import your manager file.
 // The db object is a new instance created by the Admin SDK.
-const db = getFirestore();
+const db = admin.firestore();
 
 function refreshData(data, fileName) {
   const filePath = path.join(__dirname, '..', fileName + '.json');
@@ -19,12 +18,9 @@ function refreshData(data, fileName) {
 }
 
 async function getAllClasses() {
-      const docSnap = await getDocs(collection(db, "Classes"));
-
-      if (docSnap.exists())
-        return docSnap.data();
-
-    return null;
+  const snapshot = await db.collection("Classes").get();
+  // If you want all documents as an array:
+  return snapshot.docs.map(doc => doc.data());
 }
 
 async function fetchDataAndSave() {
