@@ -40,7 +40,8 @@ async function getAllAndRefreshData(collectionId, fileName) {
 
 async function fetchDataAndSave() {
   try {
-    const racesData = googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range);
+    const racesData = await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range);
+
     refreshData(racesData, "test3");
     // Pass the db instance to your getClasses function
     await getAllAndRefreshData("Classes", "test");
