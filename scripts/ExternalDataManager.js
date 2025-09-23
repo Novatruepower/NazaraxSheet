@@ -7,7 +7,7 @@
 
 // Assuming googleDriveFileFetcher is imported or globally available
 // Example: import { googleDriveFileFetcher } from './fetch.js';
-import { googleDriveFileFetcher } from './scripts/GoogleSheetFetch.js';
+import { googleDriveFileFetcher } from './GoogleSheetFetch.js';
 
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
@@ -136,6 +136,15 @@ export const ExternalDataManager = {
      */
     async init() {
         try {
+            //const sheetFetches = await Promise.all([
+           //     googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range),
+            //    googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Classes.gid, googleDriveFileFetcher.My_Sheet.Classes.range),
+            //    googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.ClassesRelated.gid, googleDriveFileFetcher.My_Sheet.ClassesRelated.range)
+           // ]);
+            //const racesArr = sheetFetches[0];
+          //  const classesArr = sheetFetches[1];
+           // const classesRelatedArr = sheetFetches[2];
+
             await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
                 // Remove the first element (empty string from the sheet)
                 delete arr[0][0];

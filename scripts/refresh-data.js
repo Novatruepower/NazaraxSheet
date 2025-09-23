@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
-const { googleDriveFileFetcher } = require('./GoogleSheetFetch.js');
+const { ExternalDataManager } = require('./ExternalDataManager.js');
 
 // Initialize Firebase Admin SDK first using the secret
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
@@ -40,12 +40,32 @@ async function getAllAndRefreshData(collectionId, fileName) {
 
 async function fetchDataAndSave() {
   try {
-    const racesData = await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range);
+    await ExternalDataManager.init();
+    const collectionsToFetch = ["Races", "Classes"];
+    
+    // 3. Create an array of promises for each Firebase fetch
+    const fetchPromises = collectionsToFetch.map(key => getAll(key));
+    // 4. Await all promises to resolve in parallel
+    const firebaseDataArray = await Promise.all(fetchPromises);
 
-    refreshData(racesData, "test3");
-    // Pass the db instance to your getClasses function
-    await getAllAndRefreshData("Classes", "test");
-    await getAllAndRefreshData("Races", "test2");
+    // 5. Loop through the resolved data and merge
+    firebaseDataArray.forEach(firebaseObject => {
+      // Use Object.keys to iterate over the collection IDs
+      Object.keys(firebaseObject).forEach(key => {
+        const dataFromFirebase = firebaseObject[key];
+
+        if (ExternalDataManager._data[key] && dataFromFirebase) {
+          ExternalDataManager._data[key] = {
+            ...ExternalDataManager._data[key],
+            ...dataFromFirebase
+          };
+        } else {
+          ExternalDataManager._data[key] = dataFromFirebase;
+        }
+      });
+    });
+
+    refreshData(ExternalDataManager._data, "test3");
   } catch (error) {
     console.error('Error in fetchDataAndSave:', error);
     process.exit(1);
