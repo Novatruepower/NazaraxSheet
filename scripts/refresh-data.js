@@ -50,6 +50,8 @@ async function fetchDataAndSave() {
 
     // 5. Loop through the resolved data and merge
     firebaseDataArray.forEach(firebaseObject => {
+      ExternalDataManager.initJsonData(firebaseObject);
+
       // Get the single collection key (e.g., 'Races') from the Firebase object
       const collectionKey = Object.keys(firebaseObject)[0]; 
       const dataFromFirebase = firebaseObject[collectionKey];

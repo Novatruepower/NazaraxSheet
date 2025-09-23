@@ -4211,5 +4211,6 @@ window.addEventListener("gapi-ready", () => {
 // Initialize the application when the DOM is fully loaded
 window.onload = async function () {
     await ExternalDataManager.initClient();
+    await ExternalDataManager.init();
     initPage();
 }

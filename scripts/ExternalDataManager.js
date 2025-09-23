@@ -9,6 +9,44 @@
 // Example: import { googleDriveFileFetcher } from './fetch.js';
 import { googleDriveFileFetcher } from './GoogleSheetFetch.js';
 
+// Function to check if a formula has values
+const hasFormulaValues = formula => formula.values && formula.values.length > 0;
+
+    /**
+ * Checks if at least one upgrade in the object has a specific property or value.
+ * @param {object} upgradesObj The object containing upgrades.
+ * @param {function} callback A function that returns a truthy value if the condition is met.
+ * @returns {boolean} True if a match is found, otherwise false.
+ */
+function someInObject(upgradesObj, callback) {
+    // Get an array of just the values from the object
+    const values = Object.values(upgradesObj);
+    
+    // Iterate over the values
+    for (const value of values) {
+        // If the callback function returns true for any value, we have a match
+        if (callback(value)) {
+            return true; // Stop and return true immediately
+        }
+    }
+    
+    // If the loop finishes without a match, return false
+    return false;
+}
+
+// Function to check if an upgrade has a formula with values
+const upgradeHasFormulasWithValues = upgrade => {
+    return someInObject(upgrade.formulas, hasFormulaValues);
+};
+
+const upgradesHasFormulasWithValues = ability => {
+    return someInObject(ability.upgrades, upgradeHasFormulasWithValues);
+};
+
+const upgradesHasValues = ability => {
+    return someInObject(ability.upgrades, hasFormulaValues);
+};
+
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
     initFileName: "init_client",
@@ -137,84 +175,66 @@ export const ExternalDataManager = {
      */
     async init() {
         try {
-            //const sheetFetches = await Promise.all([
-           //     googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range),
-            //    googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Classes.gid, googleDriveFileFetcher.My_Sheet.Classes.range),
-            //    googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.ClassesRelated.gid, googleDriveFileFetcher.My_Sheet.ClassesRelated.range)
-           // ]);
-            //const racesArr = sheetFetches[0];
-          //  const classesArr = sheetFetches[1];
-           // const classesRelatedArr = sheetFetches[2];
+            // Fetch all data sources concurrently for maximum efficiency
+            const [
+                racesArr,
+                classesArr,
+                classesRelatedArr,
+            ] = await Promise.all([
+                googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range),
+                googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Classes.gid, googleDriveFileFetcher.My_Sheet.Classes.range),
+                googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.ClassesRelated.gid, googleDriveFileFetcher.My_Sheet.ClassesRelated.range),
+            ]);
 
-            await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range).then(arr => {
-                // Remove the first element (empty string from the sheet)
-                delete arr[0][0];
-                const head = arr[0].filter(e => e != undefined); // The header row (e.g., ["", "Health", "Strength", "Agility", ...])
-                this._data['Stats'] = [...arr[0].filter(e => e != undefined),
-                     'BaseHealth','Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen']; // Copy header for 'Stats'
-                delete arr[0]; // Remove the header row from the main array
-                //delete this._data['Stats'][0]; // Remove the empty string from 'Stats' array
-                const health = head[0]; // Get the 'Health' column name
-                this._data['Other'] = [health, 'BaseHealth', 'Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen']; //By default 
-                delete head[0]; // Remove 'Health' from the head array
-                this._data['Roll'] = head.filter(e => e != undefined); // The remaining elements in head are the stat names for 'Roll' it will be used with a racial change generated
+            // === Process Races Data ===
+            delete racesArr[0][0];
+            const raceHeader = racesArr[0].filter(e => e != undefined); 
+            this._data['Stats'] = [...racesArr[0].filter(e => e != undefined),
+                'BaseHealth', 'Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+            delete racesArr[0];
+            const health = raceHeader[0];
+            this._data['Other'] = [health, 'BaseHealth', 'Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+            delete raceHeader[0];
+            this._data['Roll'] = raceHeader.filter(e => e != undefined);
 
-                arr.forEach(value => {
-                    let race = value[0]; // The first element is the race name
-                    if (race) { // Ensure race name is not empty
-                        this._data['Races'][race] = {
-                            Stats: {
-                                Other: {},
-                                Roll: {}
-                            }
-                        };
+            racesArr.forEach(value => {
+                const race = value[0];
+                if (race) {
+                    this._data['Races'][race] = { Stats: { Other: {}, Roll: {} } };
+                    this._data['Races'][race]['Stats']['Other'][health] = this.parsePercent(value[1]);
+                    this._data['Races'][race]['Stats']['Other']['BaseHealth'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['BaseMana'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['RacialPower'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['BaseRacialPower'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['naturalHealthRegen'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['naturalManaRegen'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['naturalRacialPowerRegen'] = 1;
 
-                        this._data['Races'][race]['Stats']['Other'][health] = this.parsePercent(value[1]); // Assign health multiplier
-                        this._data['Races'][race]['Stats']['Other']['BaseHealth'] = 1;
-                        this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
-                        this._data['Races'][race]['Stats']['Other']['BaseMana'] = 1;
-                        this._data['Races'][race]['Stats']['Other']['RacialPower'] = 1;
-                        this._data['Races'][race]['Stats']['Other']['BaseRacialPower'] = 1;
-                        this._data['Races'][race]['Stats']['Other']['naturalHealthRegen'] = 1;
-                        this._data['Races'][race]['Stats']['Other']['naturalManaRegen'] = 1;
-                        this._data['Races'][race]['Stats']['Other']['naturalRacialPowerRegen'] = 1;
-                        let index = 2; // Start from the third column for stats
-                        head.forEach(statName => {
-                            // Assign stat roll value for the current race
-                            this._data['Races'][race]['Stats']['Roll'][statName] = this.parsePercent(value[index]);
-                            ++index;
-                        });
-                    }
-                });
+                    let index = 2;
+                    raceHeader.forEach(statName => {
+                        this._data['Races'][race]['Stats']['Roll'][statName] = this.parsePercent(value[index]);
+                        ++index;
+                    });
+                }
             });
 
-            await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Classes.gid, googleDriveFileFetcher.My_Sheet.Classes.range).then(arr => {
-                arr.forEach(value => {
-                    let charClass = value[0]; // The first element is the class name
-                    if (charClass) { // Ensure class name is not empty
-                        this._data['Classes'][charClass] = { Specs:[] }
-                    }
-                });
+                        // === Process Classes Data ===
+            classesArr.forEach(value => {
+                const charClass = value[0];
+                if (charClass) {
+                    this._data['Classes'][charClass] = { Specs: [] };
+                }
             });
 
-            await googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.ClassesRelated.gid, googleDriveFileFetcher.My_Sheet.ClassesRelated.range).then(arr => {
-                arr.forEach(value => {
-                    let charClass = value[0]; // The first element is the class name
-                    if (charClass) { // Ensure class name is not empty
-                        this._data['Classes'][charClass]['Specs'].push(value[1]);
-                    }
-                });
+            // === Process ClassesRelated Data ===
+            classesRelatedArr.forEach(value => {
+                const charClass = value[0];
+                if (charClass && this._data['Classes'][charClass]) {
+                    this._data['Classes'][charClass]['Specs'].push(value[1]);
+                }
             });
-
-            const racialResponse = await fetch('./racial_data.json');
-            const racialData = await racialResponse.json();
-            this.initJsonData(racialData);
-
-            const classesResponse = await fetch('./classes_data.json');
-            const classesData = await classesResponse.json();
-            this.initJsonData(classesData);
-
-            console.log("External data loaded successfully into ExternalDataManager.");
+            
         } catch (error) {
             console.error("Error initializing ExternalDataManager with external data:", error);
         }
@@ -223,7 +243,8 @@ export const ExternalDataManager = {
     // This is the new function for client-side loading
     async initClient() {
         try {
-        const response = await fetch(this.initFileName);
+        const response = await fetch("./" + this.initFileName + ".json");
+
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -456,6 +477,22 @@ export const ExternalDataManager = {
         return values;
     },
 
+    findLastUpgrade(ability, currentLevel) {
+        let lastMatch = ability;
+        let lastLevelFound = ability.level;
+
+        // Iterate over each key (level) and value (data) in the Map
+        const entries =  Object.entries(ability.upgrades);
+        for (const [level, data] of entries) {
+            if (level <= currentLevel && level > lastLevelFound) {
+                lastLevelFound = level;
+                lastMatch = data;
+            }
+        }
+
+        return lastMatch;
+    },
+
     processedUpgrades(name, ability, level) {
         // Deep copy the passive to avoid modifying the original data.
         const copy = JSON.parse(JSON.stringify(ability));
@@ -466,7 +503,7 @@ export const ExternalDataManager = {
         // Check if there are options to process.
         if (copy.upgrades) {
             delete template.upgrades; 
-            const data = ability.upgrades.findLast(e => e.level <= level);
+            const data = this.findLastUpgrade(ability, level);
 
             if (data) {
                 template['name'] = data.name;
@@ -476,7 +513,7 @@ export const ExternalDataManager = {
                     template.description = data.description;
                 }
 
-                if (copy.upgrades.some(u => u.formulas && u.formulas.some(f => f.values))) {
+                if (upgradesHasFormulasWithValues(copy)) {
                     const length = data.formulas.length;
 
                     for(let index = 0; index < length; ++index) {
@@ -486,7 +523,7 @@ export const ExternalDataManager = {
                             template.formulas[index]['values'][index2] = value;
                         }
                     }
-                } else if (copy.upgrades.some(u => u.values)) {
+                } else if (upgradesHasValues(copy)) {
                     const length = data.values.length;
                     for(let index = 0; index < length; ++index) {
                         template.values[index] = data.values[index];
