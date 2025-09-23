@@ -33,8 +33,8 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add test.json
-          git commit -m "chore: Update test.json" || echo "No changes to commit"
+          git add *.json
+          git commit -m "chore: Update data files" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
