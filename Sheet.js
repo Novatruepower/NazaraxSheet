@@ -1,5 +1,4 @@
 import { ExternalDataManager } from './ExternalDataManager.js';
-import { FireBaseDataManager } from './FirebaseDataManager.js';
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
@@ -4211,7 +4210,6 @@ window.addEventListener("gapi-ready", () => {
 
 // Initialize the application when the DOM is fully loaded
 window.onload = async function () {
-    await FireBaseDataManager.init();
     await ExternalDataManager.init();
     initPage();
 }

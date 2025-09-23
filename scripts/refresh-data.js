@@ -17,8 +17,7 @@ function refreshData(data, fileName) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-async function getAllClasses() {
-  const collectionId = "Classes";
+async function getAll(collectionId) {
   const snapshot = await db.collection(collectionId).get();
 
   const allData = {};
@@ -31,15 +30,18 @@ async function getAllClasses() {
   return allData;
 }
 
+async function getAllAndRefreshData(collectionId, fileName) {
+  const data = await getAll(collectionId);
+  if (data) {
+    refreshData(data, fileName);
+  }
+}
+
 async function fetchDataAndSave() {
   try {
     // Pass the db instance to your getClasses function
-    const data = await getAllClasses();
-    
-    if (data) {
-      refreshData(data, "test");
-      console.log("Successfully refreshed data and saved to test.json");
-    }
+    await getAllAndRefreshData("Classes", "test");
+    await getAllAndRefreshData("Races", "test2");
   } catch (error) {
     console.error('Error in fetchDataAndSave:', error);
     process.exit(1);
