@@ -18,9 +18,17 @@ function refreshData(data, fileName) {
 }
 
 async function getAllClasses() {
-  const snapshot = await db.collection("Classes").get();
-  // If you want all documents as an array:
-  return snapshot.docs.map(doc => doc.data());
+  const collectionId = "Classes";
+  const snapshot = await db.collection(collectionId).get();
+
+  const allData = {};
+  allData[collectionId] = {};
+
+  snapshot.forEach(doc => {
+    allData[collectionId][doc.id] = doc.data();
+  });
+  
+  return allData;
 }
 
 async function fetchDataAndSave() {
