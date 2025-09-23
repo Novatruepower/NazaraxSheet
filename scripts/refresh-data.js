@@ -76,7 +76,7 @@ async function fetchDataAndSave() {
       }
     });
 
-    refreshData(ExternalDataManager._data, "test3");
+    refreshData(ExternalDataManager._data, ExternalDataManager.initFileName);
   } catch (error) {
     console.error('Error in fetchDataAndSave:', error);
     process.exit(1);

@@ -11,6 +11,7 @@ import { googleDriveFileFetcher } from './GoogleSheetFetch.js';
 
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
+    initFileName: "init_client",
     _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
     convertNumberToSuperscript(number) {
@@ -214,10 +215,30 @@ export const ExternalDataManager = {
             this.initJsonData(classesData);
 
             console.log("External data loaded successfully into ExternalDataManager.");
-            console.log(this._data);
         } catch (error) {
             console.error("Error initializing ExternalDataManager with external data:", error);
-            // Optionally, re-throw or handle the error more gracefully
+        }
+    },
+
+    // This is the new function for client-side loading
+    async initClient() {
+        try {
+        const response = await fetch(this.initFileName);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Now, set the entire _data object with the fetched data
+        // This assumes your JSON file contains the complete data structure
+        this._data = data;
+        
+        console.log("External data loaded successfully on the client side.");
+        console.log(this._data);
+        return true;
+        } catch (error) {
+        console.error("Error loading external data from local file:", error);
+        return false;
         }
     },
 
