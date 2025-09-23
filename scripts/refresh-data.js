@@ -56,8 +56,8 @@ async function fetchDataAndSave() {
 
         if (ExternalDataManager._data[key] && dataFromFirebase) {
           ExternalDataManager._data[key] = {
-            ...ExternalDataManager._data[key],
-            ...dataFromFirebase
+            ...dataFromFirebase,
+            ...ExternalDataManager._data[key]
           };
         } else {
           ExternalDataManager._data[key] = dataFromFirebase;
