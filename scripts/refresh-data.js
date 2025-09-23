@@ -39,11 +39,8 @@ async function getAllAndRefreshData(collectionId, fileName) {
 }
 
 async function fetchDataAndSave() {
-  const MY_GOOGLE_SHEET_LINK = "https://docs.google.com/spreadsheets/d/1lNIzvAC3E5dHzYzEaBaiAQLyar-UvA8XMEZpoXu3cMQ/edit";
-  const RACES_GID = 0; // Replace with your Races sheet's GID
-
   try {
-    const racesData = await googleDriveFileFetcher.fetchGoogleDriveFile(MY_GOOGLE_SHEET_LINK, { responseType: 'csv', sheetId: RACES_GID });
+    const racesData = googleDriveFileFetcher.fetchGoogleSheetRange(googleDriveFileFetcher.My_Sheet.Races.gid, googleDriveFileFetcher.My_Sheet.Races.range);
     refreshData(racesData, "test3");
     // Pass the db instance to your getClasses function
     await getAllAndRefreshData("Classes", "test");
