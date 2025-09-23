@@ -25,7 +25,7 @@ jobs:
       - name: Fetch and save data
         env:
           FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
-        run: node scripts/fetchData.js
+        run: node scripts/RefreshData.js
 
       - name: Commit and push changes
         run: |
