@@ -31,12 +31,14 @@ async function getAll(collectionId) {
   return allData;
 }
 
+/*
 async function getAllAndRefreshData(collectionId, fileName) {
   const data = await getAll(collectionId);
   if (data) {
     refreshData(data, fileName);
   }
 }
+*/
 
 async function fetchDataAndSave() {
   try {
