@@ -234,7 +234,7 @@ export const ExternalDataManager = {
                     this._data['Classes'][charClass]['Specs'].push(value[1]);
                 }
             });
-            
+
         } catch (error) {
             console.error("Error initializing ExternalDataManager with external data:", error);
         }
@@ -482,10 +482,13 @@ export const ExternalDataManager = {
         let lastLevelFound = ability.level;
 
         // Iterate over each key (level) and value (data) in the Map
-        const entries =  Object.entries(ability.upgrades);
-        for (const [level, data] of entries) {
+
+        for (const dataName in ability.upgrades) {
+            const data = ability.upgrades[dataName];
+            const level = data["level"];
             if (level <= currentLevel && level > lastLevelFound) {
                 lastLevelFound = level;
+                data['name'] = dataName;
                 lastMatch = data;
             }
         }
@@ -502,8 +505,8 @@ export const ExternalDataManager = {
         
         // Check if there are options to process.
         if (copy.upgrades) {
+            const data = this.findLastUpgrade(template, level);
             delete template.upgrades; 
-            const data = this.findLastUpgrade(ability, level);
 
             if (data) {
                 template['name'] = data.name;
