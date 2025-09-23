@@ -7,7 +7,7 @@
 
 // Assuming googleDriveFileFetcher is imported or globally available
 // Example: import { googleDriveFileFetcher } from './fetch.js';
-import { googleDriveFileFetcher } from './Fetch.js';
+import { googleDriveFileFetcher } from './scripts/GoogleSheetFetch.js';
 
 export const ExternalDataManager = {
     // Internal variable to store fetched data, making it part of the object
