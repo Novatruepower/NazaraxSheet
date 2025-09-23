@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
-const { getFirestore, doc, getDoc } = require('firebase-admin/firestore');
+const { getFirestore, collection, getDocs } = require('firebase-admin/firestore');
 
 // Initialize Firebase Admin SDK first using the secret
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
@@ -18,8 +18,8 @@ function refreshData(data, fileName) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-async function getClasses(Class = "*") {
-      const docSnap = await getDoc(doc(db, "Classes", Class));
+async function getAllClasses() {
+      const docSnap = await getDocs(collection(db, "Classes"));
 
       if (docSnap.exists())
         return docSnap.data();
@@ -30,7 +30,7 @@ async function getClasses(Class = "*") {
 async function fetchDataAndSave() {
   try {
     // Pass the db instance to your getClasses function
-    const data = await getClasses(db);
+    const data = await getAllClasses();
     
     if (data) {
       refreshData(data, "test");
