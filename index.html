@@ -54,11 +54,6 @@
             📄 New File
         </button>
 
-        <button id="toggle-notes-btn"
-                class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 w-full">
-            Personal Notes
-        </button>
-
         <!-- New End Turn Button -->
         <button id="end-turn-btn"
                 class="px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 w-full">
@@ -93,35 +88,39 @@
     <!-- Added 'transition-all duration-300 ease-in-out' for smooth animation -->
     <main id="main-content" class="flex-1 ml-64 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out">
         <div class="w-full max-w-5xl lg:max-w-6xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl mx-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h1 class="text-4xl font-bold text-indigo-700 dark:text-indigo-400">
-                    Character Sheet
-                </h1>
-                <div class="flex space-x-2">
-                    <button onclick="print()"
-                    class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-md shadow-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">🖨️ Print</button>
-                    <!-- Revert Button -->
-                    <button id="revert-character-btn"
-                            class="px-4 py-2 bg-orange-500 text-white font-semibold rounded-md shadow-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Revert
-                    </button>
-                    <!-- Forward Button -->
-                    <button id="forward-character-btn"
-                            class="px-4 py-2 bg-teal-500 text-white font-semibold rounded-md shadow-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Forward
-                    </button>
-                    <button id="reset-character-btn"
-                            class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-md shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Reset
-                    </button>
-                    <button id="delete-character-btn"
-                            class="px-4 py-2 bg-red-500 text-white font-semibold rounded-md shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Delete
-                    </button>
+            <div class="sticky top-0 z-10 bg-white dark:bg-gray-800 p-4 md:p-6 lg:p-8 rounded-t-xl shadow-md">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-4xl font-bold text-indigo-700 dark:text-indigo-400">
+                        Character Sheet
+                    </h1>
+                    <div class="flex space-x-2">
+                        <button id="toggle-notes-btn"
+                                class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                            Personal Notes
+                        </button>
+
+                        <button onclick="print()"
+                                class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-md shadow-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">🖨️ Print</button>
+                        <button id="revert-character-btn"
+                                class="px-4 py-2 bg-orange-500 text-white font-semibold rounded-md shadow-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                            Revert
+                        </button>
+                        <button id="forward-character-btn"
+                                class="px-4 py-2 bg-teal-500 text-white font-semibold rounded-md shadow-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 disabled">
+                            Forward
+                        </button>
+                        <button id="reset-character-btn"
+                                class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-md shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                            Reset
+                        </button>
+                        <button id="delete-character-btn"
+                                class="px-4 py-2 bg-red-500 text-white font-semibold rounded-md shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                            Delete
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Basic Info Section -->
             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Basic Info</h2>

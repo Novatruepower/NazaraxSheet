@@ -65,21 +65,41 @@ export const ExternalDataManager = {
             values = values[0];
         }
 
-        //dices
-        const chaine = dices && dices.length > 0 ? str.replace(/(?:{(\d+)})?d(?:{(\d+)})?/g, (_, minIndex, maxIndex) => {
-            let minValue = '';
-            if (minIndex !== undefined) {
-                minValue = dices[minIndex].min;
-            }
+        let chaine = str;
 
-            let maxValue = '';
+        if (dices && dices.length > 0) {
+            //dices
+            chaine = chaine.replace(/(?:{(\d+)})?d(?:{(\d+)})?/g, (_, minIndex, maxIndex) => {
+                let minValue = '';
+                if (minIndex !== undefined) {
+                    minValue = dices[minIndex].min;
+                }
 
-            if (maxIndex !== undefined) {
-                maxValue = dices[maxIndex].max;
-            }
+                let maxValue = '';
 
-            return `${minValue}d${maxValue}`;
-        }) : str;
+                if (maxIndex !== undefined) {
+                    maxValue = dices[maxIndex].max;
+                }
+
+                return `${minValue}d${maxValue}`;
+            })
+
+            //value of dices
+            chaine = chaine.replace(/(?:(\d+))?{d}(?:(\d+))?/g, (_, minIndex, maxIndex) => {
+                let minValue = '';
+                if (minIndex !== undefined) {
+                    minValue = dices[minIndex].min;
+                }
+
+                let maxValue = '';
+
+                if (maxIndex !== undefined) {
+                    maxValue = dices[maxIndex].max;
+                }
+
+                return `${minValue || maxValue}`;
+            });
+        }
         
         //values and %
         return chaine.replace(/{(\d+)}(%?)/g, (_, index, percent) => {
@@ -95,19 +115,7 @@ export const ExternalDataManager = {
     },
 
     convertNumberToSuperscript(number) {
-        const superscriptMap = {
-          '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
-          '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
-        };
-      
-        // Convert the number to a string
-        const numString = String(number);
-      
-        // Use a regular expression to find all digits and replace them
-        // The regex /\d/g matches every digit (0-9) in the string globally
-        return numString.replace(/\d/g, (match) => {
-          return superscriptMap[match];
-        });
+        return `<sup class="footnote-reference">${number}</sup>`;
     },
 
     getHrefFootNotes(id, value) {

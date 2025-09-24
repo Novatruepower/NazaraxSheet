@@ -436,3 +436,23 @@ body {
 .footnotes:hover {
     color: #2563eb; /* A darker blue on hover, similar to 'blue-600' */
 }
+
+sup {
+    line-height: 0;
+    vertical-align: super;
+    font-size: smaller;
+}
+
+@media print {
+    .sticky > div > div, aside, #status-message {
+        display: none !important;
+    }
+
+    .sticky {
+        position: static !important;
+    }
+
+    #main-content {
+        margin-left: 0 !important;
+    }
+}

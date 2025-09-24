@@ -3474,7 +3474,6 @@ function toggleSidebar() {
     const mainContent = document.getElementById('main-content');
     const toggleButton = document.getElementById('sidebar-toggle-btn');
     const toggleIcon = toggleButton.querySelector('svg path');
-    const toggleNotesBtn = document.getElementById('toggle-notes-btn'); // Get the personal notes button
     const endTurnBtn = document.getElementById('end-turn-btn'); // Get the new end turn button
 
     if (sidebar.classList.contains('w-64')) {
@@ -3491,10 +3490,7 @@ function toggleSidebar() {
                 child.classList.add('hidden');
             }
         });
-        // Explicitly hide the personal notes button if it's not already hidden by the loop (e.g., if it's a direct child of sidebar)
-        if (toggleNotesBtn) {
-            toggleNotesBtn.classList.add('hidden');
-        }
+        
         if (endTurnBtn) {
             endTurnBtn.classList.add('hidden');
         }
