@@ -265,12 +265,6 @@
           "2": "The number of animals in a character is decided by a throw of a {d1}, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1{d} to {d}1. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
         }
       },
-      "actives": {
-        "Indulgence": {
-          "level": 10,
-          "description": "You have started to understand your abilities better, and thus, can somewhat let your animalistic impulses loose, increasing your racial point loss from {0d0} per turn to {3d3} per turn. This skill can be turned on and off on demand and do not count as an action."
-        }
-      },
       "dices": {
         "0": {
           "max": 6,
@@ -287,6 +281,46 @@
         "3": {
           "min": 1,
           "max": 12
+        }
+      },
+      "actives": {
+        "Indulgence": {
+          "level": 10,
+          "description": "You have started to understand your abilities better, and thus, can somewhat let your animalistic impulses loose, increasing your racial point loss from {0d0} per turn to {3d3} per turn. This skill can be turned on and off on demand and do not count as an action."
+        },
+        "Restraint": {
+          "description": "You have started to understand your abilities better, and thus, can somewhat limit your animalistic impulses, reducing your racial point loss from {0d0} per turn to {1d1} per turn. This skill can be turned on and off on demand and do not count as an action.",
+          "level": 10
+        },
+        "Shapeshift": {
+          "values": [
+            100,
+            20,
+            50
+          ],
+          "foot_notes": [
+            17
+          ],
+          "description": "When your animals are getting closer to coming out themselves, you are able to let go of your human form on purpose, letting out a random<a>0</a> animal within you come out pre-emptively. This skill does not count as your action for the turn; however, you cannot act while transforming, which takes one turn. After the transformation is over, until your racial points reach {0}, you will regenerate {1} racial points per turn. To use this skill, your racial points must be under {2}.",
+          "level": 25
+        },
+        "Disfigurement": {
+          "level": 50,
+          "description": "Partially let out your animal form. This skill lets you completely turn certain parts of your body that you decide into their counterparts from a random<a>0</a> animal that inhabits you, the parts that will be turned must be chosen before the animal is decided on. Additional body parts like wings, tails or additional limbs appear only if you transformed the body parts they are meant to be connected to, so, for instance, to develop wings from a bird, you would need to have decided to transform your body. Your head cannot be swapped out while using this skill. Using this skill does not count as your action for the turn, however, you cannot act while transforming, which takes one turn. Parts that are transformed will act according to the animal’s will, however you can fully communicate with the animal that came out while this transformation is going on. Once you are done transforming, as long as this skill is active, you will lose {2d2} racial points per turn, and this skill will only end once you fully transform into an animal by activating Savagery or Shapeshift.",
+          "foot_notes": [
+            17
+          ]
+        },
+        "Takeover": {
+          "level": 75,
+          "foot_notes": [
+            17
+          ],
+          "values": [
+            40,
+            1
+          ],
+          "description": "You have now mastered your transformation and can turn back into your human form at any time<a>0</a>. This skill requires your racial points to be above {0} to be used and turning back into a human makes you extremely dizzy for {1} turn and dizzy for another."
         }
       }
     },
