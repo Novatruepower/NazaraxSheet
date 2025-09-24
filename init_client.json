@@ -121,20 +121,6 @@
       }
     },
     "Demi-humans": {
-      "dices": [
-        {
-          "min": 1,
-          "max": 6
-        },
-        {
-          "min": 1,
-          "max": 4
-        },
-        {
-          "min": 1,
-          "max": 20
-        }
-      ],
       "Stats": {
         "Other": {
           "Health": 1,
@@ -157,58 +143,6 @@
           "Intimidation": 1,
           "Charisma": 1,
           "Negotiation": 1
-        }
-      },
-      "actives": {},
-      "foot_notes": {
-        "7": "Cannot be used on a stat that has already been increased or decreased.",
-        "8": "This can include health or magic, but it has to make sense in relation to the chosen animals.",
-        "10": "This value can go into the negatives.",
-        "11": "Your health and stats stay the same whatever your form, however, animals can only speak in their own languages and their attacks and armors’ depend on their species and your level, these can vary depending on the animal’s personality and experience and have no formal rules surrounding their values.",
-        "12": "This number is a hard cap which cannot be increased in any way.",
-        "13": "Conversely, your inner animals are partially conscious of what is happening while you are in human form.",
-        "14": "As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in.",
-        "15": "As per usual, this is decided via a d{1} throw.",
-        "16": "This includes Disfigurement but not Fractured mind.",
-        "17": "This skill cannot be used to cancel Disfigurement.",
-        "manual_passives": {
-          "1": "Since the players are in control of both their human and animal parts, this race is very roleplay heavy, often forcing them to make wrong decisions or to compromise on their actions and is not recommended for those who want to play optimally.",
-          "2": "The number of animals in a character is decided by a throw of a d{1}, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1{d} to {d}1. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
-        }
-      },
-      "regularPassives": {
-        "Domination": {
-          "description": "You have now mastered your transformation and can now decide into which animal you want to transform<a>0</a>.",
-          "level": 100,
-          "foot_notes": [
-            16
-          ]
-        },
-        "Savagery": {
-          "level": 1,
-          "foot_notes": [
-            10,
-            11,
-            12,
-            13
-          ],
-          "values": [
-            1,
-            20,
-            100
-          ],
-          "description": "Before the start of every turn you lose {0}d{0} racial points. If after a roll, the racial point’s value of a character is less than {0}<a>0</a>, you have to roll a d{1} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {1} racial points per turn, once you reach {2}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>."
-        },
-        "Fractured mind": {
-          "foot_notes": [
-            14,
-            15
-          ],
-          "level": 1,
-          "values": [
-            10
-          ],
-          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one d{0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points."
         }
       },
       "manualPassives": {
@@ -278,6 +212,81 @@
               }
             }
           ]
+        }
+      },
+      "regularPassives": {
+        "Domination": {
+          "description": "You have now mastered your transformation and can now decide into which animal you want to transform<a>0</a>.",
+          "level": 100,
+          "foot_notes": [
+            16
+          ]
+        },
+        "Savagery": {
+          "level": 1,
+          "foot_notes": [
+            10,
+            11,
+            12,
+            13
+          ],
+          "values": [
+            1,
+            20,
+            100
+          ],
+          "description": "Before the start of every turn you lose {0d0} racial points. If after a roll, the racial point’s value of a character is less than {0}<a>0</a>, you have to roll a {d1} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {1} racial points per turn, once you reach {2}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>."
+        },
+        "Fractured mind": {
+          "foot_notes": [
+            14,
+            15
+          ],
+          "level": 1,
+          "values": [
+            10
+          ],
+          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one {d0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points."
+        }
+      },
+      "foot_notes": {
+        "7": "Cannot be used on a stat that has already been increased or decreased.",
+        "8": "This can include health or magic, but it has to make sense in relation to the chosen animals.",
+        "10": "This value can go into the negatives.",
+        "11": "Your health and stats stay the same whatever your form, however, animals can only speak in their own languages and their attacks and armors’ depend on their species and your level, these can vary depending on the animal’s personality and experience and have no formal rules surrounding their values.",
+        "12": "This number is a hard cap which cannot be increased in any way.",
+        "13": "Conversely, your inner animals are partially conscious of what is happening while you are in human form.",
+        "14": "As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in.",
+        "15": "As per usual, this is decided via a {d1} throw.",
+        "16": "This includes Disfigurement but not Fractured mind.",
+        "17": "This skill cannot be used to cancel Disfigurement.",
+        "manual_passives": {
+          "1": "Since the players are in control of both their human and animal parts, this race is very roleplay heavy, often forcing them to make wrong decisions or to compromise on their actions and is not recommended for those who want to play optimally.",
+          "2": "The number of animals in a character is decided by a throw of a {d1}, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1{d} to {d}1. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
+        }
+      },
+      "actives": {
+        "Indulgence": {
+          "level": 10,
+          "description": "You have started to understand your abilities better, and thus, can somewhat let your animalistic impulses loose, increasing your racial point loss from {0d0} per turn to {3d3} per turn. This skill can be turned on and off on demand and do not count as an action."
+        }
+      },
+      "dices": {
+        "1": {
+          "max": 6,
+          "min": 1
+        },
+        "2": {
+          "min": 1,
+          "max": 4
+        },
+        "3": {
+          "min": 1,
+          "max": 20
+        },
+        "4": {
+          "min": 1,
+          "max": 12
         }
       }
     },
