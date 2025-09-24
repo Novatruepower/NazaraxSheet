@@ -654,6 +654,7 @@ function prepareCharactersForSaving(chars) {
 
 // Function to save all character data to a JSON file (download)
 function saveCharacterToFile() {
+    saveCurrentStateToHistory(); // Ensure current state is saved to history before saving to file
     const charactersToSave = prepareCharactersForSaving(characters);
 
     const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() + '_sheet' : 'character_sheets') + '.json';
@@ -3265,6 +3266,7 @@ async function saveCharacterToGoogleDrive() {
         return;
     }
 
+    saveCurrentStateToHistory(); // Ensure current state is saved to history before saving to Google Drive
     showStatusMessage("Saving to Google Drive...");
 
     try {
