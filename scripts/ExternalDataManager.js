@@ -67,25 +67,9 @@ export const ExternalDataManager = {
 
         let chaine = str;
 
-        if (dices && dices.length > 0) {
-            //dices
-            chaine = chaine.replace(/(?:{(\d+)})?d(?:{(\d+)})?/g, (_, minIndex, maxIndex) => {
-                let minValue = '';
-                if (minIndex !== undefined) {
-                    minValue = dices[minIndex].min;
-                }
-
-                let maxValue = '';
-
-                if (maxIndex !== undefined) {
-                    maxValue = dices[maxIndex].max;
-                }
-
-                return `${minValue}d${maxValue}`;
-            })
-
-            //value of dices
-            chaine = chaine.replace(/(?:(\d+))?{d}(?:(\d+))?/g, (_, minIndex, maxIndex) => {
+        if (dices && Object.keys(dices).length > 0) {
+            //value of dices exemple: 1{d} {d}4
+            chaine = chaine.replace(/(\d+)?\{d\}(\d+)?/g, (_, minIndex, maxIndex) => {
                 let minValue = '';
                 if (minIndex !== undefined) {
                     minValue = dices[minIndex].min;
@@ -99,9 +83,26 @@ export const ExternalDataManager = {
 
                 return `${minValue || maxValue}`;
             });
+
+            //dices exemple: {1d4} {1d} {d4}
+            chaine = chaine.replace(/\{(\d*)d(\d*)\}/g, (_, minIndex, maxIndex) => {
+                let minValue = '';
+                if (minIndex !== '') {
+                    console.log(minIndex);
+                    minValue = dices[minIndex].min;
+                }
+
+                let maxValue = '';
+
+                if (maxIndex !== '') {
+                    maxValue = dices[maxIndex].max;
+                }
+
+                return `${minValue}d${maxValue}`;
+            });
         }
         
-        //values and %
+        //values in % exemple: {0}%
         return chaine.replace(/{(\d+)}(%?)/g, (_, index, percent) => {
             let value = values[index];
             if (value == null) return 'null';
