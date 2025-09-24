@@ -399,6 +399,7 @@ export const ExternalDataManager = {
 
                     // Generate a concrete option for each value.
                     const length = option.options.values.length;
+                    console.log(option);
                     for (let i = 0; i < length; i++) {
                         const newOption = { ...template };
                         newOption.value = option.options.values[i];
