@@ -9,6 +9,28 @@ const TOTAL_DISTRIBUTION_POINTS = 97;
 const MIN_STAT_VALUE = 5;
 const MAX_STAT_VALUE = 20;
 
+// --- AUTO HISTORY SAVER ---
+let historySaveInterval = null;
+
+function startAutoHistorySaver() {
+    if (historySaveInterval) return; // already running
+
+    historySaveInterval = setInterval(() => {
+        if (hasUnsavedChanges) {
+            saveCurrentStateToHistory();
+            console.log(historyPointer);
+            console.log(historyStack.length);
+        }
+    }, 1000); // every 1 second
+}
+
+function stopAutoHistorySaver() {
+    if (historySaveInterval) {
+        clearInterval(historySaveInterval);
+        historySaveInterval = null;
+    }
+}
+
 // Function to calculate max experience for a given level
 function calculateLevelMaxExperience(char) {
     return char.uniqueIdentifiers['Self reflection'] ? char.uniqueIdentifiers['Self reflection'].values[0] : 100;
@@ -471,33 +493,37 @@ function convertArraysToSetsAfterLoad(chars) {
     });
 }
 
+/**
+ * Save current state into history.
+ */
 function saveCurrentStateToHistory() {
     const currentState = convertSetsToArraysForSave(characters);
 
-    // Check if the current state is different from the current historyPointer state
-    const isNewState =
-        historyPointer === -1 || JSON.stringify(currentState) !== JSON.stringify(historyStack[historyPointer]);
-
-    if (isNewState) {
-        // If we are not at the end, discard future/redo states
-        if (historyPointer < historyStack.length - 1) {
-            historyStack = historyStack.slice(0, historyPointer + 1);
-        }
-
-        // Push the new state
-        historyStack.push(currentState);
-
-        // Enforce max history size
-        if (historyStack.length > MAX_HISTORY_LENGTH) {
-            historyStack.shift();
-            historyPointer = historyStack.length - 1; // Adjust pointer after shift
-        } else {
-            historyPointer++;
-        }
-
-        console.log("State saved to history. History length:", historyStack.length, "Pointer:", historyPointer);
+    // If not at end, cut off "future" states (redo branch)
+    if (historyPointer < historyStack.length - 1) {
+        historyStack = historyStack.slice(0, historyPointer + 1);
     }
 
+    // Avoid pushing duplicate states
+    const lastState = historyStack[historyPointer];
+    if (lastState && JSON.stringify(lastState) === JSON.stringify(currentState) && !hasUnsavedChanges) {
+        updateHistoryButtonsState();
+        return;
+    }
+
+    // Push new state
+    historyStack.push(currentState);
+    historyPointer++;
+
+    // Trim excess
+    const excess = historyStack.length - MAX_HISTORY_LENGTH;
+    if (excess > 0) {
+        historyStack.splice(0, excess);
+        historyPointer = Math.max(historyPointer - excess, 0);
+    }
+
+    hasUnsavedChanges = false;
+    console.log("Saved state. Length:", historyStack.length, "Pointer:", historyPointer);
     updateHistoryButtonsState();
 }
 
@@ -621,6 +647,8 @@ function prepareCharactersForSaving(chars) {
         delete char.maxRacialPower;
         delete char.totalDefense; // Ensure totalDefense is also excluded as it's now derived
     });
+
+    console.log(charactersToSave);
     return charactersToSave;
 }
 
@@ -1087,7 +1115,6 @@ function quickRollStats() {
     renderWeaponTable();
     updateRemainingPointsDisplay(); // Reset remaining points display
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 /**
@@ -1107,7 +1134,6 @@ function distributeStats() {
         updateRemainingPointsDisplay();
         renderWeaponTable();
         hasUnsavedChanges = true;
-        saveCurrentStateToHistory();
     });
 }
 
@@ -1259,7 +1285,6 @@ function processRacialRegularPassiveChange(newAbilityData) {
 
     recalculateCharacterDerivedProperties(character, true);
     hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
 }
 
 /**
@@ -1335,7 +1360,6 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
     recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
     updateDOM(); // Update the UI to reflect changes
     hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
     console.log("--- processRacialChoiceChange finished ---");
 }
 
@@ -1386,7 +1410,6 @@ function handleChangeRace(oldRace) {
     }
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 /**
@@ -2263,7 +2286,6 @@ function handlePlayerStatInputChange(event) {
                 document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
             }
             hasUnsavedChanges = true;
-            saveCurrentStateToHistory();
         }
         return; // Exit as it's a temporary effect input
     }
@@ -2368,7 +2390,6 @@ function handlePlayerStatInputChange(event) {
     
     renderWeaponTable();
     hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
 }
 
 function removePassivesLevel() {
@@ -2483,7 +2504,6 @@ function handleChange(event) {
         }
     }
     hasUnsavedChanges = true;
-    saveCurrentStateToHistory();
 }
 
 // Function to toggle the visibility of the class dropdown options
@@ -2522,7 +2542,6 @@ function handleClassCheckboxChange(event) {
     updateSpecializationDropdownAndData();
     renderGenericClassesPassives();
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to handle changes in the state checkboxes
@@ -2535,7 +2554,6 @@ function handleStateCheckboxChange(event) {
     document.getElementById('state-display').value = getCharacterStatesActive().join(', ');
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 function renderSpecializations(specializations) {
@@ -2569,7 +2587,6 @@ function handleSpecializationCheckboxChange(event) {
 
     renderSpecializations(character.specializations);
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to update the specializations dropdown options and filter selected specializations
@@ -2646,14 +2663,12 @@ function togglePersonalNotesPanel() {
         character.layouts.personalNotes.text = personalNotesTextarea.value;
         notesPanel.classList.add('hidden');
         hasUnsavedChanges = true; // Mark that there are unsaved changes
-        saveCurrentStateToHistory(); // Save state after modification
     }
 }
 function saveHeightPositionAndSize(container) {
     if (container) {
         // Save position and size as percentages of the viewport
         character.layouts[container.id].height = container.offsetHeight / window.innerHeight;
-        saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
 }
@@ -2668,7 +2683,6 @@ function savePositionAndSize(container) {
         character.layouts.personalNotes.y = container.offsetTop / window.innerHeight;
         character.layouts.personalNotes.width = container.offsetWidth / window.innerWidth;
         character.layouts.personalNotes.height = container.offsetHeight / window.innerHeight;
-        saveCurrentStateToHistory(); // Save the state after an update
         hasUnsavedChanges = true; // Mark as unsaved
     }
 }
@@ -2886,21 +2900,18 @@ function addWeapon() {
     character.weaponInventory.push({ name: '', type: '', material: '', requirement: '', requiredStat: '', accuracy: 100, damage: '', magicDamage: '', magicType: '', effect: '', value: 0, use: false, originalDamage: '', originalMagicDamage: '' }); // 'use' is now boolean
     updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 function addArmor() {
     character.armorInventory.push({ name: '', location: '', material: '', requirement: '', requiredStat: '', defense: 0, magicDefense: 0, magicType: '', effect: '', value: 0, equipped: false });
     updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 function addGeneralItem() {
     character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 0, valuePerUnit: 0 });
     updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to remove an item from inventory
@@ -2918,7 +2929,6 @@ function removeItem(event) {
     }
     updateDOM(); // Re-render the inventory table
     hasUnsavedChanges = true; // Mark that there are unsaved changes
-    saveCurrentStateToHistory(); // Save state after modification
 }
 
 // Function to reset the current character to default data
@@ -2987,54 +2997,58 @@ function deleteCurrentCharacter() {
 }
 
 /**
-* Applies a historical state to the current character and updates the DOM.
-* @param {Array} state The character array state to apply.
-*/
+ * Apply a state from history.
+ */
 function applyHistoryState(state) {
-    characters = JSON.parse(JSON.stringify(state)); // Deep copy the state
-    // Convert Sets back to Set after loading from history
+    characters = JSON.parse(JSON.stringify(state));
     convertArraysToSetsAfterLoad(characters);
 
-    // Ensure currentCharacterIndex is valid after applying history, especially if characters were added/deleted
-    if (currentCharacterIndex >= characters.length) {
-        currentCharacterIndex = characters.length - 1;
-    } else if (currentCharacterIndex < 0 && characters.length > 0) {
-        currentCharacterIndex = 0; // Default to the first character if somehow invalid
-    } else if (characters.length === 0) {
-        // If no characters left, create a default one
+    if (characters.length === 0) {
         characters.push(defaultCharacterData());
         currentCharacterIndex = 0;
+    } else if (currentCharacterIndex >= characters.length) {
+        currentCharacterIndex = characters.length - 1;
+    } else if (currentCharacterIndex < 0) {
+        currentCharacterIndex = 0;
     }
+
     updateDOM();
-    populateCharacterSelector(); // Update selector in case character names changed
-    hasUnsavedChanges = historyPointer != historyStack.length - 1;
-    updateHistoryButtonsState(); // Update button states after applying history
-    updateRemainingPointsDisplay(); // Reset remaining points display
+    populateCharacterSelector();
+    updateRemainingPointsDisplay();
+    updateHistoryButtonsState();
 }
 
-// Function to revert the current character to the previous state in history
+/**
+ * Undo (revert).
+ */
 function revertCurrentCharacter() {
     if (historyPointer > 0) {
         historyPointer--;
+        const hasUnsavedChangesBeforeRevert = hasUnsavedChanges;
+        hasUnsavedChanges = false; // Temporarily disable unsaved changes flag to avoid prompt
         applyHistoryState(historyStack[historyPointer]);
+        hasUnsavedChanges = hasUnsavedChangesBeforeRevert; // Restore the unsaved changes flag
         showStatusMessage("Reverted to previous state.");
-        console.log("Reverted to previous state. History length:", historyStack.length, "Pointer:", historyPointer);
+        console.log("Undo → Pointer:", historyPointer);
     } else {
-        showStatusMessage("No previous state to revert to.", true);
-        console.log("No previous state to revert to.");
+        showStatusMessage("No previous state.", true);
     }
 }
 
-// Function to move the current character to the next state in history (undo a revert)
+/**
+ * Redo (forward).
+ */
 function forwardCurrentCharacter() {
     if (historyPointer < historyStack.length - 1) {
         historyPointer++;
+        const hasUnsavedChangesBeforeRevert = hasUnsavedChanges;
+        hasUnsavedChanges = false; // Temporarily disable unsaved changes flag to avoid prompt
         applyHistoryState(historyStack[historyPointer]);
+        hasUnsavedChanges = hasUnsavedChangesBeforeRevert; // Restore the unsaved changes flag
         showStatusMessage("Moved forward to next state.");
-        console.log("Moved forward to next state. History length:", historyStack.length, "Pointer:", historyPointer);
+        console.log("Redo → Pointer:", historyPointer);
     } else {
-        showStatusMessage("No future state to move to.", true);
-        console.log("No future state to move to.");
+        showStatusMessage("No forward state.", true);
     }
 }
 
@@ -3423,7 +3437,6 @@ function toggleHtml(id, toggleClass) {
             character.htmlVisibility[id] = false;
         }
         hasUnsavedChanges = true; // Mark that there are unsaved changes
-        saveCurrentStateToHistory(); // Save state after modification
     }
 }
 
@@ -3746,7 +3759,6 @@ function addManualTemporaryEffect() {
             document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
         }
         hasUnsavedChanges = true;
-        saveCurrentStateToHistory();
     }
 }
 
@@ -3769,7 +3781,6 @@ function removeTemporaryEffect(event) {
             document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
         }
         hasUnsavedChanges = true;
-        saveCurrentStateToHistory();
     }
 }
 
@@ -3854,7 +3865,6 @@ function endTurn() {
         recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
         updateDOM(); // Update the UI to reflect changes
         hasUnsavedChanges = true;
-        saveCurrentStateToHistory();
 
         if (effectsChanged) {
             showStatusMessage("Turn ended. Temporary effects updated.");
@@ -3923,7 +3933,7 @@ function takeDamage() {
     healthInput.value = character.Health.value;
     manaInput.value = character.Mana.value;
     racialPowerInput.value = character.RacialPower.value;
-    saveCurrentStateToHistory(); // so we can undo
+    hasUnsavedChanges = true;
     closeDamageModal();
 }
 
@@ -4195,6 +4205,9 @@ function initPage() {
 
     // Save the initial state to history after everything is loaded and rendered
     saveCurrentStateToHistory();
+
+    // Start automatically when the app loads
+    startAutoHistorySaver();
 }
 
 
