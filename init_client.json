@@ -121,6 +121,20 @@
       }
     },
     "Demi-humans": {
+      "dices": [
+        {
+          "min": 1,
+          "max": 6
+        },
+        {
+          "min": 1,
+          "max": 4
+        },
+        {
+          "min": 1,
+          "max": 20
+        }
+      ],
       "Stats": {
         "Other": {
           "Health": 1,
@@ -154,12 +168,12 @@
         "12": "This number is a hard cap which cannot be increased in any way.",
         "13": "Conversely, your inner animals are partially conscious of what is happening while you are in human form.",
         "14": "As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in.",
-        "15": "As per usual, this is decided via a d4 throw.",
+        "15": "As per usual, this is decided via a d{1} throw.",
         "16": "This includes Disfigurement but not Fractured mind.",
         "17": "This skill cannot be used to cancel Disfigurement.",
         "manual_passives": {
           "1": "Since the players are in control of both their human and animal parts, this race is very roleplay heavy, often forcing them to make wrong decisions or to compromise on their actions and is not recommended for those who want to play optimally.",
-          "2": "The number of animals in a character is decided by a throw of a d4, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1 to 4. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
+          "2": "The number of animals in a character is decided by a throw of a d{1}, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from {1}d to d{1}. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
         }
       },
       "regularPassives": {
@@ -178,16 +192,6 @@
             12,
             13
           ],
-          "dices": [
-            {
-              "max": 6,
-              "min": 1
-            },
-            {
-              "min": 1,
-              "max": 3
-            }
-          ],
           "values": [
             1,
             20,
@@ -204,13 +208,7 @@
           "values": [
             10
           ],
-          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one d{0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points.",
-          "dices": [
-            {
-              "max": 20,
-              "min": 1
-            }
-          ]
+          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one d{0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points."
         }
       },
       "manualPassives": {

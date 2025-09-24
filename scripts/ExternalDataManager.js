@@ -52,6 +52,48 @@ export const ExternalDataManager = {
     initFileName: "init_client",
     _data: { Races:{}, Stats:{}, Roll:{}, Other: {}, Classes:{} },
 
+    /**
+     * Replaces placeholders like {0}, {1} in a string with provided arguments.
+     *
+     * @param {string} str The string containing placeholders.
+     * @param {Array<string>} dices The dices to insert into the string.
+     * @param {...*} values The values to insert into the string.
+     * @returns {string} The formatted string.
+     */
+    formatString(str, dices, ...values) {
+        if (Array.isArray(values[0])) {
+            values = values[0];
+        }
+
+        //dices
+        const chaine = dices && dices.length > 0 ? str.replace(/(?:{(\d+)})?d(?:{(\d+)})?/g, (_, minIndex, maxIndex) => {
+            let minValue = '';
+            if (minIndex !== undefined) {
+                minValue = dices[minIndex].min;
+            }
+
+            let maxValue = '';
+
+            if (maxIndex !== undefined) {
+                maxValue = dices[maxIndex].max;
+            }
+
+            return `${minValue}d${maxValue}`;
+        }) : str;
+        
+        //values and %
+        return chaine.replace(/{(\d+)}(%?)/g, (_, index, percent) => {
+            let value = values[index];
+            if (value == null) return 'null';
+
+            if (percent === '%') {
+                value = `${Number(value) * 100}%`;
+            }
+
+            return value;
+        });
+    },
+
     convertNumberToSuperscript(number) {
         const superscriptMap = {
           '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
@@ -85,30 +127,6 @@ export const ExternalDataManager = {
             if (value == null) return 'null';
 
             return this.getHrefFootNotes(container.id, value);
-        });
-    },
-
-    /**
-     * Replaces placeholders like {0}, {1} in a string with provided arguments.
-     *
-     * @param {string} str The string containing placeholders.
-     * @param {...*} args The values to insert into the string.
-     * @returns {string} The formatted string.
-     */
-    formatString(str, ...args) {
-        if (Array.isArray(args[0])) {
-            args = args[0];
-        }
-            
-        return str.replace(/{(\d+)}(%?)/g, (_, index, percent) => {
-            let value = args[index];
-            if (value == null) return 'null';
-
-            if (percent === '%') {
-                value = `${Number(value) * 100}%`;
-            }
-
-            return value;
         });
     },
 
@@ -332,6 +350,16 @@ export const ExternalDataManager = {
         return this._data.Races[raceName];
     },
 
+    getRaceDices(className) {
+        const raceData = this.getRaceData(className);
+
+        if (raceData && raceData.dices) {
+            return raceData.dices;
+        }
+        
+        return [];
+    },
+
     getRaceFootNotes(raceName) {
         const raceData = this.getRaceData(raceName);
 
@@ -399,17 +427,16 @@ export const ExternalDataManager = {
 
                     // Generate a concrete option for each value.
                     const length = option.options.values.length;
-                    console.log(option);
-                    for (let i = 0; i < length; i++) {
+                    for (let i = 0; i < length; ++i) {
                         const newOption = { ...template };
                         newOption.value = option.options.values[i];
-                        newOption.label = this.formatString(option.label, Math.abs(newOption.value));
+                        newOption.label = this.formatString(option.label, copy.dices, Math.abs(newOption.value));
                         newOption.count = option.options.counts[i];
                         expandedOptions.push(newOption);
                     }
                 } else {
                     // This is a standard option
-                    template.label = this.formatString(option.label, Math.abs(template.value));
+                    template.label = this.formatString(option.label, copy.dices, Math.abs(template.value));
                     expandedOptions.push(template);
                 }
             }
@@ -429,10 +456,13 @@ export const ExternalDataManager = {
         const raceData = this.getRaceData(raceName);
         if (raceData && raceData.manualPassives) {
             const processedPassives = {};
+            const dices = raceData.dices;
 
             // Iterate over each manual passive's key (e.g., "Stat Adjustments", "Mutation").
             for (const passiveName in raceData.manualPassives) {
-                processedPassives[passiveName] = this.processedOptions(raceData.manualPassives[passiveName]);
+                const ability = raceData.manualPassives[passiveName];
+                ability['dices'] = dices;
+                processedPassives[passiveName] = this.processedOptions(ability);
             }
 
             return processedPassives;
@@ -451,7 +481,9 @@ export const ExternalDataManager = {
             const processedPassives = {};
 
             for (const passiveName in classData.manualPassives) {
-                processedPassives[passiveName] = this.processedOptions(classData.manualPassives[passiveName]);
+                const ability = classData.manualPassives[passiveName];
+                ability['dices'] = dices;
+                processedPassives[passiveName] = this.processedOptions(ability);
             }
 
             return processedPassives;
@@ -536,7 +568,7 @@ export const ExternalDataManager = {
             }
         }
 
-        template.description = this.formatString(template.description, this.processedFormulaValues(template));
+        template.description = this.formatString(template.description, copy.dices, this.processedFormulaValues(template));
         
         return template;
     },
@@ -552,8 +584,10 @@ export const ExternalDataManager = {
             const processedPassives = {};
             for (const passiveName in raceData.regularPassives) {
                 const ability = raceData.regularPassives[passiveName];
+
                 if (ability.level <= level) {
-                    processedPassives[passiveName] = this.processedUpgrades(passiveName, raceData.regularPassives[passiveName], level);
+                    ability['dices'] = raceData.dices;
+                    processedPassives[passiveName] = this.processedUpgrades(passiveName, ability, level);
                 }
             }
 
@@ -574,7 +608,8 @@ export const ExternalDataManager = {
             for (const activeName in raceData.actives) {
                 const ability = raceData.actives[activeName];
                 if (ability.level <= level) {
-                    processedActives[activeName] = this.processedUpgrades(activeName, raceData.actives[activeName], level);
+                    ability['dices'] = raceData.dices;
+                    processedActives[activeName] = this.processedUpgrades(activeName, ability, level);
                 }
             }
 
@@ -604,7 +639,8 @@ export const ExternalDataManager = {
             for (const passiveName in regularPassives) {
                 const ability = regularPassives[passiveName];
                 if (ability.level <= level) {
-                    processedPassives[passiveName] = this.processedUpgrades(passiveName, regularPassives[passiveName], level);
+                    ability['dices'] = raceData.dices;
+                    processedPassives[passiveName] = this.processedUpgrades(passiveName, ability, level);
                 }
             }
 

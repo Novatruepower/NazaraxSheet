@@ -170,7 +170,7 @@ function calculateMaxRacialPower(charData, level) {
     const effects = getCategoriesTemporaryEffects(charData, 'RacialPower');
 
     if (charData.uniqueIdentifiers['Savagery'])
-        return charData.uniqueIdentifiers['Savagery'].values[5];
+        return charData.uniqueIdentifiers['Savagery'].values[2];
 
     if (charData.uniqueIdentifiers['Spatial Reserve']) {
         return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), charData.uniqueIdentifiers['Spatial Reserve'].values[0]));
@@ -248,12 +248,12 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     // No adjustment needed for totalDefense as it's not a current/max value like health/mana
 
     if (isDisplay) {
+        levelUp(character.levelExperience);
         document.getElementById('maxHealth').value = character.maxHealth;
         healthInput.value = character.Health.value;
         document.getElementById('maxMana').value = character.maxMana;
         manaInput.value = character.Mana.value;
         document.getElementById('maxRacialPower').value = character.maxRacialPower;
-        levelUp(char.levelExperience);
         racialPowerInput.value = character.RacialPower.value;
         document.getElementById('total-defense').value = character.totalDefense.value; // Update totalDefense display
     }
@@ -305,7 +305,7 @@ const defaultCharacterData = function () {
         levelMaxExperience: 100, // Will be calculated dynamically
         maxHealth: 0, // Will be calculated dynamically
         maxMana: 0, // Will be calculated dynamically
-        maxRacialPower: 0,
+        maxRacialPower: 0, // Will be calculated dynamically
         totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
         
         layouts: {
@@ -1354,7 +1354,7 @@ function handleChangeRace(oldRace) {
     }
 
     if (character.uniqueIdentifiers['Spatial Reserve']) {
-        character.BaseRacialPower.value += defaultRacialPointScale - character.uniqueIdentifiers['Spatial Reserve'].values[1];
+      //  character.BaseRacialPower.value += defaultRacialPointScale - character.uniqueIdentifiers['Spatial Reserve'].values[1];
         delete character.uniqueIdentifiers['Spatial Reserve'];
     }
 
@@ -1773,6 +1773,7 @@ function renderFootNotes(race, numbersFootNotes, container) {
     if (dataKeys.length > 0) {
         const footNotesHTML = document.createElement('ul');
         const footNotesData = ExternalDataManager.getRaceFootNotes(race);
+        const dices = ExternalDataManager.getRaceDices(race);
 
         dataKeys.forEach(key => {
             const footnoteId = `${container.id}-foot_notes-${key}`;
@@ -1790,7 +1791,8 @@ function renderFootNotes(race, numbersFootNotes, container) {
             element.id = footnoteId;
             element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
             const paragraphe = document.createElement('p');
-            paragraphe.innerHTML = `${isNaN(numbersFootNotes[key]) ? footNotesData[numbersFootNotes[key]][key] : footNotesData[key]}`;
+            const footNoteData = isNaN(numbersFootNotes[key]) ? footNotesData[numbersFootNotes[key]][key] : footNotesData[key];
+            paragraphe.innerHTML = `${ExternalDataManager.formatString(footNoteData, dices, [])}`;
             paragraphe.id = footnoteParaId;
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
 
@@ -2079,7 +2081,7 @@ function renderGenericRacialActives(race) {
     }
 }
 
-function renderRegularClasesPassives(oldClass, passivesContainer) {
+function renderRegularClassesPassives(oldClass, passivesContainer) {
     const race = character.race;
     const id = 'regular-passives';
 
