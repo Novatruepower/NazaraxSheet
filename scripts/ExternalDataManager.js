@@ -199,9 +199,9 @@ export const ExternalDataManager = {
             }
         }
 
-        Object.keys(this._data.Races).forEach(raceName => {
-            this._data.Races[raceName].actives = this.sortByLevel(this._data.Races[raceName].actives);
-        });
+      //  Object.keys(this._data.Races).forEach(raceName => {
+           // this._data.Races[raceName].actives = this.sortByLevel(this._data.Races[raceName].actives);
+       // });
     },
 
     /**
