@@ -348,6 +348,19 @@
           "Charisma": 1,
           "Negotiation": 1
         }
+      },
+      "foot_notes": {
+        "4": "Objects thrown into a portal that aren’t touching someone count as an individual entity that passed trough and take a charge of the portal.",
+        "5": "Only the side from which the portal was cast can be used as an entrance, however, until someone fully enters the portal, they can always come back out of it.",
+        "6": "This means that a dice for events such as enemy spawn has to be thrown for each person that walks through a portal.",
+        "7": "This can be a type of location (safe area, shore, next to a landmark), but if the location is a specific landmark is chosen, luck and intelligence will determine if you will even be able to land in the right tile, if you are unable to, you will instead be teleported to a random location within a random tile in the landmark's surroundings.",
+        "8": "You cannot close \"Nowhere\" while inside of it since you cannot think or act.",
+        "9": "One map tile is a square around <code>3 km<code> in length.",
+        "actives": {
+          "1": "This spatial energy doesn’t allow them to know what something is made out of, but the same material will always have the same type of spatial energy, so with enough experience, they can base themselves off of this to know the material and purity of an item.",
+          "2": "If you want to understand how the portals work: dimensionals essentially take the special energy in their surroundings to create a line made of the compressed energy with an opening on both sides, walking into the opening dematerialises you, turning you into special energy and moves you at immeasurable speeds to the other side of the line. Portals are extremely reflective, with a blueish tint and fragile, and it is impossible to see trough it unless you fully enter it.",
+          "3": "All portals are three meters high and one meter wide and can break very easily if one of their sides is hit."
+        }
       }
     },
     "Dragonkin": {
