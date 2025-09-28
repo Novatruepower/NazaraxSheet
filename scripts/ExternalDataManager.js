@@ -34,36 +34,6 @@ function someInObject(upgradesObj, callback) {
     return false;
 }
 
-function initReplaceDataStats(data) {
-    if (data.hasOwnProperty('actives')) {
-        data.actives = this.sortByLevel(data.actives);
-    }
-
-    if (data.hasOwnProperty('manualPassives')) {
-        const abilityValues = Object.values(data.manualPassives || {});
-        for (const abilityData of abilityValues) {
-            const options = abilityData.options || {};
-            for (const optionData of Object.values(options)) {
-                if (optionData.applicableStats) {
-                    optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
-                }
-            }
-        }
-    }
-
-    if (data.hasOwnProperty('regularPassives')) {
-        const abilityValues = Object.values(data.regularPassives || {});
-        for (const abilityData of abilityValues) {
-            const formulas = abilityData.formulas || {};
-            for (const formulaData of Object.values(formulas)) {
-                if (formulaData.statsAffected) {
-                    formulaData.statsAffected = this.replaceDataStats(formulaData.statsAffected);
-                }
-            }
-        }
-    }
-}
-
 // Function to check if an upgrade has a formula with values
 const upgradeHasFormulasWithValues = upgrade => {
     return someInObject(upgrade.formulas, hasFormulaValues);
@@ -195,6 +165,36 @@ export const ExternalDataManager = {
         );
     },
 
+    initJsonReplaceDataStats(data) {
+        if (data.hasOwnProperty('actives')) {
+            data.actives = this.sortByLevel(data.actives);
+        }
+
+        if (data.hasOwnProperty('manualPassives')) {
+            const abilityValues = Object.values(data.manualPassives || {});
+            for (const abilityData of abilityValues) {
+                const options = abilityData.options || {};
+                for (const optionData of Object.values(options)) {
+                    if (optionData.applicableStats) {
+                        optionData.applicableStats = this.replaceDataStats(optionData.applicableStats);
+                    }
+                }
+            }
+        }
+
+        if (data.hasOwnProperty('regularPassives')) {
+            const abilityValues = Object.values(data.regularPassives || {});
+            for (const abilityData of abilityValues) {
+                const formulas = abilityData.formulas || {};
+                for (const formulaData of Object.values(formulas)) {
+                    if (formulaData.statsAffected) {
+                        formulaData.statsAffected = this.replaceDataStats(formulaData.statsAffected);
+                    }
+                }
+            }
+        }
+    },
+
     initJsonData(data) {
         for (const [characterKey, characterData] of Object.entries(data)) {
             const characterTarget = this._data[characterKey] ||= {};
@@ -207,11 +207,11 @@ export const ExternalDataManager = {
         }
 
         Object.keys(this._data.Races).forEach(raceName => {
-            initReplaceDataStats(this._data.Races[raceName]);
+            this.initJsonReplaceDataStats(this._data.Races[raceName]);
         });
 
         Object.keys(this._data.Classes).forEach(className => {
-            initReplaceDataStats(this._data.Classes[className]);
+            this.initJsonReplaceDataStats(this._data.Classes[className]);
         });
     },
 
