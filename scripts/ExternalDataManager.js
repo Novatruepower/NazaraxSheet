@@ -169,8 +169,14 @@ export const ExternalDataManager = {
                     const otherKeys = Object.keys(otherData);
                     if (otherKeys.length > 0 && otherData[otherKeys[0]].hasOwnProperty('level')) {
                         otherKeys.sort((a, b) => (otherData[a].level - otherData[b].level));
+
+                        otherKeys.forEach(otherKey => {
+                            characterTarget[categoryKey][key][otherKey] = otherData[otherKey];
+                        });
                     }
-                    characterTarget[categoryKey][key] = otherData;
+                    else {
+                        characterTarget[categoryKey][key] = categoryData[key];
+                    }
                 });
 
                 if (categoryData.hasOwnProperty('manualPassives')) {
