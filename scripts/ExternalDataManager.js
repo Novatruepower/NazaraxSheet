@@ -174,10 +174,6 @@ export const ExternalDataManager = {
                     characterTarget[categoryKey][key] = categoryData[key];
                 });
 
-                if (categoryData.hasOwnProperty('actives')) {
-                    characterTarget[categoryKey].actives = this.sortByLevel(characterTarget[categoryKey].actives);
-                }
-
                 if (categoryData.hasOwnProperty('manualPassives')) {
                     const abilityValues = Object.values(categoryData.manualPassives || {}); 
                     for (const abilityData of abilityValues) {
@@ -188,7 +184,6 @@ export const ExternalDataManager = {
                             }
                         }
                     }
-                    characterTarget[categoryKey].manualPassives = this.sortByLevel(characterTarget[categoryKey].manualPassives);
                 }
                 if (categoryData.hasOwnProperty('regularPassives')) {
                     const abilityValues = Object.values(categoryData.regularPassives || {});
@@ -200,10 +195,13 @@ export const ExternalDataManager = {
                             }
                         }
                     }
-                    characterTarget[categoryKey].regularPassives = this.sortByLevel(characterTarget[categoryKey].regularPassives);
                 }
             }
         }
+
+        this._data.Races.forEach(raceName => {
+            this._data.Races[raceName].actives = this.sortByLevel(this.getRaceActives(raceName));
+        });
     },
 
     /**
