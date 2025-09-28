@@ -412,14 +412,6 @@
             50
           ]
         },
-        "Exodus": {
-          "level": 50,
-          "description": "With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
-          "values": [
-            200
-          ],
-          "foot_notes": 8
-        },
         "Nowhere": {
           "level": 75,
           "description": "\"With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
@@ -440,6 +432,16 @@
           ],
           "foot_notes": [
             9
+          ]
+        },
+        "Exodus": {
+          "level": 50,
+          "description": "With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
+          "values": [
+            200
+          ],
+          "foot_notes": [
+            8
           ]
         }
       }
@@ -468,7 +470,8 @@
           "Charisma": 0.75,
           "Negotiation": 0.75
         }
-      }
+      },
+      "foot_notes": {}
     },
     "Dwarf": {
       "Stats": {
