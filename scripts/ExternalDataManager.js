@@ -164,13 +164,14 @@ export const ExternalDataManager = {
             const characterTarget = this._data[characterKey] ||= {};
             for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                 const dataKeys = Object.keys(categoryData);
+                dataKeys.sort((a, b) => categoryData[key].level > categoryData[b].level);
                 dataKeys.forEach(key => {
                     characterTarget[categoryKey][key] = categoryData[key];
                 });
 
                 if (categoryData.hasOwnProperty('manualPassives')) {
-                    const abilities = categoryData.manualPassives || {};
-                    for (const abilityData of Object.values(abilities)) {
+                    const abilityValues = Object.values(categoryData.manualPassives || {}); 
+                    for (const abilityData of abilityValues) {
                         const options = abilityData.options || {};
                         for (const optionData of Object.values(options)) {
                             if (optionData.applicableStats) {
@@ -180,8 +181,8 @@ export const ExternalDataManager = {
                     }
                 }
                 if (categoryData.hasOwnProperty('regularPassives')) {
-                    const abilities = categoryData.regularPassives || {};
-                    for (const abilityData of Object.values(abilities)) {
+                    const abilityValues = Object.values(categoryData.regularPassives || {});
+                    for (const abilityData of abilityValues) {
                         const formulas = abilityData.formulas || {};
                         for (const formulaData of Object.values(formulas)) {
                             if (formulaData.statsAffected) {
