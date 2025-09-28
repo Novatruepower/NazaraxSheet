@@ -355,11 +355,92 @@
         "6": "This means that a dice for events such as enemy spawn has to be thrown for each person that walks through a portal.",
         "7": "This can be a type of location (safe area, shore, next to a landmark), but if the location is a specific landmark is chosen, luck and intelligence will determine if you will even be able to land in the right tile, if you are unable to, you will instead be teleported to a random location within a random tile in the landmark's surroundings.",
         "8": "You cannot close \"Nowhere\" while inside of it since you cannot think or act.",
-        "9": "One map tile is a square around <code>3 km<code> in length.",
+        "9": "One map tile is a square around <code>3 km</code> in length.",
         "actives": {
           "1": "This spatial energy doesn’t allow them to know what something is made out of, but the same material will always have the same type of spatial energy, so with enough experience, they can base themselves off of this to know the material and purity of an item.",
           "2": "If you want to understand how the portals work: dimensionals essentially take the special energy in their surroundings to create a line made of the compressed energy with an opening on both sides, walking into the opening dematerialises you, turning you into special energy and moves you at immeasurable speeds to the other side of the line. Portals are extremely reflective, with a blueish tint and fragile, and it is impossible to see trough it unless you fully enter it.",
           "3": "All portals are three meters high and one meter wide and can break very easily if one of their sides is hit."
+        }
+      },
+      "regularPassives": {
+        "Spatial Reserve": {
+          "level": 1,
+          "description": "As a dimensional, your body has the innate ability to store abnormal quantities of spatial energy. You can have up to [{0}+level*{1}] racial points stocked up.",
+          "values": [
+            100,
+            10
+          ]
+        },
+        "Spatial Capture": {
+          "level": 1,
+          "values": [
+            10
+          ],
+          "description": "Dimensionals have the unusual ability to use the muscle like fibers that serves as their skin as a sort of net which lets spatial energy pass into their bodies, but not back out of them, giving them the ability to create a store of this energy. You regenerate [{0}+level] racial points at the start of every one of your turns."
+        }
+      },
+      "actives": {
+        "Anomaly": {
+          "level": 1,
+          "description": "You focus your spatial energy into an efficient, yet simple line, allowing for single use, one-way<a>0</a> portal that lasts until the start of your next turn. This spell takes {0} turns to cast and costs {1} racial points per map tile of movement. This portal’s destination is defined by the direction and length of the line of spatial energy created, thus, specific locations are impossible to teleport to, and it teleports to a random place<a>1</a> within the desired tile. Walking into the portal does not count as your action for the turn",
+          "values": [
+            2,
+            20
+          ],
+          "foot_notes": [
+            6
+          ]
+        },
+        "Spatial Distortion": {
+          "level": 10,
+          "description": "Having experience, you are now able to create a rope from multiple twisted lines of special energy. This creates a one-way portal that can be used by groups of people (up to {0}) after casting it for {1} turns, this portal costs {2} racial points per tile of movement to create, it lasts for {3} turns (closing at the start of your turn) and cannot be closed on demand. Even though this spatial link makes sure to transport everyone to the same area by twisting different lines of energy together, the exits aren’t stuck together, and so, everyone who walks through this portal will get transported to a different location<a>0</a> in the same tile.",
+          "values": [
+            8,
+            3,
+            50,
+            20
+          ],
+          "foot_notes": [
+            6
+          ]
+        },
+        "Depature": {
+          "level": 25,
+          "description": "Construct a link between two places in the world at great speeds at the cost of efficiency, instantly creating a portal that can be used by one person at the cost of {0} racial points plus {1} racial points per tile of movement. Both sides of the portals can be used as entrances. Creating this portal doesn’t count as your action for the turn and it can be done multiple times per turn. Portals last until the start of your next turn. The destination of these portals is almost always safe.",
+          "values": [
+            100,
+            50
+          ]
+        },
+        "Exodus": {
+          "level": 50,
+          "description": "With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
+          "values": [
+            200
+          ],
+          "foot_notes": 8
+        },
+        "Nowhere": {
+          "level": 75,
+          "description": "\"With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
+          "values": [
+            200
+          ],
+          "foot_notes": [
+            8
+          ]
+        },
+        "Black hole": {
+          "level": 100,
+          "description": "Forcefully distort the spatial energy around you, making every entity within your current tile<a>0</a> aware of each other’s presence and making distance completely irrelevant (within the limits of the current tile), turning any distance into melee range, as well as far enough away to use any attacks with a required range or to use attacks with an area of effect smaller than the entire tile safe to use for the next {0} turns. This costs {1} racial points to use and takes {2} turns to cast, if your focus breaks during this time, your racial points will still be consumed.",
+          "values": [
+            3,
+            1000,
+            3
+          ],
+          "foot_notes": [
+            9
+          ]
         }
       }
     },
