@@ -159,20 +159,21 @@ export const ExternalDataManager = {
         return statNames.flatMap(name => this.replaceDataStat(name));
     },
 
+    sortByLevel(object) {
+        return Object.fromEntries(
+            Object.entries(object).sort(([, a], [, b]) => a.level - b.level)
+        );
+    },
+
     initJsonData(data) {
         for (const [characterKey, characterData] of Object.entries(data)) {
             const characterTarget = this._data[characterKey] ||= {};
             for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                 const dataKeys = Object.keys(categoryData);
                 dataKeys.forEach(key => {
-                    const otherData = categoryData[key];
-                    const otherKeys = Object.keys(otherData);
-                    if (otherKeys.length > 0 && otherData[otherKeys[0]].hasOwnProperty('level')) {
-                        otherKeys.sort((a, b) => (otherData[a].level - otherData[b].level));
-
-                        otherKeys.forEach(otherKey => {
-                            characterTarget[categoryKey][key][otherKey] = otherData[otherKey];
-                        });
+                    const otherKey = Object.keys(categoryData[key]);
+                    if (otherKey.length > 0 && categoryData[otherKey[0]].hasOwnProperty('level')) {
+                        characterTarget[categoryKey][key] = this.sortByLevel(categoryData[key]);
                     }
                     else {
                         characterTarget[categoryKey][key] = categoryData[key];
