@@ -175,7 +175,7 @@ export const ExternalDataManager = {
                 });
 
                 if (categoryData.hasOwnProperty('actives')) {
-                    characterTarget[categoryKey][key] = this.sortByLevel(characterTarget[categoryKey][key]);
+                    characterTarget[categoryKey].actives = this.sortByLevel(characterTarget[categoryKey].actives);
                 }
 
                 if (categoryData.hasOwnProperty('manualPassives')) {
@@ -188,7 +188,7 @@ export const ExternalDataManager = {
                             }
                         }
                     }
-                    characterTarget[categoryKey][key] = this.sortByLevel(characterTarget[categoryKey][key]);
+                    characterTarget[categoryKey].manualPassives = this.sortByLevel(characterTarget[categoryKey].manualPassives);
                 }
                 if (categoryData.hasOwnProperty('regularPassives')) {
                     const abilityValues = Object.values(categoryData.regularPassives || {});
@@ -200,7 +200,7 @@ export const ExternalDataManager = {
                             }
                         }
                     }
-                    characterTarget[categoryKey][key] = this.sortByLevel(characterTarget[categoryKey][key]);
+                    characterTarget[categoryKey].regularPassives = this.sortByLevel(characterTarget[categoryKey].regularPassives);
                 }
             }
         }
