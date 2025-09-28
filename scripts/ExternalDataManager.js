@@ -166,7 +166,7 @@ export const ExternalDataManager = {
                 const dataKeys = Object.keys(categoryData);
                 dataKeys.forEach(key => {
                     const values = Object.values(categoryData[key]);
-                    if (values[0].hasOwnProperty('level')) {
+                    if (values.length > 0 && values[0].hasOwnProperty('level')) {
                         values.sort((a, b) => (a.level - b.level));
                     }
                     characterTarget[categoryKey][key] = values;
