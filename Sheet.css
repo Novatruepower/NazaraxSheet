@@ -430,17 +430,51 @@ body {
 
 .footnotes {
     color: #3b82f6; /* A standard blue color, similar to Tailwind's 'blue-500' */
-    text-decoration: underline; /* Optional: adds an underline for better visibility */
+    text-decoration: none; /* Optional: adds an underline for better visibility */
 }
 
 .footnotes:hover {
     color: #2563eb; /* A darker blue on hover, similar to 'blue-600' */
+    text-decoration: none; /* Optional: removes underline on hover */
 }
 
 sup {
     line-height: 0;
     vertical-align: super;
     font-size: smaller;
+}
+
+:not(pre):not(a) > .hljs {
+    color: var(--inline-code-color);
+    overflow-x: initial;
+}
+
+:not(pre) > .hljs {
+    display: inline;
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+}
+
+.hljs{
+    display: block;
+    overflow-x: auto;
+    background: #f6f7f6;
+    color: #000;
+}
+
+code {
+    font-family: var(--mono-font) !important;
+    font-size: var(--code-font-size);
+    direction: ltr !important;
+}
+
+ul {
+    z-index: 50;
+    position: relative;
+}
+
+.sticky {
+    mix-blend-mode: normal;
 }
 
 @media print {

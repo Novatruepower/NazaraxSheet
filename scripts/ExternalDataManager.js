@@ -98,7 +98,7 @@ export const ExternalDataManager = {
                     maxValue = dices[maxIndex].max;
                 }
 
-                return `${minValue}d${maxValue}`;
+                return `<code class="hljs">${minValue}d${maxValue}</code>`;
             });
         }
         
