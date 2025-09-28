@@ -80,14 +80,6 @@
         }
       },
       "actives": {
-        "Controlled Reshaping": {
-          "foot_notes": [
-            4,
-            5
-          ],
-          "level": 25,
-          "description": "You can now deform, and form items made from more than one part, more than one material<a>0</a>, or that use a combination of different simple shapes<a>1</a> at the expanse of more racial points."
-        },
         "Rough Reshaping": {
           "level": 1,
           "foot_notes": [
@@ -96,6 +88,14 @@
             3
           ],
           "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch<a>0</a> at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts<a>1</a>. This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform<a>2</a> for one turn before starting to change it."
+        },
+        "Controlled Reshaping": {
+          "foot_notes": [
+            4,
+            5
+          ],
+          "level": 25,
+          "description": "You can now deform, and form items made from more than one part, more than one material<a>0</a>, or that use a combination of different simple shapes<a>1</a> at the expanse of more racial points."
         },
         "Reshaping Finesse": {
           "description": "You can now also deform, and form items with high levels of precision<a>0</a>, allowing you to manipulate items made from large amounts of different materials, parts, or even complex shapes<a>1</a>, however, this costs tremendous amounts of racial points",
@@ -412,6 +412,16 @@
             50
           ]
         },
+        "Exodus": {
+          "level": 50,
+          "description": "With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
+          "values": [
+            200
+          ],
+          "foot_notes": [
+            8
+          ]
+        },
         "Nowhere": {
           "level": 75,
           "description": "\"With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
@@ -432,16 +442,6 @@
           ],
           "foot_notes": [
             9
-          ]
-        },
-        "Exodus": {
-          "level": 50,
-          "description": "With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
-          "values": [
-            200
-          ],
-          "foot_notes": [
-            8
           ]
         }
       }
