@@ -88,7 +88,6 @@ export const ExternalDataManager = {
             chaine = chaine.replace(/\{(\d*)d(\d*)\}/g, (_, minIndex, maxIndex) => {
                 let minValue = '';
                 if (minIndex !== '') {
-                    console.log(minIndex);
                     minValue = dices[minIndex].min;
                 }
 

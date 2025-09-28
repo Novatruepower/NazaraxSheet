@@ -1887,6 +1887,7 @@ function renderRegularPassives(regularPassives, regularPassivesList, numbersFoot
             processRacialRegularPassiveChange(abilityData);
 
             if (abilityData.foot_notes) {
+                console.log(abilityData.foot_notes);
                 abilityData.foot_notes.forEach(key => {
                     numbersFootNotes[key] = true;
                 });
