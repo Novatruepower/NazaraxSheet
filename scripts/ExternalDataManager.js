@@ -200,18 +200,21 @@ export const ExternalDataManager = {
             const characterTarget = this._data[characterKey] ||= {};
             for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                 const dataKeys = Object.keys(categoryData);
+                const categoryTarget = characterTarget[categoryKey];
                 dataKeys.forEach(key => {
-                    characterTarget[categoryKey][key] = categoryData[key];
+                    categoryTarget[key] = categoryData[key];
                 });
             }
         }
-
-        Object.keys(this._data.Races).forEach(raceName => {
-            this.initJsonReplaceDataStats(this._data.Races[raceName]);
+        
+        const racesData = this._data.Races;
+        Object.keys(racesData).forEach(raceName => {
+            this.initJsonReplaceDataStats(racesData[raceName]);
         });
 
-        Object.keys(this._data.Classes).forEach(className => {
-            this.initJsonReplaceDataStats(this._data.Classes[className]);
+        const classesData = this._data.Classes;
+        Object.keys(classesData).forEach(className => {
+            this.initJsonReplaceDataStats(classesData[className]);
         });
     },
 
