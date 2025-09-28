@@ -318,7 +318,9 @@
         "Domination": {
           "level": 100,
           "description": "You have now mastered your transformation and can now decide into which animal you want to transform<a>0</a>.",
-          "foot_notes": 16
+          "foot_notes": [
+            16
+          ]
         }
       }
     },
