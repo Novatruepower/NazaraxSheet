@@ -164,7 +164,7 @@ export const ExternalDataManager = {
             const characterTarget = this._data[characterKey] ||= {};
             for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                 const dataKeys = Object.keys(categoryData);
-                dataKeys.sort((a, b) => categoryData[key].level > categoryData[b].level);
+                dataKeys.sort((a, b) => categoryData[b].level && categoryData[a].level > categoryData[b].level);
                 dataKeys.forEach(key => {
                     characterTarget[categoryKey][key] = categoryData[key];
                 });
