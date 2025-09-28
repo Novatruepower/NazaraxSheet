@@ -171,14 +171,12 @@ export const ExternalDataManager = {
             for (const [categoryKey, categoryData] of Object.entries(characterData)) {
                 const dataKeys = Object.keys(categoryData);
                 dataKeys.forEach(key => {
-                    const otherKey = Object.keys(categoryData[key]);
-                    if (otherKey.length > 0 && typeof categoryData[otherKey[0]] === 'object' && categoryData[otherKey[0]].hasOwnProperty('level')) {
-                        characterTarget[categoryKey][key] = this.sortByLevel(categoryData[key]);
-                    }
-                    else {
-                        characterTarget[categoryKey][key] = categoryData[key];
-                    }
+                    characterTarget[categoryKey][key] = categoryData[key];
                 });
+
+                if (categoryData.hasOwnProperty('actives')) {
+                    characterTarget[categoryKey][key] = this.sortByLevel(characterTarget[categoryKey][key]);
+                }
 
                 if (categoryData.hasOwnProperty('manualPassives')) {
                     const abilityValues = Object.values(categoryData.manualPassives || {}); 
@@ -190,6 +188,7 @@ export const ExternalDataManager = {
                             }
                         }
                     }
+                    characterTarget[categoryKey][key] = this.sortByLevel(characterTarget[categoryKey][key]);
                 }
                 if (categoryData.hasOwnProperty('regularPassives')) {
                     const abilityValues = Object.values(categoryData.regularPassives || {});
@@ -201,6 +200,7 @@ export const ExternalDataManager = {
                             }
                         }
                     }
+                    characterTarget[categoryKey][key] = this.sortByLevel(characterTarget[categoryKey][key]);
                 }
             }
         }
