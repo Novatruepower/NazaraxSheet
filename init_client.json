@@ -471,7 +471,131 @@
           "Negotiation": 0.75
         }
       },
-      "foot_notes": {}
+      "regularPassives": {
+        "Foul Blood": {
+          "level": 1,
+          "description": "Because of your impure blood and weak body, most dragons will see you as an insult to their race and will want to kill you on sight no matter what."
+        },
+        "Genetic Impurity": {
+          "level": 1,
+          "description": "Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a {0}/{0} chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a {1}/{2} chance of being human/dragonkin and if their partner is a dragon, their child will have a {2}/{1} chance of being dragonkin/dragon.",
+          "values": [
+            50,
+            25,
+            75
+          ]
+        },
+        "Frail Body": {
+          "level": 1,
+          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<a>0</a>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.",
+          "foot_notes": [
+            1
+          ]
+        },
+        "Dragon’s Metabolism": {
+          "level": 1,
+          "description": "Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in {1} to {2} turns and so that you can recover any limbs in {3}-{4} turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body.",
+          "values": [
+            0.1,
+            3,
+            5,
+            10,
+            20
+          ]
+        },
+        "Dragon’s Pride": {
+          "level": 1,
+          "description": "A dragon’s pride seems to be hereditary, as it seems completely impossible to intimidate dragonkin. Any intimidation confrontation against a you will not work; however, you can still lose intimidation confrontations that you start."
+        },
+        "Proof of Strength": {
+          "level": 50,
+          "description": "You have become strong enough to have your existence be acknowledged as legitimate by most dragons. This means that a majority of dragons will now at least tolerate your existence, while some might even accept to converse with you or teach you, though some will still try to end your life no matter what."
+        }
+      },
+      "dices": {
+        "0": {
+          "min": 1,
+          "max": 4
+        },
+        "1": {
+          "min": 1,
+          "max": 12
+        }
+      },
+      "actives": {
+        "Flight": {
+          "level": 1,
+          "description": "Open up your wings and soar through the sky at blistering speeds. Allows you to move around the overworld at two tiles per turn while having no enemy spawn chance. This can be used while in combat to escape."
+        },
+        "Equalizer": {
+          "level": 10,
+          "description": "You have started to become stronger, and thus, your body can finally withstand a dragon’s power. Temporarily call upon the power hidden withing your dragon’s blood, changing all your own racial statistical modifiers except for health and mana to {0}% and ignoring your Frail Body passive for a total of {1} turns. Activating this skill requires you to roar but does not count as an action. You lose {2}% of your health at the end of every turn this skill is active for.",
+          "values": [
+            1,
+            5,
+            0.1
+          ]
+        },
+        "Restoration": {
+          "level": 25,
+          "cooldown": {
+            "turns": {
+              "value": 10
+            }
+          },
+          "description": "Dragons always existed, and thus, the natural laws of this world that came to be after them hold no meaning to the proud race and their children. Remind the world of its former shape with a powerful roar, nullifying everyone’s statistical multipliers<a>0</a>, including those related to items or skills, around yourself for {0} turns. This roar, however, puts a great strain on your body, costing you {1}% of your maximum health.",
+          "values": [
+            3,
+            0.5
+          ],
+          "foot_notes": [
+            2
+          ]
+        },
+        "Dragon’s Gag": {
+          "level": 75,
+          "description": "You have gained the strength required to be call upon powers comparable to young true dragons. Focus<a>0</a> and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out<a>1</a> a pseudo-dragon’s breath composed of pure magic, dealing <code>({0d0}/{0} * (S<a>2</a> * {1} + Level * {2}))</code> damage of a random element<a>3<sup/> in a wide area<a>4</a> in front of you for three turns in a row<a>5</a>.",
+          "values": [
+            2,
+            10,
+            20
+          ],
+          "foot_notes": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        "Retribution": {
+          "level": 100,
+          "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<a>0</a> on converting your body and soul into mana for {0} turns<a>1</a>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{0d0}/{2} * (S<a>2</a> * {3} + Level * {4})</code> damage of a random element<a>3</a> to anything in its path.",
+          "values": [
+            3,
+            25
+          ],
+          "foot_notes": [
+            3,
+            25,
+            2,
+            20,
+            50
+          ]
+        }
+      },
+      "foot_notes": {
+        "1": "Even one damage from poison is enough to cause your liver to fail.",
+        "2": "This skill nullifies every statistical multiplier that come from races, skills, and items with the only exceptions being that it cannot affect dragons and racial changes to health or mana",
+        "3": "Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption.",
+        "4": "Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath.",
+        "5": "S can be your strength, agility, or magic.",
+        "6": "The element is chosen by throwing one {d1} with numbers being associated with an element each, 1 for darkness, 2 for chaos, 3 for wind, 4 for ice, 5 for fire, 6 for earth, 7 for nature, 8 for thunder and 9 for light, 10/11/12 are rerolls.",
+        "7": "The resulting attack lingers for a bit before dissipating, so if you move in any direction except backwards while the skill is still in use, you will walk into the damage zone.",
+        "8": "The element stays the same for the three turns.",
+        "9": "The attack is launched at the start of the fourth turn if the first turn is when the skill is used."
+      }
     },
     "Dwarf": {
       "Stats": {
