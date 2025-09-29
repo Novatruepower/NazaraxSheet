@@ -595,7 +595,7 @@
             5,
             6
           ],
-          "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<a>0</a> on converting your body and soul into mana for {0} turns<a>1</a>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{0d0}/{2} * (Sk * {3} + Level * {4})</code><a>2</a> damage of a random element<a>3</a> to anything in its path."
+          "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<a>0</a> on converting your body and soul into mana for {0} turns<a>1</a>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{0d0}/{2} * (Sk * {3} + Level * {4})</code><a>2</a> damage of a random element<a>3</a> to <b>anything</b> in its path."
         }
       }
     },
