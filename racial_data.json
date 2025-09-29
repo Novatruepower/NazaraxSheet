@@ -233,8 +233,8 @@
         },
         "Dragon’s Metabolism": {
           "level": 1,
-          "description": "Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in 3 to 5 turns and so that you can recover any limbs in 10-20 turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body.",
-          "values": [0.1]
+          "description": "Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in {1} to {2} turns and so that you can recover any limbs in {3}-{4} turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body.",
+          "values": [0.1, 3, 5, 10, 20]
         },
         "Dragon’s Pride": {
           "level": 1,
@@ -264,7 +264,7 @@
         },
         "Dragon’s Gag": {
           "level": 75,
-          "description": "You have gained the strength required to be call upon powers comparable to young true dragons. Focus<a>0</a> and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out<a>1</a> a pseudo-dragon’s breath composed of pure magic, dealing <code>({0}d{1}/{2} * (S<a>2</a> * {3} + Level * {16}))</code> damage of a random element<a>3<sup/> in a wide area<a>4</a> in front of you for three turns in a row<a>5</a>.",
+          "description": "You have gained the strength required to be call upon powers comparable to young true dragons. Focus<a>0</a> and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out<a>1</a> a pseudo-dragon’s breath composed of pure magic, dealing <code>({0}d{1}/{2} * (S<a>2</a> * {3} + Level * {4}))</code> damage of a random element<a>3<sup/> in a wide area<a>4</a> in front of you for three turns in a row<a>5</a>.",
           "values": [1, 4, 2, 10, 20],
           "foot_notes" : [3, 4, 5, 6, 7, 8]
         },
@@ -272,7 +272,7 @@
           "level": 100,
           "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<a>0</a> on converting your body and soul into mana for {0} turns<a>1</a>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{2}d{3}/{4} * (S<a>2</a> * {5} + Level * {6})</code> damage of a random element<a>3</a> to anything in its path.",
           "values" : [3, 25, 1, 4, 2, 20, 50],
-          "foot_notes" : [3, 5, 6, 9]
+          "foot_notes" : [3, 25, 6, 9]
         }
       },
       "foot_notes" : {
