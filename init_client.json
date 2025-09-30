@@ -1,1 +1,977 @@
-{"Races":{"Architect":{"Stats":{"Other":{"Health":0.7,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":0.75,"Agility":0.5,"Magic":1,"Luck":1,"Crafting":1.25,"Intelligence":1,"Intimidation":1,"Charisma":1,"Negotiation":1}},"actives":{"Rough Reshaping":{"level":1,"foot_notes":[1,2,3],"description":"This ability allows you to loosely reshape simple inorganic matter from items you touch<a>0</a> at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts<a>1</a>. This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform<a>2</a> for one turn before starting to change it."},"Controlled Reshaping":{"foot_notes":[4,5],"level":25,"description":"You can now deform, and form items made from more than one part, more than one material<a>0</a>, or that use a combination of different simple shapes<a>1</a> at the expanse of more racial points."},"Reshaping Finesse":{"description":"You can now also deform, and form items with high levels of precision<a>0</a>, allowing you to manipulate items made from large amounts of different materials, parts, or even complex shapes<a>1</a>, however, this costs tremendous amounts of racial points","level":50,"foot_notes":[6,7]},"Gift of Creation":{"description":"You can now reshape living beings as long as you have the necessary knowledge of the target’s body shape and materials. This can be used to repair organs and bones, close wounds, heal people, or to even damage them. However, this costs non-negligeable amounts of racial energy.","level":100}},"foot_notes":{"1":"An item here is any singular “grouping” of an item type, if you put your hand in a box of nails, you can manipulate all the nails since they are all the same and in contact with each other, the same rule would apply to gold coins in a bag or logs roped together.","2":"Both the original item and the final product have to meet all the criteria.","3":"This doesn’t apply to simple things like dirt, simple wooden walls (as long as they are made of logs and nothing else), and so on.","4":"The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it.","5":"A basic gear or bicycle wheel with a frame would be possible for instance, while a sword with a guard, a complete shield or a crossbow would be impossible.","6":"This includes things such as recreating a weapon you know from it’s scraps, creating entire buildings out of iron (nails) and wood, and making crossbows.","7":"The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it."},"regularPassives":{"Clay Skin":{"level":1,"formulas":[{"appliesTo":"initial-value","types":["*"],"values":[20],"type":"+","stats":["level"],"statsAffected":["RacialPower"]}],"upgrades":{"Crystal Skin":{"formulas":[{"values":40}],"level":100},"Rocky Skin":{"level":50,"formulas":[{"values":30}]}},"description":"You store up energy that you absorb from the air around you in a clay-like skin layer. This layer of skin counts as both your racial point pool and as a supplementary health bar which gets used up before your real health bar. You have {0} racial points per level."},"Magic Stabilisation":{"description":"You can now reshape magic or enchanted items while keeping the magic part of the item intact after your reshaping of the item depending on your luck and the quality of the enchantment.","level":75},"Absorption":{"description":"You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%.","level":1,"values":["0.05","0.04"]}}},"Demi-humans":{"Stats":{"Other":{"Health":1,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":1,"Agility":1,"Magic":1,"Luck":1,"Crafting":1,"Intelligence":1,"Intimidation":1,"Charisma":1,"Negotiation":1}},"manualPassives":{"Stat Adjustments":{"foot_notes":[7,8],"description":"Demi-humans can choose to apply stat<a>0</a> <a>1</a> modifiers to their character.","options":[{"type":"stat_increase","label":"+{0}% to any stat<a>0</a> <a>1</a>","applicableStats":["Strength","Agility","Magic","Luck","Crafting","Intelligence","Intimidation","Charisma","Negotiation","Health","Mana"],"options":{"counts":[1,2],"values":[0.25,0.5],"unique":"Stat Adjustments"},"calc":"add"},{"label":"-{0}% to any stat<a>0</a> <a>1</a>","calc":"add","unique":"Stat Adjustments","applicableStats":["Strength","Agility","Magic","Luck","Crafting","Intelligence","Intimidation","Charisma","Negotiation","Health","Mana"],"type":"stat_reduction","options":{"counts":[1,2],"values":[-0.25,-0.5]}}]}},"foot_notes":{"7":"Cannot be used on a stat that has already been increased or decreased.","8":"This can include health or magic, but it has to make sense in relation to the chosen animals.","10":"This value can go into the negatives.","11":"Your health and stats stay the same whatever your form, however, animals can only speak in their own languages and their attacks and armors’ depend on their species and your level, these can vary depending on the animal’s personality and experience and have no formal rules surrounding their values.","12":"This number is a hard cap which cannot be increased in any way.","13":"Conversely, your inner animals are partially conscious of what is happening while you are in human form.","14":"As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in.","15":"As per usual, this is decided via a {d1} throw.","16":"This includes Disfigurement but not Fractured mind.","17":"This skill cannot be used to cancel Disfigurement.","manual_passives":{"1":"Since the players are in control of both their human and animal parts, this race is very roleplay heavy, often forcing them to make wrong decisions or to compromise on their actions and is not recommended for those who want to play optimally.","2":"The number of animals in a character is decided by a throw of a {d1}, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1{d} to {d}1. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."}},"dices":{"0":{"max":6,"min":1},"1":{"min":1,"max":4},"2":{"min":1,"max":20},"3":{"min":1,"max":12}},"actives":{"Indulgence":{"level":10,"description":"You have started to understand your abilities better, and thus, can somewhat let your animalistic impulses loose, increasing your racial point loss from {0d0} per turn to {3d3} per turn. This skill can be turned on and off on demand and do not count as an action."},"Restraint":{"description":"You have started to understand your abilities better, and thus, can somewhat limit your animalistic impulses, reducing your racial point loss from {0d0} per turn to {1d1} per turn. This skill can be turned on and off on demand and do not count as an action.","level":10},"Shapeshift":{"values":[100,20,50],"foot_notes":[17],"description":"When your animals are getting closer to coming out themselves, you are able to let go of your human form on purpose, letting out a random<a>0</a> animal within you come out pre-emptively. This skill does not count as your action for the turn; however, you cannot act while transforming, which takes one turn. After the transformation is over, until your racial points reach {0}, you will regenerate {1} racial points per turn. To use this skill, your racial points must be under {2}.","level":25},"Disfigurement":{"level":50,"description":"Partially let out your animal form. This skill lets you completely turn certain parts of your body that you decide into their counterparts from a random<a>0</a> animal that inhabits you, the parts that will be turned must be chosen before the animal is decided on. Additional body parts like wings, tails or additional limbs appear only if you transformed the body parts they are meant to be connected to, so, for instance, to develop wings from a bird, you would need to have decided to transform your body. Your head cannot be swapped out while using this skill. Using this skill does not count as your action for the turn, however, you cannot act while transforming, which takes one turn. Parts that are transformed will act according to the animal’s will, however you can fully communicate with the animal that came out while this transformation is going on. Once you are done transforming, as long as this skill is active, you will lose {2d2} racial points per turn, and this skill will only end once you fully transform into an animal by activating Savagery or Shapeshift.","foot_notes":[17]},"Takeover":{"level":75,"foot_notes":[17],"values":[40,1],"description":"You have now mastered your transformation and can turn back into your human form at any time<a>0</a>. This skill requires your racial points to be above {0} to be used and turning back into a human makes you extremely dizzy for {1} turn and dizzy for another."}},"regularPassives":{"Savagery":{"level":1,"foot_notes":[10,11,12,13],"values":[1,20,100],"description":"Before the start of every turn you lose {0d0} racial points. If after a roll, the racial point’s value of a character is less than {0}<a>0</a>, you have to roll a {d1} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {1} racial points per turn, once you reach {2}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>."},"Fractured mind":{"foot_notes":[14,15],"level":1,"values":[10],"description":"Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one {d0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points."},"Domination":{"level":100,"description":"You have now mastered your transformation and can now decide into which animal you want to transform<a>0</a>.","foot_notes":[16]}}},"Dimensional":{"Stats":{"Other":{"Health":1.5,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":0.75,"Agility":0.75,"Magic":0.75,"Luck":1,"Crafting":1,"Intelligence":1,"Intimidation":1,"Charisma":1,"Negotiation":1}},"foot_notes":{"4":"Objects thrown into a portal that aren’t touching someone count as an individual entity that passed trough and take a charge of the portal.","5":"Only the side from which the portal was cast can be used as an entrance, however, until someone fully enters the portal, they can always come back out of it.","6":"This means that a dice for events such as enemy spawn has to be thrown for each person that walks through a portal.","7":"This can be a type of location (safe area, shore, next to a landmark), but if the location is a specific landmark is chosen, luck and intelligence will determine if you will even be able to land in the right tile, if you are unable to, you will instead be teleported to a random location within a random tile in the landmark's surroundings.","8":"You cannot close \"Nowhere\" while inside of it since you cannot think or act.","9":"One map tile is a square around <code>3 km</code> in length.","actives":{"1":"This spatial energy doesn’t allow them to know what something is made out of, but the same material will always have the same type of spatial energy, so with enough experience, they can base themselves off of this to know the material and purity of an item.","2":"If you want to understand how the portals work: dimensionals essentially take the special energy in their surroundings to create a line made of the compressed energy with an opening on both sides, walking into the opening dematerialises you, turning you into special energy and moves you at immeasurable speeds to the other side of the line. Portals are extremely reflective, with a blueish tint and fragile, and it is impossible to see trough it unless you fully enter it.","3":"All portals are three meters high and one meter wide and can break very easily if one of their sides is hit."}},"regularPassives":{"Spatial Reserve":{"level":1,"description":"As a dimensional, your body has the innate ability to store abnormal quantities of spatial energy. You can have up to [{0}+level*{1}] racial points stocked up.","values":[100,10]},"Spatial Capture":{"level":1,"values":[10],"description":"Dimensionals have the unusual ability to use the muscle like fibers that serves as their skin as a sort of net which lets spatial energy pass into their bodies, but not back out of them, giving them the ability to create a store of this energy. You regenerate [{0}+level] racial points at the start of every one of your turns."}},"actives":{"Anomaly":{"level":1,"description":"You focus your spatial energy into an efficient, yet simple line, allowing for single use, one-way<a>0</a> portal that lasts until the start of your next turn. This spell takes {0} turns to cast and costs {1} racial points per map tile of movement. This portal’s destination is defined by the direction and length of the line of spatial energy created, thus, specific locations are impossible to teleport to, and it teleports to a random place<a>1</a> within the desired tile. Walking into the portal does not count as your action for the turn","values":[2,20],"foot_notes":[6]},"Spatial Distortion":{"level":10,"description":"Having experience, you are now able to create a rope from multiple twisted lines of special energy. This creates a one-way portal that can be used by groups of people (up to {0}) after casting it for {1} turns, this portal costs {2} racial points per tile of movement to create, it lasts for {3} turns (closing at the start of your turn) and cannot be closed on demand. Even though this spatial link makes sure to transport everyone to the same area by twisting different lines of energy together, the exits aren’t stuck together, and so, everyone who walks through this portal will get transported to a different location<a>0</a> in the same tile.","values":[8,3,50,20],"foot_notes":[6]},"Depature":{"level":25,"description":"Construct a link between two places in the world at great speeds at the cost of efficiency, instantly creating a portal that can be used by one person at the cost of {0} racial points plus {1} racial points per tile of movement. Both sides of the portals can be used as entrances. Creating this portal doesn’t count as your action for the turn and it can be done multiple times per turn. Portals last until the start of your next turn. The destination of these portals is almost always safe.","values":[100,50]},"Exodus":{"level":50,"description":"With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.","values":[200],"foot_notes":[8]},"Nowhere":{"level":75,"description":"\"With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.","values":[200],"foot_notes":[8]},"Black hole":{"level":100,"description":"Forcefully distort the spatial energy around you, making every entity within your current tile<a>0</a> aware of each other’s presence and making distance completely irrelevant (within the limits of the current tile), turning any distance into melee range, as well as far enough away to use any attacks with a required range or to use attacks with an area of effect smaller than the entire tile safe to use for the next {0} turns. This costs {1} racial points to use and takes {2} turns to cast, if your focus breaks during this time, your racial points will still be consumed.","values":[3,1000,3],"foot_notes":[9]}}},"Dragonkin":{"Stats":{"Other":{"Health":0.75,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":0.75,"Agility":0.75,"Magic":0.75,"Luck":0.75,"Crafting":0.75,"Intelligence":0.75,"Intimidation":0.5,"Charisma":0.75,"Negotiation":0.75}},"regularPassives":{"Foul Blood":{"level":1,"description":"Because of your impure blood and weak body, most dragons will see you as an insult to their race and will want to kill you on sight no matter what."},"Genetic Impurity":{"level":1,"description":"Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a {0}/{0} chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a {1}/{2} chance of being human/dragonkin and if their partner is a dragon, their child will have a {2}/{1} chance of being dragonkin/dragon.","values":[50,25,75]},"Frail Body":{"level":1,"description":"Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<a>0</a>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.","foot_notes":[1]},"Dragon’s Metabolism":{"level":1,"description":"Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in {1} to {2} turns and so that you can recover any limbs in {3}-{4} turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body.","values":[0.1,3,5,10,20]},"Dragon’s Pride":{"level":1,"description":"A dragon’s pride seems to be hereditary, as it seems completely impossible to intimidate dragonkin. Any intimidation confrontation against a you will not work; however, you can still lose intimidation confrontations that you start."},"Proof of Strength":{"level":50,"description":"You have become strong enough to have your existence be acknowledged as legitimate by most dragons. This means that a majority of dragons will now at least tolerate your existence, while some might even accept to converse with you or teach you, though some will still try to end your life no matter what."}},"dices":{"0":{"min":1,"max":4},"1":{"min":1,"max":12}},"foot_notes":{"1":"Even one damage from poison is enough to cause your liver to fail.","2":"This skill nullifies every statistical multiplier that come from races, skills, and items with the only exceptions being that it cannot affect dragons and racial changes to health or mana","3":"Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption.","4":"Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath.","5":"Sk can be your strength, agility, or magic.","6":"The element is chosen by throwing one {d1} with numbers being associated with an element each, 1 for darkness, 2 for chaos, 3 for wind, 4 for ice, 5 for fire, 6 for earth, 7 for nature, 8 for thunder and 9 for light, 10/11/12 are rerolls.","7":"The resulting attack lingers for a bit before dissipating, so if you move in any direction except backwards while the skill is still in use, you will walk into the damage zone.","8":"The element stays the same for the three turns.","9":"The attack is launched at the start of the fourth turn if the first turn is when the skill is used."},"actives":{"Flight":{"level":1,"description":"Open up your wings and soar through the sky at blistering speeds. Allows you to move around the overworld at two tiles per turn while having no enemy spawn chance. This can be used while in combat to escape."},"Equalizer":{"level":10,"description":"You have started to become stronger, and thus, your body can finally withstand a dragon’s power. Temporarily call upon the power hidden withing your dragon’s blood, changing all your own racial statistical modifiers except for health and mana to {0}% and ignoring your Frail Body passive for a total of {1} turns. Activating this skill requires you to roar but does not count as an action. You lose {2}% of your health at the end of every turn this skill is active for.","values":[1,5,0.1]},"Restoration":{"level":25,"cooldown":{"turns":{"value":10}},"description":"Dragons always existed, and thus, the natural laws of this world that came to be after them hold no meaning to the proud race and their children. Remind the world of its former shape with a powerful roar, nullifying everyone’s statistical multipliers<a>0</a>, including those related to items or skills, around yourself for {0} turns. This roar, however, puts a great strain on your body, costing you {1}% of your maximum health.","values":[3,0.5],"foot_notes":[2]},"Dragon’s Gag":{"level":75,"values":[2,10,20],"foot_notes":[3,4,5,6,7,8],"description":"You have gained the strength required to be call upon powers comparable to young true dragons. Focus<a>0</a> and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out<a>1</a> a pseudo-dragon’s breath composed of pure magic, dealing <code>({0d0}/{0} * (S<a>2</a> * {1} + Level * {2}))</code> damage of a random element<a>3</a> in a wide area<a>4</a> in front of you for three turns in a row<a>5</a>."},"Retribution":{"level":100,"values":[3,25,2,20,50],"foot_notes":[3,9,5,6],"description":"All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<a>0</a> on converting your body and soul into mana for {0} turns<a>1</a>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{0d0}/{2} * (Sk * {3} + Level * {4})</code><a>2</a> damage of a random element<a>3</a> to <b>anything</b> in its path."}}},"Dwarf":{"Stats":{"Other":{"Health":1.2,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":1.5,"Agility":0.5,"Magic":1,"Luck":1,"Crafting":1.25,"Intelligence":0.75,"Intimidation":1,"Charisma":1,"Negotiation":1}},"regularPassives":{"Alcoholic Desensitization":{"level":10,"values":[0.25,0.5],"description":"Your body has grown strong enough to counteract the downsides of being drunk, allowing you to only lose {0}% intelligence and accuracy when drunk instead of the usually {1}% while also severely reducing the effects of hangover."},"Drunken Brawler":{"level":1,"values":[0.5,2,0.25],"foot_notes":[1],"description":"Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by {0}%), your statistical modifier for <code>STR</code> becomes {1}% and you gain {2}% damage resistance<a>0</a>."},"The Vault":{"level":50,"description":"Your body somehow developed an organ which seems to serve no purpose other than to store alcohol which had been ingested beforehand. This organ can be added to your inventory and store a volume equivalent to {0} bottles of alcohol. Alcohol inside this organ remains as what it was before being ingested and can be consumed at any time without counting as your action for the turn a turn<a>0</a>.","values":[5],"foot_notes":[2]}},"actives":{"Weaning Rage":{"level":25,"cooldown":{"turns":{"value":50,"shared":["Wasted Rage"]}},"conditions":"Having not touched a single drop of alcohol for at least the past {0} turns","description":"Having not touched alcohol in so long, your mind breaks, throwing you into a rage that lasts for the next {1} turns. While in this state of rage, you become uncontrollable and your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.","values":[50,5,2.5,-0.75]},"Wasted Rage":{"level":25,"cooldown":{"turns":{"value":50,"shared":["Weaning Rage"]}},"conditions":"Having been drunk for at least the past {0} turns","description":"Having been drunk for so long, your brain just gives up on you, forcing you into an uncontrollable rage for {1} turns. While in this state of rage, your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for <code>STR</code> will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.","values":[50,5,2.5,-0.75]},"Inebriated Dragon’s Breath":{"level":75,"description":"“The Vault” somehow developed the capacity to evaporate alcohol, letting you to spit out large amounts of alcoholic gas. This allows you to create a drunkenness-inducing mist around you or wherever you breath with a strength that varies on the environment<a>0</a> it was used in and the strength of the alcohol that was evaporated. Depending on the conditions, this skill can do nothing, turn everyone around you drunk, or even kill some people from alcohol intoxication.","foot_notes":[3]},"Prayer to Bacchus":{"level":100,"description":"Trough an unknown process, you can now turn your kidneys into a fully functional distilleries! This allows you to become drunk on demand, for however long you want, however, the duration has to be at least {0} turns. Activating and disabling this skill doesn’t count as your action for the turn.","values":10}},"foot_notes":{"1":"Which is calculated after armors.","2":"You can consume any amount of alcohol stored in “The Vault” instantly.","3":"For instance, skill has a stronger effect while in confined rooms and a weaker effect while outside if there’s wind."}},"Elf":{"Stats":{"Other":{"Health":0.8,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":0.75,"Agility":1.25,"Magic":1,"Luck":1,"Crafting":1,"Intelligence":1,"Intimidation":1,"Charisma":1,"Negotiation":1}}},"Gnome":{"Stats":{"Other":{"Health":0.8,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":0.5,"Agility":0.75,"Magic":1,"Luck":1,"Crafting":1.5,"Intelligence":2,"Intimidation":1,"Charisma":1,"Negotiation":1}}},"Human":{"Stats":{"Other":{"Health":1,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":1,"Agility":1,"Magic":1,"Luck":1,"Crafting":1,"Intelligence":1,"Intimidation":1,"Charisma":1,"Negotiation":1}}},"Mutant":{"Stats":{"Other":{"Health":0.75,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":1,"Agility":1,"Magic":1,"Luck":1,"Crafting":1,"Intelligence":1,"Intimidation":1,"Charisma":1,"Negotiation":1}}},"Noki":{"Stats":{"Other":{"Health":0.9,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":0.75,"Agility":0.75,"Magic":0.75,"Luck":2,"Crafting":0.75,"Intelligence":0.75,"Intimidation":0.75,"Charisma":0.75,"Negotiation":0.75}}},"Succubus":{"Stats":{"Other":{"Health":0.75,"BaseHealth":1,"Mana":1,"BaseMana":1,"RacialPower":1,"BaseRacialPower":1,"naturalHealthRegen":1,"naturalManaRegen":1,"naturalRacialPowerRegen":1},"Roll":{"Strength":0.75,"Agility":0.75,"Magic":0.75,"Luck":1,"Crafting":1,"Intelligence":1,"Intimidation":1,"Charisma":1.5,"Negotiation":1.25}}}},"Stats":["Health","Strength","Agility","Magic","Luck","Crafting","Intelligence","Intimidation","Charisma","Negotiation","BaseHealth","Mana","BaseMana","RacialPower","BaseRacialPower","naturalHealthRegen","naturalManaRegen","naturalRacialPowerRegen"],"Roll":["Strength","Agility","Magic","Luck","Crafting","Intelligence","Intimidation","Charisma","Negotiation"],"Other":["Health","BaseHealth","Mana","BaseMana","RacialPower","BaseRacialPower","naturalHealthRegen","naturalManaRegen","naturalRacialPowerRegen"],"Classes":{"Archer":{"Specs":[],"regularPassives":{"values":[1],"Take aim":{"level":1,"description":"Years of experience playing darts at local bars is finally paying off. You have {0}% base accuracy when using any thrown item."}}},"Assassin":{"Specs":[]},"Bard":{"Specs":[]},"Berserker":{"Specs":[]},"Brawler":{"Specs":[]},"Knight":{"Specs":["Dark","Order"]},"Mage":{"Specs":["Chaos","Dark","Thunder"]},"Martial artist":{"Specs":["Apprentice","Warrior","Master","Grand Master","Lord","King"]},"Oracle":{"Specs":[]},"Paladin":{"Specs":[]},"Priest":{"Specs":[]},"Wanderer":{"Specs":[]}}}
+{
+  "Races": {
+    "Architect": {
+      "Stats": {
+        "Other": {
+          "Health": 0.7,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.5,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1.25,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
+      "actives": {
+        "Rough Reshaping": {
+          "level": 1,
+          "foot_notes": [
+            1,
+            2,
+            3
+          ],
+          "description": "This ability allows you to loosely reshape simple inorganic matter from items you touch<a>0</a> at will, this, however, cannot be used on items made out of more than 1 material, out of materials you don’t know, or items made from multiple parts<a>1</a>. This skill requires you to expend a quantity of racial points proportional to the size of the manipulated item, it’s material’s strength and elasticity, and it’s geometric complexity. This skill’s cost also increases as you get stronger and the shapes you create naturally become sturdier and more precise. You also need to manipulate and examine the item you want to deform<a>2</a> for one turn before starting to change it."
+        },
+        "Controlled Reshaping": {
+          "foot_notes": [
+            4,
+            5
+          ],
+          "level": 25,
+          "description": "You can now deform, and form items made from more than one part, more than one material<a>0</a>, or that use a combination of different simple shapes<a>1</a> at the expanse of more racial points."
+        },
+        "Reshaping Finesse": {
+          "description": "You can now also deform, and form items with high levels of precision<a>0</a>, allowing you to manipulate items made from large amounts of different materials, parts, or even complex shapes<a>1</a>, however, this costs tremendous amounts of racial points",
+          "level": 50,
+          "foot_notes": [
+            6,
+            7
+          ]
+        },
+        "Gift of Creation": {
+          "description": "You can now reshape living beings as long as you have the necessary knowledge of the target’s body shape and materials. This can be used to repair organs and bones, close wounds, heal people, or to even damage them. However, this costs non-negligeable amounts of racial energy.",
+          "level": 100
+        }
+      },
+      "foot_notes": {
+        "1": "An item here is any singular “grouping” of an item type, if you put your hand in a box of nails, you can manipulate all the nails since they are all the same and in contact with each other, the same rule would apply to gold coins in a bag or logs roped together.",
+        "2": "Both the original item and the final product have to meet all the criteria.",
+        "3": "This doesn’t apply to simple things like dirt, simple wooden walls (as long as they are made of logs and nothing else), and so on.",
+        "4": "The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it.",
+        "5": "A basic gear or bicycle wheel with a frame would be possible for instance, while a sword with a guard, a complete shield or a crossbow would be impossible.",
+        "6": "This includes things such as recreating a weapon you know from it’s scraps, creating entire buildings out of iron (nails) and wood, and making crossbows.",
+        "7": "The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it."
+      },
+      "regularPassives": {
+        "Clay Skin": {
+          "level": 1,
+          "formulas": [
+            {
+              "appliesTo": "initial-value",
+              "types": [
+                "*"
+              ],
+              "values": [
+                20
+              ],
+              "type": "+",
+              "stats": [
+                "level"
+              ],
+              "statsAffected": [
+                "RacialPower"
+              ]
+            }
+          ],
+          "upgrades": {
+            "Crystal Skin": {
+              "formulas": [
+                {
+                  "values": 40
+                }
+              ],
+              "level": 100
+            },
+            "Rocky Skin": {
+              "level": 50,
+              "formulas": [
+                {
+                  "values": 30
+                }
+              ]
+            }
+          },
+          "description": "You store up energy that you absorb from the air around you in a clay-like skin layer. This layer of skin counts as both your racial point pool and as a supplementary health bar which gets used up before your real health bar. You have {0} racial points per level."
+        },
+        "Magic Stabilisation": {
+          "description": "You can now reshape magic or enchanted items while keeping the magic part of the item intact after your reshaping of the item depending on your luck and the quality of the enchantment.",
+          "level": 75
+        },
+        "Absorption": {
+          "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%.",
+          "level": 1,
+          "values": [
+            "0.05",
+            "0.04"
+          ]
+        }
+      }
+    },
+    "Demi-humans": {
+      "Stats": {
+        "Other": {
+          "Health": 1,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1,
+          "Agility": 1,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
+      "manualPassives": {
+        "Stat Adjustments": {
+          "foot_notes": [
+            7,
+            8
+          ],
+          "description": "Demi-humans can choose to apply stat<a>0</a> <a>1</a> modifiers to their character.",
+          "options": [
+            {
+              "type": "stat_increase",
+              "label": "+{0}% to any stat<a>0</a> <a>1</a>",
+              "applicableStats": [
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
+                "Health",
+                "Mana"
+              ],
+              "options": {
+                "counts": [
+                  1,
+                  2
+                ],
+                "values": [
+                  0.25,
+                  0.5
+                ],
+                "unique": "Stat Adjustments"
+              },
+              "calc": "add"
+            },
+            {
+              "label": "-{0}% to any stat<a>0</a> <a>1</a>",
+              "calc": "add",
+              "unique": "Stat Adjustments",
+              "applicableStats": [
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
+                "Health",
+                "Mana"
+              ],
+              "type": "stat_reduction",
+              "options": {
+                "counts": [
+                  1,
+                  2
+                ],
+                "values": [
+                  -0.25,
+                  -0.5
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "foot_notes": {
+        "7": "Cannot be used on a stat that has already been increased or decreased.",
+        "8": "This can include health or magic, but it has to make sense in relation to the chosen animals.",
+        "10": "This value can go into the negatives.",
+        "11": "Your health and stats stay the same whatever your form, however, animals can only speak in their own languages and their attacks and armors’ depend on their species and your level, these can vary depending on the animal’s personality and experience and have no formal rules surrounding their values.",
+        "12": "This number is a hard cap which cannot be increased in any way.",
+        "13": "Conversely, your inner animals are partially conscious of what is happening while you are in human form.",
+        "14": "As previously noted, animals are only partially conscious of their surroundings while you are in human form, and thus, will not know the full circumstances they are in even if they are intelligent enough to do so, they will only know the general situation you are currently in.",
+        "15": "As per usual, this is decided via a {d1} throw.",
+        "16": "This includes Disfigurement but not Fractured mind.",
+        "17": "This skill cannot be used to cancel Disfigurement.",
+        "manual_passives": {
+          "1": "Since the players are in control of both their human and animal parts, this race is very roleplay heavy, often forcing them to make wrong decisions or to compromise on their actions and is not recommended for those who want to play optimally.",
+          "2": "The number of animals in a character is decided by a throw of a {d1}, the specific animals and their personality are chosen by the player, but their gender will always be the same as yours unless you pick animals which have different or varying genders like Oysters. These animals have to be given a clear order from 1{d} to {d}1. The same animal can be chosen multiple times; however, they will still be individually different (relations, personality)."
+        }
+      },
+      "dices": {
+        "0": {
+          "max": 6,
+          "min": 1
+        },
+        "1": {
+          "min": 1,
+          "max": 4
+        },
+        "2": {
+          "min": 1,
+          "max": 20
+        },
+        "3": {
+          "min": 1,
+          "max": 12
+        }
+      },
+      "actives": {
+        "Indulgence": {
+          "level": 10,
+          "description": "You have started to understand your abilities better, and thus, can somewhat let your animalistic impulses loose, increasing your racial point loss from {0d0} per turn to {3d3} per turn. This skill can be turned on and off on demand and do not count as an action."
+        },
+        "Restraint": {
+          "description": "You have started to understand your abilities better, and thus, can somewhat limit your animalistic impulses, reducing your racial point loss from {0d0} per turn to {1d1} per turn. This skill can be turned on and off on demand and do not count as an action.",
+          "level": 10
+        },
+        "Shapeshift": {
+          "values": [
+            100,
+            20,
+            50
+          ],
+          "foot_notes": [
+            17
+          ],
+          "description": "When your animals are getting closer to coming out themselves, you are able to let go of your human form on purpose, letting out a random<a>0</a> animal within you come out pre-emptively. This skill does not count as your action for the turn; however, you cannot act while transforming, which takes one turn. After the transformation is over, until your racial points reach {0}, you will regenerate {1} racial points per turn. To use this skill, your racial points must be under {2}.",
+          "level": 25
+        },
+        "Disfigurement": {
+          "level": 50,
+          "description": "Partially let out your animal form. This skill lets you completely turn certain parts of your body that you decide into their counterparts from a random<a>0</a> animal that inhabits you, the parts that will be turned must be chosen before the animal is decided on. Additional body parts like wings, tails or additional limbs appear only if you transformed the body parts they are meant to be connected to, so, for instance, to develop wings from a bird, you would need to have decided to transform your body. Your head cannot be swapped out while using this skill. Using this skill does not count as your action for the turn, however, you cannot act while transforming, which takes one turn. Parts that are transformed will act according to the animal’s will, however you can fully communicate with the animal that came out while this transformation is going on. Once you are done transforming, as long as this skill is active, you will lose {2d2} racial points per turn, and this skill will only end once you fully transform into an animal by activating Savagery or Shapeshift.",
+          "foot_notes": [
+            17
+          ]
+        },
+        "Takeover": {
+          "level": 75,
+          "foot_notes": [
+            17
+          ],
+          "values": [
+            40,
+            1
+          ],
+          "description": "You have now mastered your transformation and can turn back into your human form at any time<a>0</a>. This skill requires your racial points to be above {0} to be used and turning back into a human makes you extremely dizzy for {1} turn and dizzy for another."
+        }
+      },
+      "regularPassives": {
+        "Savagery": {
+          "level": 1,
+          "foot_notes": [
+            10,
+            11,
+            12,
+            13
+          ],
+          "values": [
+            1,
+            20,
+            100
+          ],
+          "description": "Before the start of every turn you lose {0d0} racial points. If after a roll, the racial point’s value of a character is less than {0}<a>0</a>, you have to roll a {d1} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {1} racial points per turn, once you reach {2}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>."
+        },
+        "Fractured mind": {
+          "foot_notes": [
+            14,
+            15
+          ],
+          "level": 1,
+          "values": [
+            10
+          ],
+          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one {d0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points."
+        },
+        "Domination": {
+          "level": 100,
+          "description": "You have now mastered your transformation and can now decide into which animal you want to transform<a>0</a>.",
+          "foot_notes": [
+            16
+          ]
+        }
+      }
+    },
+    "Dimensional": {
+      "Stats": {
+        "Other": {
+          "Health": 1.5,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
+      "foot_notes": {
+        "4": "Objects thrown into a portal that aren’t touching someone count as an individual entity that passed trough and take a charge of the portal.",
+        "5": "Only the side from which the portal was cast can be used as an entrance, however, until someone fully enters the portal, they can always come back out of it.",
+        "6": "This means that a dice for events such as enemy spawn has to be thrown for each person that walks through a portal.",
+        "7": "This can be a type of location (safe area, shore, next to a landmark), but if the location is a specific landmark is chosen, luck and intelligence will determine if you will even be able to land in the right tile, if you are unable to, you will instead be teleported to a random location within a random tile in the landmark's surroundings.",
+        "8": "You cannot close \"Nowhere\" while inside of it since you cannot think or act.",
+        "9": "One map tile is a square around <code>3 km</code> in length.",
+        "actives": {
+          "1": "This spatial energy doesn’t allow them to know what something is made out of, but the same material will always have the same type of spatial energy, so with enough experience, they can base themselves off of this to know the material and purity of an item.",
+          "2": "If you want to understand how the portals work: dimensionals essentially take the special energy in their surroundings to create a line made of the compressed energy with an opening on both sides, walking into the opening dematerialises you, turning you into special energy and moves you at immeasurable speeds to the other side of the line. Portals are extremely reflective, with a blueish tint and fragile, and it is impossible to see trough it unless you fully enter it.",
+          "3": "All portals are three meters high and one meter wide and can break very easily if one of their sides is hit."
+        }
+      },
+      "regularPassives": {
+        "Spatial Reserve": {
+          "level": 1,
+          "description": "As a dimensional, your body has the innate ability to store abnormal quantities of spatial energy. You can have up to [{0}+level*{1}] racial points stocked up.",
+          "values": [
+            100,
+            10
+          ]
+        },
+        "Spatial Capture": {
+          "level": 1,
+          "values": [
+            10
+          ],
+          "description": "Dimensionals have the unusual ability to use the muscle like fibers that serves as their skin as a sort of net which lets spatial energy pass into their bodies, but not back out of them, giving them the ability to create a store of this energy. You regenerate [{0}+level] racial points at the start of every one of your turns."
+        }
+      },
+      "actives": {
+        "Anomaly": {
+          "level": 1,
+          "description": "You focus your spatial energy into an efficient, yet simple line, allowing for single use, one-way<a>0</a> portal that lasts until the start of your next turn. This spell takes {0} turns to cast and costs {1} racial points per map tile of movement. This portal’s destination is defined by the direction and length of the line of spatial energy created, thus, specific locations are impossible to teleport to, and it teleports to a random place<a>1</a> within the desired tile. Walking into the portal does not count as your action for the turn",
+          "values": [
+            2,
+            20
+          ],
+          "foot_notes": [
+            6
+          ]
+        },
+        "Spatial Distortion": {
+          "level": 10,
+          "description": "Having experience, you are now able to create a rope from multiple twisted lines of special energy. This creates a one-way portal that can be used by groups of people (up to {0}) after casting it for {1} turns, this portal costs {2} racial points per tile of movement to create, it lasts for {3} turns (closing at the start of your turn) and cannot be closed on demand. Even though this spatial link makes sure to transport everyone to the same area by twisting different lines of energy together, the exits aren’t stuck together, and so, everyone who walks through this portal will get transported to a different location<a>0</a> in the same tile.",
+          "values": [
+            8,
+            3,
+            50,
+            20
+          ],
+          "foot_notes": [
+            6
+          ]
+        },
+        "Depature": {
+          "level": 25,
+          "description": "Construct a link between two places in the world at great speeds at the cost of efficiency, instantly creating a portal that can be used by one person at the cost of {0} racial points plus {1} racial points per tile of movement. Both sides of the portals can be used as entrances. Creating this portal doesn’t count as your action for the turn and it can be done multiple times per turn. Portals last until the start of your next turn. The destination of these portals is almost always safe.",
+          "values": [
+            100,
+            50
+          ]
+        },
+        "Exodus": {
+          "level": 50,
+          "description": "With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
+          "values": [
+            200
+          ],
+          "foot_notes": [
+            8
+          ]
+        },
+        "Nowhere": {
+          "level": 75,
+          "description": "\"With your greater control of spatial energy, you are able to create an entrance that leads to a path that ends at its entrance, allowing you to create single-use portals that simply dematerialises whoever enters them until they break down. Anyone inside this loop cannot take damage, heal, think, or be affected by anything. These portals can be created instantly without counting as an action, lasting until you close them<a>0</a> or until you run out of racial energy, these portal can even be created outside of your own turn to absorb yourself into “Nowhere”. Creating “Nowhere” costs {0} racial points at the start of every turn it stays open.",
+          "values": [
+            200
+          ],
+          "foot_notes": [
+            8
+          ]
+        },
+        "Black hole": {
+          "level": 100,
+          "description": "Forcefully distort the spatial energy around you, making every entity within your current tile<a>0</a> aware of each other’s presence and making distance completely irrelevant (within the limits of the current tile), turning any distance into melee range, as well as far enough away to use any attacks with a required range or to use attacks with an area of effect smaller than the entire tile safe to use for the next {0} turns. This costs {1} racial points to use and takes {2} turns to cast, if your focus breaks during this time, your racial points will still be consumed.",
+          "values": [
+            3,
+            1000,
+            3
+          ],
+          "foot_notes": [
+            9
+          ]
+        }
+      }
+    },
+    "Dragonkin": {
+      "Stats": {
+        "Other": {
+          "Health": 0.75,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 0.75,
+          "Crafting": 0.75,
+          "Intelligence": 0.75,
+          "Intimidation": 0.5,
+          "Charisma": 0.75,
+          "Negotiation": 0.75
+        }
+      },
+      "regularPassives": {
+        "Foul Blood": {
+          "level": 1,
+          "description": "Because of your impure blood and weak body, most dragons will see you as an insult to their race and will want to kill you on sight no matter what."
+        },
+        "Genetic Impurity": {
+          "level": 1,
+          "description": "Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a {0}/{0} chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a {1}/{2} chance of being human/dragonkin and if their partner is a dragon, their child will have a {2}/{1} chance of being dragonkin/dragon.",
+          "values": [
+            50,
+            25,
+            75
+          ]
+        },
+        "Frail Body": {
+          "level": 1,
+          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<a>0</a>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.",
+          "foot_notes": [
+            1
+          ]
+        },
+        "Dragon’s Metabolism": {
+          "level": 1,
+          "description": "Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in {1} to {2} turns and so that you can recover any limbs in {3}-{4} turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body.",
+          "values": [
+            0.1,
+            3,
+            5,
+            10,
+            20
+          ]
+        },
+        "Dragon’s Pride": {
+          "level": 1,
+          "description": "A dragon’s pride seems to be hereditary, as it seems completely impossible to intimidate dragonkin. Any intimidation confrontation against a you will not work; however, you can still lose intimidation confrontations that you start."
+        },
+        "Proof of Strength": {
+          "level": 50,
+          "description": "You have become strong enough to have your existence be acknowledged as legitimate by most dragons. This means that a majority of dragons will now at least tolerate your existence, while some might even accept to converse with you or teach you, though some will still try to end your life no matter what."
+        }
+      },
+      "dices": {
+        "0": {
+          "min": 1,
+          "max": 4
+        },
+        "1": {
+          "min": 1,
+          "max": 12
+        }
+      },
+      "foot_notes": {
+        "1": "Even one damage from poison is enough to cause your liver to fail.",
+        "2": "This skill nullifies every statistical multiplier that come from races, skills, and items with the only exceptions being that it cannot affect dragons and racial changes to health or mana",
+        "3": "Getting hit by anything, even if no damage is taken, cancels this skill’s use, but not it’s health consumption.",
+        "4": "Closing your mouth will stop you from breathing it out but will cause you to take the skill’s full damage directly from your insides. This also makes it so you cannot speak and can barely even breath.",
+        "5": "Sk can be your strength, agility, or magic.",
+        "6": "The element is chosen by throwing one {d1} with numbers being associated with an element each, 1 for darkness, 2 for chaos, 3 for wind, 4 for ice, 5 for fire, 6 for earth, 7 for nature, 8 for thunder and 9 for light, 10/11/12 are rerolls.",
+        "7": "The resulting attack lingers for a bit before dissipating, so if you move in any direction except backwards while the skill is still in use, you will walk into the damage zone.",
+        "8": "The element stays the same for the three turns.",
+        "9": "The attack is launched at the start of the fourth turn if the first turn is when the skill is used."
+      },
+      "actives": {
+        "Flight": {
+          "level": 1,
+          "description": "Open up your wings and soar through the sky at blistering speeds. Allows you to move around the overworld at two tiles per turn while having no enemy spawn chance. This can be used while in combat to escape."
+        },
+        "Equalizer": {
+          "level": 10,
+          "description": "You have started to become stronger, and thus, your body can finally withstand a dragon’s power. Temporarily call upon the power hidden withing your dragon’s blood, changing all your own racial statistical modifiers except for health and mana to {0}% and ignoring your Frail Body passive for a total of {1} turns. Activating this skill requires you to roar but does not count as an action. You lose {2}% of your health at the end of every turn this skill is active for.",
+          "values": [
+            1,
+            5,
+            0.1
+          ]
+        },
+        "Restoration": {
+          "level": 25,
+          "cooldown": {
+            "turns": {
+              "value": 10
+            }
+          },
+          "description": "Dragons always existed, and thus, the natural laws of this world that came to be after them hold no meaning to the proud race and their children. Remind the world of its former shape with a powerful roar, nullifying everyone’s statistical multipliers<a>0</a>, including those related to items or skills, around yourself for {0} turns. This roar, however, puts a great strain on your body, costing you {1}% of your maximum health.",
+          "values": [
+            3,
+            0.5
+          ],
+          "foot_notes": [
+            2
+          ]
+        },
+        "Dragon’s Gag": {
+          "level": 75,
+          "values": [
+            2,
+            10,
+            20
+          ],
+          "foot_notes": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "description": "You have gained the strength required to be call upon powers comparable to young true dragons. Focus<a>0</a> and absorb all the mana in your surroundings for two turns before releasing power strong enough to shake the world itself with every breath you take. This skill causes you to uncontrollably spit out<a>1</a> a pseudo-dragon’s breath composed of pure magic, dealing <code>({0d0}/{0} * (S<a>2</a> * {1} + Level * {2}))</code> damage of a random element<a>3</a> in a wide area<a>4</a> in front of you for three turns in a row<a>5</a>."
+        },
+        "Retribution": {
+          "level": 100,
+          "values": [
+            3,
+            25,
+            2,
+            20,
+            50
+          ],
+          "foot_notes": [
+            3,
+            9,
+            5,
+            6
+          ],
+          "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<a>0</a> on converting your body and soul into mana for {0} turns<a>1</a>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{0d0}/{2} * (Sk * {3} + Level * {4})</code><a>2</a> damage of a random element<a>3</a> to <b>anything</b> in its path."
+        }
+      }
+    },
+    "Dwarf": {
+      "Stats": {
+        "Other": {
+          "Health": 1.2,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1.5,
+          "Agility": 0.5,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1.25,
+          "Intelligence": 0.75,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
+      "regularPassives": {
+        "Alcoholic Desensitization": {
+          "level": 10,
+          "values": [
+            0.25,
+            0.5
+          ],
+          "description": "Your body has grown strong enough to counteract the downsides of being drunk, allowing you to only lose {0}% intelligence and accuracy when drunk instead of the usually {1}% while also severely reducing the effects of hangover."
+        },
+        "Drunken Brawler": {
+          "level": 1,
+          "values": [
+            0.5,
+            2,
+            0.25
+          ],
+          "foot_notes": [
+            1
+          ],
+          "description": "Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by {0}%), your statistical modifier for <code>STR</code> becomes {1}% and you gain {2}% damage resistance<a>0</a>."
+        },
+        "The Vault": {
+          "level": 50,
+          "description": "Your body somehow developed an organ which seems to serve no purpose other than to store alcohol which had been ingested beforehand. This organ can be added to your inventory and store a volume equivalent to {0} bottles of alcohol. Alcohol inside this organ remains as what it was before being ingested and can be consumed at any time without counting as your action for the turn a turn<a>0</a>.",
+          "values": [
+            5
+          ],
+          "foot_notes": [
+            2
+          ]
+        }
+      },
+      "actives": {
+        "Weaning Rage": {
+          "level": 25,
+          "cooldown": {
+            "turns": {
+              "value": 50,
+              "shared": [
+                "Wasted Rage"
+              ]
+            }
+          },
+          "conditions": "Having not touched a single drop of alcohol for at least the past {0} turns",
+          "description": "Having not touched alcohol in so long, your mind breaks, throwing you into a rage that lasts for the next {1} turns. While in this state of rage, you become uncontrollable and your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.",
+          "values": [
+            50,
+            5,
+            2.5,
+            -0.75
+          ]
+        },
+        "Wasted Rage": {
+          "level": 25,
+          "cooldown": {
+            "turns": {
+              "value": 50,
+              "shared": [
+                "Weaning Rage"
+              ]
+            }
+          },
+          "conditions": "Having been drunk for at least the past {0} turns",
+          "description": "Having been drunk for so long, your brain just gives up on you, forcing you into an uncontrollable rage for {1} turns. While in this state of rage, your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for <code>STR</code> will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.",
+          "values": [
+            50,
+            5,
+            2.5,
+            -0.75
+          ]
+        },
+        "Inebriated Dragon’s Breath": {
+          "level": 75,
+          "description": "“The Vault” somehow developed the capacity to evaporate alcohol, letting you to spit out large amounts of alcoholic gas. This allows you to create a drunkenness-inducing mist around you or wherever you breath with a strength that varies on the environment<a>0</a> it was used in and the strength of the alcohol that was evaporated. Depending on the conditions, this skill can do nothing, turn everyone around you drunk, or even kill some people from alcohol intoxication.",
+          "foot_notes": [
+            3
+          ]
+        },
+        "Prayer to Bacchus": {
+          "level": 100,
+          "description": "Trough an unknown process, you can now turn your kidneys into a fully functional distilleries! This allows you to become drunk on demand, for however long you want, however, the duration has to be at least {0} turns. Activating and disabling this skill doesn’t count as your action for the turn.",
+          "values": 10
+        }
+      },
+      "foot_notes": {
+        "1": "Which is calculated after armors.",
+        "2": "You can consume any amount of alcohol stored in “The Vault” instantly.",
+        "3": "For instance, skill has a stronger effect while in confined rooms and a weaker effect while outside if there’s wind."
+      }
+    },
+    "Elf": {
+      "Stats": {
+        "Other": {
+          "Health": 0.8,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 1.25,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      }
+    },
+    "Gnome": {
+      "Stats": {
+        "Other": {
+          "Health": 0.8,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.5,
+          "Agility": 0.75,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1.5,
+          "Intelligence": 2,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      }
+    },
+    "Human": {
+      "Stats": {
+        "Other": {
+          "Health": 1,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1,
+          "Agility": 1,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      }
+    },
+    "Mutant": {
+      "Stats": {
+        "Other": {
+          "Health": 0.75,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1,
+          "Agility": 1,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      }
+    },
+    "Noki": {
+      "Stats": {
+        "Other": {
+          "Health": 0.9,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 2,
+          "Crafting": 0.75,
+          "Intelligence": 0.75,
+          "Intimidation": 0.75,
+          "Charisma": 0.75,
+          "Negotiation": 0.75
+        }
+      }
+    },
+    "Succubus": {
+      "Stats": {
+        "Other": {
+          "Health": 0.75,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1.5,
+          "Negotiation": 1.25
+        }
+      }
+    }
+  },
+  "Stats": [
+    "Health",
+    "Strength",
+    "Agility",
+    "Magic",
+    "Luck",
+    "Crafting",
+    "Intelligence",
+    "Intimidation",
+    "Charisma",
+    "Negotiation",
+    "BaseHealth",
+    "Mana",
+    "BaseMana",
+    "RacialPower",
+    "BaseRacialPower",
+    "naturalHealthRegen",
+    "naturalManaRegen",
+    "naturalRacialPowerRegen"
+  ],
+  "Roll": [
+    "Strength",
+    "Agility",
+    "Magic",
+    "Luck",
+    "Crafting",
+    "Intelligence",
+    "Intimidation",
+    "Charisma",
+    "Negotiation"
+  ],
+  "Other": [
+    "Health",
+    "BaseHealth",
+    "Mana",
+    "BaseMana",
+    "RacialPower",
+    "BaseRacialPower",
+    "naturalHealthRegen",
+    "naturalManaRegen",
+    "naturalRacialPowerRegen"
+  ],
+  "Classes": {
+    "Archer": {
+      "Specs": [],
+      "regularPassives": {
+        "values": [
+          1
+        ],
+        "Take aim": {
+          "level": 1,
+          "description": "Years of experience playing darts at local bars is finally paying off. You have {0}% base accuracy when using any thrown item."
+        }
+      }
+    },
+    "Assassin": {
+      "Specs": []
+    },
+    "Bard": {
+      "Specs": []
+    },
+    "Berserker": {
+      "Specs": []
+    },
+    "Brawler": {
+      "Specs": []
+    },
+    "Knight": {
+      "Specs": [
+        "Dark",
+        "Order"
+      ]
+    },
+    "Mage": {
+      "Specs": [
+        "Chaos",
+        "Dark",
+        "Thunder"
+      ]
+    },
+    "Martial artist": {
+      "Specs": [
+        "Apprentice",
+        "Warrior",
+        "Master",
+        "Grand Master",
+        "Lord",
+        "King"
+      ]
+    },
+    "Oracle": {
+      "Specs": []
+    },
+    "Paladin": {
+      "Specs": []
+    },
+    "Priest": {
+      "Specs": []
+    },
+    "Wanderer": {
+      "Specs": []
+    }
+  }
+}
