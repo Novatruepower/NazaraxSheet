@@ -15,7 +15,7 @@ const db = admin.firestore();
 
 function refreshData(data, fileName) {
   const filePath = path.join(__dirname, '..', fileName + '.json');
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  fs.writeFileSync(filePath, JSON.stringify(data, null));
 }
 
 async function getAll(collectionId) {
