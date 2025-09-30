@@ -291,7 +291,8 @@
       "regularPassives": {
         "Drunken Brawler": {
           "level": 1,
-          "description": "Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by 50%), your statistical modifier for STR becomes 100% and you gain 25% damage resistance<a>0</a>.",
+          "description": "Dwarves, even if perfectly functional in a perpetual state of debauchery, are still known to be quite the fighters once they truly get drunk. When drunk (which reduces accuracy and intelligence by {0}%), your statistical modifier for STR becomes {1}% and you gain {2}% damage resistance<a>0</a>.",
+          "values": [0.5, 2, 0.25],
           "foot_notes" : [1]
         },
         "Alcoholic Desensitization": {
@@ -310,14 +311,14 @@
           "cooldown": {"turns": {"value": 50, "shared": ["Wasted Rage"]} },
           "conditions": "Having not touched a single drop of alcohol for at least the past {0} turns",
           "description": "Having not touched alcohol in so long, your mind breaks, throwing you into a rage that lasts for the next {1} turns. While in this state of rage, you become uncontrollable and your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.",
-          "values": [50, 5, 1.5, -0.75]
+          "values": [50, 5, 2.5, -0.75]
         },
         "Wasted Rage": {
           "level": 25,
           "cooldown": {"turns": {"value": 50, "shared": ["Weaning Rage"]} },
           "conditions": "Having been drunk for at least the past {0} turns",
           "description": "Having been drunk for so long, your brain just gives up on you, forcing you into an uncontrollable rage for {1} turns. While in this state of rage, your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for STR will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.",
-          "values": [50, 5, 1.5, -0.75]
+          "values": [50, 5, 2.5, -0.75]
         },
         "Inebriated Dragon’s Breath": {
           "level": 75,

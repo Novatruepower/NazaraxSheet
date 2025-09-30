@@ -3813,7 +3813,7 @@ function endTurn() {
         character.Mana.value += naturalManaRegen;
 
         if (character.uniqueIdentifiers['Dragon’s Metabolism'] && !character.states['Active Racial Skill']) {
-            character.Health.value += character.uniqueIdentifiers['Dragon’s Metabolism'].values * character.maxHealth;
+            character.Health.value += character.uniqueIdentifiers['Dragon’s Metabolism'].values[0] * character.maxHealth;
         }
 
         const maxRacialPower = document.getElementById('maxRacialPower').value;
