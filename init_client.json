@@ -675,7 +675,43 @@
             2.5,
             -0.75
           ]
+        },
+        "Wasted Rage": {
+          "level": 25,
+          "cooldown": {
+            "turns": {
+              "value": 50,
+              "shared": [
+                "Weaning Rage"
+              ]
+            }
+          },
+          "conditions": "Having been drunk for at least the past {0} turns",
+          "description": "Having been drunk for so long, your brain just gives up on you, forcing you into an uncontrollable rage for {1} turns. While in this state of rage, your statistical multiplier for STR is changed to {2}%. Once you are out of your rage state, your statistical multiplier for <code>STR</code> will change to -{3}% for {1} turns. Activating this skill does not count as your action for the turn.",
+          "values": [
+            50,
+            5,
+            2.5,
+            -0.75
+          ]
+        },
+        "Inebriated Dragon’s Breath": {
+          "level": 75,
+          "description": "“The Vault” somehow developed the capacity to evaporate alcohol, letting you to spit out large amounts of alcoholic gas. This allows you to create a drunkenness-inducing mist around you or wherever you breath with a strength that varies on the environment<a>0</a> it was used in and the strength of the alcohol that was evaporated. Depending on the conditions, this skill can do nothing, turn everyone around you drunk, or even kill some people from alcohol intoxication.",
+          "foot_notes": [
+            3
+          ]
+        },
+        "Prayer to Bacchus": {
+          "level": 100,
+          "description": "Trough an unknown process, you can now turn your kidneys into a fully functional distilleries! This allows you to become drunk on demand, for however long you want, however, the duration has to be at least {0} turns. Activating and disabling this skill doesn’t count as your action for the turn.",
+          "values": 10
         }
+      },
+      "foot_notes": {
+        "1": "Which is calculated after armors.",
+        "2": "You can consume any amount of alcohol stored in “The Vault” instantly.",
+        "3": "For instance, skill has a stronger effect while in confined rooms and a weaker effect while outside if there’s wind."
       }
     },
     "Elf": {
