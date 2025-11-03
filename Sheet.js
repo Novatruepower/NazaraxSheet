@@ -3967,7 +3967,7 @@ function attachEventListeners() {
             const button = event.target.closest('.temp-effects-btn');
             const statName = button.dataset.statName;
             currentStatForTempEffects = statName;
-                        currentStatDisplayNameForTempEffects = button.dataset.statDisplayName;
+            currentStatDisplayNameForTempEffects = button.dataset.statDisplayName;
             tempEffectsModalTitleStatTotal = button.dataset.statDisplayTotal;
             openTemporaryEffectsModal();
         }
