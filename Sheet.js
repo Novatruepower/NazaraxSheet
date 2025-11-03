@@ -2390,7 +2390,6 @@ function handlePlayerStatInputChange(event) {
     }
     
     renderWeaponTable();
-    refreshTemporaryModalTitle();
     hasUnsavedChanges = true;
 }
 

@@ -2,3 +2,4 @@ finish conversion to the database.
 reset exp while quick roll and distribute 97 points.
 See your amount of exp
 fix Human
+fix refreshTemporaryModalTitle
