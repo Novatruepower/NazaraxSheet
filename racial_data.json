@@ -424,7 +424,7 @@
       "actives": {
         "Gnomic Craftsmanship": {
           "level": 1,
-          "description" : "This ability<a>0</a> allows you to create items. Crafting any items form that list<a>10</a> will increases your CRA while using these items increases your INT, however, this does not happen if you are mass producing the same item continuously for no reason. Damage is always calculated upon use rather than upon crafting<a>2</a>.",
+          "description" : "This ability<a>0</a> allows you to create items. Crafting any items form that list<a>1</a> will increases your CRA while using these items increases your INT, however, this does not happen if you are mass producing the same item continuously for no reason. Damage is always calculated upon use rather than upon crafting<a>2</a>.",
           "foot_notes": [9, 10, 11]
         },
         "Manipulation": {
