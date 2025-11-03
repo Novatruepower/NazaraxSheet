@@ -880,28 +880,6 @@
           ]
         }
       },
-      "actives": {
-        "Gnomic Craftsmanship": {
-          "level": 1,
-          "description": "This ability<a>0</a> allows you to create items. Crafting any items form that list<a>10</a> will increases your CRA while using these items increases your INT, however, this does not happen if you are mass producing the same item continuously for no reason. Damage is always calculated upon use rather than upon crafting<a>2</a>.",
-          "foot_notes": [
-            8,
-            9,
-            10
-          ]
-        },
-        "Manipulation": {
-          "level": 100,
-          "description": "Intelligence can be a weapon in and of itself. Make up believable reasons for the actions you have taken over your entire lifespan to change the people’s perception of you. Once this skill is used, you can decide how to redistribute all of your reputation points. Rumors about the reasons behind your actions take three days ({0} turns) to spread<a>0</a> from the point you stopped talking to the original target<a>1</a> of this skill. Once rumors start to spread, they cannot be stopped, however, using this skill a second time while rumors are still being spread around will cause the effects of Manipulation to be canceled from confusion being born. If this skill is used too often, it will eventually stop working.",
-          "values": [
-            60
-          ],
-          "foot_notes": [
-            18,
-            19
-          ]
-        }
-      },
       "foot_notes": {
         "1": "This skill can be ignored if your backstory is able to work around your character growing up with Gnomes, but also that this skill can be forced on characters who aren’t Gnomes but did grow up with them.",
         "2": "Similarly to Magic Denial, this skill can also be taken away from a Gnome or given to another race depending on a specific character’s backstory.",
@@ -922,6 +900,28 @@
         "17": "This force can be as weak as being picked up.",
         "18": "The eventual reputation distribution change is decided upon use, and not upon the effect taking place.",
         "19": "The skill doesn’t work if you have already used it on the target. The skill won’t work if the target is socially isolated."
+      },
+      "actives": {
+        "Gnomic Craftsmanship": {
+          "level": 1,
+          "foot_notes": [
+            8,
+            9,
+            10
+          ],
+          "description": "This ability<a>0</a> allows you to create items. Crafting any items form that list<a>1</a> will increases your CRA while using these items increases your INT, however, this does not happen if you are mass producing the same item continuously for no reason. Damage is always calculated upon use rather than upon crafting<a>2</a>."
+        },
+        "Manipulation": {
+          "level": 100,
+          "description": "Intelligence can be a weapon in and of itself. Make up believable reasons for the actions you have taken over your entire lifespan to change the people’s perception of you. Once this skill is used, you can decide how to redistribute all of your reputation points. Rumors about the reasons behind your actions take three days ({0} turns) to spread<a>0</a> from the point you stopped talking to the original target<a>1</a> of this skill. Once rumors start to spread, they cannot be stopped, however, using this skill a second time while rumors are still being spread around will cause the effects of Manipulation to be canceled from confusion being born. If this skill is used too often, it will eventually stop working.",
+          "values": [
+            60
+          ],
+          "foot_notes": [
+            18,
+            19
+          ]
+        }
       }
     },
     "Human": {
