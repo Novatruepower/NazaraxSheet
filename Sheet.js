@@ -351,7 +351,6 @@ const defaultCharacterData = function () {
             'basic-info-content': true,
             'player-stats-content': true,
             'health-combat-content': true,
-            'skills-content': true,
             'actives-content': true,
             'weapon-inventory-content': true,
             'armor-inventory-content': true,
