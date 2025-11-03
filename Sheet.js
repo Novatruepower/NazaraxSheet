@@ -2458,6 +2458,7 @@ function handleChange(event) {
         handleInventoryInputChange(event);
     } else if (event.target.classList.contains('stat-input') || event.target.classList.contains('temp-effect-input')) {
         handlePlayerStatInputChange(event);
+        refreshTemporaryModalTitle();
     } else {
         newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
@@ -3089,6 +3090,7 @@ let confirmOkBtn;
 let confirmCancelBtn;
 let tempEffectsModal;
 let tempEffectsModalTitle;
+let tempEffectsModalTitleStatTotal;
 let tempEffectsList;
 let addTempEffectBtn;
 let endTurnBtn; // Declare the new button
@@ -3529,12 +3531,14 @@ function toggleSidebar() {
  * Opens the temporary effects modal for a specific stat.
  * @param {string} statName The name of the stat (e.g., 'Strength').
  */
-function openTemporaryEffectsModal(statName, statDisplayName, statDisplaytotal) {
-    currentStatForTempEffects = statName;
-
-    tempEffectsModalTitle.textContent = `Temporary Effects for ${statDisplayName} (${document.getElementById(statDisplaytotal).value})`;
+function openTemporaryEffectsModal() {
+    refreshTemporaryModalTitle();
     renderTemporaryEffects(statName);
     tempEffectsModal.classList.remove('hidden');
+}
+
+function refreshTemporaryModalTitle() {
+    tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatForTempEffects} (${document.getElementById(tempEffectsModalTitleStatTotal).value})`;
 }
 
 /**
@@ -3964,8 +3968,8 @@ function attachEventListeners() {
         if (event.target.closest('.temp-effects-btn')) {
             const button = event.target.closest('.temp-effects-btn');
             const statName = button.dataset.statName;
-            const statDisplayName = button.dataset.statDisplayName;
-            const statDisplaytotal = button.dataset.statDisplayTotal;
+            currentStatForTempEffects = button.dataset.statDisplayName;
+            tempEffectsModalTitleStatTotal = button.dataset.statDisplayTotal;
             openTemporaryEffectsModal(statName, statDisplayName, statDisplaytotal);
         }
     });
