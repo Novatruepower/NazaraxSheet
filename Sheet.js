@@ -901,7 +901,7 @@ function updateDOM() {
             <td class="px-2 py-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
                 <button type="button"
                     class="temp-effects-btn ml-1 p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1"
-                    data-stat-name="${statName}" data-stat-display-name="${statName}">
+                    data-stat-name="${statName}" data-stat-display-name="${statName}" data-stat-display-total="${statName}-total">
                     ${statName}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -3529,9 +3529,10 @@ function toggleSidebar() {
  * Opens the temporary effects modal for a specific stat.
  * @param {string} statName The name of the stat (e.g., 'Strength').
  */
-function openTemporaryEffectsModal(statName, statDisplayName) {
+function openTemporaryEffectsModal(statName, statDisplayName, statDisplaytotal) {
     currentStatForTempEffects = statName;
-    tempEffectsModalTitle.textContent = `Temporary Effects for ${statDisplayName}`;
+
+    tempEffectsModalTitle.textContent = `Temporary Effects for ${statDisplayName} (${document.getElementById(statDisplaytotal).value})`;
     renderTemporaryEffects(statName);
     tempEffectsModal.classList.remove('hidden');
 }
@@ -3964,7 +3965,8 @@ function attachEventListeners() {
             const button = event.target.closest('.temp-effects-btn');
             const statName = button.dataset.statName;
             const statDisplayName = button.dataset.statDisplayName;
-            openTemporaryEffectsModal(statName, statDisplayName);
+            const statDisplaytotal = button.dataset.statDisplayTotal;
+            openTemporaryEffectsModal(statName, statDisplayName, statDisplaytotal);
         }
     });
 
