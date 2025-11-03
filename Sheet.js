@@ -3103,6 +3103,7 @@ let setHealthCheckbox;
 let setTakeTrueDamage;
 let damageTakeAmountInput;
 let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
+let currentStatDisplayNameForTempEffects = null;
 let healthInput;
 let manaInput;
 let racialPowerInput;
@@ -3527,18 +3528,15 @@ function toggleSidebar() {
     }
 }
 
-/**
- * Opens the temporary effects modal for a specific stat.
- * @param {string} statName The name of the stat (e.g., 'Strength').
- */
+
 function openTemporaryEffectsModal() {
     refreshTemporaryModalTitle();
-    renderTemporaryEffects(statName);
+    renderTemporaryEffects(currentStatForTempEffects);
     tempEffectsModal.classList.remove('hidden');
 }
 
 function refreshTemporaryModalTitle() {
-    tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatForTempEffects} (${document.getElementById(tempEffectsModalTitleStatTotal).value})`;
+    tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatDisplayNameForTempEffects} (${document.getElementById(tempEffectsModalTitleStatTotal).value})`;
 }
 
 /**
@@ -3968,9 +3966,9 @@ function attachEventListeners() {
         if (event.target.closest('.temp-effects-btn')) {
             const button = event.target.closest('.temp-effects-btn');
             const statName = button.dataset.statName;
-            currentStatForTempEffects = button.dataset.statDisplayName;
+            currentStatForTempEffects = statName;
             tempEffectsModalTitleStatTotal = button.dataset.statDisplayTotal;
-            openTemporaryEffectsModal(statName, statDisplayName, statDisplaytotal);
+            openTemporaryEffectsModal();
         }
     });
 
