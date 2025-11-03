@@ -3968,6 +3968,7 @@ function attachEventListeners() {
             const statName = button.dataset.statName;
             currentStatForTempEffects = statName;
             tempEffectsModalTitleStatTotal = button.dataset.statDisplayTotal;
+            currentStatDisplayNameForTempEffects = button.dataset.statDisplayTotal;
             openTemporaryEffectsModal();
         }
     });
