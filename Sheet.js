@@ -2287,6 +2287,7 @@ function handlePlayerStatInputChange(event) {
                 document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
             }
             hasUnsavedChanges = true;
+            refreshTemporaryModalTitle();
         }
         return; // Exit as it's a temporary effect input
     }
@@ -3089,7 +3090,7 @@ let confirmOkBtn;
 let confirmCancelBtn;
 let tempEffectsModal;
 let tempEffectsModalTitle;
-let tempEffectsModalTitleStatTotal;
+let tempEffectsModalTitleStatTotal = "";
 let tempEffectsList;
 let addTempEffectBtn;
 let endTurnBtn; // Declare the new button
@@ -3535,7 +3536,10 @@ function openTemporaryEffectsModal() {
 }
 
 function refreshTemporaryModalTitle() {
-    tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatDisplayNameForTempEffects} (${document.getElementById(tempEffectsModalTitleStatTotal).value})`;
+    console.log("refresh");
+    if (tempEffectsModalTitleStatTotal != "") {
+        tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatDisplayNameForTempEffects} (${document.getElementById(tempEffectsModalTitleStatTotal).value})`;
+    }
 }
 
 /**
