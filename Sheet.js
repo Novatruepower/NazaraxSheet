@@ -2390,6 +2390,7 @@ function handlePlayerStatInputChange(event) {
     }
     
     renderWeaponTable();
+    refreshTemporaryModalTitle();
     hasUnsavedChanges = true;
 }
 
@@ -2458,7 +2459,6 @@ function handleChange(event) {
         handleInventoryInputChange(event);
     } else if (event.target.classList.contains('stat-input') || event.target.classList.contains('temp-effect-input')) {
         handlePlayerStatInputChange(event);
-        refreshTemporaryModalTitle();
     } else {
         newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
