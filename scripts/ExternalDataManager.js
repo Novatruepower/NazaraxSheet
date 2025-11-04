@@ -413,7 +413,7 @@ export const ExternalDataManager = {
         if (!raceData)
             return {};
 
-        return raceData["Starting items"];
+        return raceData["starting items"];
     },
 
     /**
