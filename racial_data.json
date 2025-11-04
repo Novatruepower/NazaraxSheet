@@ -651,7 +651,7 @@
           "level": 100,
           "channel_time": "Target LVL / 20<a>0</a>",
           "cooldown": {"turns": {"value": 20} },
-          "description": "Give a consenting and fully conscious<a>1</a> creature one last kiss, sucking them dry of all their life force. This ability deals [100 / (Channel time)]% damage per turn and steal 50% of all their stats for 60 turns. ",
+          "description": "Give a consenting and fully conscious<a>1</a> creature one last kiss, sucking them dry of all their life force. This ability deals [100 / (Channel time)]% damage per turn and steal 50% of all their stats for 60 turns.",
           "foot_notes": [2, 3]
         }
       },
