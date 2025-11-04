@@ -1143,8 +1143,14 @@
           "Negotiation": 0.75
         }
       },
-      "Starting items": {
+      "starting items": {
         "Coins": 180
+      },
+      "dices": {
+        "0": {
+          "max": 4,
+          "min": 1
+        }
       },
       "regularPassives": {
         "Gold Hands": {
@@ -1164,13 +1170,63 @@
         },
         "Good Fortune": {
           "level": 1,
-          "description": "Nokis will naturally have mild success in any normal luck-based confrontation or check unless they are confronted with another Noki.",
+          "values": [
+            "mild"
+          ],
+          "description": "Nokis will naturally have {0} success in any normal luck-based confrontation or check unless they are confronted with another Noki.",
           "upgrades": {
             "Prosperity": {
               "level": 25,
-              "description": "You naturally have great success in any normal luck-based confrontation or check unless they are confronted with another Noki."
+              "values": [
+                "great"
+              ]
+            },
+            "Beating the Odds": {
+              "level": 75,
+              "values": [
+                "tremendous"
+              ]
             }
           }
+        },
+        "Devil’s Dices": {
+          "level": 100,
+          "description": "When your health reaches 0, throw a coin ({d0}), if it lands on heads, you survive and your health will be fully replenished, while if you land on tails you die."
+        }
+      },
+      "actives": {
+        "Wager": {
+          "level": 1,
+          "description": "Leave your success up to luck! This skill has to be used at the start of a statistical check or confrontation. Throw a {d0}, if it lands on an even number, you can replace any of your stats with your luck, if it lands on an odd number, the stat will instead be replaced with a {0}. If multiple stats have to be checked, each one has to be replaced individually.",
+          "values": [
+            1
+          ]
+        },
+        "Golden Tooth": {
+          "level": 25,
+          "description": "You can eat coins to replenish that same amount of health instantly, however, this ability does not repair wounds in any way."
+        },
+        "Slot": {
+          "level": 50,
+          "description": "This ability allows you to gamble away amount of money, consuming it in the process. Once this is done, throw a {d0}, if the result is odd, you waste your turn, if the result is even, a magic coin will appear that deals damage equal to the amount gambled as physical damage."
+        },
+        "Loan": {
+          "level": 75,
+          "description": "You temporarily loan luck for {0} turns at a price of {1} luck per {2} coins. You can loan up to the same amount of luck as you have at the moment, excluding any loaned luck and pay up to double your current total amount of coins, in which case, you will go into debt. You cannot use coins for anything until your debt is fully paid. This skill doesn’t count as your action for the turn to use.",
+          "values": [
+            10,
+            1,
+            100
+          ]
+        },
+        "All In": {
+          "level": 100,
+          "description": "Once this skill is used, temporarily always succeed at replacing a stat with your luck for the next {0} turns. Once the five turns are over, your health will be set to {1} and you will permanently lose {2} luck.",
+          "values": [
+            5,
+            1,
+            20
+          ]
         }
       }
     },
@@ -1198,6 +1254,81 @@
           "Charisma": 1.5,
           "Negotiation": 1.25
         }
+      },
+      "regularPassives": {
+        "Attraction": {
+          "level": 1,
+          "description": "Being a Succubus, you constantly emanate chaos magic that makes you seem more attractive to any creature that sees you and that you need to utilize all your skills, because of this, the more of your skin is hidden under armor or clothing, the less effective all your skills will become."
+        },
+        "Demonic Sight": {
+          "level": 1,
+          "description": "Being a demon, you possess pitch black eyes that are only capable of perceiving different shades of gray, however, they come with the advantage of allowing you to see perfectly in darkness, even while in areas where there not even a single beam of light can be found."
+        },
+        "Chaotic Tones": {
+          "level": 1,
+          "description": "You voice carries chaos magic, allowing you to be understood by most intelligent creatures who are capable of communication."
+        },
+        "Demon Bloods": {
+          "level": 1,
+          "description": "Being a demon yourself, certain demonic monsters will naturally be neutral towards. Being non-human, you can also interact considerable number of monsters who possess intelligence and social capabilities, and even possibly charm them."
+        }
+      },
+      "actives": {
+        "Spirit Syphon": {
+          "level": 1,
+          "description": "Whenever you kiss a creature, you get the option of using this skill, if you do so, you will steal {0}% of their STR, AGI, MAG, and INT for one day ({1} turns), if you do more than kissing instead (and decide to use this skill), this duration will be extended to {2} days ({3} turns).",
+          "values": [
+            25,
+            20,
+            2,
+            40
+          ]
+        },
+        "Seduction": {
+          "level": 10,
+          "description": "Use chaos magic to force a creature to fall in love with you. For this skill to succeed, you have to win a confrontation between your CHA and your target’s INT, if this skill fails, they will realize what you just tried doing."
+        },
+        "Charm": {
+          "level": 25,
+          "description": "This skill requires you to maintain physical contact with its target to function and to win a confrontation of your CHA against your target’s INT, if this fails, your target will realize what you just tried doing. Charm a creature, reducing their intelligence by half, and making them regard you as a long forgotten close friend for the next 5 turns or until they are harmed in any way. The target will not be able to remember what happened during the duration of this skill.",
+          "upgrades": {
+            "Greater Charm": {
+              "level": 75,
+              "description": "This skill requires you to currently watching your target and to win a confrontation of your CHA against your target’s INT, if this fails, your target will realize a spell was just cast on them, however they will not know what kind of spell it was or who cast it. Charm a creature, reducing their intelligence by half, and making them regard you as a long forgotten close friend for the next 10 turns or until they are harmed in any way. The target will not be able to remember what happened during the duration of this skill."
+            }
+          }
+        },
+        "Projection": {
+          "level": 50,
+          "cooldown": {
+            "turns": {
+              "value": 20
+            }
+          },
+          "description": "Try top force yourself into the dreams of someone who you’ve had physical contact within the last week (140 last turns). To succeed at this, you must win a confrontation of your CHA against your target’s INT, if you fail, your target will simply wake up. This skill lasts 3 turns and makes your target unable to wake up<a>0</a>, while in the dream, your target will be easier to influence and manipulate. If this skill is used on a target who is currently awake and you succeed at the CHA/INT confrontation, it will start to fall asleep, while if you fail, they will notice a spell has been cast on them (however they won’t know who cast it or what kind of spell it was).",
+          "foot_notes": [
+            1
+          ]
+        },
+        "Kiss of Death": {
+          "level": 100,
+          "channel_time": "Target LVL / 20<a>0</a>",
+          "cooldown": {
+            "turns": {
+              "value": 20
+            }
+          },
+          "description": "Give a consenting and fully conscious<a>1</a> creature one last kiss, sucking them dry of all their life force. This ability deals [100 / (Channel time)]% damage per turn and steal 50% of all their stats for 60 turns.",
+          "foot_notes": [
+            2,
+            3
+          ]
+        }
+      },
+      "foot_notes": {
+        "1": "However it will still be possible to wake you up from this.",
+        "2": "The result should always be rounded up.",
+        "3": "This means this skill cannot be used on charmed creatures."
       }
     }
   },
