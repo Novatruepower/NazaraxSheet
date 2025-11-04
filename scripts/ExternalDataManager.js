@@ -36,15 +36,15 @@ function someInObject(upgradesObj, callback) {
 
 // Function to check if an upgrade has a formula with values
 const upgradeHasFormulasWithValues = upgrade => {
-    return someInObject(upgrade.formulas, hasFormulaValues);
+    return upgrade.formulas && someInObject(upgrade.formulas, hasFormulaValues);
 };
 
 const upgradesHasFormulasWithValues = ability => {
-    return someInObject(ability.upgrades, upgradeHasFormulasWithValues);
+    return ability.upgrades && someInObject(ability.upgrades, upgradeHasFormulasWithValues);
 };
 
 const upgradesHasValues = ability => {
-    return someInObject(ability.upgrades, hasFormulaValues);
+    return ability.upgrades && someInObject(ability.upgrades, hasFormulaValues);
 };
 
 export const ExternalDataManager = {
