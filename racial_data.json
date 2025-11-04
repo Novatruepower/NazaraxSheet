@@ -591,8 +591,8 @@
         },
         "Loan": {
           "level": 75,
-          "description": "You temporarily loan luck for 10 turns at a price of {0} luck per {1} coins. You can loan up to the same amount of luck as you have at the moment, excluding any loaned luck and pay up to double your current total amount of coins, in which case, you will go into debt. You cannot use coins for anything until your debt is fully paid. This skill doesn’t count as your action for the turn to use.",
-          "values": [1, 100]
+          "description": "You temporarily loan luck for {0} turns at a price of {1} luck per {2} coins. You can loan up to the same amount of luck as you have at the moment, excluding any loaned luck and pay up to double your current total amount of coins, in which case, you will go into debt. You cannot use coins for anything until your debt is fully paid. This skill doesn’t count as your action for the turn to use.",
+          "values": [10, 1, 100]
         },
         "All In": {
           "level": 100,
@@ -623,7 +623,8 @@
       "actives": {
         "Spirit Syphon": {
           "level": 1,
-          "description": "Whenever you kiss a creature, you get the option of using this skill, if you do so, you will steal 25% of their STR, AGI, MAG, and INT for one day (20 turns), if you do more than kissing instead (and decide to use this skill), this duration will be extended to 2 days (40 turns)."
+          "description": "Whenever you kiss a creature, you get the option of using this skill, if you do so, you will steal {0}% of their STR, AGI, MAG, and INT for one day ({1} turns), if you do more than kissing instead (and decide to use this skill), this duration will be extended to {2} days ({3} turns).",
+          "values": [0.25, 20, 2, 40]
         },
         "Seduction": {
           "level": 10,
