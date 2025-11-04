@@ -990,6 +990,132 @@
           "Charisma": 1,
           "Negotiation": 1
         }
+      },
+      "manualPassives": {
+        "Mutation": {
+          "description": "Mutants gain Mutation choices at specific levels.",
+          "levels": {
+            "1": 1,
+            "10": 2,
+            "25": 3,
+            "50": 4,
+            "75": 5,
+            "100": 100
+          },
+          "options": [
+            {
+              "label": "One skill<a>0</a> from any race",
+              "type": "mutant_skill_choice",
+              "setsOption": [
+                1
+              ]
+            },
+            {
+              "label": "A statistical multiplier to be set to {0}%",
+              "type": "stat_multiplier_set_50",
+              "calc": "add",
+              "value": 0.5,
+              "applicableStats": [
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
+                "Health",
+                "Mana"
+              ],
+              "unique": "Mutation_Degeneration",
+              "setsOption": [
+                1
+              ]
+            },
+            {
+              "label": "Doubling your base max health value",
+              "type": "double_base_health",
+              "calc": "mult",
+              "value": 2,
+              "applicableStats": [
+                "BaseHealth"
+              ],
+              "unique": "Mutation_Degeneration",
+              "setsOption": [
+                1
+              ]
+            },
+            {
+              "label": "Natural mana or health regeneration become permanently<a>1</a> active\"",
+              "type": "perm_regen_active",
+              "calc": "count",
+              "applicableStats": [
+                "permManaRegenActive",
+                "permHealthRegenActive"
+              ],
+              "unique": "Mutation_Degeneration",
+              "setsOption": [
+                1
+              ]
+            },
+            {
+              "label": "regen_doubled",
+              "calc": "mult",
+              "value": 2,
+              "applicableStats": [
+                "naturalManaRegen",
+                "naturalHealthRegen"
+              ],
+              "unique": "Mutation_Degeneration",
+              "setsOption": [
+                1
+              ]
+            }
+          ],
+          "foot_notes": [
+            1,
+            2
+          ]
+        },
+        "Degeneration": {
+          "description": "Mutants gain Degeneration choices at specific levels.",
+          "levels": {
+            "1": 1,
+            "10": 2,
+            "50": 3,
+            "100": 4
+          },
+          "options": [
+            {
+              "label": "Reduce a stat’s multiplier to -{0}%",
+              "type": "stat_multiplier_reduce_50",
+              "calc": "add",
+              "value": -0.5,
+              "applicableStats": [
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
+                "Health",
+                "Mana"
+              ],
+              "unique": "Mutation_Degeneration",
+              "setsOption": [
+                1
+              ]
+            }
+          ]
+        }
+      },
+      "foot_notes": {
+        "1": "You must meet the skill’s level requirement at the time of you unlocking it and all level 100 skills are banned.",
+        "2": "This means that you will constantly be regenerating health, even when fighting, taking damage, or if affected by some health-regeneration disabling ability."
       }
     },
     "Noki": {
@@ -1015,6 +1141,36 @@
           "Intimidation": 0.75,
           "Charisma": 0.75,
           "Negotiation": 0.75
+        }
+      },
+      "Starting items": {
+        "Coins": 180
+      },
+      "regularPassives": {
+        "Gold Hands": {
+          "level": 10,
+          "description": "You gain {0} coins for every point of damage you deal on purpose to an enemy rounded up.",
+          "values": [
+            0.04
+          ],
+          "upgrades": {
+            "Diamond Hands": {
+              "level": 50,
+              "values": [
+                0.1
+              ]
+            }
+          }
+        },
+        "Good Fortune": {
+          "level": 1,
+          "description": "Nokis will naturally have mild success in any normal luck-based confrontation or check unless they are confronted with another Noki.",
+          "upgrades": {
+            "Prosperity": {
+              "level": 25,
+              "description": "You naturally have great success in any normal luck-based confrontation or check unless they are confronted with another Noki."
+            }
+          }
         }
       }
     },
