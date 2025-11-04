@@ -19,6 +19,9 @@ const hasFormulaValues = formula => formula.values && formula.values.length > 0;
  * @returns {boolean} True if a match is found, otherwise false.
  */
 function someInObject(upgradesObj, callback) {
+    if (!upgradesObj)
+        return false;
+
     // Get an array of just the values from the object
     const values = Object.values(upgradesObj);
     
@@ -36,15 +39,15 @@ function someInObject(upgradesObj, callback) {
 
 // Function to check if an upgrade has a formula with values
 const upgradeHasFormulasWithValues = upgrade => {
-    return upgrade.formulas && someInObject(upgrade.formulas, hasFormulaValues);
+    return someInObject(upgrade.formulas, hasFormulaValues);
 };
 
 const upgradesHasFormulasWithValues = ability => {
-    return ability.upgrades && someInObject(ability.upgrades, upgradeHasFormulasWithValues);
+    return someInObject(ability.upgrades, upgradeHasFormulasWithValues);
 };
 
 const upgradesHasValues = ability => {
-    return ability.upgrades && someInObject(ability.upgrades, hasFormulaValues);
+    return someInObject(ability.upgrades, hasFormulaValues);
 };
 
 export const ExternalDataManager = {
