@@ -87,7 +87,7 @@ function applyTemporaryOperatorEffects(charData, temporaryEffects, type, baseVal
 
     if (type === '*') {
         temporaryEffects.forEach(effect => {
-            tempValue *= applyPercent(effect);
+            tempValue *= applyPercent(charData, effect);
         });
     }
     else if (type === '+') {
