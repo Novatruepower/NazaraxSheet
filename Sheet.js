@@ -3674,7 +3674,7 @@ function renderTemporaryEffects(statName) {
         }
 
         // Always update the input values directly to reflect the current data
-        valueInput.value = effect.values[0];
+        valueInput.value = effect.values[0] || 1;
         isPercentCheckbox.checked = effect.isPercent; // Set checked state for the checkbox
         durationInput.value = effect.duration;
         typeSelect.value = effect.type || '+'; // Default to 'add'
