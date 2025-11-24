@@ -1,4 +1,5 @@
 import { ExternalDataManager } from './ExternalDataManager.js';
+import { math } from './math.min.js';
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
@@ -1127,7 +1128,7 @@ function renderGeneralTable() {
 function quickRollStats() {
     character.isDistributingStats = false; // Exit distribution mode
     ExternalDataManager.rollStats.forEach(statName => {
-            //console.log(safeEvaluate(statName, character));
+        console.log(safeEvaluate(statName, character));
         character[statName].baseValue = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'baseValue' property
 
         // Update the DOM for value (combined) and total immediately
