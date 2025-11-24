@@ -112,6 +112,13 @@ function applyTemporaryFilterEffects(charData, temporaryEffects, baseValue, curr
 
 function safeEvaluate(text, chardata) {
     let string = text.trim().toLowerCase();
+
+    for (const label of Object.keys(statMapping)) {
+        const value = getStatValue(label);
+        const regex = new RegExp(`\\b${label}\\b`, 'gi');
+        parsedFormula = parsedFormula.replace(regex, value);
+    }
+
     ExternalDataManager._data.Roll.forEach(stat => {
        string = string.replaceAll(stat.toLowerCase(), calculateRollStatTotal(chardata, stat));
     });
@@ -422,7 +429,7 @@ const defaultCharacterData = function () {
             equipment: 0,
             temporaryEffects: [], // Initialize as an empty array for temporary effects
             experience: 0,
-            maxExperience: defaultStatMaxExperience,
+            maxExperience: defaultStatMaxExperience
         };
     });
 
@@ -634,7 +641,7 @@ function calculateFormula(formulaString) {
 
     // Replace all mapped keys in the formula with actual values from the DOM
     let parsedFormula = formulaString;
-    for (const [label, id] of Object.entries(statMapping)) {
+    for (const label of Object.keys(statMapping)) {
         const value = getStatValue(label);
         const regex = new RegExp(`\\b${label}\\b`, 'gi');
         parsedFormula = parsedFormula.replace(regex, value);
