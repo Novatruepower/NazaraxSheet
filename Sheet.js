@@ -1,4 +1,5 @@
 import { ExternalDataManager } from './scripts/ExternalDataManager.js';
+import { evaluate } from './mathjs';
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
@@ -107,6 +108,27 @@ function applyTemporaryFilterEffects(charData, temporaryEffects, baseValue, curr
     });
     
     return tempValue;
+}
+
+function safeEvaluate(text, chardata) {
+    let string = text.trim().toLowerCase();
+    ExternalDataManager._data.Roll.forEach(stat => {
+       string = string.replaceAll(stat.toLowerCase(), calculateRollStatTotal(chardata, stat));
+    });
+
+    let unsafe = string.replace(/[^0-9+*/(). -]/g, ""); //only Keep number and () and math operators and spaces
+
+    if (unsafe != string) {
+        alert("Something was wrong in: " + string + " turned into: " + unsafe);
+    }
+
+    try {
+        return evaluate(unsafe);
+    }
+    catch (error) {
+        alert("Invalid math expression: " + error.message);
+        return unsafe;
+    }
 }
 
 /**
@@ -1106,6 +1128,7 @@ function renderGeneralTable() {
 function quickRollStats() {
     character.isDistributingStats = false; // Exit distribution mode
     ExternalDataManager.rollStats.forEach(statName => {
+            console.log(safeEvaluate(character, statName));
         character[statName].baseValue = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'baseValue' property
 
         // Update the DOM for value (combined) and total immediately
