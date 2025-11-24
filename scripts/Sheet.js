@@ -125,7 +125,7 @@ function safeEvaluate(text, chardata) {
         return evaluate(unsafe);
     }
     catch (error) {
-        alert("Invalid math expression: " + error.message);
+        alert("Invalid math expression: " + error.message + " in " + unsafe);
         return unsafe;
     }
 }
