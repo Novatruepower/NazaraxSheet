@@ -3978,6 +3978,20 @@ function takeDamage() {
     closeDamageModal();
 }
 
+
+function isNotLocal() {
+  const hostname = window.location.hostname;
+  // Check for common local hostnames and IP addresses
+  const localIdentifiers = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]' // IPv6 localhost address
+  ];
+
+  // If the hostname is not found in the localIdentifiers array, it's likely not local
+  return !localIdentifiers.includes(hostname);
+}
+
 // Attach event listeners to all relevant input fields
 function attachEventListeners() {
     // Attach listeners for standard inputs and the race selector
@@ -4266,5 +4280,7 @@ window.addEventListener("gapi-ready", () => {
 window.onload = async function () {
     await ExternalDataManager.initClient();
     initPage();
-    history.pushState("", "NazaraxSheet", "https://novatruepower.github.io/Nazarax/Sheet/");
+
+    if (isNotLocal())
+        history.pushState("", "NazaraxSheet", "../../Nazarax/Sheet/");
 }
