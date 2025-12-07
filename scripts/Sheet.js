@@ -4282,5 +4282,5 @@ window.onload = async function () {
     initPage();
 
     if (isNotLocal())
-        history.pushState("", "NazaraxSheet", "../../Nazarax/Sheet/");
+        history.pushState("", "NazaraxSheet", "../../Nazarax/Sheet/" + window.location.search);
 }
