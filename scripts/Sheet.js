@@ -1,6 +1,6 @@
 import { ExternalDataManager } from './ExternalDataManager.js';
 //import { math } from './math.min.js';
-history.pushState("", "NazaraxSheet", "https://novatruepower.github.io/Nazarax/Sheet/");
+//history.pushState("", "NazaraxSheet", "https://novatruepower.github.io/Nazarax/Sheet/");
 let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
 
 const defaultStatMaxExperience = 7;
