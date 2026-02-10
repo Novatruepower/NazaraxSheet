@@ -1,6 +1,30 @@
 {
   "Races": {
     "Architect": {
+      "Stats": {
+        "Other": {
+          "Health": 0.7,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.5,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1.25,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "actives": {
         "Rough Reshaping": {
           "level": 1,
@@ -97,6 +121,30 @@
       }
     },
     "Demi-humans": {
+      "Stats": {
+        "Other": {
+          "Health": 1,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1,
+          "Agility": 1,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "manualPassives": {
         "Stat Adjustments": {
           "foot_notes": [
@@ -109,7 +157,15 @@
               "type": "stat_increase",
               "label": "+{0}% to any stat<a>0</a> <a>1</a>",
               "applicableStats": [
-                {},
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
                 "Health",
                 "Mana"
               ],
@@ -131,7 +187,15 @@
               "calc": "add",
               "unique": "Stat Adjustments",
               "applicableStats": [
-                {},
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
                 "Health",
                 "Mana"
               ],
@@ -261,6 +325,30 @@
       }
     },
     "Dimensional": {
+      "Stats": {
+        "Other": {
+          "Health": 1.5,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "foot_notes": {
         "4": "Objects thrown into a portal that aren’t touching someone count as an individual entity that passed trough and take a charge of the portal.",
         "5": "Only the side from which the portal was cast can be used as an entrance, however, until someone fully enters the portal, they can always come back out of it.",
@@ -359,6 +447,30 @@
       }
     },
     "Dragonkin": {
+      "Stats": {
+        "Other": {
+          "Health": 0.75,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 0.75,
+          "Crafting": 0.75,
+          "Intelligence": 0.75,
+          "Intimidation": 0.5,
+          "Charisma": 0.75,
+          "Negotiation": 0.75
+        }
+      },
       "regularPassives": {
         "Foul Blood": {
           "level": 1,
@@ -488,6 +600,30 @@
       }
     },
     "Dwarf": {
+      "Stats": {
+        "Other": {
+          "Health": 1.2,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1.5,
+          "Agility": 0.5,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1.25,
+          "Intelligence": 0.75,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "regularPassives": {
         "Alcoholic Desensitization": {
           "level": 10,
@@ -579,6 +715,30 @@
       }
     },
     "Elf": {
+      "Stats": {
+        "Other": {
+          "Health": 0.8,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 1.25,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "regularPassives": {
         "Light-Footed": {
           "level": 1,
@@ -644,6 +804,30 @@
       }
     },
     "Gnome": {
+      "Stats": {
+        "Other": {
+          "Health": 0.8,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.5,
+          "Agility": 0.75,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1.5,
+          "Intelligence": 2,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "regularPassives": {
         "Magic Denial": {
           "level": 1,
@@ -741,6 +925,30 @@
       }
     },
     "Human": {
+      "Stats": {
+        "Other": {
+          "Health": 1,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1,
+          "Agility": 1,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "regularPassives": {
         "Growth": {
           "level": 1,
@@ -759,6 +967,30 @@
       }
     },
     "Mutant": {
+      "Stats": {
+        "Other": {
+          "Health": 0.75,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 1,
+          "Agility": 1,
+          "Magic": 1,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1,
+          "Negotiation": 1
+        }
+      },
       "manualPassives": {
         "Mutation": {
           "description": "Mutants gain Mutation choices at specific levels.",
@@ -784,7 +1016,15 @@
               "calc": "add",
               "value": 0.5,
               "applicableStats": [
-                {},
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
                 "Health",
                 "Mana"
               ],
@@ -853,7 +1093,15 @@
               "calc": "add",
               "value": -0.5,
               "applicableStats": [
-                {},
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
                 "Health",
                 "Mana"
               ],
@@ -871,6 +1119,30 @@
       }
     },
     "Noki": {
+      "Stats": {
+        "Other": {
+          "Health": 0.9,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 2,
+          "Crafting": 0.75,
+          "Intelligence": 0.75,
+          "Intimidation": 0.75,
+          "Charisma": 0.75,
+          "Negotiation": 0.75
+        }
+      },
       "starting items": {
         "Coins": 180
       },
@@ -959,6 +1231,30 @@
       }
     },
     "Succubus": {
+      "Stats": {
+        "Other": {
+          "Health": 0.75,
+          "BaseHealth": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 1,
+          "naturalHealthRegen": 1,
+          "naturalManaRegen": 1,
+          "naturalRacialPowerRegen": 1
+        },
+        "Roll": {
+          "Strength": 0.75,
+          "Agility": 0.75,
+          "Magic": 0.75,
+          "Luck": 1,
+          "Crafting": 1,
+          "Intelligence": 1,
+          "Intimidation": 1,
+          "Charisma": 1.5,
+          "Negotiation": 1.25
+        }
+      },
       "regularPassives": {
         "Attraction": {
           "level": 1,
@@ -1036,11 +1332,51 @@
       }
     }
   },
-  "Stats": {},
-  "Roll": {},
-  "Other": {},
+  "Stats": [
+    "Health",
+    "Strength",
+    "Agility",
+    "Magic",
+    "Luck",
+    "Crafting",
+    "Intelligence",
+    "Intimidation",
+    "Charisma",
+    "Negotiation",
+    "BaseHealth",
+    "Mana",
+    "BaseMana",
+    "RacialPower",
+    "BaseRacialPower",
+    "naturalHealthRegen",
+    "naturalManaRegen",
+    "naturalRacialPowerRegen"
+  ],
+  "Roll": [
+    "Strength",
+    "Agility",
+    "Magic",
+    "Luck",
+    "Crafting",
+    "Intelligence",
+    "Intimidation",
+    "Charisma",
+    "Negotiation"
+  ],
+  "Other": [
+    "Health",
+    "BaseHealth",
+    "Mana",
+    "BaseMana",
+    "RacialPower",
+    "BaseRacialPower",
+    "naturalHealthRegen",
+    "naturalManaRegen",
+    "naturalRacialPowerRegen"
+  ],
   "Classes": {
     "Archer": {
+      "Specs": [],
       "regularPassives": {
         "values": [
           1
@@ -1050,6 +1386,55 @@
           "description": "Years of experience playing darts at local bars is finally paying off. You have {0}% base accuracy when using any thrown item."
         }
       }
+    },
+    "Assassin": {
+      "Specs": []
+    },
+    "Bard": {
+      "Specs": []
+    },
+    "Berserker": {
+      "Specs": []
+    },
+    "Brawler": {
+      "Specs": []
+    },
+    "Knight": {
+      "Specs": [
+        "Dark",
+        "Order"
+      ]
+    },
+    "Mage": {
+      "Specs": [
+        "Chaos",
+        "Dark",
+        "Earth",
+        "Thunder",
+        "Light"
+      ]
+    },
+    "Martial artist": {
+      "Specs": [
+        "Apprentice",
+        "Warrior",
+        "Master",
+        "Grand Master",
+        "Lord",
+        "King"
+      ]
+    },
+    "Oracle": {
+      "Specs": []
+    },
+    "Paladin": {
+      "Specs": []
+    },
+    "Priest": {
+      "Specs": []
+    },
+    "Wanderer": {
+      "Specs": []
     }
   }
 }
