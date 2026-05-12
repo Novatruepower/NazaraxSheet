@@ -1,3 +1,2 @@
 finish transitioning to the database.
-See your amount of exp
 fix Human
