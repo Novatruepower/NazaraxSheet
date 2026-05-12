@@ -959,6 +959,7 @@ function updateDOM() {
                <input type="number" id="${statName}-total" name="${statName}-total" value="${calculateRollStatTotal(character, statName)}" readonly class="stat-input" />
            </td>
        `;
+
         playerStatsContainer.appendChild(row);
     });
 
@@ -1133,14 +1134,15 @@ function renderGeneralTable() {
 
 // Function to perform a quick roll for all player stats
 function quickRollStats() {
-        showConfirmationModal("Are you sure you want to roll stats? This will reset all initial stat values to 5 and it will reset stats exp.", () => {
+        showConfirmationModal("Are you sure you want to roll stats? This will roll all initial stat values to at least 5 and it will reset stats exp.", () => {
         character.isDistributingStats = false; // Exit distribution mode
         ExternalDataManager.rollStats.forEach(statName => {
             character[statName].baseValue = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'baseValue' property
             character[statName].experienceBonus = 0;
+            character[statName].experience = 0;
 
-            // Update the DOM for value (combined) and total immediately
-            document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus;
+            document.getElementById(`${statName}-experience`).value = 0;
+            document.getElementById(`${statName}-value`).value = character[statName].baseValue;
             document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
         });
         // Re-render weapon inventory to update calculated damage values
@@ -1161,7 +1163,10 @@ function distributeStats() {
         ExternalDataManager.rollStats.forEach(statName => {
             character[statName].baseValue = MIN_STAT_VALUE; // Set all stats to minimum baseValue
             character[statName].experienceBonus = 0;
-            document.getElementById(`${statName}-value`).value = character[statName].baseValue + character[statName].experienceBonus; // Update displayed value
+            character[statName].experience = 0;
+            
+            document.getElementById(`${statName}-experience`).value = 0;
+            document.getElementById(`${statName}-value`).value = character[statName].baseValue; // Update displayed value
             document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
         });
 
