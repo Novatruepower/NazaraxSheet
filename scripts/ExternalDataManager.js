@@ -564,6 +564,7 @@ export const ExternalDataManager = {
         return lastMatch;
     },
 
+    
     processedUpgrades(name, ability, level) {
         // Deep copy the passive to avoid modifying the original data.
         const copy = JSON.parse(JSON.stringify(ability));
@@ -611,6 +612,7 @@ export const ExternalDataManager = {
     /**
      * Retrieves the fuall auto passive choices for a specific class.
      * @param {string} className The name of the class.
+     * @param {number} level 
      * @returns {Object|null} The full auto passive choices object for the class, or null if not found.
      */
     getRaceRegularPassives(raceName, level) {
@@ -634,6 +636,7 @@ export const ExternalDataManager = {
     /**
      * Retrieves the actives for a specific race.
      * @param {string} raceName The name of the race.
+     * @param {number} level 
      * @returns {Object|null} actives object for the race, or null if not found.
      */
     getRaceActives(raceName, level) {
@@ -653,17 +656,25 @@ export const ExternalDataManager = {
         return null;
     },
 
+    /**
+     * 
+     * @param {string} className 
+     * @param {object} specializations 
+     * @param {number} level 
+     * @returns {Object|null}
+     */
+
     getClassRegularPassives(className, specializations, level) {
-        const raceData = this.getClassData(className);
-        if (raceData && raceData.regularPassives) {
+        const classData = this.getClassData(className);
+        if (classData && classData.regularPassives) {
             const processedPassives = {};
-            const copy = JSON.parse(JSON.stringify(raceData.regularPassives));
+            const copy = JSON.parse(JSON.stringify(classData.regularPassives));
             const regularPassives = {...copy};
 
             if (specializations[className]) {
                     specializations[className].forEach(spec => {
-                    if (raceData[spec] && raceData[spec].regularPassives) {
-                        const newData = raceData[spec].regularPassives;
+                    if (classData[spec] && classData[spec].regularPassives) {
+                        const newData = classData[spec].regularPassives;
                         for (const name in newData) {
                             regularPassives[name] = newData[name];
                         }
@@ -674,7 +685,7 @@ export const ExternalDataManager = {
             for (const passiveName in regularPassives) {
                 const ability = regularPassives[passiveName];
                 if (ability.level <= level) {
-                    ability['dices'] = raceData.dices;
+                    ability['dices'] = classData.dices;
                     processedPassives[passiveName] = this.processedUpgrades(passiveName, ability, level);
                 }
             }
@@ -683,4 +694,20 @@ export const ExternalDataManager = {
         }
         return null;
     },
+
+    getAvailableSpecializations(character) {
+        // 1. Determine available specializations based on selected classes
+        const availableSpecializations = {};
+        character.classes.forEach(selectedClass => {
+            const specs = this.getClassSpecs(selectedClass);
+            if (specs) {
+                specs.forEach(spec => { 
+                    availableSpecializations[selectedClass] = availableSpecializations[selectedClass] ?? [];
+                    availableSpecializations[selectedClass].push(spec);
+                });
+            }
+        });
+
+        return availableSpecializations;
+    }
 };

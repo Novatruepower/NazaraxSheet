@@ -1164,7 +1164,7 @@ function distributeStats() {
             character[statName].baseValue = MIN_STAT_VALUE; // Set all stats to minimum baseValue
             character[statName].experienceBonus = 0;
             character[statName].experience = 0;
-            
+
             document.getElementById(`${statName}-experience`).value = 0;
             document.getElementById(`${statName}-value`).value = character[statName].baseValue; // Update displayed value
             document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
@@ -2170,7 +2170,19 @@ function renderRegularClassesPassives(oldClass, passivesContainer) {
 
 function renderGenericClassesPassives() {
     const manualPassivesContainer = document.getElementById('classes-manual-passives-container');
-    const genericPassives = ExternalDataManager.getClassRegularPassives(character.classes, character.specializations, character.level);
+    let genericPassives = null;
+    character.classes.forEach(classe => {
+        const result = ExternalDataManager.getClassRegularPassives(classe, character.specializations, character.level);
+
+        if (result) {
+            if (genericPassives) {
+                const keys = Object.key(result);
+                keys.forEach(k => genericPassives[k] = result[k]);
+            }
+            else
+                genericPassives = result;
+        }
+    });
 
     if (genericPassives) {
         //renderManualRacialPassives(manualPassivesContainer, race);
@@ -2596,16 +2608,41 @@ function handleStateCheckboxChange(event) {
     hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
-function renderSpecializations(specializations) {
+function removeSpecializationWarning() {
+    const specializationDisplayInput = document.getElementById('specializations-display');
+    specializationDisplayInput.classList.remove('white-placeholder');
+    specializationDisplayInput.classList.remove('bg-yellow-500');
+    specializationDisplayInput.classList.remove('hover:bg-yellow-600');
+}
+
+function addremoveSpecializationWarning() {
+    const specializationDisplayInput = document.getElementById('specializations-display');
+    specializationDisplayInput.classList.add('white-placeholder');
+    specializationDisplayInput.classList.add('bg-yellow-500');
+    specializationDisplayInput.classList.add('hover:bg-yellow-600'); 
+}
+
+function renderSpecializations(specializations, availableSpecializationsKeys) {
     const displayValues = [];
     const specializationsKeys = Object.keys(specializations);
+    let countSelectedClass = 0;
+
     specializationsKeys.forEach(classe => {
         if (specializations[classe].length > 0) {
             displayValues.push(`${classe}→${specializations[classe].join(', ')}`);
+            ++countSelectedClass;
         }
     });
 
     document.getElementById('specializations-display').value = displayValues.join(', ');
+
+    console.log("test");
+    console.log(countSelectedClass);
+    console.log(availableSpecializationsKeys.length);
+    if (countSelectedClass > 0 && availableSpecializationsKeys.length == countSelectedClass)
+        removeSpecializationWarning();
+    else if (availableSpecializationsKeys.length > 0)
+        addremoveSpecializationWarning();
 }
 
 // Function to handle changes in the specializations checkboxes
@@ -2625,7 +2662,7 @@ function handleSpecializationCheckboxChange(event) {
         character.specializations[classe] = character.specializations[classe].filter(s => s !== value);
     }
 
-    renderSpecializations(character.specializations);
+    renderSpecializations(character.specializations, Object.keys(ExternalDataManager.getAvailableSpecializations(character)));
     hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 
@@ -2634,17 +2671,8 @@ function updateSpecializationDropdownAndData() {
     const specializationDisplayInput = document.getElementById('specializations-display');
     const specializationDropdownOptions = document.getElementById('specializations-dropdown-options');
 
-    // 1. Determine available specializations based on selected classes
-    const availableSpecializations = {};
-    character.classes.forEach(selectedClass => {
-        const specs = ExternalDataManager.getClassSpecs(selectedClass);
-        if (specs) {
-            specs.forEach(spec => { 
-                availableSpecializations[selectedClass] = availableSpecializations[selectedClass] ?? [];
-                availableSpecializations[selectedClass].push(spec);
-            });
-        }
-    });
+
+    const availableSpecializations = ExternalDataManager.getAvailableSpecializations(character);
 
     const specializationsClasses = Object.keys(character.specializations);
     specializationsClasses.forEach(classe => {
@@ -2656,11 +2684,11 @@ function updateSpecializationDropdownAndData() {
         }
     });
 
-    renderSpecializations(character.specializations);
+    const availableSpecializationsKeys = Object.keys(availableSpecializations);
+    renderSpecializations(character.specializations, availableSpecializationsKeys);
 
     // 4. Populate and update checkboxes in the dropdown options
     specializationDropdownOptions.innerHTML = ''; // Clear existing options
-    const availableSpecializationsKeys = Object.keys(availableSpecializations);
 
     if (availableSpecializationsKeys.length === 0) {
         specializationDropdownOptions.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No specializations available for selected classes.</div>';

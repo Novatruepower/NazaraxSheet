@@ -477,6 +477,10 @@ ul {
     mix-blend-mode: normal;
 }
 
+.white-placeholder::placeholder {
+    color: white !important;
+}
+
 @media print {
     .sticky > div > div, aside, #status-message {
         display: none !important;
