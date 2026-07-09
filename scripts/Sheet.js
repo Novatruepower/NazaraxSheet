@@ -1016,7 +1016,7 @@ function updateDOM() {
         personalNotesPanel.style.height = `${layout.height * 100}vh`;
     }
 
-    // Update section visibility - NEW
+    // Update section visibility - New
     updateHtmlVisibility();
 
     updateHistoryButtonsState(); // Update history button states after DOM update
