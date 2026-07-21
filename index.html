@@ -423,6 +423,9 @@
                                     class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed text-center"
                                     readonly
                                 />
+                                <button type="button" id="roll-total-defense-btn" class="px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold text-sm shadow-sm transition-all focus:outline-none flex items-center gap-1" title="Roll Defense for all equipped items">
+                                    🎲 Roll
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -473,11 +476,42 @@
                     </button>
                 </div>
                 <div id="weapon-inventory-content" class="section-content">
-                    <button id="add-weapon-btn"
-                            class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Add Weapon
-                    </button>
-                    <div class="inventory-table-container">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button id="add-weapon-btn"
+                                    class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 text-sm">
+                                + Add Weapon
+                            </button>
+                            <button id="roll-all-weapons-btn"
+                                    class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-md shadow-md hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 text-sm flex items-center gap-1.5"
+                                    title="Roll damage for all active weapons">
+                                🎲 Roll All Active
+                            </button>
+                        </div>
+                        
+                        <!-- View Toggle -->
+                        <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-md max-w-xs self-start sm:self-auto">
+                            <button type="button" id="weapon-view-cards-btn" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 bg-white text-indigo-700 shadow-sm dark:bg-gray-700 dark:text-white">
+                                🃏 Cards View
+                            </button>
+                            <button type="button" id="weapon-view-table-btn" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400">
+                                📋 Table View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Equipped weapons summary -->
+                    <div id="weapon-equipped-summary" class="mb-6 bg-indigo-50/30 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 p-3 rounded-lg hidden">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Cards View Container -->
+                    <div id="weapon-inventory-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Table View Container -->
+                    <div id="weapon-inventory-table-container" class="inventory-table-container hidden">
                         <table id="weapon-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
                             <thead class="bg-gray-100 dark:bg-gray-700">
                                 <tr>
@@ -488,8 +522,7 @@
                                     <th>Required Stat</th>
                                     <th>Accuracy</th>
                                     <th>Damage</th>
-                                    <th>Magic Damage</th>
-                                    <th>Magic Type</th>
+                                    <th>Magic Elements</th>
                                     <th>Effect</th>
                                     <th>Value</th>
                                     <th>Use</th>
@@ -513,11 +546,42 @@
                     </button>
                 </div>
                 <div id="armor-inventory-content" class="section-content">
-                    <button id="add-armor-btn"
-                            class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Add Armor
-                    </button>
-                    <div class="inventory-table-container">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button id="add-armor-btn"
+                                    class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 text-sm">
+                                + Add Armor
+                            </button>
+                            <button id="roll-all-armor-btn"
+                                    class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-md shadow-md hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 text-sm flex items-center gap-1.5"
+                                    title="Roll defense for all equipped armors">
+                                🎲 Roll All Equipped
+                            </button>
+                        </div>
+                        
+                        <!-- View Toggle -->
+                        <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-md max-w-xs self-start sm:self-auto">
+                            <button type="button" id="armor-view-cards-btn" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 bg-white text-indigo-700 shadow-sm dark:bg-gray-700 dark:text-white">
+                                🃏 Cards View
+                            </button>
+                            <button type="button" id="armor-view-table-btn" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400">
+                                📋 Table View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Equipped armor summary -->
+                    <div id="armor-equipped-summary" class="mb-6 bg-indigo-50/30 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 p-3 rounded-lg hidden">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Cards View Container -->
+                    <div id="armor-inventory-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Table View Container -->
+                    <div id="armor-inventory-table-container" class="inventory-table-container hidden">
                         <table id="armor-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
                             <thead class="bg-gray-100 dark:bg-gray-700">
                                 <tr>
@@ -527,8 +591,7 @@
                                     <th>Requirement</th>
                                     <th>Required Stat</th>
                                     <th>Defense</th>
-                                    <th>Magic Defense</th>
-                                    <th>Magic Type</th>
+                                    <th>Magic Elements</th>
                                     <th>Effect</th>
                                     <th>Value</th>
                                     <th>Equipped</th>
