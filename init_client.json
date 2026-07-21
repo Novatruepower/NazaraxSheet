@@ -1409,8 +1409,12 @@
       "Specs": [
         "Chaos",
         "Dark",
+        "Wind",
         "Earth",
+        "Fire",
+        "Ice",
         "Thunder",
+        "Nature",
         "Light"
       ]
     },
