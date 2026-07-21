@@ -1670,6 +1670,8 @@ function handleChangeRace(oldRace) {
         }
     }
 
+    renderActiveEffectsSummary();
+
     hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
 

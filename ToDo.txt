@@ -1,3 +1,2 @@
 finish transitioning to the database.
 fix Human
-remove permanent when changing race
