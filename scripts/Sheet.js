@@ -357,7 +357,7 @@ const defaultCharacterData = function () {
         maxHealth: 0, // Will be calculated dynamically
         maxMana: 0, // Will be calculated dynamically
         maxRacialPower: 0, // Will be calculated dynamically
-        totalDefense: { value: 0, temporaryEffects: [] }, // Initialize totalDefense with temporaryEffects
+        totalDefense: { value: 0, temporaryEffects: {} }, // Initialize totalDefense with temporaryEffects
         
         layouts: {
             // Store layout as percentages (0.0 - 1.0) for responsiveness
@@ -380,6 +380,7 @@ const defaultCharacterData = function () {
             'basic-info-content': true,
             'player-stats-content': true,
             'health-combat-content': true,
+            'active-effects-content': true,
             'actives-content': true,
             'weapon-inventory-content': true,
             'armor-inventory-content': true,
@@ -427,7 +428,7 @@ const defaultCharacterData = function () {
             experienceBonus: 0, // Added new field for experience bonus
             racialChange: initialRacialChange,
             equipment: 0,
-            temporaryEffects: [], // Initialize as an empty array for temporary effects
+            temporaryEffects: {}, // Initialize as an empty object for temporary effects
             experience: 0,
             maxExperience: defaultStatMaxExperience
         };
@@ -761,8 +762,10 @@ function initLoadCharacter(loadedChar) {
                         newChar[key].maxExperience = defaultStatMaxExperience;
                     }
 
-                    if ((ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense') && (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null)) {
-                        newChar[key].temporaryEffects = {};
+                    if (ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense') {
+                        if (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null || Array.isArray(newChar[key].temporaryEffects)) {
+                            newChar[key].temporaryEffects = {};
+                        }
                     }
                 }
             } else {
@@ -1019,7 +1022,206 @@ function updateDOM() {
     // Update section visibility - New
     updateHtmlVisibility();
 
+    // Update static temporary effects buttons with active badges
+    updateStaticTempEffectsButton('Health', 'Health');
+    updateStaticTempEffectsButton('Mana', 'Mana');
+    updateStaticTempEffectsButton('RacialPower', 'Racial Power');
+    updateStaticTempEffectsButton('totalDefense', 'Total defense');
+
+    // Highlight Health/Mana/RacialPower/totalDefense inputs if they have active temporary effects
+    highlightStatsWithActiveEffects();
+
+    // Render global active effects summary
+    renderActiveEffectsSummary();
+
     updateHistoryButtonsState(); // Update history button states after DOM update
+}
+
+/**
+ * Updates a static temporary effects button to include a badges showing how many temporary effects are active.
+ * @param {string} statName The name of the stat (e.g. Health, Mana, totalDefense).
+ * @param {string} displayName The display name for the button.
+ */
+function updateStaticTempEffectsButton(statName, displayName) {
+    const btn = document.querySelector(`.temp-effects-btn[data-stat-name="${statName}"]`);
+    if (!btn) return;
+
+    const activeEffects = getCategoriesTemporaryEffects(character, statName);
+    let badgeHtml = '';
+    if (activeEffects.length > 0) {
+        badgeHtml = `<span class="inline-flex items-center ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200 animate-pulse">✨ ${activeEffects.length}</span>`;
+    }
+
+    btn.innerHTML = `
+        ${displayName}
+        ${badgeHtml}
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 9l-7 7-7-7"></path>
+        </svg>
+    `;
+}
+
+/**
+ * Highlights Health, Mana, RacialPower, and totalDefense input fields on the sheet if they have active effects.
+ */
+function highlightStatsWithActiveEffects() {
+    const healthInputEl = document.getElementById('Health');
+    if (healthInputEl) {
+        const hasHealthEff = getCategoriesTemporaryEffects(character, 'Health').length > 0;
+        if (hasHealthEff) {
+            healthInputEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20', 'dark:bg-indigo-950/20');
+        } else {
+            healthInputEl.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20', 'dark:bg-indigo-950/20');
+        }
+    }
+    const maxHealthEl = document.getElementById('maxHealth');
+    if (maxHealthEl) {
+        const hasEff = getCategoriesTemporaryEffects(character, 'Health').length > 0;
+        if (hasEff) {
+            maxHealthEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        } else {
+            maxHealthEl.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        }
+    }
+    const maxManaEl = document.getElementById('maxMana');
+    if (maxManaEl) {
+        const hasEff = getCategoriesTemporaryEffects(character, 'Mana').length > 0;
+        if (hasEff) {
+            maxManaEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        } else {
+            maxManaEl.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        }
+    }
+    const maxRacialPowerEl = document.getElementById('maxRacialPower');
+    if (maxRacialPowerEl) {
+        const hasEff = getCategoriesTemporaryEffects(character, 'RacialPower').length > 0;
+        if (hasEff) {
+            maxRacialPowerEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        } else {
+            maxRacialPowerEl.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        }
+    }
+    const totalDefenseEl = document.getElementById('total-defense');
+    if (totalDefenseEl) {
+        const hasEff = getCategoriesTemporaryEffects(character, 'totalDefense').length > 0;
+        if (hasEff) {
+            totalDefenseEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        } else {
+            totalDefenseEl.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+        }
+    }
+}
+
+/**
+ * Dynamically renders a global active temporary effects summary list on the main sheet view.
+ */
+function renderActiveEffectsSummary() {
+    const listContainer = document.getElementById('active-effects-summary-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '';
+
+    const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense'];
+    const allEffects = [];
+
+    statsWithEffects.forEach(statName => {
+        if (character[statName] && character[statName].temporaryEffects) {
+            const tempEffects = character[statName].temporaryEffects;
+            for (const category in tempEffects) {
+                const categoryEffects = tempEffects[category];
+                if (Array.isArray(categoryEffects)) {
+                    categoryEffects.forEach(effect => {
+                        allEffects.push({
+                            statName: statName,
+                            category: category,
+                            effect: effect
+                        });
+                    });
+                }
+            }
+        }
+    });
+
+    const countBadge = document.getElementById('global-active-effects-count-badge');
+    if (countBadge) {
+        if (allEffects.length > 0) {
+            countBadge.textContent = allEffects.length;
+            countBadge.classList.remove('hidden');
+        } else {
+            countBadge.classList.add('hidden');
+        }
+    }
+
+    if (allEffects.length === 0) {
+        listContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">No active temporary effects.</p>';
+        return;
+    }
+
+    allEffects.forEach(item => {
+        const effect = item.effect;
+        const statName = item.statName;
+        const val = effect.values ? effect.values[0] : 0;
+        const isPercent = effect.isPercent ? '%' : '';
+        const operator = effect.type || '+';
+        const name = effect.name || 'Unnamed Effect';
+        const appliesTo = effect.appliesTo || 'total';
+        const durationText = (effect.duration === Infinity || effect.duration === null || effect.duration === undefined) 
+            ? 'Permanent' 
+            : `${effect.duration} turns left`;
+
+        const card = document.createElement('div');
+        card.className = 'flex items-center justify-between p-3 border border-gray-100 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150';
+        
+        let displayLabel = `
+            <div class="flex flex-col sm:flex-row sm:items-center gap-x-2">
+                <span class="font-bold text-indigo-600 dark:text-indigo-400">${name}</span> 
+                <span class="text-xs text-gray-500 dark:text-gray-400">(${statName})</span>
+            </div>
+            <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                ${operator}${val}${isPercent} (applies to ${appliesTo})
+            </div>
+        `;
+
+        card.innerHTML = `
+            <div class="flex-grow text-sm text-gray-700 dark:text-gray-300">
+                ${displayLabel}
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
+                    ${durationText}
+                </span>`;
+
+        if (effect.duration !== Infinity)
+            card.innerHTML +=        
+                    `<button type="button" data-stat-name="${statName}" data-category="${item.category}" data-effect-index="${character[statName].temporaryEffects[item.category].indexOf(effect)}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150">
+                        Remove
+                    </button>`
+
+        card.innerHTML +=  `</div>`;
+        listContainer.appendChild(card);
+    });
+
+    listContainer.querySelectorAll('.remove-summary-effect-btn').forEach(btn => {
+        btn.addEventListener('click', (event) => {
+            const statName = event.currentTarget.dataset.statName;
+            const category = event.currentTarget.dataset.category;
+            const effectIndex = parseInt(event.currentTarget.dataset.effectIndex);
+
+            if (statName && character[statName] && character[statName].temporaryEffects[category][effectIndex] !== undefined) {
+                character[statName].temporaryEffects[category].splice(effectIndex, 1);
+                recalculateCharacterDerivedProperties(character, true);
+                updateDOM();
+                hasUnsavedChanges = true;
+                if (typeof showStatusMessage === 'function') {
+                    showStatusMessage("Removed temporary effect.");
+                } else {
+                    console.log("Removed temporary effect.");
+                }
+            }
+        });
+    });
 }
 
 /**
@@ -2343,9 +2545,14 @@ function handlePlayerStatInputChange(event) {
                 categoryTemporaryEffects[effectIndex][subProperty] = value;
             } else if (subProperty === 'isPercent') { // Handle the new isPercent checkbox
                 categoryTemporaryEffects[effectIndex][subProperty] = checked;
-            }
-            else {
+            } else if (subProperty === 'duration') {
+                categoryTemporaryEffects[effectIndex][subProperty] = parseFloat(value) || 0;
+            } else if (subProperty === 'name') {
+                categoryTemporaryEffects[effectIndex][subProperty] = value;
+            } else if (subProperty === 'values') {
                 categoryTemporaryEffects[effectIndex][subProperty] = [newValue];
+            } else {
+                categoryTemporaryEffects[effectIndex][subProperty] = newValue;
             }
             
             // Re-render the temporary effects list and update the stat total immediately
@@ -3675,7 +3882,7 @@ function renderTemporaryEffects(statName) {
 
     manualEffects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
-        let valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
+        let nameInput, valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
         const manualIndex = index;
 
         // If the div doesn't exist or isn't the correct type, create it
@@ -3697,16 +3904,23 @@ function renderTemporaryEffects(statName) {
 
             // Populate innerHTML
             effectDiv.innerHTML = `
-                <div class="flex flex-col min-w-[8rem] gap-y-1">
+                <div class="flex flex-col min-w-[9rem] gap-y-1">
+                    <label class="${labelBase}">Effect Name</label>
+                    <input type="text" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="name" class="${inputBase} w-full" placeholder="e.g. Bless, Poison" />
+                </div>
+
+                <div class="flex flex-col min-w-[7rem] gap-y-1">
                     <label class="${labelBase}">Value</label>
                     <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
-                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="values" class="${inputBase} flex-grow" />
-                        <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="isPercent" class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
-                        <span class="${labelBase}">%</span> <!-- Added a span for the percentage symbol -->
+                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="values" class="${inputBase} flex-grow min-w-[4rem]" />
+                        <label class="flex items-center gap-x-1 cursor-pointer">
+                            <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="isPercent" class="form-checkbox h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
+                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">%</span>
+                        </label>
                     </div>
                 </div>
 
-                <div class="flex flex-col min-w-[9rem] gap-y-1">
+                <div class="flex flex-col min-w-[5rem] gap-y-1">
                     <label class="${labelBase}">Type</label>
                     <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="type" class="${inputBase}">
                         <option value="+">+</option>
@@ -3714,7 +3928,7 @@ function renderTemporaryEffects(statName) {
                     </select>
                 </div>
 
-                <div class="flex flex-col min-w-[9rem] gap-y-1">
+                <div class="flex flex-col min-w-[8rem] gap-y-1">
                     <label class="${labelBase}">Applies To</label>
                     <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="appliesTo" class="${inputBase}">
                         <option value="initial-value">initial value</option>
@@ -3723,18 +3937,19 @@ function renderTemporaryEffects(statName) {
                     </select>
                 </div>
 
-                <div class="flex flex-col min-w-[9rem] gap-y-1">
+                <div class="flex flex-col min-w-[6rem] gap-y-1">
                     <label class="${labelBase}">Duration</label>
                     <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="duration" class="${inputBase}" />
                 </div>
 
                 <div class="flex items-end">
-                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
                         Remove
                     </button>
                 </div>
             `;
             // Get references to the newly created inputs and button
+            nameInput = effectDiv.querySelector(`input[data-field="name"]`);
             valueInput = effectDiv.querySelector(`input[data-field="values"]`);
             isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
@@ -3743,6 +3958,7 @@ function renderTemporaryEffects(statName) {
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
         } else {
             // If the div already exists and is correct, just update its children's values and data attributes
+            nameInput = effectDiv.querySelector(`input[data-field="name"]`);
             valueInput = effectDiv.querySelector(`input[data-field="values"]`);
             isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
@@ -3751,6 +3967,7 @@ function renderTemporaryEffects(statName) {
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
 
             // Update data-effect-index for consistency if order changes (though it shouldn't often here)
+            nameInput.dataset.effectIndex = manualIndex;
             valueInput.dataset.effectIndex = manualIndex;
             isPercentCheckbox.dataset.effectIndex = manualIndex;
             durationInput.dataset.effectIndex = manualIndex;
@@ -3760,13 +3977,17 @@ function renderTemporaryEffects(statName) {
         }
 
         // Always update the input values directly to reflect the current data
-        valueInput.value = effect.values[0] || 1;
+        nameInput.value = effect.name || '';
+        valueInput.value = effect.values[0] || 0;
         isPercentCheckbox.checked = effect.isPercent; // Set checked state for the checkbox
         durationInput.value = effect.duration;
         typeSelect.value = effect.type || '+'; // Default to 'add'
         appliesToSelect.value = effect.appliesTo || 'total'; // Default to 'total'
 
         // Re-attach event listeners to ensure they are always active for current elements
+        nameInput.removeEventListener('input', handlePlayerStatInputChange);
+        nameInput.addEventListener('input', handlePlayerStatInputChange);
+
         valueInput.removeEventListener('input', handlePlayerStatInputChange);
         valueInput.addEventListener('input', handlePlayerStatInputChange);
 
@@ -3844,7 +4065,7 @@ function addTemporaryEffect(char, category, effect, duration) {
 function addManualTemporaryEffect() {
     if (currentStatForTempEffects) {
         // Initialize new effect with default type and appliesTo
-        addTemporaryEffect(character, 'manual', {statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
+        addTemporaryEffect(character, 'manual', { name: 'New Effect', statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
         renderTemporaryEffects(currentStatForTempEffects);
         // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
