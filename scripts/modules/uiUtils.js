@@ -1,7 +1,12 @@
-import { ExternalDataManager } from './externalDataManager.js'
+import { ExternalDataManager } from '../externalDataManager.js'
+import { MIN_STAT_VALUE } from './constants.js';
 import { SECTION_VISIBILITY, HTML_VISIBILITY } from './constants.js';
 import { character, setHasUnsavedChanges } from './state.js';
-import { getCategoriesTemporaryEffects } from './formulas.js'
+import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal } from './formulas.js'
+import { renderRacial } from './passivesActives.js';
+import { renderWeaponTable, renderArmorTable, renderGeneralTable } from './inventory.js';
+import { recalculateCharacterDerivedProperties, updateHistoryButtonsState } from './characterState.js';
+
 
 export function showStatusMessage(message, isError = false) {
     const statusMessageElement = document.getElementById('status-message');
@@ -323,11 +328,13 @@ export function renderActiveEffectsSummary() {
             <div class="flex items-center gap-3">
                 <span class="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
                     ${durationText}
-                </span>
-                <button type="button" data-stat-name="${statName}" data-category="${item.category}" data-effect-index="${character[statName].temporaryEffects[item.category].indexOf(effect)}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150">
+                </span>`;
+        if (durationText != 'Permanent')
+            card.innerHTML +=     `<button type="button" data-stat-name="${statName}" data-category="${item.category}" data-effect-index="${character[statName].temporaryEffects[item.category].indexOf(effect)}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150">
                     Remove
-                </button>
-            </div>
+                </button>`;
+
+        card.innerHTML +=    `</div>
         `;
         listContainer.appendChild(card);
     });
@@ -442,4 +449,202 @@ export function updateSpecializationDropdownAndData() {
             });
         });
     }
+}
+
+// Function to update the DOM elements with the current character data
+export function updateDOM() {
+    // Basic Info
+    document.getElementById('name').value = character.name;
+    document.getElementById('level').value = character.level;
+    document.getElementById('levelExperience').value = character.levelExperience;
+    document.getElementById('levelMaxExperience').value = character.levelMaxExperience; // This is readonly
+    document.getElementById('purse').value = character.purse;
+    document.getElementById('bank').value = character.bank;
+
+    // Handle race selector placeholder color and update max Health
+    const raceSelect = document.getElementById('race');
+    raceSelect.value = character.race; // Set the selected race
+    if (character.race === '') {
+        raceSelect.classList.add('select-placeholder-text');
+    } else {
+        raceSelect.classList.remove('select-placeholder-text');
+    }
+
+    // Update derived properties and then update their DOM elements
+    recalculateCharacterDerivedProperties(character, true);
+
+    // Handle custom multi-select for class
+    const classDisplayInput = document.getElementById('classes-display');
+    const classDropdownOptions = document.getElementById('classes-dropdown-options');
+
+    // Set the displayed value for classes
+    classDisplayInput.value = character.classes.join(', ');
+
+    // Populate and update checkboxes in the dropdown options
+    classDropdownOptions.innerHTML = ''; // Clear existing options
+    const classes = Object.keys(ExternalDataManager._data.Classes);
+    classes.forEach(className => {
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
+        checkboxDiv.innerHTML = `
+           <input
+               type="checkbox"
+               id="class-${className.replace(/\s/g, '-')}"
+               name="class-option"
+               value="${className}"
+               class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
+               ${character.classes.includes(className) ? 'checked' : ''}
+           />
+           <label for="class-${className.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${className}</label>
+       `;
+        classDropdownOptions.appendChild(checkboxDiv);
+    });
+
+    // Update specializations dropdown
+    updateSpecializationDropdownAndData();
+
+    const stateDisplayInput = document.getElementById('state-display');
+    const stateDropdownOptions = document.getElementById('state-dropdown-options');
+    const states = Object.keys(character.states);
+    const statesActive = getCharacterStatesActive();
+
+    stateDisplayInput.value = statesActive.join(', ');
+
+    stateDropdownOptions.innerHTML = '';
+
+    states.forEach(state => {
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
+        checkboxDiv.innerHTML = `
+           <input
+               type="checkbox"
+               id="state-${state.replace(/\s/g, '-')}"
+               name="state-option"
+               value="${state}"
+               class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
+               ${statesActive.includes(state) ? 'checked' : ''}
+           />
+           <label for="state-${state.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${state}</label>
+       `;
+        stateDropdownOptions.appendChild(checkboxDiv);
+    });
+
+    // Render racial passives based on selected race
+    renderRacial();
+
+
+    // Player Stats
+    const playerStatsContainer = document.getElementById('player-stats-container').querySelector('tbody');
+    playerStatsContainer.innerHTML = ''; // Clear existing rows
+
+    ExternalDataManager.rollStats.forEach(statName => {
+        const statData = character[statName];
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700'; // Add hover effect to rows
+        row.innerHTML = `
+            <td class="px-2 py-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
+                <button type="button"
+                    class="temp-effects-btn ml-1 p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1"
+                    data-stat-name="${statName}" data-stat-display-name="${statName}" data-stat-display-total="${statName}-total">
+                    ${statName}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+            </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-value" name="${statName}-value" min="${MIN_STAT_VALUE}" value="${statData.baseValue + statData.experienceBonus}" class="stat-input" />
+            </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-racialChange" name="${statName}-racialChange" value="${getAppliedRacialChange(character, statName)}" readonly class="stat-input" />
+           </td>
+           <td class="px-2 py-1 whitespace-nowrap">
+               <input type="number" id="${statName}-equipment" name="${statName}-equipment" value="${statData.equipment}" class="stat-input" />
+           </td>
+       `;
+
+        const expContainer = document.createElement('td');
+        expContainer.classList = 'px-2 py-1 whitespace-nowrap';
+        expContainer.innerHTML = 
+            `<div class="flex items-center justify-center exp-inputs-wrapper">
+                <input type="number" id="${statName}-experience" name="${statName}-experience" value="${statData.experience}" class="stat-input rounded-r-none" />
+                <span class="px-1 py-1 border-y border-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">/</span>
+                <input type="number" id="${statName}-maxExperience" name="${statName}-maxExperience" min="1" value="${statData.maxExperience}" readonly class="stat-input rounded-l-none" />
+                <input type="text" id="${statName}-experienceBonus" name="${statName}-experienceBonus" value="" readonly class="stat-input rounded-l-none hidden" />
+            </div>`;
+        row.appendChild(expContainer);
+
+        const totalContainer = document.createElement('td');
+        totalContainer.classList = 'px-2 py-1 whitespace-nowrap';
+        totalContainer.innerHTML =  `<input type="number" id="${statName}-total" name="${statName}-total" value="${calculateRollStatTotal(character, statName)}" readonly class="stat-input" />`;
+        row.appendChild(totalContainer);
+
+        playerStatsContainer.appendChild(row);
+        
+        const maxExpElement = document.getElementById(`${statName}-maxExperience`);
+        const experienceBonusElement = document.getElementById(`${statName}-experienceBonus`); 
+
+        maxExpElement.addEventListener('mouseenter', () => {
+            experienceBonusElement.value = `${maxExpElement.value} (give + ${character[statName].experienceBonus})`;
+            maxExpElement.classList.add('hidden');
+            experienceBonusElement.classList.remove('hidden');
+        });
+
+        experienceBonusElement.addEventListener('mouseleave', () => {
+            experienceBonusElement.classList.add('hidden');
+            maxExpElement.classList.remove('hidden');
+        });
+    });
+
+    // Update remaining points display
+    updateRemainingPointsDisplay();
+
+    // Health & Combat
+    // document.getElementById('healthBonus').value = character.healthBonus; // Removed this line
+    // totalDefense is now updated via recalculateSmallUpdateCharacter
+    document.getElementById('total-defense').value = character.totalDefense.value;
+
+    // Render new inventory tables
+    renderWeaponTable();
+    renderArmorTable();
+    renderGeneralTable();
+
+    // Backstory
+    let layout = character.layouts.backstory;
+    const backstory = document.getElementById('backstory');
+    if (backstory) {
+        backstory.value = layout.text;
+        backstory.style.height = `${layout.height * 100}vh`;
+    }
+
+    // Personal Notes
+    layout = character.layouts.personalNotes;
+    document.getElementById('personalNotes').value = layout.text;
+    const personalNotesPanel = document.getElementById('personal-notes-panel');
+    if (personalNotesPanel) {
+        // Apply position and size using viewport units (vw/vh)
+        personalNotesPanel.style.left = `${layout.x * 100}vw`;
+        personalNotesPanel.style.top = `${layout.y * 100}vh`;
+        personalNotesPanel.style.width = `${layout.width * 100}vw`;
+        personalNotesPanel.style.height = `${layout.height * 100}vh`;
+    }
+
+    // Update section visibility - New
+    updateHtmlVisibility();
+
+    // Update static temporary effects buttons with active badges
+    updateStaticTempEffectsButton('Health', 'Health');
+    updateStaticTempEffectsButton('Mana', 'Mana');
+    updateStaticTempEffectsButton('RacialPower', 'Racial Power');
+    updateStaticTempEffectsButton('totalDefense', 'Total defense');
+
+    // Highlight Health/Mana/RacialPower/totalDefense inputs if they have active temporary effects
+    highlightStatsWithActiveEffects();
+
+    // Render global active effects summary
+    renderActiveEffectsSummary();
+
+    updateHistoryButtonsState(); // Update history button states after DOM update
 }

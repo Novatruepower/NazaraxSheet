@@ -41,3 +41,21 @@ export const character = new Proxy({}, {
         return true;
     }
 });
+
+// Inventory display settings
+export let inventoryViewSettings = {
+    weapon: 'cards',
+    armor: 'cards',
+    general: 'cards'
+};
+
+// History stack for revert/forward functionality
+export let historyStack = [];
+export function setHistoryStack(stack) {
+    historyStack = stack;
+}
+
+export let historyPointer = -1; // Pointer to the current state in the historyStack
+export function setHistoryPointer(ptr) {
+    historyPointer = ptr;
+}
