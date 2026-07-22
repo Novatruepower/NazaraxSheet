@@ -7,7 +7,7 @@
 
 // Assuming googleDriveFileFetcher is imported or globally available
 // Example: import { googleDriveFileFetcher } from './fetch.js';
-import { googleDriveFileFetcher } from './GoogleSheetFetch.js';
+import { googleDriveFileFetcher } from './googleSheetFetch.js';
 
 // Function to check if a formula has values
 const hasFormulaValues = formula => formula.values && formula.values.length > 0;

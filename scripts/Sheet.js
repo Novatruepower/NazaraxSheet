@@ -1,14 +1,7 @@
-import { ExternalDataManager } from './ExternalDataManager.js';
-//import { math } from './math.min.js';
-let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
-
-const defaultStatMaxExperience = 7;
-const defaultRacialPointScale = 100;
-
-// Constants for point distribution
-const TOTAL_DISTRIBUTION_POINTS = 97;
-const MIN_STAT_VALUE = 5;
-const MAX_STAT_VALUE = 20;
+import { defaultStatMaxExperience, defaultRacialPointScale, TOTAL_DISTRIBUTION_POINTS, MIN_STAT_VALUE, MAX_STAT_VALUE } from './constants.js';
+import { ExternalDataManager } from './externalDataManager.js';
+import { currentGoogleDriveFileId } from './state.js';
+import { maybeEnableGoogleDriveButtons, handleGoogleDriveAuthClickThenCall, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick } from './googleDrive.js';
 
 // --- AUTO HISTORY SAVER ---
 let historySaveInterval = null;
@@ -4537,10 +4530,6 @@ let healthInput;
 let manaInput;
 let racialPowerInput;
 
-// Key for local storage to persist Google Drive authorization status
-const GOOGLE_DRIVE_AUTH_STATUS_KEY = 'googleDriveAuthorized';
-
-
 /**
 * Shows a status message to the user.
 * @param {string} message The message to display.
@@ -4592,101 +4581,6 @@ function showConfirmationModal(message, onConfirm, onCancel = () => { }) {
 
     confirmOkBtn.addEventListener('click', handleConfirm);
     confirmCancelBtn.addEventListener('click', handleCancel);
-}
-
-/**
-* Enables Google Drive buttons if both GAPI and GIS are initialized.
-* Also updates the UI based on current authorization status and local storage.
-*/
-function maybeEnableGoogleDriveButtons() {
-    if (window.gapiInited && window.gisInited) {
-        authorizeGoogleDriveButton.disabled = false;
-        const currentToken = gapi.client.getToken();
-        const wasAuthorizedInLocalStorage = localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true';
-
-        if (currentToken) {
-            // User is currently authorized
-            googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized';
-            authorizeGoogleDriveButton.classList.add('hidden');
-            signoutGoogleDriveButton.classList.remove('hidden');
-            localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Ensure local storage is updated
-            return true;
-        } else if (wasAuthorizedInLocalStorage) {
-            // User was authorized previously, but session might have expired
-            googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized (Session Expired)';
-            authorizeGoogleDriveButton.classList.remove('hidden'); // Show authorize to re-auth
-            signoutGoogleDriveButton.classList.remove('hidden'); // Still allow sign out
-            return null;
-        } else {
-            // User is not authorized and never was (or explicitly signed out)
-            googleDriveAuthStatusSpan.textContent = 'Google Drive: Not Authorized';
-            authorizeGoogleDriveButton.classList.remove('hidden');
-            signoutGoogleDriveButton.classList.add('hidden');
-            return false;
-        }
-    }
-}
-
-/**
-* Handles Google Drive authorization click.
-*/
-function handleGoogleDriveAuthClickThenCall(functionToCall) {
-    window.tokenClient.callback = async (resp) => {
-        if (resp.error) {
-            console.error("Google Drive authorization error:", resp);
-            showStatusMessage("Google Drive authorization failed.", true);
-            localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear local storage on error
-            gapi.client.setToken(''); // Clear token in gapi.client as well
-            maybeEnableGoogleDriveButtons(); // Update UI
-            return;
-        }
-        // Set the token for gapi.client after successful authorization
-        gapi.client.setToken(resp);
-        localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
-        showStatusMessage("Google Drive authorized successfully!");
-        // Update UI
-        if(maybeEnableGoogleDriveButtons()) {
-            functionToCall();
-        }
-    };
-    window.tokenClient.requestAccessToken({ prompt: 'consent' });
-}
-
-/**
-* Handles Google Drive authorization click.
-*/
-function handleGoogleDriveAuthClick() {
-    window.tokenClient.callback = async (resp) => {
-        if (resp.error) {
-            console.error("Google Drive authorization error:", resp);
-            showStatusMessage("Google Drive authorization failed.", true);
-            localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear local storage on error
-            gapi.client.setToken(''); // Clear token in gapi.client as well
-            maybeEnableGoogleDriveButtons(); // Update UI
-            return;
-        }
-        // Set the token for gapi.client after successful authorization
-        gapi.client.setToken(resp);
-        localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
-        showStatusMessage("Google Drive authorized successfully!");
-        maybeEnableGoogleDriveButtons(); // Update UI
-    };
-    window.tokenClient.requestAccessToken({ prompt: 'consent' });
-}
-
-/**
-* Handles Google Drive sign-out.
-*/
-function handleGoogleDriveSignoutClick() {
-    const token = gapi.client.getToken();
-    if (token) {
-        google.accounts.oauth2.revoke(token.access_token);
-        gapi.client.setToken('');
-    }
-    localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear persisted status
-    currentGoogleDriveFileId = null; // Clear current file ID on sign out
-    showStatusMessage("Signed out from Google Drive.");
-    maybeEnableGoogleDriveButtons(); // Update UI
 }
 
 /**
