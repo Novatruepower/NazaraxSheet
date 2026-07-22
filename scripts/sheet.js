@@ -1,7 +1,7 @@
 import { defaultStatMaxExperience, defaultRacialPointScale, TOTAL_DISTRIBUTION_POINTS, MIN_STAT_VALUE, MAX_STAT_VALUE } from './constants.js';
 import { showStatusMessage } from './uiUtils.js';
 import { ExternalDataManager } from './externalDataManager.js';
-import { currentGoogleDriveFileId } from './state.js';
+import { currentGoogleDriveFileId, setCurrentGoogleDriveFileId } from './state.js';
 import { maybeEnableGoogleDriveButtons, handleGoogleDriveAuthClickThenCall, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick } from './googleDrive.js';
 
 // --- AUTO HISTORY SAVER ---
@@ -4627,7 +4627,7 @@ async function saveCharacterToGoogleDrive() {
                 headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
                 body: multipartRequestBody
             });
-            currentGoogleDriveFileId = response.result.id;
+            setCurrentGoogleDriveFileId(response.result.id);
             showStatusMessage("New character data saved to Google Drive!");
         }
         console.log("Character data saved to Google Drive!");
