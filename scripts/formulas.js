@@ -1,4 +1,4 @@
-import { ExternalDataManager } from './ExternalDataManager.js';
+import { ExternalDataManager } from './externalDataManager.js';
 import { character } from './state.js';
 
 export function getCategoriesTemporaryEffects(charData, statName) {
