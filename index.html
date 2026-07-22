@@ -487,6 +487,12 @@
                                     title="Roll damage for all active weapons">
                                 🎲 Roll All Active
                             </button>
+                            <button id="weapon-toggle-all-cards-btn"
+                                    type="button"
+                                    class="px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-md shadow-sm transition-all duration-200 text-sm flex items-center gap-1.5"
+                                    title="Collapse or Expand all weapon cards">
+                                ↕️ Collapse/Expand Cards
+                            </button>
                         </div>
                         
                         <!-- View Toggle -->
@@ -557,6 +563,12 @@
                                     title="Roll defense for all equipped armors">
                                 🎲 Roll All Equipped
                             </button>
+                            <button id="armor-toggle-all-cards-btn"
+                                    type="button"
+                                    class="px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-md shadow-sm transition-all duration-200 text-sm flex items-center gap-1.5"
+                                    title="Collapse or Expand all armor cards">
+                                ↕️ Collapse/Expand Cards
+                            </button>
                         </div>
                         
                         <!-- View Toggle -->
@@ -615,11 +627,38 @@
                     </button>
                 </div>
                 <div id="general-inventory-content" class="section-content">
-                    <button id="add-general-item-btn"
-                            class="mb-4 px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                        Add Item
-                    </button>
-                    <div class="inventory-table-container">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button id="add-general-item-btn"
+                                    class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 text-sm">
+                                + Add Item
+                            </button>
+                            <button id="general-toggle-all-cards-btn"
+                                    type="button"
+                                    class="px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-md shadow-sm transition-all duration-200 text-sm flex items-center gap-1.5"
+                                    title="Collapse or Expand all item cards">
+                                ↕️ Collapse/Expand Cards
+                            </button>
+                        </div>
+                        
+                        <!-- View Toggle -->
+                        <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-md max-w-xs self-start sm:self-auto">
+                            <button type="button" id="general-view-cards-btn" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 bg-white text-indigo-700 shadow-sm dark:bg-gray-700 dark:text-white">
+                                🃏 Cards View
+                            </button>
+                            <button type="button" id="general-view-table-btn" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400">
+                                📋 Table View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Cards View Container -->
+                    <div id="general-inventory-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Table View Container -->
+                    <div id="general-inventory-table-container" class="inventory-table-container hidden">
                         <table id="general-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
                             <thead class="bg-gray-100 dark:bg-gray-700">
                                 <tr>

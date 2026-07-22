@@ -479,7 +479,8 @@ let hasUnsavedChanges = false;
 // Inventory display settings
 let inventoryViewSettings = {
     weapon: 'cards',
-    armor: 'cards'
+    armor: 'cards',
+    general: 'cards'
 };
 
 // History stack for revert/forward functionality
@@ -1257,15 +1258,12 @@ function renderActiveEffectsSummary() {
             <div class="flex items-center gap-3">
                 <span class="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
                     ${durationText}
-                </span>`;
-
-        if (effect.duration !== Infinity)
-            card.innerHTML +=        
-                    `<button type="button" data-stat-name="${statName}" data-category="${item.category}" data-effect-index="${character[statName].temporaryEffects[item.category].indexOf(effect)}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150">
-                        Remove
-                    </button>`
-
-        card.innerHTML +=  `</div>`;
+                </span>
+                <button type="button" data-stat-name="${statName}" data-category="${item.category}" data-effect-index="${character[statName].temporaryEffects[item.category].indexOf(effect)}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150">
+                    Remove
+                </button>
+            </div>
+        `;
         listContainer.appendChild(card);
     });
 
@@ -1469,13 +1467,25 @@ function renderWeaponCards() {
         }
 
         card.innerHTML = `
-            <!-- Card Header: Name & Active Switch -->
-            <div class="flex items-center justify-between gap-4 pb-3 border-b border-gray-100 dark:border-gray-700/60">
-                <div class="flex-grow">
-                    <input type="text" data-inventory-type="weapon" data-field="name" data-index="${index}" value="${item.name || ''}" placeholder="Weapon Name..." class="font-bold text-base text-gray-900 dark:text-gray-100 bg-transparent border-b border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-indigo-500 focus:outline-none transition-all duration-200 w-full rounded px-1 -ml-1 focus:bg-gray-50 dark:focus:bg-gray-900" />
+            <!-- Card Header: Name, Values, Roll & Active Switch -->
+            <div class="flex items-center justify-between gap-3 ${item.collapsed ? '' : 'pb-3 border-b border-gray-100 dark:border-gray-700/60'}">
+                <div class="flex items-center gap-2 flex-grow min-w-0">
+                    <button type="button" data-action="toggle-card-collapse" data-inventory-type="weapon" data-index="${index}" class="p-1 rounded-md text-gray-400 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-all duration-150 flex-shrink-0" title="${item.collapsed ? 'Expand Card' : 'Collapse Card'}">
+                        <svg class="w-5 h-5 transition-transform duration-200 ${item.collapsed ? '-rotate-90' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <input type="text" data-inventory-type="weapon" data-field="name" data-index="${index}" value="${item.name || ''}" placeholder="Weapon Name..." class="font-bold text-base text-gray-900 dark:text-gray-100 bg-transparent border-b border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-indigo-500 focus:outline-none transition-all duration-200 w-full rounded px-1 -ml-1 focus:bg-gray-50 dark:focus:bg-gray-900 truncate" />
                 </div>
                 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 font-mono" title="Weapon Damage">
+                        💥 ${item.damage || '0'}
+                    </span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40" title="Gold Value">
+                        🪙 ${item.value || 0}
+                    </span>
+
                     <button type="button" data-action="roll-weapon" data-index="${index}" class="flex items-center gap-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 dark:text-indigo-300 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-2 py-1 rounded transition-all duration-150 shadow-sm" title="Roll Weapon Damage">
                         🎲 Roll
                     </button>
@@ -1487,116 +1497,119 @@ function renderWeaponCards() {
                 </div>
             </div>
 
-            <!-- Attributes grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Type</label>
-                    <input type="text" data-inventory-type="weapon" data-field="type" data-index="${index}" value="${item.type || ''}" placeholder="e.g. Sword, Bow" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Material</label>
-                    <input type="text" data-inventory-type="weapon" data-field="material" data-index="${index}" value="${item.material || ''}" placeholder="e.g. Mithril" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
-                </div>
-                <div class="flex flex-col gap-1 col-span-2 sm:col-span-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Gold Value</label>
-                    <div class="relative flex items-center">
-                        <span class="absolute left-2.5 text-xs">🪙</span>
-                        <input type="number" data-inventory-type="weapon" data-field="value" data-index="${index}" value="${item.value || 0}" class="pl-7 pr-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+            <!-- Card Body (Hidden when collapsed) -->
+            <div class="card-body flex flex-col gap-4 ${item.collapsed ? 'hidden' : 'mt-4'}">
+                <!-- Attributes grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Type</label>
+                        <input type="text" data-inventory-type="weapon" data-field="type" data-index="${index}" value="${item.type || ''}" placeholder="e.g. Sword, Bow" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Material</label>
+                        <input type="text" data-inventory-type="weapon" data-field="material" data-index="${index}" value="${item.material || ''}" placeholder="e.g. Mithril" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                    </div>
+                    <div class="flex flex-col gap-1 col-span-2 sm:col-span-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Gold Value</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-2.5 text-xs">🪙</span>
+                            <input type="number" data-inventory-type="weapon" data-field="value" data-index="${index}" value="${item.value || 0}" class="pl-7 pr-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Stats & Accuracy grid -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1">🎯 Accuracy %</label>
-                    <input type="number" data-inventory-type="weapon" data-field="accuracy" data-index="${index}" value="${item.accuracy || 100}" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stat</label>
-                    <div class="flex items-center gap-1">
-                        <select data-inventory-type="weapon" data-field="requiredStat" data-index="${index}" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-855 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2">
-                            <option value="">None</option>
-                            ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${item.requiredStat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
-                        </select>
-                        <input type="text" data-inventory-type="weapon" data-field="requirement" data-index="${index}" value="${item.requirement || ''}" placeholder="Val" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2 text-center" />
+                <!-- Stats & Accuracy grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1">🎯 Accuracy %</label>
+                        <input type="number" data-inventory-type="weapon" data-field="accuracy" data-index="${index}" value="${item.accuracy || 100}" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stat</label>
+                        <div class="flex items-center gap-1">
+                            <select data-inventory-type="weapon" data-field="requiredStat" data-index="${index}" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-855 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2">
+                                <option value="">None</option>
+                                ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${item.requiredStat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+                            </select>
+                            <input type="text" data-inventory-type="weapon" data-field="requirement" data-index="${index}" value="${item.requirement || ''}" placeholder="Val" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2 text-center" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Damage Formulas -->
-            <div class="flex flex-col gap-1">
-                <div class="flex items-center justify-between">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">💥 Physical Damage</label>
-                    ${item.rolledDamage !== undefined ? `<span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-100 dark:border-emerald-900/30">Last Roll: ${item.rolledDamage}</span>` : ''}
+                <!-- Damage Formulas -->
+                <div class="flex flex-col gap-1">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">💥 Physical Damage</label>
+                        ${item.rolledDamage !== undefined ? `<span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-100 dark:border-emerald-900/30">Last Roll: ${item.rolledDamage}</span>` : ''}
+                    </div>
+                    <textarea data-inventory-type="weapon" data-field="damage" data-index="${index}" placeholder="e.g. 2d6 + Strength" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-10 resize-none">${item.damage || ''}</textarea>
                 </div>
-                <textarea data-inventory-type="weapon" data-field="damage" data-index="${index}" placeholder="e.g. 2d6 + Strength" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-10 resize-none">${item.damage || ''}</textarea>
-            </div>
 
-            <!-- Magic Elements panel -->
-            <div class="border-t border-dashed border-gray-200 dark:border-gray-700/60 pt-3 mt-1">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                        ✨ Magic Elements & Damages
-                    </span>
-                    <button type="button" data-action="add-magic-element" data-inventory-type="weapon" data-index="${index}" class="text-[11px] font-semibold text-purple-600 hover:text-white dark:text-purple-400 hover:bg-purple-500 dark:hover:bg-purple-600 border border-purple-200 dark:border-purple-900/40 px-2 py-0.5 rounded transition-all duration-200 focus:outline-none">
-                        + Add Element
+                <!-- Magic Elements panel -->
+                <div class="border-t border-dashed border-gray-200 dark:border-gray-700/60 pt-3 mt-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                            ✨ Magic Elements & Damages
+                        </span>
+                        <button type="button" data-action="add-magic-element" data-inventory-type="weapon" data-index="${index}" class="text-[11px] font-semibold text-purple-600 hover:text-white dark:text-purple-400 hover:bg-purple-500 dark:hover:bg-purple-600 border border-purple-200 dark:border-purple-900/40 px-2 py-0.5 rounded transition-all duration-200 focus:outline-none">
+                            + Add Element
+                        </button>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        ${item.magicElements.map((me, meIndex) => {
+                            const isCustom = me.element && !["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].includes(me.element);
+                            return `
+                            <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-150 dark:border-gray-800">
+                                <!-- Dropdown for elements -->
+                                <div class="flex flex-col gap-1 w-1/3 min-w-[100px]">
+                                    <select data-action="edit-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" data-field="element" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full">
+                                        <option value="">Select Element...</option>
+                                        ${["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].map(el => `<option value="${el}" ${me.element === el ? 'selected' : ''}>${el}</option>`).join('')}
+                                        ${isCustom ? `<option value="custom_input" selected>Custom (${me.element})</option>` : '<option value="custom_input">Custom...</option>'}
+                                    </select>
+                                    ${isCustom ? `
+                                        <input type="text" data-action="edit-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" data-field="custom-element-name" value="${me.element === 'Custom' ? '' : me.element}" placeholder="Name..." class="px-2 py-0.5 text-[10px] border border-purple-200 dark:border-purple-800 rounded bg-purple-50/50 dark:bg-purple-950/20 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
+                                    ` : ''}
+                                </div>
+                                <!-- Damage Input -->
+                                <div class="flex-grow flex flex-col gap-0.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Damage Formula</span>
+                                        ${me.rolledDamage !== undefined ? `<span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-1 rounded">Last Roll: ${me.rolledDamage}</span>` : ''}
+                                    </div>
+                                    <input type="text" data-action="edit-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" data-field="damage" value="${me.damage || ''}" placeholder="e.g. 1d4 + Magic" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
+                                </div>
+                                <!-- Delete button -->
+                                <button type="button" data-action="remove-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-350 p-1.5 focus:outline-none" title="Remove Element">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            `;
+                        }).join('')}
+                        ${item.magicElements.length === 0 ? `
+                            <div class="text-center py-2 text-xs text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+                                No magic elements active. Click "+ Add Element" to add one.
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <!-- Validation and Effects -->
+                <div class="flex flex-col gap-1">
+                    ${valBadge}
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1">Special Properties / Effects</label>
+                    <textarea data-inventory-type="weapon" data-field="effect" data-index="${index}" placeholder="Add passive buffs or special combat details..." class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-12 resize-none">${item.effect || ''}</textarea>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/60 mt-auto">
+                    <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Slot #${index + 1}</span>
+                    <button type="button" data-inventory-type="weapon" data-index="${index}" class="remove-item-btn text-xs font-semibold text-red-500 hover:text-white dark:text-red-400 hover:bg-red-500 dark:hover:bg-red-600 border border-red-200 dark:border-red-900/40 px-2.5 py-1 rounded transition-all duration-200">
+                        Remove
                     </button>
                 </div>
-                <div class="flex flex-col gap-2">
-                    ${item.magicElements.map((me, meIndex) => {
-                        const isCustom = me.element && !["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].includes(me.element);
-                        return `
-                        <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-150 dark:border-gray-800">
-                            <!-- Dropdown for elements -->
-                            <div class="flex flex-col gap-1 w-1/3 min-w-[100px]">
-                                <select data-action="edit-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" data-field="element" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full">
-                                    <option value="">Select Element...</option>
-                                    ${["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].map(el => `<option value="${el}" ${me.element === el ? 'selected' : ''}>${el}</option>`).join('')}
-                                    ${isCustom ? `<option value="custom_input" selected>Custom (${me.element})</option>` : '<option value="custom_input">Custom...</option>'}
-                                </select>
-                                ${isCustom ? `
-                                    <input type="text" data-action="edit-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" data-field="custom-element-name" value="${me.element === 'Custom' ? '' : me.element}" placeholder="Name..." class="px-2 py-0.5 text-[10px] border border-purple-200 dark:border-purple-800 rounded bg-purple-50/50 dark:bg-purple-950/20 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
-                                ` : ''}
-                            </div>
-                            <!-- Damage Input -->
-                            <div class="flex-grow flex flex-col gap-0.5">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Damage Formula</span>
-                                    ${me.rolledDamage !== undefined ? `<span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-1 rounded">Last Roll: ${me.rolledDamage}</span>` : ''}
-                                </div>
-                                <input type="text" data-action="edit-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" data-field="damage" value="${me.damage || ''}" placeholder="e.g. 1d4 + Magic" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
-                            </div>
-                            <!-- Delete button -->
-                            <button type="button" data-action="remove-magic-element" data-inventory-type="weapon" data-index="${index}" data-me-index="${meIndex}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-350 p-1.5 focus:outline-none" title="Remove Element">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        `;
-                    }).join('')}
-                    ${item.magicElements.length === 0 ? `
-                        <div class="text-center py-2 text-xs text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
-                            No magic elements active. Click "+ Add Element" to add one.
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-
-            <!-- Validation and Effects -->
-            <div class="flex flex-col gap-1">
-                ${valBadge}
-                <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1">Special Properties / Effects</label>
-                <textarea data-inventory-type="weapon" data-field="effect" data-index="${index}" placeholder="Add passive buffs or special combat details..." class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-12 resize-none">${item.effect || ''}</textarea>
-            </div>
-
-            <!-- Card Actions -->
-            <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/60 mt-auto">
-                <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Slot #${index + 1}</span>
-                <button type="button" data-inventory-type="weapon" data-index="${index}" class="remove-item-btn text-xs font-semibold text-red-500 hover:text-white dark:text-red-400 hover:bg-red-500 dark:hover:bg-red-600 border border-red-200 dark:border-red-900/40 px-2.5 py-1 rounded transition-all duration-200">
-                    Remove
-                </button>
             </div>
         `;
         
@@ -1652,13 +1665,25 @@ function renderArmorCards() {
         }
 
         card.innerHTML = `
-            <!-- Card Header: Name & Equipped Switch -->
-            <div class="flex items-center justify-between gap-4 pb-3 border-b border-gray-100 dark:border-gray-700/60">
-                <div class="flex-grow">
-                    <input type="text" data-inventory-type="armor" data-field="name" data-index="${index}" value="${item.name || ''}" placeholder="Armor Name..." class="font-bold text-base text-gray-900 dark:text-gray-100 bg-transparent border-b border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-indigo-500 focus:outline-none transition-all duration-200 w-full rounded px-1 -ml-1 focus:bg-gray-50 dark:focus:bg-gray-900" />
+            <!-- Card Header: Name, Values, Roll & Equipped Switch -->
+            <div class="flex items-center justify-between gap-3 ${item.collapsed ? '' : 'pb-3 border-b border-gray-100 dark:border-gray-700/60'}">
+                <div class="flex items-center gap-2 flex-grow min-w-0">
+                    <button type="button" data-action="toggle-card-collapse" data-inventory-type="armor" data-index="${index}" class="p-1 rounded-md text-gray-400 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-all duration-150 flex-shrink-0" title="${item.collapsed ? 'Expand Card' : 'Collapse Card'}">
+                        <svg class="w-5 h-5 transition-transform duration-200 ${item.collapsed ? '-rotate-90' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <input type="text" data-inventory-type="armor" data-field="name" data-index="${index}" value="${item.name || ''}" placeholder="Armor Name..." class="font-bold text-base text-gray-900 dark:text-gray-100 bg-transparent border-b border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-indigo-500 focus:outline-none transition-all duration-200 w-full rounded px-1 -ml-1 focus:bg-gray-50 dark:focus:bg-gray-900 truncate" />
                 </div>
                 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 font-mono" title="Armor Defense">
+                        🛡️ +${item.defense || '0'}
+                    </span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40" title="Gold Value">
+                        🪙 ${item.value || 0}
+                    </span>
+
                     <button type="button" data-action="roll-armor" data-index="${index}" class="flex items-center gap-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 dark:text-indigo-300 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-2 py-1 rounded transition-all duration-150 shadow-sm" title="Roll Armor Defense">
                         🎲 Roll
                     </button>
@@ -1670,113 +1695,116 @@ function renderArmorCards() {
                 </div>
             </div>
 
-            <!-- Location, Material, Value Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Location</label>
-                    <select data-inventory-type="armor" data-field="location" data-index="${index}" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full">
-                        <option value="">Select location...</option>
-                        ${armorLocations.map(loc => `<option value="${loc}" ${item.location === loc ? 'selected' : ''}>${loc}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Material</label>
-                    <input type="text" data-inventory-type="armor" data-field="material" data-index="${index}" value="${item.material || ''}" placeholder="e.g. Leather" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
-                </div>
-                <div class="flex flex-col gap-1 col-span-2 sm:col-span-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Gold Value</label>
-                    <div class="relative flex items-center">
-                        <span class="absolute left-2.5 text-xs">🪙</span>
-                        <input type="number" data-inventory-type="armor" data-field="value" data-index="${index}" value="${item.value || 0}" class="pl-7 pr-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
-                    </div>
-                </div>
-            </div>
-
-            <!-- Defenses & Requirements -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="flex flex-col gap-1">
-                    <div class="flex items-center justify-between">
-                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1">🛡️ Physical Defense</label>
-                        ${item.rolledDefense !== undefined ? `<span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1 rounded border border-emerald-100/20 dark:border-emerald-900/10">Last Roll: ${item.rolledDefense}</span>` : ''}
-                    </div>
-                    <textarea data-inventory-type="armor" data-field="defense" data-index="${index}" placeholder="e.g. 1d4 + Agility" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-10 resize-none">${item.defense || ''}</textarea>
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stat</label>
-                    <div class="flex items-center gap-1">
-                        <select data-inventory-type="armor" data-field="requiredStat" data-index="${index}" class="px-1 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2">
-                            <option value="">None</option>
-                            ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${item.requiredStat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+            <!-- Card Body (Hidden when collapsed) -->
+            <div class="card-body flex flex-col gap-4 ${item.collapsed ? 'hidden' : 'mt-4'}">
+                <!-- Location, Material, Value Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Location</label>
+                        <select data-inventory-type="armor" data-field="location" data-index="${index}" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full">
+                            <option value="">Select location...</option>
+                            ${armorLocations.map(loc => `<option value="${loc}" ${item.location === loc ? 'selected' : ''}>${loc}</option>`).join('')}
                         </select>
-                        <input type="text" data-inventory-type="armor" data-field="requirement" data-index="${index}" value="${item.requirement || ''}" placeholder="Val" class="px-1 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2 text-center" />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Material</label>
+                        <input type="text" data-inventory-type="armor" data-field="material" data-index="${index}" value="${item.material || ''}" placeholder="e.g. Leather" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                    </div>
+                    <div class="flex flex-col gap-1 col-span-2 sm:col-span-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Gold Value</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-2.5 text-xs">🪙</span>
+                            <input type="number" data-inventory-type="armor" data-field="value" data-index="${index}" value="${item.value || 0}" class="pl-7 pr-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Magic Elements panel -->
-            <div class="border-t border-dashed border-gray-200 dark:border-gray-700/60 pt-3 mt-1">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                        ✨ Magic Elements & Defenses
-                    </span>
-                    <button type="button" data-action="add-magic-element" data-inventory-type="armor" data-index="${index}" class="text-[11px] font-semibold text-purple-600 hover:text-white dark:text-purple-400 hover:bg-purple-500 dark:hover:bg-purple-600 border border-purple-200 dark:border-purple-900/40 px-2 py-0.5 rounded transition-all duration-200 focus:outline-none">
-                        + Add Element
+                <!-- Defenses & Requirements -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1">🛡️ Physical Defense</label>
+                            ${item.rolledDefense !== undefined ? `<span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1 rounded border border-emerald-100/20 dark:border-emerald-900/10">Last Roll: ${item.rolledDefense}</span>` : ''}
+                        </div>
+                        <textarea data-inventory-type="armor" data-field="defense" data-index="${index}" placeholder="e.g. 1d4 + Agility" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-10 resize-none">${item.defense || ''}</textarea>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stat</label>
+                        <div class="flex items-center gap-1">
+                            <select data-inventory-type="armor" data-field="requiredStat" data-index="${index}" class="px-1 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2">
+                                <option value="">None</option>
+                                ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${item.requiredStat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+                            </select>
+                            <input type="text" data-inventory-type="armor" data-field="requirement" data-index="${index}" value="${item.requirement || ''}" placeholder="Val" class="px-1 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2 text-center" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Magic Elements panel -->
+                <div class="border-t border-dashed border-gray-200 dark:border-gray-700/60 pt-3 mt-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                            ✨ Magic Elements & Defenses
+                        </span>
+                        <button type="button" data-action="add-magic-element" data-inventory-type="armor" data-index="${index}" class="text-[11px] font-semibold text-purple-600 hover:text-white dark:text-purple-400 hover:bg-purple-500 dark:hover:bg-purple-600 border border-purple-200 dark:border-purple-900/40 px-2 py-0.5 rounded transition-all duration-200 focus:outline-none">
+                            + Add Element
+                        </button>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        ${item.magicElements.map((me, meIndex) => {
+                            const isCustom = me.element && !["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].includes(me.element);
+                            return `
+                            <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-150 dark:border-gray-800">
+                                <!-- Dropdown for elements -->
+                                <div class="flex flex-col gap-1 w-1/3 min-w-[100px]">
+                                    <select data-action="edit-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" data-field="element" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full">
+                                        <option value="">Select Element...</option>
+                                        ${["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].map(el => `<option value="${el}" ${me.element === el ? 'selected' : ''}>${el}</option>`).join('')}
+                                        ${isCustom ? `<option value="custom_input" selected>Custom (${me.element})</option>` : '<option value="custom_input">Custom...</option>'}
+                                    </select>
+                                    ${isCustom ? `
+                                        <input type="text" data-action="edit-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" data-field="custom-element-name" value="${me.element === 'Custom' ? '' : me.element}" placeholder="Name..." class="px-2 py-0.5 text-[10px] border border-purple-200 dark:border-purple-800 rounded bg-purple-50/50 dark:bg-purple-950/20 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
+                                    ` : ''}
+                                </div>
+                                <!-- Defense Input -->
+                                <div class="flex-grow flex flex-col gap-0.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Defense Formula</span>
+                                        ${me.rolledDefense !== undefined ? `<span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-1 rounded">Roll: ${me.rolledDefense}</span>` : ''}
+                                    </div>
+                                    <input type="text" data-action="edit-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" data-field="defense" value="${me.defense || ''}" placeholder="e.g. 1d4" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
+                                </div>
+                                <!-- Delete button -->
+                                <button type="button" data-action="remove-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-350 p-1.5 focus:outline-none" title="Remove Element">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            `;
+                        }).join('')}
+                        ${item.magicElements.length === 0 ? `
+                            <div class="text-center py-2 text-xs text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+                                No magic elements active. Click "+ Add Element" to add one.
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <!-- Validation & Special Effects -->
+                <div class="flex flex-col gap-1">
+                    ${valBadge}
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1">Special Properties / Effects</label>
+                    <textarea data-inventory-type="armor" data-field="effect" data-index="${index}" placeholder="Add armor set bonuses or resistances..." class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-12 resize-none">${item.effect || ''}</textarea>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/60 mt-auto">
+                    <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Slot #${index + 1}</span>
+                    <button type="button" data-inventory-type="armor" data-index="${index}" class="remove-item-btn text-xs font-semibold text-red-500 hover:text-white dark:text-red-400 hover:bg-red-500 dark:hover:bg-red-600 border border-red-200 dark:border-red-900/40 px-2.5 py-1 rounded transition-all duration-200">
+                        Remove
                     </button>
                 </div>
-                <div class="flex flex-col gap-2">
-                    ${item.magicElements.map((me, meIndex) => {
-                        const isCustom = me.element && !["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].includes(me.element);
-                        return `
-                        <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-150 dark:border-gray-800">
-                            <!-- Dropdown for elements -->
-                            <div class="flex flex-col gap-1 w-1/3 min-w-[100px]">
-                                <select data-action="edit-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" data-field="element" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full">
-                                    <option value="">Select Element...</option>
-                                    ${["All", "Chaos", "Dark", "Wind", "Earth", "Fire", "Ice", "Thunder", "Nature", "Light"].map(el => `<option value="${el}" ${me.element === el ? 'selected' : ''}>${el}</option>`).join('')}
-                                    ${isCustom ? `<option value="custom_input" selected>Custom (${me.element})</option>` : '<option value="custom_input">Custom...</option>'}
-                                </select>
-                                ${isCustom ? `
-                                    <input type="text" data-action="edit-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" data-field="custom-element-name" value="${me.element === 'Custom' ? '' : me.element}" placeholder="Name..." class="px-2 py-0.5 text-[10px] border border-purple-200 dark:border-purple-800 rounded bg-purple-50/50 dark:bg-purple-950/20 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
-                                ` : ''}
-                            </div>
-                            <!-- Defense Input -->
-                            <div class="flex-grow flex flex-col gap-0.5">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Defense Formula</span>
-                                    ${me.rolledDefense !== undefined ? `<span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-1 rounded">Roll: ${me.rolledDefense}</span>` : ''}
-                                </div>
-                                <input type="text" data-action="edit-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" data-field="defense" value="${me.defense || ''}" placeholder="e.g. 1d4" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full" />
-                            </div>
-                            <!-- Delete button -->
-                            <button type="button" data-action="remove-magic-element" data-inventory-type="armor" data-index="${index}" data-me-index="${meIndex}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-350 p-1.5 focus:outline-none" title="Remove Element">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        `;
-                    }).join('')}
-                    ${item.magicElements.length === 0 ? `
-                        <div class="text-center py-2 text-xs text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
-                            No magic elements active. Click "+ Add Element" to add one.
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-
-            <!-- Validation & Special Effects -->
-            <div class="flex flex-col gap-1">
-                ${valBadge}
-                <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1">Special Properties / Effects</label>
-                <textarea data-inventory-type="armor" data-field="effect" data-index="${index}" placeholder="Add armor set bonuses or resistances..." class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-12 resize-none">${item.effect || ''}</textarea>
-            </div>
-
-            <!-- Card Actions -->
-            <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/60 mt-auto">
-                <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Slot #${index + 1}</span>
-                <button type="button" data-inventory-type="armor" data-index="${index}" class="remove-item-btn text-xs font-semibold text-red-500 hover:text-white dark:text-red-400 hover:bg-red-500 dark:hover:bg-red-600 border border-red-200 dark:border-red-900/40 px-2.5 py-1 rounded transition-all duration-200">
-                    Remove
-                </button>
             </div>
         `;
         
@@ -2246,7 +2274,100 @@ function renderArmorTable() {
     toggleInventoryViewDOM('armor', inventoryViewSettings.armor);
 }
 
+function renderGeneralCards() {
+    const container = document.getElementById('general-inventory-cards-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+    
+    if (!character.generalInventory || character.generalInventory.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-center">
+                <span class="text-3xl mb-2">🎒</span>
+                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">No items in general inventory.</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Click "+ Add Item" to store your loot and consumables.</p>
+            </div>
+        `;
+        return;
+    }
+
+    character.generalInventory.forEach((item, index) => {
+        const card = document.createElement('div');
+        const cardClass = 'border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800';
+            
+        card.className = `p-5 rounded-xl border ${cardClass} transition-all duration-200 flex flex-col gap-4 relative hover:shadow-md`;
+        
+        const totalVal = (parseFloat(item.amount) || 1) * (parseFloat(item.valuePerUnit) || 0);
+
+        card.innerHTML = `
+            <!-- Card Header: Name, Quantity, Value & Collapse -->
+            <div class="flex items-center justify-between gap-3 ${item.collapsed ? '' : 'pb-3 border-b border-gray-100 dark:border-gray-700/60'}">
+                <div class="flex items-center gap-2 flex-grow min-w-0">
+                    <button type="button" data-action="toggle-card-collapse" data-inventory-type="general" data-index="${index}" class="p-1 rounded-md text-gray-400 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-all duration-150 flex-shrink-0" title="${item.collapsed ? 'Expand Card' : 'Collapse Card'}">
+                        <svg class="w-5 h-5 transition-transform duration-200 ${item.collapsed ? '-rotate-90' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <input type="text" data-inventory-type="general" data-field="name" data-index="${index}" value="${item.name || ''}" placeholder="Item Name..." class="font-bold text-base text-gray-900 dark:text-gray-100 bg-transparent border-b border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-indigo-500 focus:outline-none transition-all duration-200 w-full rounded px-1 -ml-1 focus:bg-gray-50 dark:focus:bg-gray-900 truncate" />
+                </div>
+                
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 font-mono" title="Quantity">
+                        x${item.amount || 1}
+                    </span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40" title="Value per unit">
+                        🪙 ${item.valuePerUnit || 0}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card Body (Hidden when collapsed) -->
+            <div class="card-body flex flex-col gap-4 ${item.collapsed ? 'hidden' : 'mt-4'}">
+                <!-- Attributes grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="flex flex-col gap-1 col-span-2 sm:col-span-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Item Type</label>
+                        <input type="text" data-inventory-type="general" data-field="type" data-index="${index}" value="${item.type || ''}" placeholder="e.g. Consumable" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Amount</label>
+                        <input type="number" data-inventory-type="general" data-field="amount" data-index="${index}" value="${item.amount || 1}" min="0" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Value (Unit)</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-2.5 text-xs">🪙</span>
+                            <input type="number" data-inventory-type="general" data-field="valuePerUnit" data-index="${index}" value="${item.valuePerUnit || 0}" class="pl-7 pr-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Accuracy %</label>
+                        <input type="number" data-inventory-type="general" data-field="accuracy" data-index="${index}" value="${item.accuracy || ''}" placeholder="100%" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                    </div>
+                </div>
+
+                <!-- Effect / Description -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effect / Description</label>
+                    <textarea data-inventory-type="general" data-field="effect" data-index="${index}" placeholder="Item description or usage effect..." class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-16 resize-none">${item.effect || ''}</textarea>
+                </div>
+
+                <!-- Card Footer Actions -->
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/60 mt-auto">
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Value: <strong class="text-amber-600 dark:text-amber-400">🪙 ${totalVal}</strong></span>
+                    <button type="button" data-inventory-type="general" data-index="${index}" class="remove-item-btn text-xs font-semibold text-red-500 hover:text-white dark:text-red-400 hover:bg-red-500 dark:hover:bg-red-600 border border-red-200 dark:border-red-900/40 px-2.5 py-1 rounded transition-all duration-200">
+                        Remove
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
 function renderGeneralTable() {
+    // 1. Render Table View
     renderInventoryTable('general', character.generalInventory, '#general-inventory-table tbody', [
         { field: 'name', type: 'text', class: 'w-full' },
         { field: 'type', type: 'text', class: 'w-full' },
@@ -2255,6 +2376,12 @@ function renderGeneralTable() {
         { field: 'amount', type: 'number', class: 'w-full' },
         { field: 'valuePerUnit', type: 'number', class: 'w-full' }
     ]);
+
+    // 2. Render Card View
+    renderGeneralCards();
+
+    // 3. Align layout active state classes
+    toggleInventoryViewDOM('general', inventoryViewSettings.general);
 }
 
 // Function to perform a quick roll for all player stats
@@ -2572,8 +2699,6 @@ function handleChangeRace(oldRace) {
             document.getElementById('purse').value = character.purse;
         }
     }
-
-    renderActiveEffectsSummary();
 
     hasUnsavedChanges = true; // Mark that there are unsaved changes
 }
@@ -5463,6 +5588,16 @@ function attachEventListeners() {
         weaponCardsContainer.addEventListener('input', handleChange);
         weaponCardsContainer.addEventListener('change', handleChange);
         weaponCardsContainer.addEventListener('click', function(event) {
+            const toggleCollapseBtn = event.target.closest('[data-action="toggle-card-collapse"]');
+            if (toggleCollapseBtn) {
+                const index = parseInt(toggleCollapseBtn.dataset.index, 10);
+                if (character.weaponInventory[index]) {
+                    character.weaponInventory[index].collapsed = !character.weaponInventory[index].collapsed;
+                    renderWeaponCards();
+                    hasUnsavedChanges = true;
+                }
+                return;
+            }
             const rollBtn = event.target.closest('[data-action="roll-weapon"]');
             if (rollBtn) {
                 const index = parseInt(rollBtn.dataset.index, 10);
@@ -5481,9 +5616,31 @@ function attachEventListeners() {
         rollAllWeaponsBtn.addEventListener('click', rollAllActiveWeapons);
     }
 
+    const weaponToggleAllCardsBtn = document.getElementById('weapon-toggle-all-cards-btn');
+    if (weaponToggleAllCardsBtn) {
+        weaponToggleAllCardsBtn.addEventListener('click', () => {
+            if (!character.weaponInventory || character.weaponInventory.length === 0) return;
+            const allCollapsed = character.weaponInventory.every(item => item.collapsed);
+            character.weaponInventory.forEach(item => { item.collapsed = !allCollapsed; });
+            renderWeaponCards();
+            hasUnsavedChanges = true;
+        });
+    }
+
     const rollAllArmorBtn = document.getElementById('roll-all-armor-btn');
     if (rollAllArmorBtn) {
         rollAllArmorBtn.addEventListener('click', rollAllEquippedArmor);
+    }
+
+    const armorToggleAllCardsBtn = document.getElementById('armor-toggle-all-cards-btn');
+    if (armorToggleAllCardsBtn) {
+        armorToggleAllCardsBtn.addEventListener('click', () => {
+            if (!character.armorInventory || character.armorInventory.length === 0) return;
+            const allCollapsed = character.armorInventory.every(item => item.collapsed);
+            character.armorInventory.forEach(item => { item.collapsed = !allCollapsed; });
+            renderArmorCards();
+            hasUnsavedChanges = true;
+        });
     }
 
     const rollTotalDefenseBtn = document.getElementById('roll-total-defense-btn');
@@ -5495,6 +5652,16 @@ function attachEventListeners() {
         armorCardsContainer.addEventListener('input', handleChange);
         armorCardsContainer.addEventListener('change', handleChange);
         armorCardsContainer.addEventListener('click', function(event) {
+            const toggleCollapseBtn = event.target.closest('[data-action="toggle-card-collapse"]');
+            if (toggleCollapseBtn) {
+                const index = parseInt(toggleCollapseBtn.dataset.index, 10);
+                if (character.armorInventory[index]) {
+                    character.armorInventory[index].collapsed = !character.armorInventory[index].collapsed;
+                    renderArmorCards();
+                    hasUnsavedChanges = true;
+                }
+                return;
+            }
             const rollBtn = event.target.closest('[data-action="roll-armor"]');
             if (rollBtn) {
                 const index = parseInt(rollBtn.dataset.index, 10);
@@ -5508,11 +5675,45 @@ function attachEventListeners() {
         });
     }
 
+    const generalCardsContainer = document.getElementById('general-inventory-cards-container');
+    if (generalCardsContainer) {
+        generalCardsContainer.addEventListener('input', handleChange);
+        generalCardsContainer.addEventListener('change', handleChange);
+        generalCardsContainer.addEventListener('click', function(event) {
+            const toggleCollapseBtn = event.target.closest('[data-action="toggle-card-collapse"]');
+            if (toggleCollapseBtn) {
+                const index = parseInt(toggleCollapseBtn.dataset.index, 10);
+                if (character.generalInventory[index]) {
+                    character.generalInventory[index].collapsed = !character.generalInventory[index].collapsed;
+                    renderGeneralCards();
+                    hasUnsavedChanges = true;
+                }
+                return;
+            }
+            if (event.target.classList.contains('remove-item-btn')) {
+                removeItem(event);
+            }
+        });
+    }
+
+    const generalToggleAllCardsBtn = document.getElementById('general-toggle-all-cards-btn');
+    if (generalToggleAllCardsBtn) {
+        generalToggleAllCardsBtn.addEventListener('click', () => {
+            if (!character.generalInventory || character.generalInventory.length === 0) return;
+            const allCollapsed = character.generalInventory.every(item => item.collapsed);
+            character.generalInventory.forEach(item => { item.collapsed = !allCollapsed; });
+            renderGeneralCards();
+            hasUnsavedChanges = true;
+        });
+    }
+
     // View Toggle button event listeners
     const weaponViewCardsBtn = document.getElementById('weapon-view-cards-btn');
     const weaponViewTableBtn = document.getElementById('weapon-view-table-btn');
     const armorViewCardsBtn = document.getElementById('armor-view-cards-btn');
     const armorViewTableBtn = document.getElementById('armor-view-table-btn');
+    const generalViewCardsBtn = document.getElementById('general-view-cards-btn');
+    const generalViewTableBtn = document.getElementById('general-view-table-btn');
 
     if (weaponViewCardsBtn) {
         weaponViewCardsBtn.addEventListener('click', () => setInventoryView('weapon', 'cards'));
@@ -5525,6 +5726,12 @@ function attachEventListeners() {
     }
     if (armorViewTableBtn) {
         armorViewTableBtn.addEventListener('click', () => setInventoryView('armor', 'table'));
+    }
+    if (generalViewCardsBtn) {
+        generalViewCardsBtn.addEventListener('click', () => setInventoryView('general', 'cards'));
+    }
+    if (generalViewTableBtn) {
+        generalViewTableBtn.addEventListener('click', () => setInventoryView('general', 'table'));
     }
 
     // Attach event listeners for section toggle buttons - NEW
