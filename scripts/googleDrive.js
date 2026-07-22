@@ -1,5 +1,6 @@
 import { GOOGLE_DRIVE_AUTH_STATUS_KEY } from './constants.js';
 import { setCurrentGoogleDriveFileId } from './state.js';
+import { showStatusMessage } from './uiUtils.js';
 
 /**
 * Enables Google Drive buttons if both GAPI and GIS are initialized.

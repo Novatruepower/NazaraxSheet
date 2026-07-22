@@ -1,4 +1,5 @@
 import { defaultStatMaxExperience, defaultRacialPointScale, TOTAL_DISTRIBUTION_POINTS, MIN_STAT_VALUE, MAX_STAT_VALUE } from './constants.js';
+import { showStatusMessage } from './uiUtils.js';
 import { ExternalDataManager } from './externalDataManager.js';
 import { currentGoogleDriveFileId } from './state.js';
 import { maybeEnableGoogleDriveButtons, handleGoogleDriveAuthClickThenCall, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick } from './googleDrive.js';
@@ -4529,19 +4530,6 @@ let currentStatDisplayNameForTempEffects = null;
 let healthInput;
 let manaInput;
 let racialPowerInput;
-
-/**
-* Shows a status message to the user.
-* @param {string} message The message to display.
-* @param {boolean} isError Whether the message indicates an error.
-*/
-function showStatusMessage(message, isError = false) {
-    statusMessageElement.textContent = message;
-    statusMessageElement.style.color = isError ? '#ef4444' : '#22c55e'; // red-500 or green-500
-    setTimeout(() => {
-        statusMessageElement.textContent = '';
-    }, 5000); // Clear message after 5 seconds
-}
 
 /**
 * Shows a custom confirmation modal.
