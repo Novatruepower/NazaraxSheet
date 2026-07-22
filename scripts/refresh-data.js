@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
-const { ExternalDataManager } = require('./ExternalDataManager.js');
+const { ExternalDataManager } = require('./externalDataManager.js');
 
 // Initialize Firebase Admin SDK first using the secret
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
