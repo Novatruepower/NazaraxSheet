@@ -1,7 +1,7 @@
-import { defaultStatMaxExperience, defaultRacialPointScale, TOTAL_DISTRIBUTION_POINTS, MIN_STAT_VALUE, MAX_STAT_VALUE } from './constants.js';
-import { showStatusMessage } from './uiUtils.js';
+import { DEFAULT_STAT_MAX_EXPERIENCE, DEFAULT_RACIAL_POINT_SCALE, TOTAL_DISTRIBUTION_POINTS, MIN_STAT_VALUE, MAX_STAT_VALUE, HTML_VISIBILITY } from './constants.js';
+import { showStatusMessage, showConfirmationModal, toggleHtml, toggleSection, updateSpecificHtmlVisibility } from './uiUtils.js';
 import { ExternalDataManager } from './externalDataManager.js';
-import { currentGoogleDriveFileId, setCurrentGoogleDriveFileId } from './state.js';
+import { characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, currentGoogleDriveFileId, setCurrentGoogleDriveFileId, hasUnsavedChanges, setHasUnsavedChanges } from './state.js';
 import { maybeEnableGoogleDriveButtons, handleGoogleDriveAuthClickThenCall, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick } from './googleDrive.js';
 
 // --- AUTO HISTORY SAVER ---
@@ -316,7 +316,7 @@ function recalculateSmallUpdateCharacter(char, isDisplay = false) {
 function recalculateCharacterDerivedProperties(char, isSmallDisplay = false) {
     recalculateSmallUpdateCharacter(char, isSmallDisplay);
 
-    let newMaxExperience = defaultStatMaxExperience;
+    let newMaxExperience = DEFAULT_STAT_MAX_EXPERIENCE;
 
     if (char.uniqueIdentifiers['Growth']) {
         newMaxExperience -= char.uniqueIdentifiers['Growth'].values[0];
@@ -427,7 +427,7 @@ const defaultCharacterData = function () {
             equipment: 0,
             temporaryEffects: {}, // Initialize as an empty object for temporary effects
             experience: 0,
-            maxExperience: defaultStatMaxExperience
+            maxExperience: DEFAULT_STAT_MAX_EXPERIENCE
         };
     });
 
@@ -461,14 +461,6 @@ const defaultCharacterData = function () {
 
     return newCharacter;
 };
-
-// Array to hold all character sheets
-let characters = [];
-// Index of the currently active character sheet
-let currentCharacterIndex = 0;
-
-// Flag to track if there are unsaved changes
-let hasUnsavedChanges = false;
 
 // Inventory display settings
 let inventoryViewSettings = {
@@ -556,7 +548,7 @@ function saveCurrentStateToHistory() {
         historyPointer = Math.max(historyPointer - excess, 0);
     }
 
-    hasUnsavedChanges = false;
+    setHasUnsavedChanges(false);
     console.log("Saved state. Length:", historyStack.length, "Pointer:", historyPointer);
     updateHistoryButtonsState();
 }
@@ -570,7 +562,7 @@ const character = new Proxy({}, {
         // Only set hasUnsavedChanges to true if the value actually changes
         if (characters[currentCharacterIndex][prop] !== value) {
             characters[currentCharacterIndex][prop] = value;
-            hasUnsavedChanges = true; // Mark that there are unsaved changes
+            setHasUnsavedChanges(true); // Mark that there are unsaved changes
         }
 
         // If the character name changes, update the selector
@@ -756,7 +748,7 @@ function saveCharacterToFile() {
     URL.revokeObjectURL(url);
     showStatusMessage("Character data saved to JSON file!");
     console.log("All character data downloaded as JSON file!");
-    hasUnsavedChanges = false; // Data is now saved
+    setHasUnsavedChanges(false); // Data is now saved
 }
 
 /**
@@ -815,7 +807,7 @@ function initLoadCharacter(loadedChar) {
                     }
                     // Ensure maxExperience is set for stats, if it was excluded during saving or missing
                     if (ExternalDataManager.rollStats.includes(key) && (typeof newChar[key].maxExperience === 'undefined' || newChar[key].maxExperience === null)) {
-                        newChar[key].maxExperience = defaultStatMaxExperience;
+                        newChar[key].maxExperience = DEFAULT_STAT_MAX_EXPERIENCE;
                     }
 
                     if (ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense') {
@@ -863,23 +855,24 @@ function loadCharacterFromFile(event) {
     reader.onload = (e) => {
         try {
             const loadedData = JSON.parse(e.target.result);
+
             if (Array.isArray(loadedData)) {
-                characters = loadedData.map(loadedChar => initLoadCharacter(loadedChar));
-                currentCharacterIndex = 0; // Select the first loaded character
+                setCharacters(loadedData.map(loadedChar => initLoadCharacter(loadedChar)));
             } else {
                 // If a single character object was loaded (old format), convert it to an array
-                characters = [initLoadCharacter(loadedData)];
-                currentCharacterIndex = 0;
+                setCharacters([initLoadCharacter(loadedData)]);
             }
+
+            setCurrentCharacterIndex(0);
             updateDOM(); // Update the UI with loaded data
             populateCharacterSelector(); // Repopulate the selector
-            currentGoogleDriveFileId = null;
+            setCurrentGoogleDriveFileId(null);
             showStatusMessage(`Character data loaded from JSON file!`);
             console.log(`Character data loaded from JSON file!`);
             historyStack = []; // Clear previous history
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the newly loaded state as the first history entry
-            hasUnsavedChanges = false; // Data is now loaded and considered "saved"
+            setHasUnsavedChanges(false); // Data is now loaded and considered "saved"
         } catch (e) {
             showStatusMessage("Error parsing JSON file.", true);
             console.error("Error parsing JSON file:", e);
@@ -1271,7 +1264,7 @@ function renderActiveEffectsSummary() {
                 character[statName].temporaryEffects[category].splice(effectIndex, 1);
                 recalculateCharacterDerivedProperties(character, true);
                 updateDOM();
-                hasUnsavedChanges = true;
+                setHasUnsavedChanges(true);
                 if (typeof showStatusMessage === 'function') {
                     showStatusMessage("Removed temporary effect.");
                 } else {
@@ -2122,7 +2115,7 @@ function rollWeaponAtIndex(index) {
         magicMsgParts.push(`${me.element || 'Magic'}: ${me.rolledDamage}`);
     });
 
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
     renderWeaponTable();
 
     let rollMsg = `Rolled <strong>${item.name || 'Weapon'}</strong>: 💥 Physical: <strong>${item.rolledDamage}</strong>`;
@@ -2147,7 +2140,7 @@ function rollAllActiveWeapons() {
         });
     });
 
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
     renderWeaponTable();
 
     showToast(`Rolled all <strong>${activeWeapons.length}</strong> active weapons! Check the stance summary and cards for results.`, 'roll');
@@ -2166,7 +2159,7 @@ function rollArmorAtIndex(index) {
         magicMsgParts.push(`${me.element || 'Magic'}: ${me.rolledDefense}`);
     });
 
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
     
     // Recalculate total defense & update elements
     recalculateSmallUpdateCharacter(character, true);
@@ -2194,7 +2187,7 @@ function rollAllEquippedArmor() {
         });
     });
 
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
     recalculateSmallUpdateCharacter(character, true);
     renderArmorTable();
 
@@ -2394,7 +2387,7 @@ function quickRollStats() {
         // Re-render weapon inventory to update calculated damage values
         renderWeaponTable();
         updateRemainingPointsDisplay(); // Reset remaining points display
-        hasUnsavedChanges = true; // Mark that there are unsaved changes
+        setHasUnsavedChanges(true); // Mark that there are unsaved changes
     });
 }
 
@@ -2418,7 +2411,7 @@ function distributeStats() {
 
         updateRemainingPointsDisplay();
         renderWeaponTable();
-        hasUnsavedChanges = true;
+        setHasUnsavedChanges(true);
     });
 }
 
@@ -2540,7 +2533,7 @@ function isUsableApplicableStats(applicableStats, category, unique, slotId) {
 function processRacialRegularPassiveChange(newAbilityData) {
     const race = character.race;
     if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
-        character.BaseRacialPower.value += defaultRacialPointScale - newAbilityData.values[1];
+        character.BaseRacialPower.value += DEFAULT_RACIAL_POINT_SCALE - newAbilityData.values[1];
     }
 
     removeTemporaryEffectByIdentifier(newAbilityData, race);
@@ -2564,12 +2557,12 @@ function processRacialRegularPassiveChange(newAbilityData) {
         character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
 
         if (newAbilityData.identifier == 'Spatial Reserve') {
-            character.BaseRacialPower.value += newAbilityData.values[1] - defaultRacialPointScale;
+            character.BaseRacialPower.value += newAbilityData.values[1] - DEFAULT_RACIAL_POINT_SCALE;
         }
     }
 
     recalculateCharacterDerivedProperties(character, true);
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
 }
 
 /**
@@ -2644,7 +2637,7 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
 
     recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
     updateDOM(); // Update the UI to reflect changes
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
     console.log("--- processRacialChoiceChange finished ---");
 }
 
@@ -2663,7 +2656,7 @@ function handleChangeRace(oldRace) {
     }
 
     if (character.uniqueIdentifiers['Spatial Reserve']) {
-      //  character.BaseRacialPower.value += defaultRacialPointScale - character.uniqueIdentifiers['Spatial Reserve'].values[1];
+      //  character.BaseRacialPower.value += DEFAULT_RACIAL_POINT_SCALE - character.uniqueIdentifiers['Spatial Reserve'].values[1];
         delete character.uniqueIdentifiers['Spatial Reserve'];
     }
 
@@ -2694,7 +2687,7 @@ function handleChangeRace(oldRace) {
         }
     }
 
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 /**
@@ -3550,7 +3543,7 @@ function handleInventoryInputChange(event) {
                 } else {
                     me[meField] = val;
                 }
-                hasUnsavedChanges = true;
+                setHasUnsavedChanges(true);
             }
         }
         return;
@@ -3609,7 +3602,7 @@ function handleMagicElementClick(event) {
                 damage: '',
                 defense: 0
             });
-            hasUnsavedChanges = true;
+            setHasUnsavedChanges(true);
             if (inventoryType === 'weapon') {
                 renderWeaponTable();
             } else if (inventoryType === 'armor') {
@@ -3628,7 +3621,7 @@ function handleMagicElementClick(event) {
         if (inventory && inventory[itemIndex]) {
             ensureMagicElements(inventory[itemIndex], inventoryType);
             inventory[itemIndex].magicElements.splice(meIndex, 1);
-            hasUnsavedChanges = true;
+            setHasUnsavedChanges(true);
             if (inventoryType === 'weapon') {
                 renderWeaponTable();
             } else if (inventoryType === 'armor') {
@@ -3683,7 +3676,7 @@ function handlePlayerStatInputChange(event) {
             } else { // For rollStats, update their total
                 document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
             }
-            hasUnsavedChanges = true;
+            setHasUnsavedChanges(true);
             refreshTemporaryModalTitle();
         }
         return; // Exit as it's a temporary effect input
@@ -3788,7 +3781,7 @@ function handlePlayerStatInputChange(event) {
     }
     
     renderWeaponTable();
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
 }
 
 function removePassivesLevel() {
@@ -3912,7 +3905,7 @@ function handleChange(event) {
             character[name || id] = newValue;
         }
     }
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
 }
 
 // Function to toggle the visibility of the class dropdown options
@@ -3950,7 +3943,7 @@ function handleClassCheckboxChange(event) {
     // After class changes, update specializations dropdown
     updateSpecializationDropdownAndData();
     renderGenericClassesPassives();
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 // Function to handle changes in the state checkboxes
@@ -3962,7 +3955,7 @@ function handleStateCheckboxChange(event) {
     // Update the displayed value in the input field
     document.getElementById('state-display').value = getCharacterStatesActive().join(', ');
 
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 function removeSpecializationWarning() {
@@ -4020,7 +4013,7 @@ function handleSpecializationCheckboxChange(event) {
     }
 
     renderSpecializations(character.specializations, Object.keys(ExternalDataManager.getAvailableSpecializations(character)));
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 // Function to update the specializations dropdown options and filter selected specializations
@@ -4087,14 +4080,14 @@ function togglePersonalNotesPanel() {
         // Hide panel: save textarea content to character data
         character.layouts.personalNotes.text = personalNotesTextarea.value;
         notesPanel.classList.add('hidden');
-        hasUnsavedChanges = true; // Mark that there are unsaved changes
+        setHasUnsavedChanges(true); // Mark that there are unsaved changes
     }
 }
 function saveHeightPositionAndSize(container) {
     if (container) {
         // Save position and size as percentages of the viewport
         character.layouts[container.id].height = container.offsetHeight / window.innerHeight;
-        hasUnsavedChanges = true; // Mark as unsaved
+        setHasUnsavedChanges(true); // Mark as unsaved
     }
 }
 
@@ -4108,7 +4101,7 @@ function savePositionAndSize(container) {
         character.layouts.personalNotes.y = container.offsetTop / window.innerHeight;
         character.layouts.personalNotes.width = container.offsetWidth / window.innerWidth;
         character.layouts.personalNotes.height = container.offsetHeight / window.innerHeight;
-        hasUnsavedChanges = true; // Mark as unsaved
+        setHasUnsavedChanges(true); // Mark as unsaved
     }
 }
 
@@ -4260,19 +4253,19 @@ function switchCharacter(event) {
     if (hasUnsavedChanges) {
         // Using a custom modal instead of confirm()
         showConfirmationModal("You have unsaved changes. Are you sure you want to switch characters without saving?", () => {
-            currentCharacterIndex = parseInt(event.target.value);
+            setCurrentCharacterIndex(parseInt(event.target.value));
             updateDOM(); // Update the UI with the new character's data
             historyStack = []; // Clear previous history
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new character's state as the first history entry
-            hasUnsavedChanges = false; // Reset unsaved changes flag after switching
+            setHasUnsavedChanges(false); // Reset unsaved changes flag after switching
             updateRemainingPointsDisplay(); // Reset remaining points display
         }, () => {
             // If user cancels, revert the dropdown selection
             event.target.value = currentCharacterIndex;
         });
     } else {
-        currentCharacterIndex = parseInt(event.target.value);
+        setCurrentCharacterIndex(parseInt(event.target.value));
         updateDOM(); // Update the UI with the new character's data
         historyStack = []; // Clear previous history
         historyPointer = -1; // Reset history pointer
@@ -4290,7 +4283,7 @@ function addNewCharacter() {
             // Give a unique name to the new character
             newChar.name = `Character ${characters.length + 1}`;
             characters.push(newChar);
-            currentCharacterIndex = characters.length - 1; // Switch to the new character
+            setCurrentCharacterIndex(characters.length - 1); // Switch to the new character
             populateCharacterSelector(); // Update the dropdown
             updateDOM(); // Update the UI
             showStatusMessage(`Added new character: ${newChar.name}`);
@@ -4298,7 +4291,7 @@ function addNewCharacter() {
             historyStack = []; // Clear previous history
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new character's state as the first history entry
-            hasUnsavedChanges = false; // Reset unsaved changes flag after adding
+            setHasUnsavedChanges(false); // Reset unsaved changes flag after adding
             character.isDistributingStats = false; // Exit distribution mode when adding new character
             updateRemainingPointsDisplay(); // Reset remaining points display
         });
@@ -4307,7 +4300,7 @@ function addNewCharacter() {
         // Give a unique name to the new character
         newChar.name = `Character ${characters.length + 1}`;
         characters.push(newChar);
-        currentCharacterIndex = characters.length - 1; // Switch to the new character
+        setCurrentCharacterIndex(characters.length - 1); // Switch to the new character
         populateCharacterSelector(); // Update the dropdown
         updateDOM(); // Update the UI
         showStatusMessage(`Added new character: ${newChar.name}`);
@@ -4324,19 +4317,19 @@ function addNewCharacter() {
 function addWeapon() {
     character.weaponInventory.push({ name: '', type: '', material: '', requirement: '', requiredStat: '', accuracy: 100, damage: '', magicElements: [], effect: '', value: 0, use: false, originalDamage: '' });
     updateDOM(); // Re-render the inventory table
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 function addArmor() {
     character.armorInventory.push({ name: '', location: '', material: '', requirement: '', requiredStat: '', defense: 0, magicElements: [], effect: '', value: 0, equipped: false });
     updateDOM(); // Re-render the inventory table
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 function addGeneralItem() {
     character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 0, valuePerUnit: 0 });
     updateDOM(); // Re-render the inventory table
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 // Function to remove an item from inventory
@@ -4353,22 +4346,22 @@ function removeItem(event) {
         character.generalInventory.splice(index, 1);
     }
     updateDOM(); // Re-render the inventory table
-    hasUnsavedChanges = true; // Mark that there are unsaved changes
+    setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
 // Function to reset the current character to default data
 function newFile() {
     showConfirmationModal(`Are you sure you want to make a new file? ${hasUnsavedChanges ? 'All unsaved data will be lost.': ''}`, () => {
-        currentGoogleDriveFileId = null;
-        characters = [defaultCharacterData()];
-        currentCharacterIndex = 0; // Set the active character to the new, single sheet
+        setCurrentGoogleDriveFileId(null);
+        setCharacters([defaultCharacterData()]);
+        setCurrentCharacterIndex(0);
 
         updateDOM(); // Update the UI with the new default character
         populateCharacterSelector(); // Re-populate the character selector with the single sheet
 
         historyStack = []; // Clear history after a full reset
         historyPointer = -1; // Reset history pointer
-        hasUnsavedChanges = false; // Reset unsaved changes flag after reset
+        setHasUnsavedChanges(false); // Reset unsaved changes flag after reset
 
         showStatusMessage("Sheets reset successfully!");
     });
@@ -4384,7 +4377,7 @@ function resetCurrentCharacter() {
         historyStack = []; // Clear history after a full reset
         historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the reset state as the first history entry
-        hasUnsavedChanges = false; // Reset unsaved changes flag after reset
+        setHasUnsavedChanges(false); // Reset unsaved changes flag after reset
         character.isDistributingStats = false; // Exit distribution mode on reset
         updateRemainingPointsDisplay(); // Reset remaining points display
     });
@@ -4405,7 +4398,7 @@ function deleteCurrentCharacter() {
 
             // Adjust currentCharacterIndex if the last character was deleted
             if (currentCharacterIndex >= characters.length) {
-                currentCharacterIndex = characters.length - 1;
+                setCurrentCharacterIndex(characters.length - 1)
             }
 
             updateDOM();
@@ -4414,7 +4407,7 @@ function deleteCurrentCharacter() {
             historyStack = []; // Clear history after deletion
             historyPointer = -1; // Reset history pointer
             saveCurrentStateToHistory(); // Save the new state as the first history entry
-            hasUnsavedChanges = false; // Reset unsaved changes flag after deletion
+            setHasUnsavedChanges(false); //Reset unsaved changes flag after deletion
             character.isDistributingStats = false; // Exit distribution mode on delete
             updateRemainingPointsDisplay(); // Reset remaining points display
         });
@@ -4425,16 +4418,16 @@ function deleteCurrentCharacter() {
  * Apply a state from history.
  */
 function applyHistoryState(state) {
-    characters = JSON.parse(JSON.stringify(state));
+    setCharacters(JSON.parse(JSON.stringify(state)));
     convertArraysToSetsAfterLoad(characters);
 
     if (characters.length === 0) {
         characters.push(defaultCharacterData());
-        currentCharacterIndex = 0;
+        setCurrentCharacterIndex(0);
     } else if (currentCharacterIndex >= characters.length) {
-        currentCharacterIndex = characters.length - 1;
+        setCurrentCharacterIndex(characters.length - 1)
     } else if (currentCharacterIndex < 0) {
-        currentCharacterIndex = 0;
+        setCurrentCharacterIndex(0);
     }
 
     updateDOM();
@@ -4450,9 +4443,9 @@ function revertCurrentCharacter() {
     if (historyPointer > 0) {
         historyPointer--;
         const hasUnsavedChangesBeforeRevert = hasUnsavedChanges;
-        hasUnsavedChanges = false; // Temporarily disable unsaved changes flag to avoid prompt
+        setHasUnsavedChanges(false); // Temporarily disable unsaved changes flag to avoid prompt
         applyHistoryState(historyStack[historyPointer]);
-        hasUnsavedChanges = hasUnsavedChangesBeforeRevert; // Restore the unsaved changes flag
+        setHasUnsavedChanges(hasUnsavedChangesBeforeRevert); // Restore the unsaved changes flag
         showStatusMessage("Reverted to previous state.");
         console.log("Undo → Pointer:", historyPointer);
     } else {
@@ -4467,9 +4460,9 @@ function forwardCurrentCharacter() {
     if (historyPointer < historyStack.length - 1) {
         historyPointer++;
         const hasUnsavedChangesBeforeRevert = hasUnsavedChanges;
-        hasUnsavedChanges = false; // Temporarily disable unsaved changes flag to avoid prompt
+        setHasUnsavedChanges(false); // Temporarily disable unsaved changes flag to avoid prompt
         applyHistoryState(historyStack[historyPointer]);
-        hasUnsavedChanges = hasUnsavedChangesBeforeRevert; // Restore the unsaved changes flag
+        setHasUnsavedChanges(hasUnsavedChangesBeforeRevert); // Restore the unsaved changes flag
         showStatusMessage("Moved forward to next state.");
         console.log("Redo → Pointer:", historyPointer);
     } else {
@@ -4532,46 +4525,6 @@ let manaInput;
 let racialPowerInput;
 
 /**
-* Shows a custom confirmation modal.
-* @param {string} message The message to display in the modal.
-* @param {function} onConfirm Callback function to execute if user confirms.
-* @param {function} onCancel Callback function to execute if user cancels (optional).
-*/
-function showConfirmationModal(message, onConfirm, onCancel = () => { }) {
-    // Ensure elements are available before trying to access them
-    if (!confirmationModal || !confirmMessage || !confirmOkBtn || !confirmCancelBtn) {
-        console.error("Confirmation modal elements not found. Cannot show modal.");
-        // Fallback to direct confirmation if modal elements are missing
-        if (window.confirm(message)) {
-            onConfirm();
-        } else {
-            onCancel();
-        }
-        return;
-    }
-
-    confirmMessage.textContent = message;
-    confirmationModal.classList.remove('hidden');
-
-    const handleConfirm = () => {
-        confirmationModal.classList.add('hidden');
-        confirmOkBtn.removeEventListener('click', handleConfirm);
-        confirmCancelBtn.removeEventListener('click', handleCancel);
-        onConfirm();
-    };
-
-    const handleCancel = () => {
-        confirmationModal.classList.add('hidden');
-        confirmOkBtn.removeEventListener('click', handleConfirm);
-        confirmCancelBtn.removeEventListener('click', handleCancel);
-        onCancel();
-    };
-
-    confirmOkBtn.addEventListener('click', handleConfirm);
-    confirmCancelBtn.addEventListener('click', handleCancel);
-}
-
-/**
 * Saves character data to Google Drive.
 */
 async function saveCharacterToGoogleDrive() {
@@ -4631,7 +4584,7 @@ async function saveCharacterToGoogleDrive() {
             showStatusMessage("New character data saved to Google Drive!");
         }
         console.log("Character data saved to Google Drive!");
-        hasUnsavedChanges = false; // Data is now saved
+        setHasUnsavedChanges(false); // Data is now saved
     } catch (error) {
         console.error('Error saving to Google Drive:', error);
         showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
@@ -4709,13 +4662,12 @@ async function loadGoogleDriveFileContent(fileId) {
         const loadedData = JSON.parse(res.body);
 
         if (Array.isArray(loadedData)) {
-            characters = loadedData.map(loadedChar => initLoadCharacter(loadedChar));
-            currentCharacterIndex = 0;
+            setCharacters(loadedData.map(loadedChar => initLoadCharacter(loadedChar)));
         } else {
-            characters = [initLoadCharacter(loadedData)];
-            currentCharacterIndex = 0;
+            setCharacters([initLoadCharacter(loadedData)]);
         }
-        currentGoogleDriveFileId = fileId; // Set the current file ID
+        setCurrentCharacterIndex(0);
+        setCurrentGoogleDriveFileId(fileId); // Set the current file ID
         updateDOM();
         populateCharacterSelector();
         showStatusMessage("Character data loaded from Google Drive!");
@@ -4723,7 +4675,7 @@ async function loadGoogleDriveFileContent(fileId) {
         historyStack = []; // Clear previous history
         historyPointer = -1; // Reset history pointer
         saveCurrentStateToHistory(); // Save the newly loaded state as the first history entry
-        hasUnsavedChanges = false; // Data is now loaded and considered "saved"
+        setHasUnsavedChanges(false); // Data is now loaded and considered "saved"
         character.isDistributingStats = false; // Exit distribution mode on load
         updateRemainingPointsDisplay(); // Reset remaining points display
     } catch (error) {
@@ -4733,64 +4685,10 @@ async function loadGoogleDriveFileContent(fileId) {
 }
 
 /**
-* Toggles the visibility of a section and updates the button icon.
-* @param {string} id The ID of the content div.
-* @param {string} toggleClass The class of the toggle-{0}-bt
-*/
-function toggleHtml(id, toggleClass) {
-    const content = document.getElementById(id);
-    const toggleButton = document.querySelector(`.toggle-${toggleClass}-btn[data-target="${id}"] svg`);
-
-    if (content && toggleButton) {
-        const isHidden = content.classList.contains('hidden');
-        if (isHidden) {
-            content.classList.remove('hidden');
-            toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
-            character.htmlVisibility[id] = true;
-        } else {
-            content.classList.add('hidden');
-            toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
-            character.htmlVisibility[id] = false;
-        }
-        hasUnsavedChanges = true; // Mark that there are unsaved changes
-    }
-}
-
-/**
-* Toggles the visibility of a section and updates the button icon.
-* @param {string} sectionId The ID of the section content div.
-*/
-function toggleSection(sectionId) {
-    toggleHtml(sectionId, 'section');
-}
-
-/**
-* @param {string} toggleClass The class of the toggle-{0}-bt
-*/
-function updateSpecificHtmlVisibility(toggleClass) {
-    for (const htmlId in character.htmlVisibility) {
-        const htmlContent = document.getElementById(htmlId);
-        const toggleButton = document.querySelector(`.toggle-${toggleClass}-btn[data-target="${htmlId}"] svg`);
-
-        if (htmlContent && toggleButton) {
-            if (character.htmlVisibility[htmlId]) {
-                htmlContent.classList.remove('hidden');
-                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>'; // Chevron down
-            } else {
-                htmlContent.classList.add('hidden');
-                toggleButton.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>'; // Chevron right
-            }
-        }
-    }
-}
-
-/**
 * Updates the visibility of all html based on the character's htmlVisibility data.
 */
 function updateHtmlVisibility() {
-    const htmlVisibility = ['section', 'container', 'element'];
-
-    htmlVisibility.forEach(visibility => {
+    HTML_VISIBILITY.forEach(visibility => {
         updateSpecificHtmlVisibility(visibility);
     });
 }
@@ -5091,7 +4989,7 @@ function addManualTemporaryEffect() {
         } else { // For rollStats, update their total
             document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
         }
-        hasUnsavedChanges = true;
+        setHasUnsavedChanges(true);
     }
 }
 
@@ -5113,7 +5011,7 @@ function removeTemporaryEffect(event) {
         } else { // For rollStats, update their total
             document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
         }
-        hasUnsavedChanges = true;
+        setHasUnsavedChanges(true);
     }
 }
 
@@ -5197,7 +5095,7 @@ function endTurn() {
 
         recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
         updateDOM(); // Update the UI to reflect changes
-        hasUnsavedChanges = true;
+        setHasUnsavedChanges(true);
 
         if (effectsChanged) {
             showStatusMessage("Turn ended. Temporary effects updated.");
@@ -5266,7 +5164,7 @@ function takeDamage() {
     healthInput.value = character.Health.value;
     manaInput.value = character.Mana.value;
     racialPowerInput.value = character.RacialPower.value;
-    hasUnsavedChanges = true;
+    setHasUnsavedChanges(true);
     closeDamageModal();
 }
 
@@ -5476,7 +5374,7 @@ function attachEventListeners() {
                 if (character.weaponInventory[index]) {
                     character.weaponInventory[index].collapsed = !character.weaponInventory[index].collapsed;
                     renderWeaponCards();
-                    hasUnsavedChanges = true;
+                    setHasUnsavedChanges(true);
                 }
                 return;
             }
@@ -5505,7 +5403,7 @@ function attachEventListeners() {
             const allCollapsed = character.weaponInventory.every(item => item.collapsed);
             character.weaponInventory.forEach(item => { item.collapsed = !allCollapsed; });
             renderWeaponCards();
-            hasUnsavedChanges = true;
+            setHasUnsavedChanges(true);
         });
     }
 
@@ -5521,7 +5419,7 @@ function attachEventListeners() {
             const allCollapsed = character.armorInventory.every(item => item.collapsed);
             character.armorInventory.forEach(item => { item.collapsed = !allCollapsed; });
             renderArmorCards();
-            hasUnsavedChanges = true;
+            setHasUnsavedChanges(true);
         });
     }
 
@@ -5540,7 +5438,7 @@ function attachEventListeners() {
                 if (character.armorInventory[index]) {
                     character.armorInventory[index].collapsed = !character.armorInventory[index].collapsed;
                     renderArmorCards();
-                    hasUnsavedChanges = true;
+                    setHasUnsavedChanges(true);
                 }
                 return;
             }
@@ -5568,7 +5466,7 @@ function attachEventListeners() {
                 if (character.generalInventory[index]) {
                     character.generalInventory[index].collapsed = !character.generalInventory[index].collapsed;
                     renderGeneralCards();
-                    hasUnsavedChanges = true;
+                    setHasUnsavedChanges(true);
                 }
                 return;
             }
@@ -5585,7 +5483,7 @@ function attachEventListeners() {
             const allCollapsed = character.generalInventory.every(item => item.collapsed);
             character.generalInventory.forEach(item => { item.collapsed = !allCollapsed; });
             renderGeneralCards();
-            hasUnsavedChanges = true;
+            setHasUnsavedChanges(true);
         });
     }
 
@@ -5694,7 +5592,7 @@ function initPage() {
     racialPowerInput = document.getElementById('RacialPower');
 
 
-    characters = [defaultCharacterData()];
+    setCharacters([defaultCharacterData()]);
     // Initialize maxHealth, maxMana and maxRacialPower based on default race, level, and healthBonus for the first character
     recalculateCharacterDerivedProperties(characters[0]);
 
