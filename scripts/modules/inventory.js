@@ -100,9 +100,6 @@ export function renderWeaponCards() {
                 </div>
                 
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 font-mono" title="Weapon Damage">
-                        💥 ${item.damage || '0'}
-                    </span>
                     <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40" title="Gold Value">
                         🪙 ${item.value || 0}
                     </span>
@@ -440,9 +437,6 @@ export function renderArmorCards() {
                 </div>
                 
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 font-mono" title="Armor Defense">
-                        🛡️ +${item.defense || '0'}
-                    </span>
                     <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40" title="Gold Value">
                         🪙 ${item.value || 0}
                     </span>
@@ -648,19 +642,18 @@ export function renderEquippedSummaries() {
             let totalMagDef = 0;
             const elementalTotals = {};
             equippedArmor.forEach(a => {
-                if (a.rolledDefense === undefined) {
-                    a.rolledDefense = calculateFormula(a.defense || '0');
-                }
-                totalPhysDef += (parseFloat(a.rolledDefense) || 0);
+                const physDefVal = a.rolledDefense !== undefined
+                    ? (parseFloat(a.rolledDefense) || 0)
+                    : (parseFloat(calculateFormula(a.defense || '0', false)) || 0);
+                totalPhysDef += physDefVal;
                 ensureMagicElements(a, 'armor');
                 a.magicElements.forEach(me => {
                     const el = me.element || 'Magic';
-                    if (me.rolledDefense === undefined) {
-                        me.rolledDefense = calculateFormula(me.defense || '0');
-                    }
-                    const defVal = parseFloat(me.rolledDefense) || 0;
-                    totalMagDef += defVal;
-                    elementalTotals[el] = (elementalTotals[el] || 0) + defVal;
+                    const magDefVal = me.rolledDefense !== undefined
+                        ? (parseFloat(me.rolledDefense) || 0)
+                        : (parseFloat(calculateFormula(me.defense || '0', false)) || 0);
+                    totalMagDef += magDefVal;
+                    elementalTotals[el] = (elementalTotals[el] || 0) + magDefVal;
                 });
             });
 
@@ -696,8 +689,12 @@ export function renderEquippedSummaries() {
             `;
             equippedArmor.forEach(a => {
                 ensureMagicElements(a, 'armor');
-                let elementalDefs = a.magicElements.map(me => `+${me.defense || 0} ${me.element || 'Magic'}`).join(', ');
+                let elementalDefs = a.magicElements.map(me => {
+                    const val = me.rolledDefense !== undefined ? me.rolledDefense : calculateFormula(me.defense || '0', false);
+                    return `+${val} ${me.element || 'Magic'}`;
+                }).join(', ');
                 if (!elementalDefs) elementalDefs = 'None';
+                const currentDefenseDisplay = a.rolledDefense !== undefined ? a.rolledDefense : calculateFormula(a.defense || '0', false);
                 content += `
                     <div class="bg-indigo-50/30 dark:bg-indigo-950/20 p-2.5 rounded border border-indigo-100/40 dark:border-indigo-900/20 text-xs flex flex-col justify-between">
                         <div>
@@ -707,7 +704,7 @@ export function renderEquippedSummaries() {
                         <div class="mt-2 space-y-0.5 text-[11px] border-t border-gray-100 dark:border-gray-800/40 pt-1.5">
                             <div class="flex justify-between">
                                 <span class="text-gray-500">Defense:</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400">+${a.defense || 0}</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400">+${currentDefenseDisplay}</span>
                             </div>
                             <div class="flex flex-col mt-1">
                                 <span class="text-gray-500 text-[10px] uppercase font-semibold">Magic Defs:</span>
@@ -1099,12 +1096,8 @@ export function handleInventoryInputChange(event) {
             }
         } else if (inventoryType === 'armor' && field === 'equipped') {
             ensureMagicElements(inventory[itemIndex], 'armor');
-            if (checked) {
-                rollArmorAtIndex(itemIndex);
-            } else {
-                recalculateSmallUpdateCharacter(character, true);
-                renderArmorTable();
-            }
+            recalculateSmallUpdateCharacter(character, true);
+            renderArmorTable();
         }
     } else if (type === 'number' && field !== 'damage' && field !== 'defense') { // Exclude damage and defense from number parsing
         inventory[itemIndex][field] = parseFloat(value) || 0;
@@ -1112,6 +1105,7 @@ export function handleInventoryInputChange(event) {
         // For text fields (including damage and defense which can be formulas)
         inventory[itemIndex][field] = value;
         if (inventoryType === 'armor' && field === 'defense') {
+            delete inventory[itemIndex].rolledDefense;
             recalculateSmallUpdateCharacter(character, true);
         }
     }

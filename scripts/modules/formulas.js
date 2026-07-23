@@ -120,7 +120,7 @@ export function removeTemporaryEffectByIdentifier(abilityData, category) {
 }
 
 // Updated calculateFormula to perform regex replace using STAT_MAPPING and roll dice notations
-export function calculateFormula(formulaString) {
+export function calculateFormula(formulaString, rollDice = true) {
     if (typeof formulaString !== 'string') return formulaString != null ? formulaString : '';
 
     // Replace all mapped keys in the formula with actual values from the DOM
@@ -131,9 +131,10 @@ export function calculateFormula(formulaString) {
         parsedFormula = parsedFormula.replace(regex, value);
     }
 
-    // Replace dice notations (e.g. 2d6, 1d4, d10) with actual random rolls
+    // Replace dice notations (e.g. 2d6, 1d4, d10) with actual random rolls or 0 if rollDice is false
     const diceRegex = /\b(\d*)d(\d+)\b/gi;
     parsedFormula = parsedFormula.replace(diceRegex, (match, countStr, sidesStr) => {
+        if (!rollDice) return '0';
         const count = countStr ? parseInt(countStr, 10) : 1;
         const sides = parseInt(sidesStr, 10);
         let rollSum = 0;
@@ -318,13 +319,16 @@ export function calculateMaxRacialPower(charData, level) {
 export function calculateTotalDefense(charData) {
     const effects = getCategoriesTemporaryEffects(charData, 'totalDefense');
     const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
-    let baseDefense = applyTemporaryEffects(charData, 0, effectsOnInitialValue);;
+    let baseDefense = applyTemporaryEffects(charData, 0, effectsOnInitialValue);
     charData.armorInventory.forEach(armor => {
         if (armor.equipped) {
-            if (armor.rolledDefense === undefined) {
-                armor.rolledDefense = calculateFormula(armor.defense || '0');
+            let armorVal = 0;
+            if (armor.rolledDefense !== undefined) {
+                armorVal = parseFloat(armor.rolledDefense) || 0;
+            } else {
+                armorVal = parseFloat(calculateFormula(armor.defense || '0', false)) || 0;
             }
-            baseDefense += (parseFloat(armor.rolledDefense) || 0);
+            baseDefense += armorVal;
         }
     });
 
