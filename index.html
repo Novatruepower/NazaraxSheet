@@ -428,6 +428,36 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Total magic defense -->
+                        <div>
+                            <button type="button"
+                                class="temp-effects-btn p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1 text-sm font-medium text-purple-700 dark:text-purple-300"
+                                data-stat-name="totalMagicDefense" data-stat-display-name="Total Magic Defense" data-stat-display-total="totalMagicDefense">
+                                Total magic defense
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div class="flex items-center mt-1">
+                                <input
+                                    type="number"
+                                    id="total-magic-defense"
+                                    name="totalMagicDefense"
+                                    min="0"
+                                    class="w-1/2 px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-l-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-purple-50/50 dark:bg-gray-900 text-purple-900 dark:text-purple-100 cursor-not-allowed text-center font-bold"
+                                    readonly
+                                />
+                                <button type="button" id="roll-total-magic-defense-btn" class="px-3 py-2 border border-l-0 border-purple-300 dark:border-purple-600 rounded-r-md bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-bold text-sm shadow-sm transition-all focus:outline-none flex items-center gap-1" title="Roll Magic Defense for all equipped items">
+                                    🎲 Roll Magic
+                                </button>
+                            </div>
+                            <div id="magic-defense-equipped-breakdown" class="mt-2 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -524,8 +554,7 @@
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Material</th>
-                                    <th>Requirement</th>
-                                    <th>Required Stat</th>
+                                    <th>Req. Stats</th>
                                     <th>Accuracy</th>
                                     <th>Damage</th>
                                     <th>Magic Elements</th>
@@ -600,8 +629,7 @@
                                     <th>Name</th>
                                     <th>Location</th>
                                     <th>Material</th>
-                                    <th>Requirement</th>
-                                    <th>Required Stat</th>
+                                    <th>Req. Stats</th>
                                     <th>Defense</th>
                                     <th>Magic Elements</th>
                                     <th>Effect</th>
