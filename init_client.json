@@ -431,28 +431,28 @@
       "regularPassives": {
         "Spatial Capture": {
           "description": "Dimensionals have the unusual ability to use the muscle like fibers that serves as their skin as a sort of net which lets spatial energy pass into their bodies, but not back out of them, giving them the ability to create a store of this energy. You regenerate [{0}+level] racial points at the start of every one of your turns.",
-          "level": 1,
           "values": [
             10
-          ]
+          ],
+          "level": 1
         },
         "Spatial Reserve": {
           "description": "As a dimensional, your body has the innate ability to store abnormal quantities of spatial energy. You can have up to [{0}+level*{1}] racial points stocked up.",
           "formulas": [
             {
               "type": "+",
-              "statsAffected": [
-                "RacialPower"
-              ],
               "types": [
                 "*"
               ],
+              "statsAffected": [
+                "RacialPower"
+              ],
               "appliesTo": "initial-value",
+              "values": [
+                10
+              ],
               "stats": [
                 "level"
-              ],
-              "values": [
-                20
               ]
             }
           ],
