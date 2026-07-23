@@ -112,7 +112,7 @@ export function renderWeaponCards() {
                     <div class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 p-2 rounded-md flex flex-col gap-1 mt-1">
                         <span class="flex items-center gap-1">⚠️ Unmet Requirements:</span>
                         <ul class="list-disc list-inside text-[11px] font-normal space-y-0.5">
-                            ${validation.details.map(d => `<li>Req: ${d.required} ${d.stat} (You have: ${d.current})</li>`).join('')}
+                            ${validation.details.filter(d => d.required > d.current).map(d => `<li>Req: ${d.required} ${d.stat} (You have: ${d.current})</li>`).join('')}
                         </ul>
                     </div>
                 `;
@@ -486,7 +486,7 @@ export function renderArmorCards() {
                     <div class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 p-2 rounded-md flex flex-col gap-1 mt-1">
                         <span class="flex items-center gap-1">⚠️ Unmet Requirements:</span>
                         <ul class="list-disc list-inside text-[11px] font-normal space-y-0.5">
-                            ${validation.details.map(d => `<li>Req: ${d.required} ${d.stat} (You have: ${d.current})</li>`).join('')}
+                            ${validation.details.filter(d => d.required > d.current).map(d => `<li>Req: ${d.required} ${d.stat} (You have: ${d.current})</li>`).join('')}
                         </ul>
                     </div>
                 `;
@@ -1213,11 +1213,13 @@ export function handleInventoryInputChange(event) {
                 if (inventoryType === 'armor') {
                     recalculateSmallUpdateCharacter(character, true);
                 }
-                if (event.type === 'change' || event.type === 'input') {
+                if (event.type === 'change') {
                     if (inventoryType === 'weapon') {
                         renderWeaponCards();
+                        renderWeaponTable();
                     } else if (inventoryType === 'armor') {
                         renderArmorCards();
+                        renderArmorTable();
                     }
                 }
             }
