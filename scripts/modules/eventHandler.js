@@ -8,7 +8,7 @@ import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, 
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
   } from './characterState.js';
 import { character, characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, setCurrentGoogleDriveFileId } from './state.js';
-import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex } from './inventory.js';
+import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex, toggleAllCards } from './inventory.js';
 import { calculateRollStatTotal, calculateLevelMaxExperience, roll  } from './formulas.js';
 import { renderRacial, removePassivesLevel, renderGenericClassesPassives } from './passivesActives.js';
 import { saveCharacterToGoogleDrive, loadCharacterFromGoogleDrive, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick, maybeEnableGoogleDriveButtons  } from './googleDrive.js';
@@ -947,8 +947,17 @@ export function attachEventListeners() {
     const rollAllWeaponsBtn = document.getElementById('roll-all-weapons-btn');
     if (rollAllWeaponsBtn) rollAllWeaponsBtn.addEventListener('click', rollAllActiveWeapons);
 
+    const weaponToggleAllBtn = document.getElementById('weapon-toggle-all-cards-btn');
+    if (weaponToggleAllBtn) weaponToggleAllBtn.addEventListener('click', () => toggleAllCards('weapon'));
+
     const rollAllArmorBtn = document.getElementById('roll-all-armor-btn');
     if (rollAllArmorBtn) rollAllArmorBtn.addEventListener('click', rollAllEquippedArmor);
+
+    const armorToggleAllBtn = document.getElementById('armor-toggle-all-cards-btn');
+    if (armorToggleAllBtn) armorToggleAllBtn.addEventListener('click', () => toggleAllCards('armor'));
+
+    const generalToggleAllBtn = document.getElementById('general-toggle-all-cards-btn');
+    if (generalToggleAllBtn) generalToggleAllBtn.addEventListener('click', () => toggleAllCards('general'));
 
     const rollTotalDefenseBtn = document.getElementById('roll-total-defense-btn');
     if (rollTotalDefenseBtn) rollTotalDefenseBtn.addEventListener('click', rollAllEquippedArmor);

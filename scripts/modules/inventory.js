@@ -1082,6 +1082,31 @@ export function setInventoryView(type, view) {
     }
 }
 
+export function toggleAllCards(inventoryType) {
+    const inventoryKey = `${inventoryType}Inventory`;
+    const inventory = character[inventoryKey];
+    if (!inventory || inventory.length === 0) return;
+
+    // If at least one card is expanded (!item.collapsed), collapse all cards.
+    // If all cards are collapsed, expand all cards.
+    const hasExpanded = inventory.some(item => !item.collapsed);
+    const targetState = hasExpanded;
+
+    inventory.forEach(item => {
+        item.collapsed = targetState;
+    });
+
+    setHasUnsavedChanges(true);
+
+    if (inventoryType === 'weapon') {
+        renderWeaponCards();
+    } else if (inventoryType === 'armor') {
+        renderArmorCards();
+    } else if (inventoryType === 'general') {
+        renderGeneralCards();
+    }
+}
+
 export function rollWeaponAtIndex(index) {
     const item = character.weaponInventory[index];
     if (!item) return;
