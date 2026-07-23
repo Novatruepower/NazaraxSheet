@@ -2,7 +2,7 @@ import { GOOGLE_DRIVE_AUTH_STATUS_KEY } from './constants.js';
 import { setCurrentGoogleDriveFileId } from './state.js';
 import { showStatusMessage, showConfirmationModal, updateDOM, updateRemainingPointsDisplay, updatePanelPosition } from './uiUtils.js';
 import { prepareCharactersForSaving, saveCurrentStateToHistory, populateCharacterSelector, initLoadCharacter } from './characterState.js';
-import { character, characters, setCharacters, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges } from './state.js';
+import { character, characters, setCharacters, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, currentGoogleDriveFileId } from './state.js';
 
 /**
 * Enables Google Drive buttons if both GAPI and GIS are initialized.

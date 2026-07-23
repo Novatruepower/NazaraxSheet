@@ -2,7 +2,8 @@ import { ExternalDataManager } from '../externalDataManager.js'
 import { MIN_STAT_VALUE, MAX_STAT_VALUE, TOTAL_DISTRIBUTION_POINTS } from './constants.js';
 import { SECTION_VISIBILITY, HTML_VISIBILITY } from './constants.js';
 import { character, setHasUnsavedChanges } from './state.js';
-import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal } from './formulas.js'
+import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal, addTemporaryEffect, roll } from './formulas.js';
+import { handlePlayerStatInputChange } from './eventHandler.js';
 import { renderRacial } from './passivesActives.js';
 import { renderWeaponTable, renderArmorTable, renderGeneralTable } from './inventory.js';
 import { recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, updateHistoryButtonsState } from './characterState.js';
@@ -252,6 +253,15 @@ export function highlightStatsWithActiveEffects() {
             totalDefenseEl.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
         }
     }
+    const totalMagicDefenseEl = document.getElementById('total-magic-defense');
+    if (totalMagicDefenseEl) {
+        const hasEff = getCategoriesTemporaryEffects(character, 'totalMagicDefense').length > 0;
+        if (hasEff) {
+            totalMagicDefenseEl.classList.add('border-purple-400', 'dark:border-purple-500', 'bg-purple-50/20');
+        } else {
+            totalMagicDefenseEl.classList.remove('border-purple-400', 'dark:border-purple-500', 'bg-purple-50/20');
+        }
+    }
 }
 
 /**
@@ -263,7 +273,7 @@ export function renderActiveEffectsSummary() {
 
     listContainer.innerHTML = '';
 
-    const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense'];
+    const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'];
     const allEffects = [];
 
     statsWithEffects.forEach(statName => {
@@ -606,8 +616,11 @@ export function updateDOM() {
 
     // Health & Combat
     // document.getElementById('healthBonus').value = character.healthBonus; // Removed this line
-    // totalDefense is now updated via recalculateSmallUpdateCharacter
-    document.getElementById('total-defense').value = character.totalDefense.value;
+    // totalDefense and totalMagicDefense are updated via recalculateSmallUpdateCharacter
+    if (document.getElementById('total-defense')) document.getElementById('total-defense').value = character.totalDefense.value;
+    if (document.getElementById('total-magic-defense') && character.totalMagicDefense) {
+        document.getElementById('total-magic-defense').value = character.totalMagicDefense.value;
+    }
 
     // Render new inventory tables
     renderWeaponTable();
@@ -642,6 +655,7 @@ export function updateDOM() {
     updateStaticTempEffectsButton('Mana', 'Mana');
     updateStaticTempEffectsButton('RacialPower', 'Racial Power');
     updateStaticTempEffectsButton('totalDefense', 'Total defense');
+    updateStaticTempEffectsButton('totalMagicDefense', 'Total Magic Defense');
 
     // Highlight Health/Mana/RacialPower/totalDefense inputs if they have active temporary effects
     highlightStatsWithActiveEffects();
@@ -885,13 +899,17 @@ export function renderTemporaryEffects(statName) {
 export function openTemporaryEffectsModal() {
     refreshTemporaryModalTitle();
     renderTemporaryEffects(currentStatForTempEffects);
-    tempEffectsModal.classList.remove('hidden');
+    const tempEffectsModal = document.getElementById('temp-effects-modal');
+    if (tempEffectsModal) tempEffectsModal.classList.remove('hidden');
 }
 
 export function refreshTemporaryModalTitle() {
     console.log("refresh");
-    if (tempEffectsModalTitleStatTotal != "") {
-        tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatDisplayNameForTempEffects} (${document.getElementById(tempEffectsModalTitleStatTotal).value})`;
+    const tempEffectsModalTitle = document.getElementById('temp-effects-modal-title');
+    if (tempEffectsModalTitle && tempEffectsModalTitleStatTotal != "") {
+        const statTotalEl = document.getElementById(tempEffectsModalTitleStatTotal);
+        const totalVal = statTotalEl ? statTotalEl.value : '';
+        tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatDisplayNameForTempEffects} (${totalVal})`;
     }
 }
 
@@ -899,7 +917,8 @@ export function refreshTemporaryModalTitle() {
  * Closes the temporary effects modal.
  */
 export function closeTemporaryEffectsModal() {
-    tempEffectsModal.classList.add('hidden');
+    const tempEffectsModal = document.getElementById('temp-effects-modal');
+    if (tempEffectsModal) tempEffectsModal.classList.add('hidden');
     currentStatForTempEffects = null;
     updateDOM(); // Re-render the main stats table to reflect any changes in totals
 }
@@ -918,8 +937,8 @@ export function addManualTemporaryEffect() {
         // Initialize new effect with default type and appliesTo
         addTemporaryEffect(character, 'manual', { name: 'New Effect', statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
         renderTemporaryEffects(currentStatForTempEffects);
-        // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
-        if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
+        // If the stat is Health, Mana, RacialPower, totalDefense, or totalMagicDefense, recalculate its value
+        if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense' || currentStatForTempEffects === 'totalMagicDefense') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
             document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
@@ -940,8 +959,8 @@ export function removeTemporaryEffect(event) {
     if (statName && character[statName] && character[statName].temporaryEffects[category][effectIndex] !== undefined) {
         character[statName].temporaryEffects[category].splice(effectIndex, 1);
         renderTemporaryEffects(statName); // This will now preserve focus
-        // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
-        if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
+        // If the stat is Health, Mana, RacialPower, totalDefense, or totalMagicDefense, recalculate its value
+        if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense' || statName === 'totalMagicDefense') {
             recalculateSmallUpdateCharacter(character, true);
         } else { // For rollStats, update their total
             document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
@@ -999,8 +1018,8 @@ export function endTurn() {
 
         let effectsChanged = false;
         // Iterate over all character properties that might have temporary effects
-        // This includes rollStats, Health, Mana, RacialPower, and totalDefense
-        const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+        // This includes rollStats, Health, Mana, RacialPower, totalDefense, and totalMagicDefense
+        const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
 
         statsWithEffects.forEach(statName => {
             if (character[statName] && character[statName].temporaryEffects) {

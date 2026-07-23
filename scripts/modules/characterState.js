@@ -1,10 +1,10 @@
-import { DEFAULT_STAT_MAX_EXPERIENCE, MIN_STAT_VALUE, MAX_STAT_VALUE, MAX_HISTORY_LENGTH   } from './constants.js';
+import { DEFAULT_STAT_MAX_EXPERIENCE, MIN_STAT_VALUE, MAX_STAT_VALUE, MAX_HISTORY_LENGTH, DEFAULT_RACIAL_POINT_SCALE } from './constants.js';
 import { character, characters, setCharacters, currentCharacterIndex , setCurrentCharacterIndex, historyPointer, setHistoryPointer, historyStack, setHistoryStack, setCurrentGoogleDriveFileId,
     hasUnsavedChanges, setHasUnsavedChanges
  } from './state.js';
 import { ExternalDataManager } from '../externalDataManager.js';
-import { calculateMaxHealth, calculateMaxMana, calculateMaxRacialPower, calculateTotalDefense, calculateRollStatTotal, calculateLevelMaxExperience, roll, getAppliedRacialChange } from './formulas.js';
-import { ensureMagicElements, ensureRequiredStats } from './inventory.js';
+import { calculateMaxHealth, calculateMaxMana, calculateMaxRacialPower, calculateTotalDefense, calculateTotalMagicDefense, calculateRollStatTotal, calculateLevelMaxExperience, roll, getAppliedRacialChange } from './formulas.js';
+import { ensureMagicElements, ensureRequiredStats, renderTotalMagicDefenseBreakdown } from './inventory.js';
 import { updateDOM, showStatusMessage, renderActiveEffectsSummary, updateRemainingPointsDisplay, showConfirmationModal } from './uiUtils.js';
 import { renderRacial, handleRevertChoices } from './passivesActives.js';
 
@@ -24,6 +24,7 @@ export const defaultCharacterData = function () {
         maxMana: 0, // Will be calculated dynamically
         maxRacialPower: 0, // Will be calculated dynamically
         totalDefense: { value: 0, temporaryEffects: {} }, // Initialize totalDefense with temporaryEffects
+        totalMagicDefense: { value: 0, temporaryEffects: {} }, // Initialize totalMagicDefense with temporaryEffects
         
         layouts: {
             // Store layout as percentages (0.0 - 1.0) for responsiveness
@@ -170,9 +171,13 @@ export function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     oldMaxValue = char.levelMaxExperience;
     char.levelMaxExperience = calculateLevelMaxExperience(char);
 
-    // Recalculate totalDefense
+    // Recalculate totalDefense and totalMagicDefense
     char.totalDefense.value = calculateTotalDefense(char);
-    // No adjustment needed for totalDefense as it's not a current/max value like health/mana
+    if (!char.totalMagicDefense) {
+        char.totalMagicDefense = { value: 0, temporaryEffects: {} };
+    }
+    const magicDefResult = calculateTotalMagicDefense(char);
+    char.totalMagicDefense.value = magicDefResult.value;
 
     if (isDisplay) {
         levelUp(character.levelExperience);
@@ -183,6 +188,7 @@ export function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         const maxRacialPowerEl = document.getElementById('maxRacialPower');
         const racialPowerInputEl = document.getElementById('RacialPower');
         const totalDefenseEl = document.getElementById('total-defense');
+        const totalMagicDefenseEl = document.getElementById('total-magic-defense');
 
         if (maxHealthEl) maxHealthEl.value = character.maxHealth;
         if (healthInputEl) healthInputEl.value = character.Health.value;
@@ -191,6 +197,8 @@ export function recalculateSmallUpdateCharacter(char, isDisplay = false) {
         if (maxRacialPowerEl) maxRacialPowerEl.value = character.maxRacialPower;
         if (racialPowerInputEl) racialPowerInputEl.value = character.RacialPower.value;
         if (totalDefenseEl) totalDefenseEl.value = character.totalDefense.value;
+        if (totalMagicDefenseEl) totalMagicDefenseEl.value = character.totalMagicDefense.value;
+        renderTotalMagicDefenseBreakdown(character);
     }
 }
 
@@ -363,6 +371,7 @@ export function prepareCharactersForSaving(chars) {
         delete char.maxMana;
         delete char.maxRacialPower;
         delete char.totalDefense; // Ensure totalDefense is also excluded as it's now derived
+        delete char.totalMagicDefense;
     });
 
     console.log(charactersToSave);
@@ -449,7 +458,7 @@ export function initLoadCharacter(loadedChar) {
                         newChar[key].maxExperience = DEFAULT_STAT_MAX_EXPERIENCE;
                     }
 
-                    if (ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense') {
+                    if (ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense' || key === 'totalMagicDefense') {
                         if (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null || Array.isArray(newChar[key].temporaryEffects)) {
                             newChar[key].temporaryEffects = {};
                         }

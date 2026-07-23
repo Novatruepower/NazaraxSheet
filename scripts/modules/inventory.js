@@ -1,6 +1,6 @@
 import { ExternalDataManager } from '../externalDataManager.js';
 import { character, setHasUnsavedChanges, inventoryViewSettings } from './state.js';
-import { calculateFormula, calculateRollStatTotal } from './formulas.js';
+import { calculateFormula, calculateRollStatTotal, calculateTotalMagicDefense, roll } from './formulas.js';
 import {recalculateSmallUpdateCharacter } from './characterState.js';
 import { showToast } from './eventHandler.js';
 
@@ -806,6 +806,42 @@ export function renderEquippedSummaries() {
             armorSummary.classList.add('hidden');
         }
     }
+
+    renderTotalMagicDefenseBreakdown(character);
+}
+
+export function renderTotalMagicDefenseBreakdown(charData) {
+    const breakdownEl = document.getElementById('magic-defense-equipped-breakdown');
+    if (!breakdownEl) return;
+
+    const magicDefResult = calculateTotalMagicDefense(charData);
+
+    const inputEl = document.getElementById('total-magic-defense');
+    if (inputEl) {
+        inputEl.value = magicDefResult.value;
+    }
+
+    if (!magicDefResult.byElement || Object.keys(magicDefResult.byElement).length === 0) {
+        breakdownEl.innerHTML = `
+            <div class="text-[11px] text-gray-400 dark:text-gray-500 italic mt-1">
+                No magic defense equipped.
+            </div>
+        `;
+        return;
+    }
+
+    const elementalBadges = Object.entries(magicDefResult.byElement)
+        .map(([el, val]) => `
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/40 px-2 py-0.5 rounded-md">
+                ✨ ${el}: +${val}
+            </span>
+        `).join('');
+
+    breakdownEl.innerHTML = `
+        <div class="flex flex-wrap gap-1 mt-1">
+            ${elementalBadges}
+        </div>
+    `;
 }
 
 function toggleInventoryViewDOM(type, view) {

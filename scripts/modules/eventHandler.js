@@ -2,14 +2,14 @@ import { MIN_STAT_VALUE, MAX_STAT_VALUE } from './constants.js';
 import { ExternalDataManager } from '../externalDataManager.js';
 import { showConfirmationModal, updateRemainingPointsDisplay, renderTemporaryEffects, refreshTemporaryModalTitle, renderSpecializations, updateSpecializationDropdownAndData,
     getCharacterStatesActive, updateDOM, showStatusMessage, quickRollStats, distributeStats, addManualTemporaryEffect, closeTemporaryEffectsModal, endTurn, toggleSidebar,
-    updatePanelsPosition, closeDamageModal, takeDamage
+    updatePanelsPosition, closeDamageModal, takeDamage, setTempEffectsStatContext, openTemporaryEffectsModal, toggleSection
  } from './uiUtils.js';
 import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, defaultCharacterData, populateCharacterSelector, saveCurrentStateToHistory, saveCharacterToFile,
-    loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver
+    loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
   } from './characterState.js';
 import { character, characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, setCurrentGoogleDriveFileId } from './state.js';
 import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex } from './inventory.js';
-import { calculateRollStatTotal, calculateLevelMaxExperience  } from './formulas.js';
+import { calculateRollStatTotal, calculateLevelMaxExperience, roll  } from './formulas.js';
 import { renderRacial, removePassivesLevel, renderGenericClassesPassives } from './passivesActives.js';
 import { saveCharacterToGoogleDrive, loadCharacterFromGoogleDrive, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick, maybeEnableGoogleDriveButtons  } from './googleDrive.js';
 
@@ -153,8 +153,8 @@ export function handlePlayerStatInputChange(event) {
             
             // Re-render the temporary effects list and update the stat total immediately
             renderTemporaryEffects(statName); // This will now preserve focus
-            // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
-            if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
+            // If the stat is Health, Mana, RacialPower, totalDefense, or totalMagicDefense, recalculate its value
+            if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense' || statName === 'totalMagicDefense') {
                 recalculateSmallUpdateCharacter(character, true); // Update max values and their DOM elements
             } else { // For rollStats, update their total
                 document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
@@ -174,8 +174,8 @@ export function handlePlayerStatInputChange(event) {
         }
     }
 
-    // Also check for Health, Mana, RacialPower, and totalDefense as they are now handled similarly for temporary effects
-    if (!statName && (name.startsWith('Health') || name.startsWith('Mana') || name.startsWith('RacialPower') || name.startsWith('totalDefense'))) {
+    // Also check for Health, Mana, RacialPower, totalDefense, and totalMagicDefense as they are now handled similarly for temporary effects
+    if (!statName && (name.startsWith('Health') || name.startsWith('Mana') || name.startsWith('RacialPower') || name.startsWith('totalDefense') || name.startsWith('totalMagicDefense'))) {
         statName = name.split('-')[0]; // Get 'Health', 'Mana', 'RacialPower', 'totalDefense'
         subProperty = name.substring(statName.length + 1); // Get 'value' if applicable
     }
@@ -952,6 +952,9 @@ export function attachEventListeners() {
 
     const rollTotalDefenseBtn = document.getElementById('roll-total-defense-btn');
     if (rollTotalDefenseBtn) rollTotalDefenseBtn.addEventListener('click', rollAllEquippedArmor);
+
+    const rollTotalMagicDefenseBtn = document.getElementById('roll-total-magic-defense-btn');
+    if (rollTotalMagicDefenseBtn) rollTotalMagicDefenseBtn.addEventListener('click', rollAllEquippedArmor);
 
     const armorCardsContainer = document.getElementById('armor-inventory-cards-container');
     if (armorCardsContainer) {

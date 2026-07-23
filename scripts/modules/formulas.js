@@ -337,6 +337,61 @@ export function calculateTotalDefense(charData) {
     return Math.floor(applyTemporaryEffects(charData, baseDefense, effects));
 }
 
+/**
+ * Calculates the total magic defense for a character and returns breakdown per equipped item and element.
+ * @param {object} charData The character object.
+ * @returns {object} Object with value, rawEquipmentTotal, byElement, and equippedList.
+ */
+export function calculateTotalMagicDefense(charData) {
+    if (!charData.totalMagicDefense) {
+        charData.totalMagicDefense = { value: 0, temporaryEffects: {} };
+    }
+    const effects = getCategoriesTemporaryEffects(charData, 'totalMagicDefense');
+    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
+    let baseMagicDefense = applyTemporaryEffects(charData, 0, effectsOnInitialValue);
+
+    let totalMagDef = 0;
+    const elementalTotals = {};
+    const equippedMagicList = [];
+
+    if (charData && charData.armorInventory) {
+        charData.armorInventory.forEach(armor => {
+            if (armor.equipped) {
+                if (!armor.magicElements || !Array.isArray(armor.magicElements)) {
+                    armor.magicElements = [];
+                }
+                if (armor.magicElements.length > 0) {
+                    const itemElements = [];
+                    armor.magicElements.forEach(me => {
+                        const el = (me.element === 'Custom' ? me.customElementName : me.element) || 'Magic';
+                        const magDefVal = me.rolledDefense !== undefined
+                            ? (parseFloat(me.rolledDefense) || 0)
+                            : (parseFloat(calculateFormula(me.defense || '0', false)) || 0);
+                        totalMagDef += magDefVal;
+                        elementalTotals[el] = (elementalTotals[el] || 0) + magDefVal;
+                        itemElements.push({ element: el, value: magDefVal });
+                    });
+                    equippedMagicList.push({
+                        armorName: armor.name || 'Unnamed Armor',
+                        location: armor.location || 'Gear',
+                        elements: itemElements
+                    });
+                }
+            }
+        });
+    }
+
+    baseMagicDefense += totalMagDef;
+    const finalTotal = Math.floor(applyTemporaryEffects(charData, baseMagicDefense, effects));
+
+    return {
+        value: finalTotal,
+        rawEquipmentTotal: totalMagDef,
+        byElement: elementalTotals,
+        equippedList: equippedMagicList
+    };
+}
+
 export function getAppliedRacialChange(charData, statName) {
     if (ExternalDataManager.stats.includes(statName)) {
         return charData[statName].racialChange;
