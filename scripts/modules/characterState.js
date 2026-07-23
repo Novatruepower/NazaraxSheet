@@ -564,11 +564,6 @@ export function handleChangeRace(oldRace) {
         delete character.StatsAffected[oldRace];
     }
 
-    if (character.uniqueIdentifiers['Spatial Reserve']) {
-      //  character.BaseRacialPower.value += DEFAULT_RACIAL_POINT_SCALE - character.uniqueIdentifiers['Spatial Reserve'].values[1];
-        delete character.uniqueIdentifiers['Spatial Reserve'];
-    }
-
     // Update racialChange for each stat based on the new race
     ExternalDataManager.rollStats.forEach(statName => {
         updateRacialChange(oldRace, statName);

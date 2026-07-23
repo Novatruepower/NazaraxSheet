@@ -80,9 +80,6 @@ function renderContainer(passivesContainer, title, id, numbersFootNotes) {
  */
 function processRacialRegularPassiveChange(newAbilityData) {
     const race = character.race;
-    if (character.uniqueIdentifiers['Spatial Reserve'] && newAbilityData.identifier == 'Spatial Reserve') {
-        character.BaseRacialPower.value += DEFAULT_RACIAL_POINT_SCALE - newAbilityData.values[1];
-    }
 
     removeTemporaryEffectByIdentifier(newAbilityData, race);
 
@@ -103,10 +100,6 @@ function processRacialRegularPassiveChange(newAbilityData) {
     }
     else if (newAbilityData.identifier) {
         character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
-
-        if (newAbilityData.identifier == 'Spatial Reserve') {
-            character.BaseRacialPower.value += newAbilityData.values[1] - DEFAULT_RACIAL_POINT_SCALE;
-        }
     }
 
     recalculateCharacterDerivedProperties(character, true);

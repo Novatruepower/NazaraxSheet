@@ -304,10 +304,6 @@ export function calculateMaxRacialPower(charData, level) {
     if (charData.uniqueIdentifiers['Savagery'])
         return charData.uniqueIdentifiers['Savagery'].values[2];
 
-    if (charData.uniqueIdentifiers['Spatial Reserve']) {
-        return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), charData.uniqueIdentifiers['Spatial Reserve'].values[0]));
-    }
-
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
 
