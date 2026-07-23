@@ -1,6 +1,8 @@
-import { character, hasUnsavedChanges, setHasUnsavedChanges, inventoryViewSettings } from './state.js';
 import { ExternalDataManager } from '../externalDataManager.js';
-import { calculateFormula } from './formulas.js';
+import { character, hasUnsavedChanges, setHasUnsavedChanges, inventoryViewSettings } from './state.js';
+import { calculateFormula, calculateRollStatTotal } from './formulas.js';
+import {recalculateSmallUpdateCharacter } from './characterState.js';
+import { showToast } from './eventHandler.js';
 
 export function ensureMagicElements(item, type) {
     if (!item.magicElements) {
@@ -932,4 +934,185 @@ export function renderGeneralTable() {
 export function setInventoryView(type, view) {
     inventoryViewSettings[type] = view;
     toggleInventoryViewDOM(type, view);
+}
+
+export function rollWeaponAtIndex(index) {
+    const item = character.weaponInventory[index];
+    if (!item) return;
+
+    ensureMagicElements(item, 'weapon');
+    item.rolledDamage = calculateFormula(item.damage || '0');
+    
+    let magicMsgParts = [];
+    item.magicElements.forEach(me => {
+        me.rolledDamage = calculateFormula(me.damage || '0');
+        magicMsgParts.push(`${me.element || 'Magic'}: ${me.rolledDamage}`);
+    });
+
+    setHasUnsavedChanges(true);
+    renderWeaponTable();
+
+    let rollMsg = `Rolled <strong>${item.name || 'Weapon'}</strong>: 💥 Physical: <strong>${item.rolledDamage}</strong>`;
+    if (magicMsgParts.length > 0) {
+        rollMsg += `<br><span class="text-xs text-purple-150 font-medium">✨ ${magicMsgParts.join(', ')}</span>`;
+    }
+    showToast(rollMsg, 'roll');
+}
+
+export function rollAllActiveWeapons() {
+    const activeWeapons = character.weaponInventory.filter(item => item.use);
+    if (activeWeapons.length === 0) {
+        showToast('No active weapons equipped to roll!', 'error');
+        return;
+    }
+
+    activeWeapons.forEach(item => {
+        ensureMagicElements(item, 'weapon');
+        item.rolledDamage = calculateFormula(item.damage || '0');
+        item.magicElements.forEach(me => {
+            me.rolledDamage = calculateFormula(me.damage || '0');
+        });
+    });
+
+    setHasUnsavedChanges(true);
+    renderWeaponTable();
+
+    showToast(`Rolled all <strong>${activeWeapons.length}</strong> active weapons! Check the stance summary and cards for results.`, 'roll');
+}
+
+export function rollArmorAtIndex(index) {
+    const item = character.armorInventory[index];
+    if (!item) return;
+
+    ensureMagicElements(item, 'armor');
+    item.rolledDefense = calculateFormula(item.defense || '0');
+    
+    let magicMsgParts = [];
+    item.magicElements.forEach(me => {
+        me.rolledDefense = calculateFormula(me.defense || '0');
+        magicMsgParts.push(`${me.element || 'Magic'}: ${me.rolledDefense}`);
+    });
+
+    setHasUnsavedChanges(true);
+    
+    // Recalculate total defense & update elements
+    recalculateSmallUpdateCharacter(character, true);
+    renderArmorTable();
+
+    let rollMsg = `Rolled <strong>${item.name || 'Armor'}</strong>: 🛡️ Physical Defense: <strong>${item.rolledDefense}</strong>`;
+    if (magicMsgParts.length > 0) {
+        rollMsg += `<br><span class="text-xs text-purple-150 font-medium">✨ Magic Def: ${magicMsgParts.join(', ')}</span>`;
+    }
+    showToast(rollMsg, 'roll');
+}
+
+export function rollAllEquippedArmor() {
+    const equippedArmor = character.armorInventory.filter(item => item.equipped);
+    if (equippedArmor.length === 0) {
+        showToast('No equipped armor to roll!', 'error');
+        return;
+    }
+
+    equippedArmor.forEach(item => {
+        ensureMagicElements(item, 'armor');
+        item.rolledDefense = calculateFormula(item.defense || '0');
+        item.magicElements.forEach(me => {
+            me.rolledDefense = calculateFormula(me.defense || '0');
+        });
+    });
+
+    setHasUnsavedChanges(true);
+    recalculateSmallUpdateCharacter(character, true);
+    renderArmorTable();
+
+    showToast(`Rolled all <strong>${equippedArmor.length}</strong> equipped armor items! Total defense updated.`, 'roll');
+}
+
+/**
+ * Handles input changes for inventory items.
+ * @param {Event} event The input event.
+ */
+export function handleInventoryInputChange(event) {
+    const { value, type, dataset, checked } = event.target;
+    const inventoryType = dataset.inventoryType;
+    const itemIndex = parseInt(dataset.index);
+    const field = dataset.field;
+
+    // Check if we are editing a specific magic element attribute
+    const action = dataset.action;
+    if (action === 'edit-magic-element') {
+        const meIndex = parseInt(dataset.meIndex);
+        const meField = dataset.field;
+        let val = event.target.value;
+
+        // Dropdown element change should only trigger on 'change' event to avoid duplicate prompts/handlers
+        if (meField === 'element' && event.type !== 'change') {
+            return;
+        }
+        // Input fields should only trigger on 'input' event to update memory, change event handles re-rendering
+        if (meField !== 'element' && event.type !== 'input') {
+            return;
+        }
+
+        const inventory = character[`${inventoryType}Inventory`];
+        if (inventory && inventory[itemIndex]) {
+            ensureMagicElements(inventory[itemIndex], inventoryType);
+            const me = inventory[itemIndex].magicElements[meIndex];
+            if (me) {
+                if (meField === 'element') {
+                    if (val === 'custom_input') {
+                        me.element = 'Custom';
+                    } else {
+                        me.element = val;
+                    }
+                    if (inventoryType === 'armor') {
+                        recalculateSmallUpdateCharacter(character, true);
+                    }
+                } else if (meField === 'custom-element-name') {
+                    me.element = val;
+                    if (inventoryType === 'armor') {
+                        recalculateSmallUpdateCharacter(character, true);
+                    }
+                } else if (meField === 'defense') {
+                    me[meField] = val; // Store formula/string directly
+                    recalculateSmallUpdateCharacter(character, true);
+                } else {
+                    me[meField] = val;
+                }
+                setHasUnsavedChanges(true);
+            }
+        }
+        return;
+    }
+
+    const inventory = character[`${inventoryType}Inventory`];
+    if (!inventory || !inventory[itemIndex]) return;
+
+    if (field === 'use' || field === 'equipped') { // Handle checkboxes
+        inventory[itemIndex][field] = checked;
+        if (inventoryType === 'weapon' && field === 'use') {
+            ensureMagicElements(inventory[itemIndex], 'weapon');
+            if (checked) {
+                rollWeaponAtIndex(itemIndex);
+            } else {
+                renderWeaponTable();
+            }
+        } else if (inventoryType === 'armor' && field === 'equipped') {
+            ensureMagicElements(inventory[itemIndex], 'armor');
+            if (checked) {
+                rollArmorAtIndex(itemIndex);
+            } else {
+                recalculateSmallUpdateCharacter(character, true);
+                renderArmorTable();
+            }
+        }
+    } else if (type === 'number' && field !== 'damage' && field !== 'defense') { // Exclude damage and defense from number parsing
+        inventory[itemIndex][field] = parseFloat(value) || 0;
+    } else {
+        // For text fields (including damage and defense which can be formulas)
+        inventory[itemIndex][field] = value;
+        if (inventoryType === 'armor' && field === 'defense') {
+            recalculateSmallUpdateCharacter(character, true);
+        }
+    }
 }

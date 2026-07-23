@@ -38,6 +38,7 @@ export const character = new Proxy({}, {
                 window.populateCharacterSelector();
             }
         }
+
         return true;
     }
 });

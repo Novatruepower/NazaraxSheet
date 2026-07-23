@@ -151,6 +151,45 @@ export function calculateFormula(formulaString) {
     }
 }
 
+// Generate a random number between min and max (inclusive)
+export function roll(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function applyOperator(v1, type, v2) {
+    switch (type) {
+        case '*':
+            return v1 * v2;
+        case '/':
+            return v1 / v2;
+        case '+':
+            return v1 + v2;
+        case '-':
+            return v1 - v2;
+        default:
+            return 0;
+    }
+}
+
+export function applyEffectValues(charData, effect) {
+    let val = 0;
+
+    if (effect.stats) {
+        const length = effect.stats.length;
+
+        for (let index = 0; index < length; ++index) {
+            val += applyOperator(charData[effect.stats[index]], effect.types[index], effect.values[index])
+        }
+    } else {
+        for (const value of effect.values) {
+            val += value;
+        }
+    }
+
+    return val;
+}
+
+
 export function applyPercent(charData, effect) {
     let value = applyEffectValues(charData, effect);
     

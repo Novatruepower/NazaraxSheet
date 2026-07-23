@@ -1,12 +1,15 @@
 import { ExternalDataManager } from '../externalDataManager.js'
-import { MIN_STAT_VALUE } from './constants.js';
+import { MIN_STAT_VALUE, MAX_STAT_VALUE, TOTAL_DISTRIBUTION_POINTS } from './constants.js';
 import { SECTION_VISIBILITY, HTML_VISIBILITY } from './constants.js';
 import { character, setHasUnsavedChanges } from './state.js';
 import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal } from './formulas.js'
 import { renderRacial } from './passivesActives.js';
 import { renderWeaponTable, renderArmorTable, renderGeneralTable } from './inventory.js';
-import { recalculateCharacterDerivedProperties, updateHistoryButtonsState } from './characterState.js';
+import { recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, updateHistoryButtonsState } from './characterState.js';
 
+export let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
+export let currentStatDisplayNameForTempEffects = null;
+export let tempEffectsModalTitleStatTotal = "";
 
 export function showStatusMessage(message, isError = false) {
     const statusMessageElement = document.getElementById('status-message');
@@ -647,4 +650,465 @@ export function updateDOM() {
     renderActiveEffectsSummary();
 
     updateHistoryButtonsState(); // Update history button states after DOM update
+}
+
+// Function to perform a quick roll for all player stats
+export function quickRollStats() {
+        showConfirmationModal("Are you sure you want to roll stats? This will roll all initial stat values to at least 5 and it will reset stats exp.", () => {
+        character.isDistributingStats = false; // Exit distribution mode
+        ExternalDataManager.rollStats.forEach(statName => {
+            character[statName].baseValue = roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Assign to the 'baseValue' property
+            character[statName].experienceBonus = 0;
+            character[statName].experience = 0;
+
+            document.getElementById(`${statName}-experience`).value = 0;
+            document.getElementById(`${statName}-value`).value = character[statName].baseValue;
+            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
+        });
+        // Re-render weapon inventory to update calculated damage values
+        renderWeaponTable();
+        updateRemainingPointsDisplay(); // Reset remaining points display
+        setHasUnsavedChanges(true); // Mark that there are unsaved changes
+    });
+}
+
+/**
+ * Initializes stats for point distribution.
+ */
+export function distributeStats() {
+    showConfirmationModal("Are you sure you want to distribute 97 points? This will reset all initial stat values to 5 and it will reset stats exp.", () => {
+        character.isDistributingStats = true; // Enter distribution mode
+        character.remainingDistributionPoints = TOTAL_DISTRIBUTION_POINTS;
+
+        ExternalDataManager.rollStats.forEach(statName => {
+            character[statName].baseValue = MIN_STAT_VALUE; // Set all stats to minimum baseValue
+            character[statName].experienceBonus = 0;
+            character[statName].experience = 0;
+
+            document.getElementById(`${statName}-experience`).value = 0;
+            document.getElementById(`${statName}-value`).value = character[statName].baseValue; // Update displayed value
+            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
+        });
+
+        updateRemainingPointsDisplay();
+        renderWeaponTable();
+        setHasUnsavedChanges(true);
+    });
+}
+
+/**
+ * Renders the list of temporary effects for the current stat in the modal.
+ * @param {string} statName The name of the stat.
+ */
+export function renderTemporaryEffects(statName) {
+    const tempEffectsList = document.getElementById('temp-effects-list');
+    if (!tempEffectsList) return;
+
+    const category = 'manual';
+    const manualEffects = character[statName].temporaryEffects[category] || [];
+
+    // Store the currently focused element's ID if it's within the temp effects list
+    const focusedElement = document.activeElement;
+    let focusedElementDataset = null;
+    if (focusedElement && tempEffectsList.contains(focusedElement) && focusedElement.classList.contains('temp-effect-input')) {
+        focusedElementDataset = {
+            statName: focusedElement.dataset.statName,
+            effectIndex: parseInt(focusedElement.dataset.effectIndex),
+            category: focusedElement.dataset.category,
+            field: focusedElement.dataset.field
+        };
+    }
+
+    // Clear existing children that are not part of the current effects array
+    // This handles removals and ensures correct order
+    const existingEffectDivs = Array.from(tempEffectsList.children);
+    existingEffectDivs.forEach((div, index) => {
+        // If an element exists at this index and it's not a temporary effect div (e.g., the "No effects" message), remove it.
+        // Or if it's an excess div beyond the current number of effects, remove it.
+        if (index >= manualEffects.length || !div.classList.contains('flex')) {
+            tempEffectsList.removeChild(div);
+        }
+    });
+
+    if (manualEffects.length === 0) {
+        tempEffectsList.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No temporary effects added yet.</p>';
+        return;
+    }
+
+    manualEffects.forEach((effect, index) => {
+        let effectDiv = tempEffectsList.children[index];
+        let nameInput, valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
+        const manualIndex = index;
+
+        // If the div doesn't exist or isn't the correct type, create it
+        if (!effectDiv || !effectDiv.classList.contains('flex')) {
+            effectDiv = document.createElement('div');
+            effectDiv.className = `flex flex-wrap items-end gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 ${
+                index > 0 ? 'mt-4' : ''
+            }`;
+            // Insert at the correct position or append
+            if (tempEffectsList.children[index]) {
+                tempEffectsList.insertBefore(effectDiv, tempEffectsList.children[index]);
+            } else {
+                tempEffectsList.appendChild(effectDiv);
+            }
+
+            // Reusable classes
+            const inputBase = 'temp-effect-input px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100';
+            const labelBase = 'text-sm font-semibold text-gray-700 dark:text-gray-300 w-full';
+
+            // Populate innerHTML
+            effectDiv.innerHTML = `
+                <div class="flex flex-col min-w-[9rem] gap-y-1">
+                    <label class="${labelBase}">Effect Name</label>
+                    <input type="text" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="name" class="${inputBase} w-full" placeholder="e.g. Bless, Poison" />
+                </div>
+
+                <div class="flex flex-col min-w-[7rem] gap-y-1">
+                    <label class="${labelBase}">Value</label>
+                    <div class="flex items-center gap-x-2"> <!-- Added a flex container for input and checkbox -->
+                        <input type="number" step="0.01" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="values" class="${inputBase} flex-grow min-w-[4rem]" />
+                        <label class="flex items-center gap-x-1 cursor-pointer">
+                            <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="isPercent" class="form-checkbox h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:bg-gray-700 dark:border-gray-600" ${effect.isPercent ? 'checked' : ''} />
+                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">%</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex flex-col min-w-[5rem] gap-y-1">
+                    <label class="${labelBase}">Type</label>
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="type" class="${inputBase}">
+                        <option value="+">+</option>
+                        <option value="*">*</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col min-w-[8rem] gap-y-1">
+                    <label class="${labelBase}">Applies To</label>
+                    <select data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="appliesTo" class="${inputBase}">
+                        <option value="initial-value">initial value</option>
+                        <option value="base-value">base value</option>
+                        <option value="total">Total</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col min-w-[6rem] gap-y-1">
+                    <label class="${labelBase}">Duration</label>
+                    <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="duration" class="${inputBase}" />
+                </div>
+
+                <div class="flex items-end">
+                    <button type="button" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" class="remove-temp-effect-btn px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                        Remove
+                    </button>
+                </div>
+            `;
+            // Get references to the newly created inputs and button
+            nameInput = effectDiv.querySelector(`input[data-field="name"]`);
+            valueInput = effectDiv.querySelector(`input[data-field="values"]`);
+            isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
+            durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
+            appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
+            removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
+        } else {
+            // If the div already exists and is correct, just update its children's values and data attributes
+            nameInput = effectDiv.querySelector(`input[data-field="name"]`);
+            valueInput = effectDiv.querySelector(`input[data-field="values"]`);
+            isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
+            durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
+            appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
+            removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
+
+            // Update data-effect-index for consistency if order changes (though it shouldn't often here)
+            nameInput.dataset.effectIndex = manualIndex;
+            valueInput.dataset.effectIndex = manualIndex;
+            isPercentCheckbox.dataset.effectIndex = manualIndex;
+            durationInput.dataset.effectIndex = manualIndex;
+            typeSelect.dataset.effectIndex = manualIndex;
+            appliesToSelect.dataset.effectIndex = manualIndex;
+            removeButton.dataset.effectIndex = manualIndex;
+        }
+
+        // Always update the input values directly to reflect the current data
+        nameInput.value = effect.name || '';
+        valueInput.value = effect.values[0] || 0;
+        isPercentCheckbox.checked = effect.isPercent; // Set checked state for the checkbox
+        durationInput.value = effect.duration;
+        typeSelect.value = effect.type || '+'; // Default to 'add'
+        appliesToSelect.value = effect.appliesTo || 'total'; // Default to 'total'
+
+        // Re-attach event listeners to ensure they are always active for current elements
+        nameInput.removeEventListener('input', handlePlayerStatInputChange);
+        nameInput.addEventListener('input', handlePlayerStatInputChange);
+
+        valueInput.removeEventListener('input', handlePlayerStatInputChange);
+        valueInput.addEventListener('input', handlePlayerStatInputChange);
+
+        isPercentCheckbox.removeEventListener('change', handlePlayerStatInputChange); // Use 'change' for checkbox
+        isPercentCheckbox.addEventListener('change', handlePlayerStatInputChange); // Use 'change' for checkbox
+
+        durationInput.removeEventListener('input', handlePlayerStatInputChange);
+        durationInput.addEventListener('input', handlePlayerStatInputChange);
+
+        typeSelect.removeEventListener('change', handlePlayerStatInputChange);
+        typeSelect.addEventListener('change', handlePlayerStatInputChange);
+
+        appliesToSelect.removeEventListener('change', handlePlayerStatInputChange);
+        appliesToSelect.addEventListener('change', handlePlayerStatInputChange);
+
+        removeButton.removeEventListener('click', removeTemporaryEffect);
+        removeButton.addEventListener('click', removeTemporaryEffect);
+    });
+
+    // Remove any excess divs if the number of effects has decreased
+    while (tempEffectsList.children.length > manualEffects.length) {
+        tempEffectsList.removeChild(tempEffectsList.lastChild);
+    }
+
+    // Restore focus
+    if (focusedElementDataset) {
+        const inputToRefocus = tempEffectsList.querySelector(
+            `[data-stat-name="${focusedElementDataset.statName}"][data-effect-index="${focusedElementDataset.effectIndex}"][data-category="${focusedElementDataset.category}"][data-field="${focusedElementDataset.field}"]`
+        );
+        if (inputToRefocus) {
+            inputToRefocus.focus();
+            // Only attempt to setSelectionRange if the input type supports it
+            if (inputToRefocus.type !== 'number' && inputToRefocus.tagName !== 'SELECT' && inputToRefocus.type !== 'checkbox') {
+                inputToRefocus.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
+            }
+        }
+    }
+}
+
+export function openTemporaryEffectsModal() {
+    refreshTemporaryModalTitle();
+    renderTemporaryEffects(currentStatForTempEffects);
+    tempEffectsModal.classList.remove('hidden');
+}
+
+export function refreshTemporaryModalTitle() {
+    console.log("refresh");
+    if (tempEffectsModalTitleStatTotal != "") {
+        tempEffectsModalTitle.textContent = `Temporary Effects for ${currentStatDisplayNameForTempEffects} (${document.getElementById(tempEffectsModalTitleStatTotal).value})`;
+    }
+}
+
+/**
+ * Closes the temporary effects modal.
+ */
+export function closeTemporaryEffectsModal() {
+    tempEffectsModal.classList.add('hidden');
+    currentStatForTempEffects = null;
+    updateDOM(); // Re-render the main stats table to reflect any changes in totals
+}
+
+export function setTempEffectsStatContext(statName, displayName, statDisplayTotal) {
+    currentStatForTempEffects = statName;
+    currentStatDisplayNameForTempEffects = displayName;
+    tempEffectsModalTitleStatTotal = statDisplayTotal;
+}
+
+/**
+ * Adds a new temporary effect to the current stat.
+ */
+export function addManualTemporaryEffect() {
+    if (currentStatForTempEffects) {
+        // Initialize new effect with default type and appliesTo
+        addTemporaryEffect(character, 'manual', { name: 'New Effect', statsAffected: [currentStatForTempEffects], values: [0], isPercent: false, duration: 1, type: '+', appliesTo: 'total' }, 1);
+        renderTemporaryEffects(currentStatForTempEffects);
+        // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
+        if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense') {
+            recalculateSmallUpdateCharacter(character, true);
+        } else { // For rollStats, update their total
+            document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
+        }
+        setHasUnsavedChanges(true);
+    }
+}
+
+/**
+ * Removes a temporary effect from a stat.
+ * @param {Event} event The click event from the remove button.
+ */
+export function removeTemporaryEffect(event) {
+    const statName = event.target.dataset.statName;
+    const category =  event.target.dataset.category;
+    const effectIndex = parseInt(event.target.dataset.effectIndex);
+
+    if (statName && character[statName] && character[statName].temporaryEffects[category][effectIndex] !== undefined) {
+        character[statName].temporaryEffects[category].splice(effectIndex, 1);
+        renderTemporaryEffects(statName); // This will now preserve focus
+        // If the stat is Health, Mana, RacialPower, or totalDefense, recalculate its value
+        if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense') {
+            recalculateSmallUpdateCharacter(character, true);
+        } else { // For rollStats, update their total
+            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
+        }
+        setHasUnsavedChanges(true);
+    }
+}
+
+/**
+ * Decrements the duration of all temporary buffs and removes expired ones.
+ */
+export function endTurn() {
+    showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
+        const permHealthRegenActive = character.permHealthRegenActive > 0;
+        const permManaRegenActive = character.permManaRegenActive > 0;
+        const notFighting = !character.states['In Fight'];
+
+        let naturalHealthRegen = 0;
+        let naturalManaRegen = notFighting || permManaRegenActive ? character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana : 0;
+
+        if (notFighting || permHealthRegenActive) {
+            if (permHealthRegenActive || !(character.states['Bleeding'] || character.states['Taking Damage'])) {
+                naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange * character.maxHealth;
+            }
+        }
+
+        if (character.states['Sleeping']) {
+            naturalHealthRegen *= 2;
+            naturalManaRegen *= 2;
+        }
+
+        character.Health.value += naturalHealthRegen;
+        character.Mana.value += naturalManaRegen;
+
+        if (character.uniqueIdentifiers['Dragon’s Metabolism'] && !character.states['Active Racial Skill']) {
+            character.Health.value += character.uniqueIdentifiers['Dragon’s Metabolism'].values[0] * character.maxHealth;
+        }
+
+        const maxRacialPower = document.getElementById('maxRacialPower').value;
+        let data = character.uniqueIdentifiers['Spatial Capture'];
+        let racialPowerRegen = data ? data.values[0] + character.level : character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * maxRacialPower;
+        character.RacialPower.value += racialPowerRegen;
+
+        if (character.uniqueIdentifiers['Absorption']) {
+            data = character.uniqueIdentifiers['Absorption'];
+            racialPowerRegen = data.values[0];
+
+            if (character.states['Hands Covered'] || character.states['Feets Covered']) {
+                racialPowerRegen = data.values[1];
+            }
+
+            character.RacialPower.value += racialPowerRegen * maxRacialPower;
+        }
+        character.RacialPower.value = Math.min(character.RacialPower.value, maxRacialPower);
+
+        let effectsChanged = false;
+        // Iterate over all character properties that might have temporary effects
+        // This includes rollStats, Health, Mana, RacialPower, and totalDefense
+        const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+
+        statsWithEffects.forEach(statName => {
+            if (character[statName] && character[statName].temporaryEffects) {
+
+                const temporaryEffects = character[statName].temporaryEffects;
+                for (const category in temporaryEffects) {
+                    const categoryTemporaryEffects = temporaryEffects[category];
+                    if (Array.isArray(categoryTemporaryEffects)) {
+                        const initialLength = categoryTemporaryEffects.length;
+
+                        // Decrement duration and filter out expired effects
+                        character[statName].temporaryEffects[category] = categoryTemporaryEffects.filter(effect => {
+                            if (effect.duration !== undefined && effect.duration !== null) {
+                                effect.duration--;
+                            }
+                            return effect.duration === undefined || effect.duration > 0;
+                        });
+
+                        if (character[statName].temporaryEffects[category].length !== initialLength) {
+                            effectsChanged = true;
+                        }
+                    }
+                }
+            }
+        });
+
+
+        recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
+        updateDOM(); // Update the UI to reflect changes
+        setHasUnsavedChanges(true);
+
+        if (effectsChanged) {
+            showStatusMessage("Turn ended. Temporary effects updated.");
+        } else {
+            showStatusMessage("No temporary effects to update.", false);
+        }
+    });
+}
+
+export function updatePanelPosition(panel, layout) {
+    if (panel) {
+        panel.style.left = `${layout.x * 100}vw`;
+        panel.style.top = `${layout.y * 100}vh`;
+        panel.style.width = `${layout.width * 100}vw`;
+        panel.style.height = `${layout.height * 100}vh`;
+    }
+}
+
+/**
+ * Updates the personal notes panel's position and size based on stored percentage values.
+ * This function should be called on window resize.
+ */
+export function updatePanelsPosition() {
+    const personalNotesPanel = document.getElementById('personal-notes-panel');
+    updatePanelPosition(personalNotesPanel, character.layouts.personalNotes);
+    const backstoryPanel = document.getElementById('backstory-content');
+    updatePanelPosition(backstoryPanel, character.layouts.backstory);
+}
+export function closeDamageModal() {
+    const modal = document.getElementById("take-damage-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+export function takeTrueDamage(value) {
+    const setHealthCheckbox = document.getElementById("set-health-checkbox");
+    if (setHealthCheckbox && setHealthCheckbox.checked) {
+        character.Health.value = Math.min(value, character.maxHealth);
+    } else {
+        character.Health.value = Math.max(0, character.Health.value - value);
+    }
+}
+
+export function takeDamage() {
+    const damageTakeAmountInput = document.getElementById("take-damage-amount");
+    const setTakeTrueDamage = document.getElementById("set-take-true-damage-checkbox");
+    const setHealthCheckbox = document.getElementById("set-health-checkbox");
+
+    if (!damageTakeAmountInput) return;
+    const value = parseInt(damageTakeAmountInput.value, 10);
+    if (isNaN(value)) return alert("Please enter a valid number");
+
+    if (setTakeTrueDamage && setTakeTrueDamage.checked) {
+        takeTrueDamage(value);
+    } else if (character.uniqueIdentifiers['Clay Skin'] && character.RacialPower.value > 0) {
+        let damage = value;
+
+        if (setHealthCheckbox && setHealthCheckbox.checked) {
+            damage = character.Health.value - value;
+        }
+
+        const calculation = character.RacialPower.value - damage;
+        const newRacialPower = Math.max(0, calculation);
+        character.RacialPower.value = newRacialPower;
+
+        if (newRacialPower == 0)
+            character.Health.value = Math.max(0, character.Health.value + calculation);
+    }
+    else {
+        takeTrueDamage(value);
+    }
+
+    const healthInput = document.getElementById('Health');
+    const manaInput = document.getElementById('Mana');
+    const racialPowerInput = document.getElementById('RacialPower');
+
+    if (healthInput) healthInput.value = character.Health.value;
+    if (manaInput) manaInput.value = character.Mana.value;
+    if (racialPowerInput) racialPowerInput.value = character.RacialPower.value;
+    setHasUnsavedChanges(true);
+    closeDamageModal();
 }

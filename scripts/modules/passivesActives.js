@@ -30,6 +30,30 @@ function getTitle(title, numbersFootNotes, id) {
     return `${title}${notes}`;
 }
 
+function getAvailablePoints(abilityData, currentLevel) {
+    const levels = abilityData.levels; // Access directly, not through .abilities
+    const levelKeys = Object.keys(levels).map(Number).sort((a, b) => a - b);
+    let points = 0;
+    for (const levelThreshold of levelKeys) {
+        if (currentLevel >= levelThreshold) {
+            points = levels[levelThreshold];
+        } else {
+            break;
+        }
+    }
+    return points;
+};
+
+function filterFromArrayStartIndex(arr, startIndex, predicate) {
+  const result = [];
+  for (let i = startIndex; i < arr.length; i++) {
+    if (predicate(arr[i], i, arr)) {
+      result.push(arr[i]);
+    }
+  }
+  return result;
+}
+
 function renderContainer(passivesContainer, title, id, numbersFootNotes) {
     const race = character.race;
     const listId = `${race}-${id}-list`;
@@ -306,7 +330,7 @@ function revertChoiceRacialChange(char, statName, choice) {
  * @param {string} category The category (e.g., 'Demi-humans', 'Mutant').
  * @param {string} uniqueIdentifier The 'unique' value of the passive (e.g., 'Stat Adjustments', 'Mutation_Degeneration').
  */
-function handleRevertChoices(char, category, uniqueIdentifier) {
+export function handleRevertChoices(char, category, uniqueIdentifier) {
     if (char.StatChoices[category] && char.StatChoices[category][uniqueIdentifier]) {
         for (const slotId in char.StatChoices[category][uniqueIdentifier]) {
             const choice = char.StatChoices[category][uniqueIdentifier][slotId];
@@ -327,7 +351,7 @@ function handleRevertChoices(char, category, uniqueIdentifier) {
     }
 }
 
-function removePassivesLevel() {
+export function removePassivesLevel() {
         const categoriesToProcess = Object.keys(character.StatChoices);
         let passivesReverted = false;
 
@@ -921,4 +945,38 @@ export function renderRacial(oldRace) {
             toggleHtml(targetId, 'element');
         });
     });
+}
+
+export function renderGenericClassesPassives() {
+    const manualPassivesContainer = document.getElementById('classes-manual-passives-container');
+    let genericPassives = null;
+    character.classes.forEach(classe => {
+        const result = ExternalDataManager.getClassRegularPassives(classe, character.specializations, character.level);
+
+        if (result) {
+            if (genericPassives) {
+                const keys = Object.key(result);
+                keys.forEach(k => genericPassives[k] = result[k]);
+            }
+            else
+                genericPassives = result;
+        }
+    });
+
+    if (genericPassives) {
+        //renderManualRacialPassives(manualPassivesContainer, race);
+        //attachClearChoiceListeners(`.clear-${race}-choice-btn`);
+    } else {
+        manualPassivesContainer.classList.add('hidden');
+        manualPassivesContainer.innerHTML = '';
+    }
+
+    const regularPassivesContainer = document.getElementById('classes-regular-passives-container');
+
+    if (regularPassivesContainer) {
+        //renderRegularRacialPassives(oldRace, regularPassivesContainer, race);
+    } else {
+        regularPassivesContainer.classList.add('hidden');
+        regularPassivesContainer.innerHTML = '';
+    }
 }
