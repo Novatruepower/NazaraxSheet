@@ -4,7 +4,7 @@ import { character, characters, setCharacters, currentCharacterIndex , setCurren
  } from './state.js';
 import { ExternalDataManager } from '../externalDataManager.js';
 import { calculateMaxHealth, calculateMaxMana, calculateMaxRacialPower, calculateTotalDefense, calculateRollStatTotal, calculateLevelMaxExperience, roll, getAppliedRacialChange } from './formulas.js';
-import { ensureMagicElements } from './inventory.js';
+import { ensureMagicElements, ensureRequiredStats } from './inventory.js';
 import { updateDOM, showStatusMessage, renderActiveEffectsSummary, updateRemainingPointsDisplay, showConfirmationModal } from './uiUtils.js';
 import { renderRacial, handleRevertChoices } from './passivesActives.js';
 
@@ -464,15 +464,17 @@ export function initLoadCharacter(loadedChar) {
     // Handle section visibility - ensure all default sections are present
     newChar.htmlVisibility = { ...defaultCharacterData().htmlVisibility, ...loadedChar.htmlVisibility };
 
-    // Initialize originalDamage/originalMagicDamage for weapons if not present
+    // Initialize originalDamage/originalMagicDamage and requiredStats for weapons if not present
     newChar.weaponInventory.forEach(weapon => {
         if (typeof weapon.originalDamage === 'undefined') weapon.originalDamage = weapon.damage;
         if (typeof weapon.originalMagicDamage === 'undefined') weapon.originalMagicDamage = weapon.magicDamage;
         ensureMagicElements(weapon, 'weapon');
+        ensureRequiredStats(weapon);
     });
 
     newChar.armorInventory.forEach(armor => {
         ensureMagicElements(armor, 'armor');
+        ensureRequiredStats(armor);
     });
 
     // Convert arrays within StatsAffected back to Sets

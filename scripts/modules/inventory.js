@@ -1,5 +1,5 @@
 import { ExternalDataManager } from '../externalDataManager.js';
-import { character, hasUnsavedChanges, setHasUnsavedChanges, inventoryViewSettings } from './state.js';
+import { character, setHasUnsavedChanges, inventoryViewSettings } from './state.js';
 import { calculateFormula, calculateRollStatTotal } from './formulas.js';
 import {recalculateSmallUpdateCharacter } from './characterState.js';
 import { showToast } from './eventHandler.js';
@@ -25,20 +25,54 @@ export function ensureMagicElements(item, type) {
     }
 }
 
-function validateItemRequirements(item) {
-    if (!item.requiredStat || !item.requirement) {
-        return { met: true };
+export function ensureRequiredStats(item) {
+    if (!item) return;
+    if (!Array.isArray(item.requiredStats)) {
+        item.requiredStats = [];
+        if (item.requiredStat || item.requirement) {
+            item.requiredStats.push({
+                stat: item.requiredStat || '',
+                requirement: item.requirement || ''
+            });
+        }
     }
-    const reqVal = parseFloat(item.requirement);
-    if (isNaN(reqVal)) return { met: true }; // Treat as met if not a valid number
-    
-    // Use the global calculateRollStatTotal helper to get current character stat
-    const currentVal = calculateRollStatTotal(character, item.requiredStat);
+    if (item.requiredStats.length > 0) {
+        item.requiredStat = item.requiredStats.map(rs => rs.stat).filter(Boolean).join(', ');
+        item.requirement = item.requiredStats.map(rs => rs.requirement).filter(Boolean).join(', ');
+    } else {
+        item.requiredStat = '';
+        item.requirement = '';
+    }
+}
+
+function validateItemRequirements(item) {
+    ensureRequiredStats(item);
+    if (!item.requiredStats || item.requiredStats.length === 0) {
+        return { met: true, details: [] };
+    }
+
+    let allMet = true;
+    const details = [];
+
+    item.requiredStats.forEach(rs => {
+        if (!rs.stat || !rs.requirement) return;
+        const reqVal = parseFloat(rs.requirement);
+        if (isNaN(reqVal)) return;
+
+        const currentVal = calculateRollStatTotal(character, rs.stat);
+        const isMet = currentVal >= reqVal;
+        if (!isMet) allMet = false;
+        details.push({
+            stat: rs.stat,
+            required: reqVal,
+            current: currentVal,
+            met: isMet
+        });
+    });
+
     return {
-        met: currentVal >= reqVal,
-        current: currentVal,
-        required: reqVal,
-        stat: item.requiredStat
+        met: allMet,
+        details: details
     };
 }
 
@@ -61,6 +95,7 @@ export function renderWeaponCards() {
 
     character.weaponInventory.forEach((item, index) => {
         ensureMagicElements(item, 'weapon');
+        ensureRequiredStats(item);
         const validation = validateItemRequirements(item);
         const card = document.createElement('div');
         
@@ -71,17 +106,20 @@ export function renderWeaponCards() {
         card.className = `p-5 rounded-xl border ${activeClass} transition-all duration-200 flex flex-col gap-4 relative hover:shadow-md`;
         
         let valBadge = '';
-        if (item.requiredStat && item.requirement) {
+        if (validation.details && validation.details.length > 0) {
             if (!validation.met) {
                 valBadge = `
-                    <div class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 p-2 rounded-md flex items-center gap-1.5 mt-1">
-                        <span>⚠️ Unmet Requirement: Requires ${validation.required} ${validation.stat} (You have: ${validation.current})</span>
+                    <div class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 p-2 rounded-md flex flex-col gap-1 mt-1">
+                        <span class="flex items-center gap-1">⚠️ Unmet Requirements:</span>
+                        <ul class="list-disc list-inside text-[11px] font-normal space-y-0.5">
+                            ${validation.details.map(d => `<li>Req: ${d.required} ${d.stat} (You have: ${d.current})</li>`).join('')}
+                        </ul>
                     </div>
                 `;
             } else {
                 valBadge = `
                     <div class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-2 rounded-md flex items-center gap-1.5 mt-1">
-                        <span>✅ Requirement Met: ${validation.required} ${validation.stat} (Current: ${validation.current})</span>
+                        <span>✅ Requirements Met: ${validation.details.map(d => `${d.required} ${d.stat}`).join(', ')}</span>
                     </div>
                 `;
             }
@@ -142,14 +180,25 @@ export function renderWeaponCards() {
                         <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1">🎯 Accuracy %</label>
                         <input type="number" data-inventory-type="weapon" data-field="accuracy" data-index="${index}" value="${item.accuracy || 100}" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stat</label>
-                        <div class="flex items-center gap-1">
-                            <select data-inventory-type="weapon" data-field="requiredStat" data-index="${index}" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-855 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2">
-                                <option value="">None</option>
-                                ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${item.requiredStat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
-                            </select>
-                            <input type="text" data-inventory-type="weapon" data-field="requirement" data-index="${index}" value="${item.requirement || ''}" placeholder="Val" class="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2 text-center" />
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stats</label>
+                            <button type="button" data-action="add-required-stat" data-inventory-type="weapon" data-index="${index}" class="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                + Add Stat
+                            </button>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            ${item.requiredStats.map((rs, rsIndex) => `
+                                <div class="flex items-center gap-1">
+                                    <select data-action="edit-required-stat" data-inventory-type="weapon" data-index="${index}" data-rs-index="${rsIndex}" data-field="stat" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-1/2">
+                                        <option value="">Select Stat...</option>
+                                        ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${rs.stat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+                                    </select>
+                                    <input type="text" data-action="edit-required-stat" data-inventory-type="weapon" data-index="${index}" data-rs-index="${rsIndex}" data-field="requirement" value="${rs.requirement || ''}" placeholder="Val" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-1/2 text-center" />
+                                    <button type="button" data-action="remove-required-stat" data-inventory-type="weapon" data-index="${index}" data-rs-index="${rsIndex}" class="text-red-500 hover:text-red-700 dark:text-red-400 p-1 focus:outline-none" title="Remove Requirement">✕</button>
+                                </div>
+                            `).join('')}
+                            ${item.requiredStats.length === 0 ? '<span class="text-[11px] text-gray-400 dark:text-gray-500 italic">None</span>' : ''}
                         </div>
                     </div>
                 </div>
@@ -315,8 +364,30 @@ export function renderWeaponTable() {
         { field: 'name', type: 'text', class: 'w-full' },
         { field: 'type', type: 'text', class: 'w-full' },
         { field: 'material', type: 'text', class: 'w-full' },
-        { field: 'requirement', type: 'text', class: 'w-full' },
-        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        {
+            field: 'requiredStats',
+            type: 'html',
+            html: (item, index) => {
+                ensureRequiredStats(item);
+                return `
+                <div class="flex flex-col gap-1 text-xs min-w-[140px]">
+                    ${item.requiredStats.map((rs, rsIndex) => `
+                        <div class="flex items-center gap-1 bg-gray-50 dark:bg-gray-900/60 p-1 rounded border border-gray-200 dark:border-gray-700">
+                            <select data-action="edit-required-stat" data-inventory-type="weapon" data-index="${index}" data-rs-index="${rsIndex}" data-field="stat" class="px-1 py-0.5 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none w-1/2">
+                                <option value="">Stat...</option>
+                                ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${rs.stat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+                            </select>
+                            <input type="text" data-action="edit-required-stat" data-inventory-type="weapon" data-index="${index}" data-rs-index="${rsIndex}" data-field="requirement" value="${rs.requirement || ''}" placeholder="Val" class="px-1 py-0.5 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none w-1/2 text-center" />
+                            <button type="button" data-action="remove-required-stat" data-inventory-type="weapon" data-index="${index}" data-rs-index="${rsIndex}" class="text-red-500 hover:text-red-700 text-xs px-1 focus:outline-none" title="Remove Requirement">✕</button>
+                        </div>
+                    `).join('')}
+                    <button type="button" data-action="add-required-stat" data-inventory-type="weapon" data-index="${index}" class="text-[10px] text-left text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-semibold mt-0.5">
+                        + Add Stat
+                    </button>
+                </div>
+                `;
+            }
+        },
         { field: 'accuracy', type: 'number', class: 'w-full' },
         {
             field: 'damage',
@@ -398,6 +469,7 @@ export function renderArmorCards() {
 
     character.armorInventory.forEach((item, index) => {
         ensureMagicElements(item, 'armor');
+        ensureRequiredStats(item);
         const validation = validateItemRequirements(item);
         const card = document.createElement('div');
         
@@ -408,17 +480,20 @@ export function renderArmorCards() {
         card.className = `p-5 rounded-xl border ${activeClass} transition-all duration-200 flex flex-col gap-4 relative hover:shadow-md`;
         
         let valBadge = '';
-        if (item.requiredStat && item.requirement) {
+        if (validation.details && validation.details.length > 0) {
             if (!validation.met) {
                 valBadge = `
-                    <div class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 p-2 rounded-md flex items-center gap-1.5 mt-1">
-                        <span>⚠️ Unmet Requirement: Requires ${validation.required} ${validation.stat} (You have: ${validation.current})</span>
+                    <div class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 p-2 rounded-md flex flex-col gap-1 mt-1">
+                        <span class="flex items-center gap-1">⚠️ Unmet Requirements:</span>
+                        <ul class="list-disc list-inside text-[11px] font-normal space-y-0.5">
+                            ${validation.details.map(d => `<li>Req: ${d.required} ${d.stat} (You have: ${d.current})</li>`).join('')}
+                        </ul>
                     </div>
                 `;
             } else {
                 valBadge = `
                     <div class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-2 rounded-md flex items-center gap-1.5 mt-1">
-                        <span>✅ Requirement Met: ${validation.required} ${validation.stat} (Current: ${validation.current})</span>
+                        <span>✅ Requirements Met: ${validation.details.map(d => `${d.required} ${d.stat}`).join(', ')}</span>
                     </div>
                 `;
             }
@@ -485,14 +560,25 @@ export function renderArmorCards() {
                         </div>
                         <textarea data-inventory-type="armor" data-field="defense" data-index="${index}" placeholder="e.g. 1d4 + Agility" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all h-10 resize-none">${item.defense || ''}</textarea>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stat</label>
-                        <div class="flex items-center gap-1">
-                            <select data-inventory-type="armor" data-field="requiredStat" data-index="${index}" class="px-1 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2">
-                                <option value="">None</option>
-                                ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${item.requiredStat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
-                            </select>
-                            <input type="text" data-inventory-type="armor" data-field="requirement" data-index="${index}" value="${item.requirement || ''}" placeholder="Val" class="px-1 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-1/2 text-center" />
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Req. Stats</label>
+                            <button type="button" data-action="add-required-stat" data-inventory-type="armor" data-index="${index}" class="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                + Add Stat
+                            </button>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            ${item.requiredStats.map((rs, rsIndex) => `
+                                <div class="flex items-center gap-1">
+                                    <select data-action="edit-required-stat" data-inventory-type="armor" data-index="${index}" data-rs-index="${rsIndex}" data-field="stat" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-1/2">
+                                        <option value="">Select Stat...</option>
+                                        ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${rs.stat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+                                    </select>
+                                    <input type="text" data-action="edit-required-stat" data-inventory-type="armor" data-index="${index}" data-rs-index="${rsIndex}" data-field="requirement" value="${rs.requirement || ''}" placeholder="Val" class="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none w-1/2 text-center" />
+                                    <button type="button" data-action="remove-required-stat" data-inventory-type="armor" data-index="${index}" data-rs-index="${rsIndex}" class="text-red-500 hover:text-red-700 dark:text-red-400 p-1 focus:outline-none" title="Remove Requirement">✕</button>
+                                </div>
+                            `).join('')}
+                            ${item.requiredStats.length === 0 ? '<span class="text-[11px] text-gray-400 dark:text-gray-500 italic">None</span>' : ''}
                         </div>
                     </div>
                 </div>
@@ -757,8 +843,30 @@ export function renderArmorTable() {
         { field: 'name', type: 'text', class: 'w-full' },
         { field: 'location', type: 'text', class: 'w-full' },
         { field: 'material', type: 'text', class: 'w-full' },
-        { field: 'requirement', type: 'text', class: 'w-full' },
-        { field: 'requiredStat', type: 'text', class: 'w-full' },
+        {
+            field: 'requiredStats',
+            type: 'html',
+            html: (item, index) => {
+                ensureRequiredStats(item);
+                return `
+                <div class="flex flex-col gap-1 text-xs min-w-[140px]">
+                    ${item.requiredStats.map((rs, rsIndex) => `
+                        <div class="flex items-center gap-1 bg-gray-50 dark:bg-gray-900/60 p-1 rounded border border-gray-200 dark:border-gray-700">
+                            <select data-action="edit-required-stat" data-inventory-type="armor" data-index="${index}" data-rs-index="${rsIndex}" data-field="stat" class="px-1 py-0.5 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none w-1/2">
+                                <option value="">Stat...</option>
+                                ${ExternalDataManager.rollStats.map(stat => `<option value="${stat}" ${rs.stat === stat ? 'selected' : ''}>${stat}</option>`).join('')}
+                            </select>
+                            <input type="text" data-action="edit-required-stat" data-inventory-type="armor" data-index="${index}" data-rs-index="${rsIndex}" data-field="requirement" value="${rs.requirement || ''}" placeholder="Val" class="px-1 py-0.5 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none w-1/2 text-center" />
+                            <button type="button" data-action="remove-required-stat" data-inventory-type="armor" data-index="${index}" data-rs-index="${rsIndex}" class="text-red-500 hover:text-red-700 text-xs px-1 focus:outline-none" title="Remove Requirement">✕</button>
+                        </div>
+                    `).join('')}
+                    <button type="button" data-action="add-required-stat" data-inventory-type="armor" data-index="${index}" class="text-[10px] text-left text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-semibold mt-0.5">
+                        + Add Stat
+                    </button>
+                </div>
+                `;
+            }
+        },
         {
             field: 'defense',
             type: 'html',
@@ -931,6 +1039,11 @@ export function renderGeneralTable() {
 export function setInventoryView(type, view) {
     inventoryViewSettings[type] = view;
     toggleInventoryViewDOM(type, view);
+    if (view === 'table') {
+        if (type === 'weapon') renderWeaponTable();
+        else if (type === 'armor') renderArmorTable();
+        else if (type === 'general') renderGeneralTable();
+    }
 }
 
 export function rollWeaponAtIndex(index) {
@@ -1025,6 +1138,53 @@ export function rollAllEquippedArmor() {
     showToast(`Rolled all <strong>${equippedArmor.length}</strong> equipped armor items! Total defense updated.`, 'roll');
 }
 
+export function handleRequiredStatClick(event) {
+    const target = event.target.closest('[data-action="add-required-stat"], [data-action="remove-required-stat"]');
+    if (!target) return false;
+
+    const action = target.dataset.action;
+    const inventoryType = target.dataset.inventoryType;
+    const itemIndex = parseInt(target.dataset.index, 10);
+    const rsIndex = parseInt(target.dataset.rsIndex, 10);
+
+    const inventory = character[`${inventoryType}Inventory`];
+    if (!inventory || !inventory[itemIndex]) return false;
+
+    ensureRequiredStats(inventory[itemIndex]);
+
+    if (action === 'add-required-stat') {
+        inventory[itemIndex].requiredStats.push({ stat: '', requirement: '' });
+        ensureRequiredStats(inventory[itemIndex]);
+        setHasUnsavedChanges(true);
+        if (inventoryType === 'weapon') {
+            renderWeaponCards();
+            renderWeaponTable();
+        } else if (inventoryType === 'armor') {
+            renderArmorCards();
+            renderArmorTable();
+        }
+        return true;
+    }
+
+    if (action === 'remove-required-stat') {
+        if (!isNaN(rsIndex)) {
+            inventory[itemIndex].requiredStats.splice(rsIndex, 1);
+            ensureRequiredStats(inventory[itemIndex]);
+            setHasUnsavedChanges(true);
+            if (inventoryType === 'weapon') {
+                renderWeaponCards();
+                renderWeaponTable();
+            } else if (inventoryType === 'armor') {
+                renderArmorCards();
+                renderArmorTable();
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * Handles input changes for inventory items.
  * @param {Event} event The input event.
@@ -1034,9 +1194,38 @@ export function handleInventoryInputChange(event) {
     const inventoryType = dataset.inventoryType;
     const itemIndex = parseInt(dataset.index);
     const field = dataset.field;
+    const action = dataset.action;
+
+    // Check if we are editing required stat requirements
+    if (action === 'edit-required-stat') {
+        const rsIndex = parseInt(dataset.rsIndex, 10);
+        const rsField = dataset.field;
+        let val = event.target.value;
+
+        const inventory = character[`${inventoryType}Inventory`];
+        if (inventory && inventory[itemIndex]) {
+            ensureRequiredStats(inventory[itemIndex]);
+            const rs = inventory[itemIndex].requiredStats[rsIndex];
+            if (rs) {
+                rs[rsField] = val;
+                ensureRequiredStats(inventory[itemIndex]);
+                setHasUnsavedChanges(true);
+                if (inventoryType === 'armor') {
+                    recalculateSmallUpdateCharacter(character, true);
+                }
+                if (event.type === 'change' || event.type === 'input') {
+                    if (inventoryType === 'weapon') {
+                        renderWeaponCards();
+                    } else if (inventoryType === 'armor') {
+                        renderArmorCards();
+                    }
+                }
+            }
+        }
+        return;
+    }
 
     // Check if we are editing a specific magic element attribute
-    const action = dataset.action;
     if (action === 'edit-magic-element') {
         const meIndex = parseInt(dataset.meIndex);
         const meField = dataset.field;

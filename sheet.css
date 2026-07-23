@@ -208,7 +208,7 @@ body {
 .inventory-table-container td input[type="checkbox"] {
     margin-left: 0.5rem;
 }
-.inventory-table-container td button {
+.inventory-table-container td button.remove-item-btn {
     background-color: #ef4444; /* bg-red-500 */
     color: white;
     padding: 0.25rem 0.5rem;
@@ -218,7 +218,7 @@ body {
     cursor: pointer;
     transition: background-color 0.2s;
 }
-.inventory-table-container td button:hover {
+.inventory-table-container td button.remove-item-btn:hover {
     background-color: #dc2626; /* bg-red-600 */
 }
 

@@ -7,8 +7,8 @@ import { showConfirmationModal, updateRemainingPointsDisplay, renderTemporaryEff
 import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, defaultCharacterData, populateCharacterSelector, saveCurrentStateToHistory, saveCharacterToFile,
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver
   } from './characterState.js';
-import { character, characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, setHasUnsavedChanges, setCurrentGoogleDriveFileId } from './state.js';
-import { ensureMagicElements, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor  } from './inventory.js';
+import { character, characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, setCurrentGoogleDriveFileId } from './state.js';
+import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex } from './inventory.js';
 import { calculateRollStatTotal, calculateLevelMaxExperience  } from './formulas.js';
 import { renderRacial, removePassivesLevel, renderGenericClassesPassives } from './passivesActives.js';
 import { saveCharacterToGoogleDrive, loadCharacterFromGoogleDrive, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick, maybeEnableGoogleDriveButtons  } from './googleDrive.js';
@@ -575,9 +575,14 @@ export function addGeneralItem() {
 }
 
 // Function to remove an item from inventory
-export function removeItem(event) {
-    const inventoryType = event.target.dataset.inventoryType;
-    const index = parseInt(event.target.dataset.index);
+export function removeItem(event, targetBtn) {
+    const btn = targetBtn || (event && event.target ? event.target.closest('.remove-item-btn, [data-inventory-type]') : null);
+    if (!btn) return;
+
+    const inventoryType = btn.dataset.inventoryType;
+    const index = parseInt(btn.dataset.index, 10);
+
+    if (isNaN(index)) return;
 
     if (inventoryType === 'weapon') {
         character.weaponInventory.splice(index, 1);
@@ -587,7 +592,7 @@ export function removeItem(event) {
     } else if (inventoryType === 'general') {
         character.generalInventory.splice(index, 1);
     }
-    updateDOM(); // Re-render the inventory table
+    updateDOM(); // Re-render the inventory table and cards
     setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 
@@ -863,12 +868,17 @@ export function attachEventListeners() {
                 rollWeaponAtIndex(index);
                 return;
             }
+            if (handleRequiredStatClick(event)) return;
             if (handleMagicElementClick(event)) return;
-            if (event.target.classList.contains('remove-item-btn')) {
-                removeItem(event);
+            const removeBtn = event.target.closest('.remove-item-btn');
+            if (removeBtn) {
+                removeItem(event, removeBtn);
+                return;
             }
         });
-    }  const armorTable = document.getElementById('armor-inventory-table');
+    }
+
+    const armorTable = document.getElementById('armor-inventory-table');
     if (armorTable) {
         armorTable.addEventListener('input', handleChange);
         armorTable.addEventListener('change', handleChange);
@@ -879,9 +889,12 @@ export function attachEventListeners() {
                 rollArmorAtIndex(index);
                 return;
             }
+            if (handleRequiredStatClick(event)) return;
             if (handleMagicElementClick(event)) return;
-            if (event.target.classList.contains('remove-item-btn')) {
-                removeItem(event);
+            const removeBtn = event.target.closest('.remove-item-btn');
+            if (removeBtn) {
+                removeItem(event, removeBtn);
+                return;
             }
         });
     }
@@ -890,8 +903,10 @@ export function attachEventListeners() {
     if (generalTable) {
         generalTable.addEventListener('input', handleChange);
         generalTable.addEventListener('click', function (event) {
-            if (event.target.classList.contains('remove-item-btn')) {
-                removeItem(event);
+            const removeBtn = event.target.closest('.remove-item-btn');
+            if (removeBtn) {
+                removeItem(event, removeBtn);
+                return;
             }
         });
     }
@@ -901,15 +916,30 @@ export function attachEventListeners() {
         weaponCardsContainer.addEventListener('input', handleChange);
         weaponCardsContainer.addEventListener('change', handleChange);
         weaponCardsContainer.addEventListener('click', function(event) {
+            const collapseBtn = event.target.closest('[data-action="toggle-card-collapse"]');
+            if (collapseBtn) {
+                const inventoryType = collapseBtn.dataset.inventoryType;
+                const itemIndex = parseInt(collapseBtn.dataset.index, 10);
+                const inventory = character[`${inventoryType}Inventory`];
+                if (inventory && inventory[itemIndex]) {
+                    inventory[itemIndex].collapsed = !inventory[itemIndex].collapsed;
+                    setHasUnsavedChanges(true);
+                    renderWeaponCards();
+                }
+                return;
+            }
             const rollBtn = event.target.closest('[data-action="roll-weapon"]');
             if (rollBtn) {
                 const index = parseInt(rollBtn.dataset.index, 10);
                 rollWeaponAtIndex(index);
                 return;
             }
+            if (handleRequiredStatClick(event)) return;
             if (handleMagicElementClick(event)) return;
-            if (event.target.classList.contains('remove-item-btn')) {
-                removeItem(event);
+            const removeBtn = event.target.closest('.remove-item-btn');
+            if (removeBtn) {
+                removeItem(event, removeBtn);
+                return;
             }
         });
     }
@@ -928,15 +958,55 @@ export function attachEventListeners() {
         armorCardsContainer.addEventListener('input', handleChange);
         armorCardsContainer.addEventListener('change', handleChange);
         armorCardsContainer.addEventListener('click', function(event) {
+            const collapseBtn = event.target.closest('[data-action="toggle-card-collapse"]');
+            if (collapseBtn) {
+                const inventoryType = collapseBtn.dataset.inventoryType;
+                const itemIndex = parseInt(collapseBtn.dataset.index, 10);
+                const inventory = character[`${inventoryType}Inventory`];
+                if (inventory && inventory[itemIndex]) {
+                    inventory[itemIndex].collapsed = !inventory[itemIndex].collapsed;
+                    setHasUnsavedChanges(true);
+                    renderArmorCards();
+                }
+                return;
+            }
             const rollBtn = event.target.closest('[data-action="roll-armor"]');
             if (rollBtn) {
                 const index = parseInt(rollBtn.dataset.index, 10);
                 rollArmorAtIndex(index);
                 return;
             }
+            if (handleRequiredStatClick(event)) return;
             if (handleMagicElementClick(event)) return;
-            if (event.target.classList.contains('remove-item-btn')) {
-                removeItem(event);
+            const removeBtn = event.target.closest('.remove-item-btn');
+            if (removeBtn) {
+                removeItem(event, removeBtn);
+                return;
+            }
+        });
+    }
+
+    const generalCardsContainer = document.getElementById('general-inventory-cards-container');
+    if (generalCardsContainer) {
+        generalCardsContainer.addEventListener('input', handleChange);
+        generalCardsContainer.addEventListener('change', handleChange);
+        generalCardsContainer.addEventListener('click', function(event) {
+            const collapseBtn = event.target.closest('[data-action="toggle-card-collapse"]');
+            if (collapseBtn) {
+                const inventoryType = collapseBtn.dataset.inventoryType;
+                const itemIndex = parseInt(collapseBtn.dataset.index, 10);
+                const inventory = character[`${inventoryType}Inventory`];
+                if (inventory && inventory[itemIndex]) {
+                    inventory[itemIndex].collapsed = !inventory[itemIndex].collapsed;
+                    setHasUnsavedChanges(true);
+                    renderGeneralCards();
+                }
+                return;
+            }
+            const removeBtn = event.target.closest('.remove-item-btn');
+            if (removeBtn) {
+                removeItem(event, removeBtn);
+                return;
             }
         });
     }
@@ -945,11 +1015,15 @@ export function attachEventListeners() {
     const weaponViewTableBtn = document.getElementById('weapon-view-table-btn');
     const armorViewCardsBtn = document.getElementById('armor-view-cards-btn');
     const armorViewTableBtn = document.getElementById('armor-view-table-btn');
+    const generalViewCardsBtn = document.getElementById('general-view-cards-btn');
+    const generalViewTableBtn = document.getElementById('general-view-table-btn');
 
     if (weaponViewCardsBtn) weaponViewCardsBtn.addEventListener('click', () => setInventoryView('weapon', 'cards'));
     if (weaponViewTableBtn) weaponViewTableBtn.addEventListener('click', () => setInventoryView('weapon', 'table'));
     if (armorViewCardsBtn) armorViewCardsBtn.addEventListener('click', () => setInventoryView('armor', 'cards'));
     if (armorViewTableBtn) armorViewTableBtn.addEventListener('click', () => setInventoryView('armor', 'table'));
+    if (generalViewCardsBtn) generalViewCardsBtn.addEventListener('click', () => setInventoryView('general', 'cards'));
+    if (generalViewTableBtn) generalViewTableBtn.addEventListener('click', () => setInventoryView('general', 'table'));
 
     document.querySelectorAll('.toggle-section-btn').forEach(button => {
         button.addEventListener('click', (event) => {
