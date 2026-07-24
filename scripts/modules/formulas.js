@@ -53,34 +53,22 @@ export function addTemporaryEffect(char, category, effect, duration) {
  * @param {string} category The category of temporary effects to remove (e.g., 'race', 'class').
  */
 export function removeTemporaryEffectByCategory(abilities, category) {
-    if (!abilities || typeof abilities !== 'object') {
-        return;
-    }
+    if (!category) return;
 
-    const uniqueStats = new Set();
-    const uniqueIdentifiers = new Set();
-
-    // 1. First, iterate through all abilities to collect unique stats and identifiers.
-    for (const ability of Object.values(abilities)) {
-        if (ability.identifier) {
-            uniqueIdentifiers.add(ability.identifier);
-        }
-        for (const formula of ability.formulas ?? []) {
-            for (const statName of formula.statsAffected ?? []) {
-                uniqueStats.add(statName);
+    if (abilities && typeof abilities === 'object') {
+        for (const ability of Object.values(abilities)) {
+            if (ability.identifier) {
+                delete character.uniqueIdentifiers[ability.identifier];
             }
         }
     }
 
-    // 2. Now, perform the deletions in targeted loops.
-    for (const identifier of uniqueIdentifiers) {
-        delete character.uniqueIdentifiers[identifier];
-    }
-
-    for (const statName of uniqueStats) {
-        // Deleting the property is a clean way to remove all effects for that category.
-        delete character[statName]?.temporaryEffects?.[category];
-    }
+    const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+    allStats.forEach(statName => {
+        if (character[statName]?.temporaryEffects?.[category]) {
+            delete character[statName].temporaryEffects[category];
+        }
+    });
 }
 
 /**

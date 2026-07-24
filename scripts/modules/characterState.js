@@ -502,7 +502,8 @@ export function populateCharacterSelector() {
     characters.forEach((charData, index) => {
         const option = document.createElement('option');
         option.value = index;
-        option.textContent = charData.name || `Character ${index + 1}`;
+        const displayName = charData.name && charData.name.trim() !== '' ? charData.name : `Character ${index + 1}`;
+        option.textContent = displayName;
         selector.appendChild(option);
     });
 

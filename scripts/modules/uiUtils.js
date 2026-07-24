@@ -6,7 +6,7 @@ import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollSta
 import { handlePlayerStatInputChange } from './eventHandler.js';
 import { renderRacial } from './passivesActives.js';
 import { renderWeaponTable, renderArmorTable, renderGeneralTable } from './inventory.js';
-import { recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, updateHistoryButtonsState } from './characterState.js';
+import { recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, updateHistoryButtonsState, populateCharacterSelector } from './characterState.js';
 
 export let currentStatForTempEffects = null; // To keep track of which stat's temporary effects are being viewed
 export let currentStatDisplayNameForTempEffects = null;
@@ -268,6 +268,13 @@ export function highlightStatsWithActiveEffects() {
  * Dynamically renders a global active temporary effects summary list on the main sheet view.
  */
 export function renderActiveEffectsSummary() {
+    updateStaticTempEffectsButton('Health', 'Health');
+    updateStaticTempEffectsButton('Mana', 'Mana');
+    updateStaticTempEffectsButton('RacialPower', 'Racial Power');
+    updateStaticTempEffectsButton('totalDefense', 'Total defense');
+    updateStaticTempEffectsButton('totalMagicDefense', 'Total Magic Defense');
+    highlightStatsWithActiveEffects();
+
     const listContainer = document.getElementById('active-effects-summary-list');
     if (!listContainer) return;
 
@@ -466,6 +473,7 @@ export function updateSpecializationDropdownAndData() {
 
 // Function to update the DOM elements with the current character data
 export function updateDOM() {
+    populateCharacterSelector();
     // Basic Info
     document.getElementById('name').value = character.name;
     document.getElementById('level').value = character.level;

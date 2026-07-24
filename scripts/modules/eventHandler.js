@@ -333,6 +333,9 @@ export function handleChange(event) {
             character[id] = newValue;
         } else if (id !== 'classes-display' && id !== 'specializations-display') {
             character[name || id] = newValue;
+            if (id === 'name') {
+                populateCharacterSelector();
+            }
         }
     }
     setHasUnsavedChanges(true);
