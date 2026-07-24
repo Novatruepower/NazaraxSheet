@@ -3,7 +3,7 @@ import { ExternalDataManager } from '../externalDataManager.js';
 import { showConfirmationModal, updateRemainingPointsDisplay, renderTemporaryEffects, refreshTemporaryModalTitle, renderSpecializations, updateSpecializationDropdownAndData,
     getCharacterStatesActive, updateDOM, showStatusMessage, quickRollStats, distributeStats, addManualTemporaryEffect, closeTemporaryEffectsModal, endTurn, toggleSidebar,
     updatePanelsPosition, closeDamageModal, takeDamage, setTempEffectsStatContext, openTemporaryEffectsModal, toggleSection,
-    openDirectAddEffectModal, closeDirectAddEffectModal, handleDirectAddEffectSubmit
+    openDirectAddEffectModal, closeDirectAddEffectModal, handleDirectAddEffectSubmit, currentStatForTempEffects
  } from './uiUtils.js';
 import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, defaultCharacterData, populateCharacterSelector, saveCurrentStateToHistory, saveCharacterToFile,
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
@@ -847,7 +847,7 @@ export function attachEventListeners() {
     }
 
     const addTempEffBtn = document.getElementById('add-temp-effect-btn');
-    if (addTempEffBtn) addTempEffBtn.addEventListener('click', addManualTemporaryEffect);
+    if (addTempEffBtn) addTempEffBtn.addEventListener('click', () => openDirectAddEffectModal(false, currentStatForTempEffects));
 
     const closeTempEffModalBtn = document.getElementById('close-temp-effects-modal');
     if (closeTempEffModalBtn) closeTempEffModalBtn.addEventListener('click', closeTemporaryEffectsModal);
@@ -867,6 +867,36 @@ export function attachEventListeners() {
 
     const directAddEffectForm = document.getElementById('direct-add-effect-form');
     if (directAddEffectForm) directAddEffectForm.addEventListener('submit', handleDirectAddEffectSubmit);
+
+    const directEffectDurationTypeSelect = document.getElementById('direct-effect-duration-type');
+    if (directEffectDurationTypeSelect) {
+        directEffectDurationTypeSelect.addEventListener('change', (e) => {
+            const isPermanent = e.target.value === 'permanent';
+            const durationContainer = document.getElementById('direct-effect-duration-container');
+            const titleEl = document.getElementById('direct-add-effect-modal-title');
+            const submitBtn = document.getElementById('submit-direct-add-effect-btn');
+            const isEditModeInput = document.getElementById('direct-effect-is-edit-mode');
+            const isEditMode = isEditModeInput && isEditModeInput.value === 'true';
+
+            if (durationContainer) {
+                if (isPermanent) {
+                    durationContainer.classList.add('hidden');
+                } else {
+                    durationContainer.classList.remove('hidden');
+                }
+            }
+
+            if (titleEl) {
+                const actionText = isEditMode ? 'Edit' : 'Add';
+                titleEl.textContent = isPermanent ? `${actionText} Active Permanent Effect` : `${actionText} Active Temporary Effect`;
+                titleEl.className = isPermanent ? 'text-2xl font-semibold mb-4 text-purple-600 dark:text-purple-300' : 'text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300';
+            }
+
+            if (submitBtn) {
+                submitBtn.className = isPermanent ? 'px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 text-sm shadow cursor-pointer' : 'px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 text-sm shadow cursor-pointer';
+            }
+        });
+    }
 
     const endTurnButton = document.getElementById('end-turn-btn');
     if (endTurnButton) endTurnButton.addEventListener('click', endTurn);
