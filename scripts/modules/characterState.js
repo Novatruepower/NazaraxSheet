@@ -47,6 +47,8 @@ export const defaultCharacterData = function () {
             'basic-info-content': true,
             'player-stats-content': true,
             'health-combat-content': true,
+            'active-temp-effects-content': true,
+            'active-perm-effects-content': true,
             'active-effects-content': true,
             'actives-content': true,
             'weapon-inventory-content': true,
@@ -232,6 +234,10 @@ export function recalculateCharacterDerivedProperties(char, isSmallDisplay = fal
             }
         }
     });
+
+    if (isSmallDisplay) {
+        renderActiveEffectsSummary();
+    }
 }
 
 // Function to update the enabled/disabled state of the history buttons

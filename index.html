@@ -464,20 +464,53 @@
 
             <!-- Active Temporary Effects Section -->
             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                     <div class="flex items-center gap-2">
                         <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">Active Temporary Effects</h2>
-                        <span id="global-active-effects-count-badge" class="hidden px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">0</span>
+                        <span id="global-active-temp-effects-count-badge" class="hidden px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">0</span>
                     </div>
-                    <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="active-effects-content">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="add-temp-effect-direct-btn" type="button" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-md shadow transition-colors flex items-center gap-1 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add Effect
+                        </button>
+                        <button class="toggle-section-btn text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors duration-200" data-target="active-temp-effects-content">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                    </div>
                 </div>
-                <div id="active-effects-content" class="section-content">
+                <div id="active-temp-effects-content" class="section-content">
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                        <div id="active-effects-summary-list" class="space-y-2">
+                        <div id="active-temp-effects-summary-list" class="space-y-2">
                             <!-- Populated dynamically -->
                             <p class="text-gray-500 dark:text-gray-400 text-sm">No active temporary effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Permanent Effects Section -->
+            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-8">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-2xl font-semibold text-purple-600 dark:text-purple-300">Active Permanent Effects</h2>
+                        <span id="global-active-perm-effects-count-badge" class="hidden px-2 py-0.5 text-xs font-bold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="add-perm-effect-direct-btn" type="button" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-md shadow transition-colors flex items-center gap-1 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add Effect
+                        </button>
+                        <button class="toggle-section-btn text-purple-600 dark:text-purple-300 hover:text-purple-800 dark:hover:text-purple-100 transition-colors duration-200" data-target="active-perm-effects-content">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="active-perm-effects-content" class="section-content">
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                        <div id="active-perm-effects-summary-list" class="space-y-2">
+                            <!-- Populated dynamically -->
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">No active permanent effects.</p>
                         </div>
                     </div>
                 </div>
@@ -523,6 +556,25 @@
                                     title="Collapse or Expand all weapon cards">
                                 ↕️ Collapse/Expand Cards
                             </button>
+
+                            <!-- Sort Controls -->
+                            <div class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-2.5 py-1.5 shadow-sm text-xs text-gray-700 dark:text-gray-200">
+                                <span class="font-semibold text-gray-500 dark:text-gray-400">Sort:</span>
+                                <select id="weapon-sort-field" class="bg-transparent font-medium focus:outline-none text-xs text-gray-800 dark:text-gray-200 cursor-pointer">
+                                    <option value="none">Default</option>
+                                    <option value="name">Name</option>
+                                    <option value="type">Type</option>
+                                    <option value="material">Material</option>
+                                    <option value="accuracy">Accuracy</option>
+                                    <option value="damage">Damage</option>
+                                    <option value="effect">Effect</option>
+                                    <option value="value">Value</option>
+                                    <option value="use">Equipped / In-Use</option>
+                                </select>
+                                <button id="weapon-sort-dir-btn" type="button" class="px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 font-bold text-indigo-600 dark:text-indigo-400 transition-colors" title="Toggle Sort Direction">
+                                    ↑ Asc
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- View Toggle -->
@@ -551,17 +603,17 @@
                         <table id="weapon-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
                             <thead class="bg-gray-100 dark:bg-gray-700">
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Material</th>
-                                    <th>Req. Stats</th>
-                                    <th>Accuracy</th>
-                                    <th>Damage</th>
-                                    <th>Magic Elements</th>
-                                    <th>Effect</th>
-                                    <th>Value</th>
-                                    <th>Use</th>
-                                    <th>Actions</th>
+                                    <th data-sort-field="name" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Name <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="type" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Type <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="material" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Material <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Req. Stats</th>
+                                    <th data-sort-field="accuracy" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Accuracy <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="damage" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Damage <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Magic Elements</th>
+                                    <th data-sort-field="effect" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Effect <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="value" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Value <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="use" data-inventory-type="weapon" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Use <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -598,6 +650,24 @@
                                     title="Collapse or Expand all armor cards">
                                 ↕️ Collapse/Expand Cards
                             </button>
+
+                            <!-- Sort Controls -->
+                            <div class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-2.5 py-1.5 shadow-sm text-xs text-gray-700 dark:text-gray-200">
+                                <span class="font-semibold text-gray-500 dark:text-gray-400">Sort:</span>
+                                <select id="armor-sort-field" class="bg-transparent font-medium focus:outline-none text-xs text-gray-800 dark:text-gray-200 cursor-pointer">
+                                    <option value="none">Default</option>
+                                    <option value="name">Name</option>
+                                    <option value="location">Location</option>
+                                    <option value="material">Material</option>
+                                    <option value="defense">Defense</option>
+                                    <option value="effect">Effect</option>
+                                    <option value="value">Value</option>
+                                    <option value="equipped">Equipped</option>
+                                </select>
+                                <button id="armor-sort-dir-btn" type="button" class="px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 font-bold text-indigo-600 dark:text-indigo-400 transition-colors" title="Toggle Sort Direction">
+                                    ↑ Asc
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- View Toggle -->
@@ -626,16 +696,16 @@
                         <table id="armor-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
                             <thead class="bg-gray-100 dark:bg-gray-700">
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Location</th>
-                                    <th>Material</th>
-                                    <th>Req. Stats</th>
-                                    <th>Defense</th>
-                                    <th>Magic Elements</th>
-                                    <th>Effect</th>
-                                    <th>Value</th>
-                                    <th>Equipped</th>
-                                    <th>Actions</th>
+                                    <th data-sort-field="name" data-inventory-type="armor" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Name <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="location" data-inventory-type="armor" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Location <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="material" data-inventory-type="armor" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Material <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Req. Stats</th>
+                                    <th data-sort-field="defense" data-inventory-type="armor" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Defense <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Magic Elements</th>
+                                    <th data-sort-field="effect" data-inventory-type="armor" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Effect <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="value" data-inventory-type="armor" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Value <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="equipped" data-inventory-type="armor" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Equipped <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -667,6 +737,23 @@
                                     title="Collapse or Expand all item cards">
                                 ↕️ Collapse/Expand Cards
                             </button>
+
+                            <!-- Sort Controls -->
+                            <div class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-2.5 py-1.5 shadow-sm text-xs text-gray-700 dark:text-gray-200">
+                                <span class="font-semibold text-gray-500 dark:text-gray-400">Sort:</span>
+                                <select id="general-sort-field" class="bg-transparent font-medium focus:outline-none text-xs text-gray-800 dark:text-gray-200 cursor-pointer">
+                                    <option value="none">Default</option>
+                                    <option value="name">Name</option>
+                                    <option value="type">Type</option>
+                                    <option value="effect">Effect</option>
+                                    <option value="accuracy">Accuracy</option>
+                                    <option value="amount">Amount</option>
+                                    <option value="valuePerUnit">Value (Unit)</option>
+                                </select>
+                                <button id="general-sort-dir-btn" type="button" class="px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 font-bold text-indigo-600 dark:text-indigo-400 transition-colors" title="Toggle Sort Direction">
+                                    ↑ Asc
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- View Toggle -->
@@ -690,13 +777,13 @@
                         <table id="general-inventory-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg shadow-md">
                             <thead class="bg-gray-100 dark:bg-gray-700">
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Effect</th>
-                                    <th>Accuracy</th>
-                                    <th>Amount</th>
-                                    <th>Value (per unit)</th>
-                                    <th>Actions</th>
+                                    <th data-sort-field="name" data-inventory-type="general" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Name <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="type" data-inventory-type="general" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Type <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="effect" data-inventory-type="general" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Effect <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="accuracy" data-inventory-type="general" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Accuracy <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="amount" data-inventory-type="general" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Amount <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th data-sort-field="valuePerUnit" data-inventory-type="general" class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider select-none">Value (Unit) <span class="sort-icon text-gray-400 dark:text-gray-500 ml-0.5">↕</span></th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -822,6 +909,80 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Direct Add Effect Modal -->
+    <div id="direct-add-effect-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full text-left relative">
+            <button id="close-direct-add-effect-modal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 id="direct-add-effect-modal-title" class="text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">Add Effect</h2>
+            
+            <form id="direct-add-effect-form" class="space-y-4">
+                <input type="hidden" id="direct-effect-is-permanent-type" value="false" />
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Target Stat</label>
+                    <select id="direct-effect-stat-select" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Effect Name</label>
+                    <input type="text" id="direct-effect-name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm" placeholder="e.g. Bless, Curse, Ring Boost" required />
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Value</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" step="0.01" id="direct-effect-value" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm" value="1" required />
+                            <label class="flex items-center gap-1 cursor-pointer select-none">
+                                <input type="checkbox" id="direct-effect-is-percent" class="form-checkbox h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600" />
+                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">%</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Operator</label>
+                        <select id="direct-effect-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm">
+                            <option value="+">+</option>
+                            <option value="*">*</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Applies To</label>
+                        <select id="direct-effect-applies-to" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm">
+                            <option value="total">Total</option>
+                            <option value="base-value">base value</option>
+                            <option value="initial-value">initial value</option>
+                        </select>
+                    </div>
+
+                    <div id="direct-effect-duration-container">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Duration (Turns)</label>
+                        <input type="number" min="1" id="direct-effect-duration" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm" value="1" />
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" id="cancel-direct-add-effect-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 text-sm cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submit-direct-add-effect-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 text-sm shadow cursor-pointer">
+                        Add Effect
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

@@ -204,8 +204,21 @@ export function updateStaticTempEffectsButton(statName, displayName) {
     `;
 }
 
+export function updateAllTempEffectsButtons() {
+    updateStaticTempEffectsButton('Health', 'Health');
+    updateStaticTempEffectsButton('Mana', 'Mana');
+    updateStaticTempEffectsButton('RacialPower', 'Racial Power');
+    updateStaticTempEffectsButton('totalDefense', 'Total defense');
+    updateStaticTempEffectsButton('totalMagicDefense', 'Total Magic Defense');
+    if (ExternalDataManager && ExternalDataManager.rollStats) {
+        ExternalDataManager.rollStats.forEach(statName => {
+            updateStaticTempEffectsButton(statName, statName);
+        });
+    }
+}
+
 /**
- * Highlights Health, Mana, RacialPower, and totalDefense input fields on the sheet if they have active effects.
+ * Highlights Health, Mana, RacialPower, totalDefense, totalMagicDefense, and attribute roll stats input fields on the sheet if they have active effects.
  */
 export function highlightStatsWithActiveEffects() {
     const healthInputEl = document.getElementById('Health');
@@ -262,122 +275,286 @@ export function highlightStatsWithActiveEffects() {
             totalMagicDefenseEl.classList.remove('border-purple-400', 'dark:border-purple-500', 'bg-purple-50/20');
         }
     }
+
+    if (ExternalDataManager && ExternalDataManager.rollStats) {
+        ExternalDataManager.rollStats.forEach(statName => {
+            const totalEl = document.getElementById(`${statName}-total`);
+            if (totalEl) {
+                const hasEff = getCategoriesTemporaryEffects(character, statName).length > 0;
+                if (hasEff) {
+                    totalEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+                } else {
+                    totalEl.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
+                }
+            }
+        });
+    }
+}
+
+function formatStatDisplayName(stat) {
+    const map = {
+        'Health': 'Health',
+        'Mana': 'Mana',
+        'RacialPower': 'Racial Power',
+        'totalDefense': 'Total Physical Defense',
+        'totalMagicDefense': 'Total Magic Defense'
+    };
+    if (map[stat]) return map[stat];
+    return stat.replace(/([A-Z])/g, ' $1').trim();
 }
 
 /**
- * Dynamically renders a global active temporary effects summary list on the main sheet view.
+ * Dynamically renders global active temporary effects and active permanent effects summary lists.
  */
 export function renderActiveEffectsSummary() {
-    updateStaticTempEffectsButton('Health', 'Health');
-    updateStaticTempEffectsButton('Mana', 'Mana');
-    updateStaticTempEffectsButton('RacialPower', 'Racial Power');
-    updateStaticTempEffectsButton('totalDefense', 'Total defense');
-    updateStaticTempEffectsButton('totalMagicDefense', 'Total Magic Defense');
+    updateAllTempEffectsButtons();
     highlightStatsWithActiveEffects();
 
-    const listContainer = document.getElementById('active-effects-summary-list');
-    if (!listContainer) return;
-
-    listContainer.innerHTML = '';
+    const tempContainer = document.getElementById('active-temp-effects-summary-list') || document.getElementById('active-effects-summary-list');
+    const permContainer = document.getElementById('active-perm-effects-summary-list');
 
     const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'];
-    const allEffects = [];
+    const tempEffects = [];
+    const permEffects = [];
 
     statsWithEffects.forEach(statName => {
         if (character[statName] && character[statName].temporaryEffects) {
-            const tempEffects = character[statName].temporaryEffects;
-            for (const category in tempEffects) {
-                const categoryEffects = tempEffects[category];
+            const categories = character[statName].temporaryEffects;
+            for (const category in categories) {
+                const categoryEffects = categories[category];
                 if (Array.isArray(categoryEffects)) {
                     categoryEffects.forEach(effect => {
-                        allEffects.push({
+                        const item = {
                             statName: statName,
                             category: category,
                             effect: effect
-                        });
+                        };
+                        const isPerm = (effect.duration === Infinity || effect.duration === 'Infinity' || effect.isInfinite === true);
+                        if (isPerm) {
+                            permEffects.push(item);
+                        } else {
+                            tempEffects.push(item);
+                        }
                     });
                 }
             }
         }
     });
 
-    const countBadge = document.getElementById('global-active-effects-count-badge');
-    if (countBadge) {
-        if (allEffects.length > 0) {
-            countBadge.textContent = allEffects.length;
-            countBadge.classList.remove('hidden');
+    // Update Badges
+    const tempBadge = document.getElementById('global-active-temp-effects-count-badge') || document.getElementById('global-active-effects-count-badge');
+    if (tempBadge) {
+        if (tempEffects.length > 0) {
+            tempBadge.textContent = tempEffects.length;
+            tempBadge.classList.remove('hidden');
         } else {
-            countBadge.classList.add('hidden');
+            tempBadge.classList.add('hidden');
         }
     }
 
-    if (allEffects.length === 0) {
-        listContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">No active temporary effects.</p>';
-        return;
+    const permBadge = document.getElementById('global-active-perm-effects-count-badge');
+    if (permBadge) {
+        if (permEffects.length > 0) {
+            permBadge.textContent = permEffects.length;
+            permBadge.classList.remove('hidden');
+        } else {
+            permBadge.classList.add('hidden');
+        }
     }
 
-    allEffects.forEach(item => {
-        const effect = item.effect;
-        const statName = item.statName;
-        const val = effect.values ? effect.values[0] : 0;
-        const isPercent = effect.isPercent ? '%' : '';
-        const operator = effect.type || '+';
-        const name = effect.name || 'Unnamed Effect';
-        const appliesTo = effect.appliesTo || 'total';
-        const durationText = (effect.duration === Infinity || effect.duration === null || effect.duration === undefined) 
-            ? 'Permanent' 
-            : `${effect.duration} turns left`;
+    // Helper to render an effects list
+    const renderList = (container, effectsList, isPermList) => {
+        if (!container) return;
+        container.innerHTML = '';
 
-        const card = document.createElement('div');
-        card.className = 'flex items-center justify-between p-3 border border-gray-100 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150';
-        
-        let displayLabel = `
-            <div class="flex flex-col sm:flex-row sm:items-center gap-x-2">
-                <span class="font-bold text-indigo-600 dark:text-indigo-400">${name}</span> 
-                <span class="text-xs text-gray-500 dark:text-gray-400">(${statName})</span>
-            </div>
-            <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                ${operator}${val}${isPercent} (applies to ${appliesTo})
-            </div>
-        `;
+        if (effectsList.length === 0) {
+            container.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-sm">No active ${isPermList ? 'permanent' : 'temporary'} effects.</p>`;
+            return;
+        }
 
-        card.innerHTML = `
-            <div class="flex-grow text-sm text-gray-700 dark:text-gray-300">
-                ${displayLabel}
-            </div>
-            <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
-                    ${durationText}
-                </span>`;
-        if (durationText != 'Permanent')
-            card.innerHTML +=     `<button type="button" data-stat-name="${statName}" data-category="${item.category}" data-effect-index="${character[statName].temporaryEffects[item.category].indexOf(effect)}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150">
-                    Remove
-                </button>`;
+        effectsList.forEach(item => {
+            const effect = item.effect;
+            const statName = item.statName;
+            const val = effect.values ? effect.values[0] : 0;
+            const isPercent = effect.isPercent ? '%' : '';
+            const operator = effect.type || '+';
+            const name = effect.name || 'Unnamed Effect';
+            const appliesTo = effect.appliesTo || 'total';
+            const durationText = isPermList ? 'Permanent' : `${effect.duration} turns left`;
 
-        card.innerHTML +=    `</div>
-        `;
-        listContainer.appendChild(card);
-    });
+            const card = document.createElement('div');
+            card.className = 'flex items-center justify-between p-3 border border-gray-100 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150';
 
-    listContainer.querySelectorAll('.remove-summary-effect-btn').forEach(btn => {
-        btn.addEventListener('click', (event) => {
-            const statName = event.currentTarget.dataset.statName;
-            const category = event.currentTarget.dataset.category;
-            const effectIndex = parseInt(event.currentTarget.dataset.effectIndex);
+            const nameColorClass = isPermList ? 'text-purple-600 dark:text-purple-400' : 'text-indigo-600 dark:text-indigo-400';
+            const badgeColorClass = isPermList ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300';
 
-            if (statName && character[statName] && character[statName].temporaryEffects[category][effectIndex] !== undefined) {
-                character[statName].temporaryEffects[category].splice(effectIndex, 1);
-                recalculateCharacterDerivedProperties(character, true);
-                updateDOM();
-                setHasUnsavedChanges(true);
-                if (typeof showStatusMessage === 'function') {
-                    showStatusMessage("Removed temporary effect.");
-                } else {
-                    console.log("Removed temporary effect.");
-                }
+            const formattedStat = formatStatDisplayName(statName);
+
+            card.innerHTML = `
+                <div class="flex-grow text-sm text-gray-700 dark:text-gray-300">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-x-2">
+                        <span class="font-bold ${nameColorClass}">${name}</span> 
+                        <span class="text-xs text-gray-500 dark:text-gray-400">(${formattedStat})</span>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                        ${operator}${val}${isPercent} (applies to ${appliesTo})
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="px-2 py-0.5 rounded text-xs font-semibold ${badgeColorClass}">
+                        ${durationText}
+                    </span>`;
+
+            if (!isPermList || item.category != character.race) {
+                card.innerHTML += 
+                    `<button type="button" data-stat-name="${statName}" data-category="${item.category}" data-effect-index="${character[statName].temporaryEffects[item.category].indexOf(effect)}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150 cursor-pointer">
+                        Remove
+                    </button>`;
             }
+
+            card.innerHTML += `</div>`;
+            container.appendChild(card);
         });
-    });
+
+        container.querySelectorAll('.remove-summary-effect-btn').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                const statName = event.currentTarget.dataset.statName;
+                const category = event.currentTarget.dataset.category;
+                const effectIndex = parseInt(event.currentTarget.dataset.effectIndex);
+
+                if (statName && character[statName] && character[statName].temporaryEffects?.[category]?.[effectIndex] !== undefined) {
+                    character[statName].temporaryEffects[category].splice(effectIndex, 1);
+                    if (['Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'].includes(statName)) {
+                        recalculateSmallUpdateCharacter(character, true);
+                    } else {
+                        recalculateCharacterDerivedProperties(character, true);
+                    }
+                    updateDOM();
+                    setHasUnsavedChanges(true);
+                    if (typeof showStatusMessage === 'function') {
+                        showStatusMessage(`Removed ${isPermList ? 'permanent' : 'temporary'} effect.`);
+                    }
+                }
+            });
+        });
+    };
+
+    renderList(tempContainer, tempEffects, false);
+    renderList(permContainer, permEffects, true);
+}
+
+export function openDirectAddEffectModal(isPermanent = false) {
+    const modal = document.getElementById('direct-add-effect-modal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('direct-add-effect-modal-title');
+    const isPermHiddenInput = document.getElementById('direct-effect-is-permanent-type');
+    const statSelect = document.getElementById('direct-effect-stat-select');
+    const durationContainer = document.getElementById('direct-effect-duration-container');
+    const submitBtn = document.getElementById('submit-direct-add-effect-btn');
+
+    if (isPermHiddenInput) isPermHiddenInput.value = isPermanent ? 'true' : 'false';
+
+    if (titleEl) {
+        titleEl.textContent = isPermanent ? 'Add Active Permanent Effect' : 'Add Active Temporary Effect';
+        titleEl.className = isPermanent ? 'text-2xl font-semibold mb-4 text-purple-600 dark:text-purple-300' : 'text-2xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300';
+    }
+
+    if (submitBtn) {
+        submitBtn.className = isPermanent ? 'px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 text-sm shadow cursor-pointer' : 'px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 text-sm shadow cursor-pointer';
+    }
+
+    if (durationContainer) {
+        if (isPermanent) {
+            durationContainer.classList.add('hidden');
+        } else {
+            durationContainer.classList.remove('hidden');
+        }
+    }
+
+    // Populate stat options
+    if (statSelect) {
+        statSelect.innerHTML = '';
+        const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'];
+        allStats.forEach(stat => {
+            const option = document.createElement('option');
+            option.value = stat;
+            option.textContent = formatStatDisplayName(stat);
+            statSelect.appendChild(option);
+        });
+    }
+
+    // Reset inputs
+    const nameInput = document.getElementById('direct-effect-name');
+    const valInput = document.getElementById('direct-effect-value');
+    const isPercentCheckbox = document.getElementById('direct-effect-is-percent');
+    const typeSelect = document.getElementById('direct-effect-type');
+    const appliesToSelect = document.getElementById('direct-effect-applies-to');
+    const durationInput = document.getElementById('direct-effect-duration');
+
+    if (nameInput) nameInput.value = '';
+    if (valInput) valInput.value = 1;
+    if (isPercentCheckbox) isPercentCheckbox.checked = false;
+    if (typeSelect) typeSelect.value = '+';
+    if (appliesToSelect) appliesToSelect.value = 'total';
+    if (durationInput) durationInput.value = 1;
+
+    modal.classList.remove('hidden');
+}
+
+export function closeDirectAddEffectModal() {
+    const modal = document.getElementById('direct-add-effect-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+export function handleDirectAddEffectSubmit(event) {
+    if (event) event.preventDefault();
+
+    const statSelect = document.getElementById('direct-effect-stat-select');
+    const nameInput = document.getElementById('direct-effect-name');
+    const valInput = document.getElementById('direct-effect-value');
+    const isPercentCheckbox = document.getElementById('direct-effect-is-percent');
+    const typeSelect = document.getElementById('direct-effect-type');
+    const appliesToSelect = document.getElementById('direct-effect-applies-to');
+    const isPermHiddenInput = document.getElementById('direct-effect-is-permanent-type');
+    const durationInput = document.getElementById('direct-effect-duration');
+
+    const statName = statSelect ? statSelect.value : 'Health';
+    const effectName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'New Effect';
+    const val = valInput ? parseFloat(valInput.value) || 0 : 0;
+    const isPercent = isPercentCheckbox ? isPercentCheckbox.checked : false;
+    const type = typeSelect ? typeSelect.value : '+';
+    const appliesTo = appliesToSelect ? appliesToSelect.value : 'total';
+    const isPermanent = isPermHiddenInput ? (isPermHiddenInput.value === 'true') : false;
+    const duration = isPermanent ? Infinity : (durationInput ? parseInt(durationInput.value) || 1 : 1);
+
+    const effectObj = {
+        name: effectName,
+        statsAffected: [statName],
+        values: [val],
+        isPercent: isPercent,
+        type: type,
+        appliesTo: appliesTo,
+        duration: duration,
+        isInfinite: isPermanent
+    };
+
+    addTemporaryEffect(character, 'manual', effectObj, duration);
+
+    if (['Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'].includes(statName)) {
+        recalculateSmallUpdateCharacter(character, true);
+    } else {
+        recalculateCharacterDerivedProperties(character, true);
+    }
+
+    updateDOM();
+    setHasUnsavedChanges(true);
+
+    if (typeof showStatusMessage === 'function') {
+        showStatusMessage(`Added ${isPermanent ? 'permanent' : 'temporary'} effect "${effectName}" to ${formatStatDisplayName(statName)}.`);
+    }
+
+    closeDirectAddEffectModal();
 }
 
 export function removeSpecializationWarning() {
@@ -659,11 +836,7 @@ export function updateDOM() {
     updateHtmlVisibility();
 
     // Update static temporary effects buttons with active badges
-    updateStaticTempEffectsButton('Health', 'Health');
-    updateStaticTempEffectsButton('Mana', 'Mana');
-    updateStaticTempEffectsButton('RacialPower', 'Racial Power');
-    updateStaticTempEffectsButton('totalDefense', 'Total defense');
-    updateStaticTempEffectsButton('totalMagicDefense', 'Total Magic Defense');
+    updateAllTempEffectsButtons();
 
     // Highlight Health/Mana/RacialPower/totalDefense inputs if they have active temporary effects
     highlightStatsWithActiveEffects();
@@ -759,7 +932,7 @@ export function renderTemporaryEffects(statName) {
 
     manualEffects.forEach((effect, index) => {
         let effectDiv = tempEffectsList.children[index];
-        let nameInput, valueInput, isPercentCheckbox, durationInput, typeSelect, appliesToSelect, removeButton;
+        let nameInput, valueInput, isPercentCheckbox, durationInput, isInfiniteCheckbox, typeSelect, appliesToSelect, removeButton;
         const manualIndex = index;
 
         // If the div doesn't exist or isn't the correct type, create it
@@ -814,9 +987,15 @@ export function renderTemporaryEffects(statName) {
                     </select>
                 </div>
 
-                <div class="flex flex-col min-w-[6rem] gap-y-1">
+                <div class="flex flex-col min-w-[10rem] gap-y-1">
                     <label class="${labelBase}">Duration</label>
-                    <input type="number" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="duration" class="${inputBase}" />
+                    <div class="flex items-center gap-x-2">
+                        <input type="number" min="1" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="duration" class="${inputBase} w-20" placeholder="Turns" />
+                        <label class="flex items-center gap-x-1 cursor-pointer whitespace-nowrap select-none">
+                            <input type="checkbox" data-stat-name="${statName}" data-effect-index="${manualIndex}" data-category="${category}" data-field="isInfinite" class="temp-effect-input form-checkbox h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:bg-gray-700 dark:border-gray-600" />
+                            <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Infinite</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="flex items-end">
@@ -830,6 +1009,7 @@ export function renderTemporaryEffects(statName) {
             valueInput = effectDiv.querySelector(`input[data-field="values"]`);
             isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            isInfiniteCheckbox = effectDiv.querySelector(`input[data-field="isInfinite"]`);
             typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
             appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
@@ -839,6 +1019,7 @@ export function renderTemporaryEffects(statName) {
             valueInput = effectDiv.querySelector(`input[data-field="values"]`);
             isPercentCheckbox = effectDiv.querySelector(`input[data-field="isPercent"]`);
             durationInput = effectDiv.querySelector(`input[data-field="duration"]`);
+            isInfiniteCheckbox = effectDiv.querySelector(`input[data-field="isInfinite"]`);
             typeSelect = effectDiv.querySelector(`select[data-field="type"]`);
             appliesToSelect = effectDiv.querySelector(`select[data-field="appliesTo"]`);
             removeButton = effectDiv.querySelector('.remove-temp-effect-btn');
@@ -848,6 +1029,7 @@ export function renderTemporaryEffects(statName) {
             valueInput.dataset.effectIndex = manualIndex;
             isPercentCheckbox.dataset.effectIndex = manualIndex;
             durationInput.dataset.effectIndex = manualIndex;
+            if (isInfiniteCheckbox) isInfiniteCheckbox.dataset.effectIndex = manualIndex;
             typeSelect.dataset.effectIndex = manualIndex;
             appliesToSelect.dataset.effectIndex = manualIndex;
             removeButton.dataset.effectIndex = manualIndex;
@@ -855,9 +1037,23 @@ export function renderTemporaryEffects(statName) {
 
         // Always update the input values directly to reflect the current data
         nameInput.value = effect.name || '';
-        valueInput.value = effect.values[0] || 0;
-        isPercentCheckbox.checked = effect.isPercent; // Set checked state for the checkbox
-        durationInput.value = effect.duration;
+        valueInput.value = (effect.values && effect.values[0] !== undefined) ? effect.values[0] : 0;
+        isPercentCheckbox.checked = !!effect.isPercent; // Set checked state for the checkbox
+
+        const isInf = effect.duration === Infinity || effect.duration === 'Infinity' || !!effect.isInfinite;
+        if (isInfiniteCheckbox) {
+            isInfiniteCheckbox.checked = isInf;
+        }
+        if (isInf) {
+            durationInput.value = effect.previousDuration || 1;
+            durationInput.disabled = true;
+            durationInput.classList.add('opacity-40', 'cursor-not-allowed');
+        } else {
+            durationInput.value = (effect.duration !== undefined && effect.duration !== null && effect.duration !== Infinity) ? effect.duration : 1;
+            durationInput.disabled = false;
+            durationInput.classList.remove('opacity-40', 'cursor-not-allowed');
+        }
+
         typeSelect.value = effect.type || '+'; // Default to 'add'
         appliesToSelect.value = effect.appliesTo || 'total'; // Default to 'total'
 
@@ -873,6 +1069,11 @@ export function renderTemporaryEffects(statName) {
 
         durationInput.removeEventListener('input', handlePlayerStatInputChange);
         durationInput.addEventListener('input', handlePlayerStatInputChange);
+
+        if (isInfiniteCheckbox) {
+            isInfiniteCheckbox.removeEventListener('change', handlePlayerStatInputChange);
+            isInfiniteCheckbox.addEventListener('change', handlePlayerStatInputChange);
+        }
 
         typeSelect.removeEventListener('change', handlePlayerStatInputChange);
         typeSelect.addEventListener('change', handlePlayerStatInputChange);

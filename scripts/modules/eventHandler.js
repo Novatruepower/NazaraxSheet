@@ -2,13 +2,14 @@ import { MIN_STAT_VALUE, MAX_STAT_VALUE } from './constants.js';
 import { ExternalDataManager } from '../externalDataManager.js';
 import { showConfirmationModal, updateRemainingPointsDisplay, renderTemporaryEffects, refreshTemporaryModalTitle, renderSpecializations, updateSpecializationDropdownAndData,
     getCharacterStatesActive, updateDOM, showStatusMessage, quickRollStats, distributeStats, addManualTemporaryEffect, closeTemporaryEffectsModal, endTurn, toggleSidebar,
-    updatePanelsPosition, closeDamageModal, takeDamage, setTempEffectsStatContext, openTemporaryEffectsModal, toggleSection
+    updatePanelsPosition, closeDamageModal, takeDamage, setTempEffectsStatContext, openTemporaryEffectsModal, toggleSection,
+    openDirectAddEffectModal, closeDirectAddEffectModal, handleDirectAddEffectSubmit
  } from './uiUtils.js';
 import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, defaultCharacterData, populateCharacterSelector, saveCurrentStateToHistory, saveCharacterToFile,
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
   } from './characterState.js';
 import { character, characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, setCurrentGoogleDriveFileId } from './state.js';
-import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex, toggleAllCards } from './inventory.js';
+import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex, toggleAllCards, sortInventory, inventorySortSettings } from './inventory.js';
 import { calculateRollStatTotal, calculateLevelMaxExperience, roll  } from './formulas.js';
 import { renderRacial, removePassivesLevel, renderGenericClassesPassives } from './passivesActives.js';
 import { saveCharacterToGoogleDrive, loadCharacterFromGoogleDrive, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick, maybeEnableGoogleDriveButtons  } from './googleDrive.js';
@@ -139,10 +140,25 @@ export function handlePlayerStatInputChange(event) {
         if (categoryTemporaryEffects[effectIndex]) {
             if (subProperty === 'type' || subProperty === 'appliesTo') {
                 categoryTemporaryEffects[effectIndex][subProperty] = value;
-            } else if (subProperty === 'isPercent') { // Handle the new isPercent checkbox
+            } else if (subProperty === 'isPercent') { // Handle the isPercent checkbox
                 categoryTemporaryEffects[effectIndex][subProperty] = checked;
+            } else if (subProperty === 'isInfinite') { // Handle the infinite duration checkbox
+                if (checked) {
+                    if (categoryTemporaryEffects[effectIndex].duration !== Infinity) {
+                        categoryTemporaryEffects[effectIndex].previousDuration = categoryTemporaryEffects[effectIndex].duration || 1;
+                    }
+                    categoryTemporaryEffects[effectIndex].duration = Infinity;
+                    categoryTemporaryEffects[effectIndex].isInfinite = true;
+                } else {
+                    const restoredDuration = categoryTemporaryEffects[effectIndex].previousDuration || 1;
+                    categoryTemporaryEffects[effectIndex].duration = restoredDuration;
+                    categoryTemporaryEffects[effectIndex].isInfinite = false;
+                }
             } else if (subProperty === 'duration') {
-                categoryTemporaryEffects[effectIndex][subProperty] = parseFloat(value) || 0;
+                const durVal = parseFloat(value) || 1;
+                categoryTemporaryEffects[effectIndex].duration = durVal;
+                categoryTemporaryEffects[effectIndex].previousDuration = durVal;
+                categoryTemporaryEffects[effectIndex].isInfinite = false;
             } else if (subProperty === 'name') {
                 categoryTemporaryEffects[effectIndex][subProperty] = value;
             } else if (subProperty === 'values') {
@@ -836,6 +852,22 @@ export function attachEventListeners() {
     const closeTempEffModalBtn = document.getElementById('close-temp-effects-modal');
     if (closeTempEffModalBtn) closeTempEffModalBtn.addEventListener('click', closeTemporaryEffectsModal);
 
+    // Direct Add Effect Listeners for Active Temporary and Permanent Effects Sections
+    const addTempEffectDirectBtn = document.getElementById('add-temp-effect-direct-btn');
+    if (addTempEffectDirectBtn) addTempEffectDirectBtn.addEventListener('click', () => openDirectAddEffectModal(false));
+
+    const addPermEffectDirectBtn = document.getElementById('add-perm-effect-direct-btn');
+    if (addPermEffectDirectBtn) addPermEffectDirectBtn.addEventListener('click', () => openDirectAddEffectModal(true));
+
+    const closeDirectAddModalBtn = document.getElementById('close-direct-add-effect-modal');
+    if (closeDirectAddModalBtn) closeDirectAddModalBtn.addEventListener('click', closeDirectAddEffectModal);
+
+    const cancelDirectAddModalBtn = document.getElementById('cancel-direct-add-effect-btn');
+    if (cancelDirectAddModalBtn) cancelDirectAddModalBtn.addEventListener('click', closeDirectAddEffectModal);
+
+    const directAddEffectForm = document.getElementById('direct-add-effect-form');
+    if (directAddEffectForm) directAddEffectForm.addEventListener('submit', handleDirectAddEffectSubmit);
+
     const endTurnButton = document.getElementById('end-turn-btn');
     if (endTurnButton) endTurnButton.addEventListener('click', endTurn);
 
@@ -1039,6 +1071,38 @@ export function attachEventListeners() {
     if (armorViewTableBtn) armorViewTableBtn.addEventListener('click', () => setInventoryView('armor', 'table'));
     if (generalViewCardsBtn) generalViewCardsBtn.addEventListener('click', () => setInventoryView('general', 'cards'));
     if (generalViewTableBtn) generalViewTableBtn.addEventListener('click', () => setInventoryView('general', 'table'));
+
+    // Inventory Sorting Event Listeners
+    ['weapon', 'armor', 'general'].forEach(type => {
+        const select = document.getElementById(`${type}-sort-field`);
+        if (select) {
+            select.addEventListener('change', (e) => {
+                sortInventory(type, e.target.value);
+            });
+        }
+        const dirBtn = document.getElementById(`${type}-sort-dir-btn`);
+        if (dirBtn) {
+            dirBtn.addEventListener('click', () => {
+                const currentDir = inventorySortSettings[type].dir;
+                const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+                sortInventory(type, null, newDir);
+            });
+        }
+    });
+
+    // Delegated Table Header Click Handler for Sorting
+    document.addEventListener('click', (event) => {
+        const sortHeader = event.target.closest('th[data-sort-field]');
+        if (sortHeader) {
+            const field = sortHeader.dataset.sortField;
+            const inventoryType = sortHeader.dataset.inventoryType;
+            if (field && inventoryType) {
+                const current = inventorySortSettings[inventoryType];
+                const newDir = (current.field === field && current.dir === 'asc') ? 'desc' : 'asc';
+                sortInventory(inventoryType, field, newDir);
+            }
+        }
+    });
 
     document.querySelectorAll('.toggle-section-btn').forEach(button => {
         button.addEventListener('click', (event) => {

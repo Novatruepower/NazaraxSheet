@@ -446,6 +446,9 @@ export function renderWeaponTable() {
 
     // 4. Align layout active state classes
     toggleInventoryViewDOM('weapon', inventoryViewSettings.weapon);
+
+    // 5. Update Sort UI indicators
+    updateSortUI('weapon');
 }
 
 export function renderArmorCards() {
@@ -960,6 +963,9 @@ export function renderArmorTable() {
 
     // 4. Align layout active state classes
     toggleInventoryViewDOM('armor', inventoryViewSettings.armor);
+
+    // 5. Update Sort UI indicators
+    updateSortUI('armor');
 }
 
 export function renderGeneralCards() {
@@ -1070,6 +1076,9 @@ export function renderGeneralTable() {
 
     // 3. Align layout active state classes
     toggleInventoryViewDOM('general', inventoryViewSettings.general);
+
+    // 4. Update Sort UI indicators
+    updateSortUI('general');
 }
 
 export function setInventoryView(type, view) {
@@ -1361,4 +1370,131 @@ export function handleInventoryInputChange(event) {
             recalculateSmallUpdateCharacter(character, true);
         }
     }
+}
+
+// Global Inventory Sort Settings
+export let inventorySortSettings = {
+    weapon: { field: 'none', dir: 'asc' },
+    armor: { field: 'none', dir: 'asc' },
+    general: { field: 'none', dir: 'asc' }
+};
+
+export function updateSortUI(inventoryType) {
+    const sortSettings = inventorySortSettings[inventoryType];
+    if (!sortSettings) return;
+
+    // Update select dropdown
+    const select = document.getElementById(`${inventoryType}-sort-field`);
+    if (select) {
+        select.value = sortSettings.field || 'none';
+    }
+
+    // Update direction button
+    const dirBtn = document.getElementById(`${inventoryType}-sort-dir-btn`);
+    if (dirBtn) {
+        dirBtn.textContent = sortSettings.dir === 'desc' ? '↓ Desc' : '↑ Asc';
+    }
+
+    // Update table header indicators
+    const table = document.getElementById(`${inventoryType}-inventory-table`);
+    if (table) {
+        const headers = table.querySelectorAll('th[data-sort-field]');
+        headers.forEach(th => {
+            const field = th.dataset.sortField;
+            const iconSpan = th.querySelector('.sort-icon');
+            if (field === sortSettings.field && sortSettings.field !== 'none') {
+                th.classList.add('text-indigo-600', 'dark:text-indigo-300', 'bg-indigo-50/80', 'dark:bg-indigo-950/40');
+                if (iconSpan) {
+                    iconSpan.textContent = sortSettings.dir === 'desc' ? '▼' : '▲';
+                    iconSpan.className = 'sort-icon text-indigo-600 dark:text-indigo-300 font-bold ml-1';
+                }
+            } else {
+                th.classList.remove('text-indigo-600', 'dark:text-indigo-300', 'bg-indigo-50/80', 'dark:bg-indigo-950/40');
+                if (iconSpan) {
+                    iconSpan.textContent = '↕';
+                    iconSpan.className = 'sort-icon text-gray-400 dark:text-gray-500 ml-0.5';
+                }
+            }
+        });
+    }
+}
+
+export function sortInventory(inventoryType, field = null, dir = null) {
+    if (!inventorySortSettings[inventoryType]) return;
+
+    if (field !== null) {
+        inventorySortSettings[inventoryType].field = field;
+    }
+    if (dir !== null) {
+        inventorySortSettings[inventoryType].dir = dir;
+    }
+
+    const currentField = inventorySortSettings[inventoryType].field;
+    const currentDir = inventorySortSettings[inventoryType].dir;
+
+    if (currentField && currentField !== 'none') {
+        const arrayName = `${inventoryType}Inventory`;
+        const arr = character[arrayName];
+
+        if (Array.isArray(arr) && arr.length > 0) {
+            arr.sort((a, b) => {
+                let valA = getComparableValue(a, currentField, inventoryType);
+                let valB = getComparableValue(b, currentField, inventoryType);
+
+                let comparison = 0;
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    comparison = valA - valB;
+                } else {
+                    comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
+                }
+
+                return currentDir === 'desc' ? -comparison : comparison;
+            });
+
+            setHasUnsavedChanges(true);
+        }
+    }
+
+    // Re-render views
+    if (inventoryType === 'weapon') {
+        renderWeaponTable();
+    } else if (inventoryType === 'armor') {
+        renderArmorTable();
+    } else if (inventoryType === 'general') {
+        renderGeneralTable();
+    }
+}
+
+function getComparableValue(item, field, inventoryType) {
+    if (!item) return '';
+
+    if (field === 'use' || field === 'equipped') {
+        return item[field] ? 1 : 0;
+    }
+    if (field === 'value') {
+        if (inventoryType === 'general') {
+            const qty = parseFloat(item.amount) || 1;
+            const unitVal = parseFloat(item.valuePerUnit) || parseFloat(item.value) || 0;
+            return qty * unitVal;
+        }
+        return parseFloat(item.value) || 0;
+    }
+    if (field === 'valuePerUnit') {
+        return parseFloat(item.valuePerUnit) || parseFloat(item.value) || 0;
+    }
+    if (field === 'accuracy' || field === 'amount') {
+        return parseFloat(item[field]) || 0;
+    }
+    if (field === 'damage') {
+        const formulaVal = parseFloat(calculateFormula(item.damage || '0', false));
+        if (!isNaN(formulaVal)) return formulaVal;
+        return (item.damage || '').toString().toLowerCase();
+    }
+    if (field === 'defense') {
+        const formulaVal = parseFloat(calculateFormula(item.defense || '0', false));
+        if (!isNaN(formulaVal)) return formulaVal;
+        return (item.defense || '').toString().toLowerCase();
+    }
+
+    return (item[field] || '').toString().toLowerCase();
 }
