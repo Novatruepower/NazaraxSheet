@@ -4,7 +4,7 @@ import { STAT_MAPPING } from './constants.js';
 
 export function getCategoriesTemporaryEffects(charData, statName) {
     let categoriesTemporaryEffects = [];
-    const temporaryEffects = charData[statName].temporaryEffects
+    const temporaryEffects = charData[statName].temporaryEffects;
 
     for (const category in temporaryEffects) {
         categoriesTemporaryEffects.push(...temporaryEffects[category]);

@@ -8,7 +8,7 @@
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
-          "BaseRacialPower": 1,
+          "BaseRacialPower": 0,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
           "naturalRacialPowerRegen": 1
@@ -70,7 +70,7 @@
           "level": 1,
           "formulas": [
             {
-              "appliesTo": "initial-value",
+              "appliesTo": "base-value",
               "types": [
                 "*"
               ],
