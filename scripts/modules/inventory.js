@@ -991,7 +991,10 @@ export function renderGeneralCards() {
             
         card.className = `p-5 rounded-xl border ${cardClass} transition-all duration-200 flex flex-col gap-4 relative hover:shadow-md`;
         
-        const totalVal = (parseFloat(item.amount) || 1) * (parseFloat(item.valuePerUnit) || 0);
+        const amountVal = (item.amount !== undefined && item.amount !== null && item.amount !== '') ? item.amount : 1;
+        const numAmount = parseFloat(amountVal) || 0;
+        const valPerUnit = parseFloat(item.valuePerUnit) || 0;
+        const totalVal = numAmount * valPerUnit;
 
         card.innerHTML = `
             <!-- Card Header: Name, Quantity, Value & Collapse -->
@@ -1006,11 +1009,11 @@ export function renderGeneralCards() {
                 </div>
                 
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 font-mono" title="Quantity">
-                        x${item.amount || 1}
+                    <span data-card-quantity-index="${index}" class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 font-mono" title="Quantity">
+                        x${amountVal}
                     </span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40" title="Value per unit">
-                        🪙 ${item.valuePerUnit || 0}
+                    <span data-card-value-unit-index="${index}" class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40" title="Value per unit">
+                        🪙 ${valPerUnit}
                     </span>
                 </div>
             </div>
@@ -1025,7 +1028,7 @@ export function renderGeneralCards() {
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Amount</label>
-                        <input type="number" data-inventory-type="general" data-field="amount" data-index="${index}" value="${item.amount || 1}" min="0" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
+                        <input type="number" data-inventory-type="general" data-field="amount" data-index="${index}" value="${amountVal}" min="0" class="px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-all w-full" />
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Value (Unit)</label>
@@ -1048,7 +1051,7 @@ export function renderGeneralCards() {
 
                 <!-- Card Footer Actions -->
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/60 mt-auto">
-                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Value: <strong class="text-amber-600 dark:text-amber-400">🪙 ${totalVal}</strong></span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Value: <strong data-card-total-value-index="${index}" class="text-amber-600 dark:text-amber-400">🪙 ${totalVal}</strong></span>
                     <button type="button" data-inventory-type="general" data-index="${index}" class="remove-item-btn text-xs font-semibold text-red-500 hover:text-white dark:text-red-400 hover:bg-red-500 dark:hover:bg-red-600 border border-red-200 dark:border-red-900/40 px-2.5 py-1 rounded transition-all duration-200">
                         Remove
                     </button>
@@ -1362,6 +1365,9 @@ export function handleInventoryInputChange(event) {
         }
     } else if (type === 'number' && field !== 'damage' && field !== 'defense') { // Exclude damage and defense from number parsing
         inventory[itemIndex][field] = parseFloat(value) || 0;
+        if (inventoryType === 'general' && (field === 'amount' || field === 'valuePerUnit')) {
+            updateGeneralCardComputedValues(itemIndex);
+        }
     } else {
         // For text fields (including damage and defense which can be formulas)
         inventory[itemIndex][field] = value;
@@ -1369,6 +1375,34 @@ export function handleInventoryInputChange(event) {
             delete inventory[itemIndex].rolledDefense;
             recalculateSmallUpdateCharacter(character, true);
         }
+        if (inventoryType === 'general' && (field === 'amount' || field === 'valuePerUnit')) {
+            updateGeneralCardComputedValues(itemIndex);
+        }
+    }
+}
+
+export function updateGeneralCardComputedValues(itemIndex) {
+    const item = character.generalInventory[itemIndex];
+    if (!item) return;
+
+    const amountVal = (item.amount !== undefined && item.amount !== null && item.amount !== '') ? item.amount : 1;
+    const numAmount = parseFloat(amountVal) || 0;
+    const valPerUnit = parseFloat(item.valuePerUnit) || 0;
+    const totalVal = numAmount * valPerUnit;
+
+    const quantityBadge = document.querySelector(`[data-card-quantity-index="${itemIndex}"]`);
+    if (quantityBadge) {
+        quantityBadge.textContent = `x${amountVal}`;
+    }
+
+    const valueUnitBadge = document.querySelector(`[data-card-value-unit-index="${itemIndex}"]`);
+    if (valueUnitBadge) {
+        valueUnitBadge.textContent = `🪙 ${valPerUnit}`;
+    }
+
+    const totalValueEl = document.querySelector(`[data-card-total-value-index="${itemIndex}"]`);
+    if (totalValueEl) {
+        totalValueEl.textContent = `🪙 ${totalVal}`;
     }
 }
 
@@ -1473,7 +1507,7 @@ function getComparableValue(item, field, inventoryType) {
     }
     if (field === 'value') {
         if (inventoryType === 'general') {
-            const qty = parseFloat(item.amount) || 1;
+            const qty = (item.amount !== undefined && item.amount !== null && item.amount !== '') ? (parseFloat(item.amount) || 0) : 1;
             const unitVal = parseFloat(item.valuePerUnit) || parseFloat(item.value) || 0;
             return qty * unitVal;
         }

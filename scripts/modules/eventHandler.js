@@ -9,7 +9,7 @@ import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, 
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
   } from './characterState.js';
 import { character, characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, setCurrentGoogleDriveFileId } from './state.js';
-import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex, toggleAllCards, sortInventory, inventorySortSettings } from './inventory.js';
+import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderGeneralTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex, toggleAllCards, sortInventory, inventorySortSettings } from './inventory.js';
 import { calculateRollStatTotal, calculateLevelMaxExperience, roll  } from './formulas.js';
 import { renderRacial, removePassivesLevel, renderGenericClassesPassives } from './passivesActives.js';
 import { saveCharacterToGoogleDrive, loadCharacterFromGoogleDrive, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick, maybeEnableGoogleDriveButtons  } from './googleDrive.js';
@@ -294,6 +294,8 @@ export function handleChange(event) {
                 renderWeaponTable();
             } else if (dataset.inventoryType === 'armor') {
                 renderArmorTable();
+            } else if (dataset.inventoryType === 'general') {
+                renderGeneralTable();
             }
         } else {
             renderEquippedSummaries();
@@ -588,7 +590,7 @@ export function addArmor() {
 }
 
 export function addGeneralItem() {
-    character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 0, valuePerUnit: 0 });
+    character.generalInventory.push({ name: '', type: '', effect: '', accuracy: 0, amount: 1, valuePerUnit: 0 });
     updateDOM(); // Re-render the inventory table
     setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
