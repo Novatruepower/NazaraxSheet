@@ -1,2 +1,17 @@
 finish transitioning to the database.
 fix Human
+
+change data in firebase to be like this and make abilities.formulas.values to be an index of ability.values :
+processedFormulaValues
+if (ability.values) {
+    for (const value of ability.values) {
+        values.push(Math.abs(value));
+    }
+} 
+else if (ability.formulas) {
+    for (const formula of ability.formulas) {
+        for (const value of formula.values) {
+            values.push(Math.abs(value));
+        }
+    }
+}

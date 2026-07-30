@@ -529,16 +529,16 @@ export const ExternalDataManager = {
     processedFormulaValues(ability) {
         const values = [];
 
-        if (ability.formulas) {
+        if (ability.values) {
+            for (const value of ability.values) {
+                values.push(Math.abs(value));
+            }
+        } 
+        else if (ability.formulas) {
             for (const formula of ability.formulas) {
                 for (const value of formula.values) {
                     values.push(Math.abs(value));
                 }
-            }
-        }
-        else if (ability.values) {
-            for (const value of ability.values) {
-                values.push(Math.abs(value));
             }
         }
 
@@ -603,7 +603,6 @@ export const ExternalDataManager = {
                 }
             }
         }
-
         template.description = this.formatString(template.description, copy.dices, this.processedFormulaValues(template));
         
         return template;
