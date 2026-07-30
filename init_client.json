@@ -8,7 +8,7 @@
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
-          "BaseRacialPower": 0,
+          "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
           "naturalRacialPowerRegen": 1
@@ -66,57 +66,61 @@
         "7": "The same limitations as “Rough Reshaping” still apply, you need to understand the original item, and final product’s ins and outs completely if you don’t want to fail while also still needing to examine an item before deforming it."
       },
       "regularPassives": {
-        "Clay Skin": {
+        "Absorption": {
+          "values": [
+            "0.05",
+            "0.04"
+          ],
           "level": 1,
+          "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%."
+        },
+        "Clay Skin": {
           "formulas": [
             {
-              "appliesTo": "base-value",
-              "types": [
-                "*"
-              ],
               "values": [
                 20
               ],
-              "type": "+",
+              "types": [
+                "*"
+              ],
               "stats": [
                 "level"
               ],
+              "type": "+",
+              "appliesTo": "base-value",
               "statsAffected": [
                 "RacialPower"
               ]
             }
           ],
+          "level": 1,
+          "description": "You store up energy that you absorb from the air around you in a clay-like skin layer. This layer of skin counts as both your racial point pool and as a supplementary health bar which gets used up before your real health bar. You have {0} racial points per level.",
           "upgrades": {
-            "Crystal Skin": {
-              "formulas": [
-                {
-                  "values": 40
-                }
-              ],
-              "level": 100
-            },
             "Rocky Skin": {
               "level": 50,
               "formulas": [
                 {
-                  "values": 30
+                  "values": [
+                    "30"
+                  ]
+                }
+              ]
+            },
+            "Crystal Skin": {
+              "level": 100,
+              "formulas": [
+                {
+                  "values": [
+                    "40"
+                  ]
                 }
               ]
             }
-          },
-          "description": "You store up energy that you absorb from the air around you in a clay-like skin layer. This layer of skin counts as both your racial point pool and as a supplementary health bar which gets used up before your real health bar. You have {0} racial points per level."
+          }
         },
         "Magic Stabilisation": {
           "description": "You can now reshape magic or enchanted items while keeping the magic part of the item intact after your reshaping of the item depending on your luck and the quality of the enchantment.",
           "level": 75
-        },
-        "Absorption": {
-          "description": "You naturally absorb energy from your surroundings with the holes in your hands and feet, making you regenerate {0}% of your racial energy at the start of each of your turns. Because of the location of these holes, covering up one of your hands or feet will reduce your racial point regeneration by 1%.",
-          "level": 1,
-          "values": [
-            "0.05",
-            "0.04"
-          ]
         }
       }
     },
