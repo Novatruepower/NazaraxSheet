@@ -222,6 +222,7 @@ async function openGoogleDriveSaveModal() {
     const googleDriveSaveOptions = document.getElementById('google-drive-save-options');
     const googleDriveSaveActions = document.getElementById('google-drive-save-actions');
     const googleDriveFileList = document.getElementById('google-drive-file-list');
+    const googleDriveFileListContainer = document.getElementById('google-drive-file-list-container');
     const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
     const driveNewFilenameInput = document.getElementById('drive-new-filename');
     const driveSaveModeExisting = document.getElementById('drive-save-mode-existing');
@@ -237,6 +238,7 @@ async function openGoogleDriveSaveModal() {
     if (googleDriveModalTitle) googleDriveModalTitle.textContent = 'Save to Google Drive';
     if (googleDriveSaveOptions) googleDriveSaveOptions.classList.remove('hidden');
     if (googleDriveSaveActions) googleDriveSaveActions.classList.remove('hidden');
+    if (googleDriveFileListContainer) googleDriveFileListContainer.classList.remove('hidden');
     if (googleDriveFileList) googleDriveFileList.innerHTML = '';
     if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Loading files from Google Drive...';
     if (confirmSaveBtn) confirmSaveBtn.disabled = false;
@@ -249,8 +251,12 @@ async function openGoogleDriveSaveModal() {
     const updateModeUI = () => {
         if (driveSaveModeNew && driveSaveModeNew.checked) {
             if (driveNewFileContainer) driveNewFileContainer.classList.remove('hidden');
+            if (googleDriveFileListContainer) googleDriveFileListContainer.classList.add('hidden');
+            if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Enter a name for the new file and click Confirm Save.';
         } else {
             if (driveNewFileContainer) driveNewFileContainer.classList.add('hidden');
+            if (googleDriveFileListContainer) googleDriveFileListContainer.classList.remove('hidden');
+            if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Select an existing file to overwrite or choose "Create as new file".';
         }
     };
 
@@ -269,7 +275,7 @@ async function openGoogleDriveSaveModal() {
         const res = await window.gapi.client.drive.files.list({
             pageSize: 30,
             fields: 'files(id, name, modifiedTime)',
-            q: "mimeType='application/json'",
+            q: "mimeType='application/json' and trashed = false",
             orderBy: 'modifiedTime desc'
         });
 
@@ -283,8 +289,6 @@ async function openGoogleDriveSaveModal() {
                 updateModeUI();
             }
         } else {
-            if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Select an existing file to overwrite or choose "Create as new file".';
-
             let preselectedFound = false;
 
             files.forEach(file => {
@@ -496,12 +500,14 @@ async function proceedToLoadGoogleDriveFile() {
     const googleDriveSaveOptions = document.getElementById('google-drive-save-options');
     const googleDriveSaveActions = document.getElementById('google-drive-save-actions');
     const googleDriveFileList = document.getElementById('google-drive-file-list');
+    const googleDriveFileListContainer = document.getElementById('google-drive-file-list-container');
     const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
 
     if (googleDriveModal) googleDriveModal.classList.remove('hidden');
     if (googleDriveModalTitle) googleDriveModalTitle.textContent = 'Load from Google Drive';
     if (googleDriveSaveOptions) googleDriveSaveOptions.classList.add('hidden');
     if (googleDriveSaveActions) googleDriveSaveActions.classList.add('hidden');
+    if (googleDriveFileListContainer) googleDriveFileListContainer.classList.remove('hidden');
     if (googleDriveFileList) googleDriveFileList.innerHTML = '';
     if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Loading...';
 
@@ -511,7 +517,7 @@ async function proceedToLoadGoogleDriveFile() {
         const res = await window.gapi.client.drive.files.list({
             pageSize: 30, // Fetch up to 30 files
             fields: 'files(id, name, modifiedTime)',
-            q: "mimeType='application/json'", // Filter for JSON files
+            q: "mimeType='application/json' and trashed = false", // Filter for non-trashed JSON files
             orderBy: 'modifiedTime desc'
         });
 
