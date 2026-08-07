@@ -10,9 +10,14 @@ export function setCurrentCharacterIndex(index) {
     currentCharacterIndex = index;
 }
 
-export let currentGoogleDriveFileId = null; // To store the ID of the currently loaded Google Drive file
+export let currentGoogleDriveFileId = localStorage.getItem('lastGoogleDriveFileId') || null; // To store the ID of the currently loaded/saved Google Drive file
 export function setCurrentGoogleDriveFileId(id) {
     currentGoogleDriveFileId = id;
+    if (id) {
+        localStorage.setItem('lastGoogleDriveFileId', id);
+    } else {
+        localStorage.removeItem('lastGoogleDriveFileId');
+    }
 }
 
 export let hasUnsavedChanges = false;

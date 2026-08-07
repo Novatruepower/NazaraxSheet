@@ -187,15 +187,19 @@ export function handleGoogleDriveSignoutClick() {
     maybeEnableGoogleDriveButtons(); // Update UI
 }
 
+let selectedSaveFileId = null;
+
 /**
-* Saves character data to Google Drive.
+* Saves character data to Google Drive by opening a file selection/confirmation modal.
 */
 export async function saveCharacterToGoogleDrive() {
-    let currentToken = window.gapi.client.getToken();
+    let currentToken = (window.gapi && window.gapi.client) ? window.gapi.client.getToken() : null;
     if (!currentToken || !currentToken.access_token) {
         const cached = getCachedDriveToken();
         if (cached) {
-            window.gapi.client.setToken(cached);
+            if (window.gapi && window.gapi.client) {
+                window.gapi.client.setToken(cached);
+            }
             currentToken = cached;
         }
     }
@@ -206,61 +210,280 @@ export async function saveCharacterToGoogleDrive() {
     }
 
     saveCurrentStateToHistory(); // Ensure current state is saved to history before saving to Google Drive
-    showStatusMessage("Saving to Google Drive...");
+    await openGoogleDriveSaveModal();
+}
+
+/**
+* Opens the Google Drive save modal, listing files and pre-selecting the last loaded/saved file.
+*/
+async function openGoogleDriveSaveModal() {
+    const googleDriveModal = document.getElementById('google-drive-modal');
+    const googleDriveModalTitle = document.getElementById('google-drive-modal-title');
+    const googleDriveSaveOptions = document.getElementById('google-drive-save-options');
+    const googleDriveSaveActions = document.getElementById('google-drive-save-actions');
+    const googleDriveFileList = document.getElementById('google-drive-file-list');
+    const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
+    const driveNewFilenameInput = document.getElementById('drive-new-filename');
+    const driveSaveModeExisting = document.getElementById('drive-save-mode-existing');
+    const driveSaveModeNew = document.getElementById('drive-save-mode-new');
+    const driveNewFileContainer = document.getElementById('drive-new-file-container');
+    const confirmSaveBtn = document.getElementById('confirm-google-drive-save-btn');
+    const cancelSaveBtn = document.getElementById('cancel-google-drive-save-btn');
+
+    if (!googleDriveModal) return;
+
+    // Reset and show save-specific UI
+    googleDriveModal.classList.remove('hidden');
+    if (googleDriveModalTitle) googleDriveModalTitle.textContent = 'Save to Google Drive';
+    if (googleDriveSaveOptions) googleDriveSaveOptions.classList.remove('hidden');
+    if (googleDriveSaveActions) googleDriveSaveActions.classList.remove('hidden');
+    if (googleDriveFileList) googleDriveFileList.innerHTML = '';
+    if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Loading files from Google Drive...';
+    if (confirmSaveBtn) confirmSaveBtn.disabled = false;
+
+    // Default new filename
+    const defaultFileName = ((characters[0] && characters[0].name && characters[0].name.trim() !== '') ? characters[0].name.trim() + '_sheet' : 'character_sheets') + '.json';
+    if (driveNewFilenameInput) driveNewFilenameInput.value = defaultFileName;
+
+    // Radio button UI toggle
+    const updateModeUI = () => {
+        if (driveSaveModeNew && driveSaveModeNew.checked) {
+            if (driveNewFileContainer) driveNewFileContainer.classList.remove('hidden');
+        } else {
+            if (driveNewFileContainer) driveNewFileContainer.classList.add('hidden');
+        }
+    };
+
+    if (driveSaveModeExisting) driveSaveModeExisting.onclick = updateModeUI;
+    if (driveSaveModeNew) driveSaveModeNew.onclick = updateModeUI;
+
+    if (cancelSaveBtn) {
+        cancelSaveBtn.onclick = () => {
+            googleDriveModal.classList.add('hidden');
+        };
+    }
+
+    selectedSaveFileId = currentGoogleDriveFileId || localStorage.getItem('lastGoogleDriveFileId') || null;
+
+    try {
+        const res = await window.gapi.client.drive.files.list({
+            pageSize: 30,
+            fields: 'files(id, name, modifiedTime)',
+            q: "mimeType='application/json'",
+            orderBy: 'modifiedTime desc'
+        });
+
+        const files = res.result.files || [];
+        if (googleDriveFileList) googleDriveFileList.innerHTML = '';
+
+        if (files.length === 0) {
+            if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'No existing sheet files found. Choose "Create as new file" below.';
+            if (driveSaveModeNew) {
+                driveSaveModeNew.checked = true;
+                updateModeUI();
+            }
+        } else {
+            if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Select an existing file to overwrite or choose "Create as new file".';
+
+            let preselectedFound = false;
+
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between transition-colors rounded-md my-1 border border-transparent';
+
+                const isPreselected = (selectedSaveFileId && selectedSaveFileId === file.id);
+                if (isPreselected) {
+                    preselectedFound = true;
+                    li.classList.add('bg-indigo-50', 'dark:bg-indigo-950/60', 'border-indigo-500', 'font-semibold');
+                }
+
+                const fileInfoDiv = document.createElement('div');
+                fileInfoDiv.className = 'flex items-center space-x-2';
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'selected-drive-file';
+                radio.value = file.id;
+                radio.checked = isPreselected;
+                radio.className = 'text-indigo-600 focus:ring-indigo-500';
+
+                const textSpan = document.createElement('span');
+                textSpan.className = 'text-sm text-gray-900 dark:text-gray-100';
+                textSpan.textContent = file.name;
+
+                fileInfoDiv.appendChild(radio);
+                fileInfoDiv.appendChild(textSpan);
+
+                if (isPreselected) {
+                    const badge = document.createElement('span');
+                    badge.className = 'px-2 py-0.5 text-xs font-semibold bg-indigo-600 text-white rounded-full shadow-sm ml-2';
+                    badge.textContent = 'Last Saved / Loaded';
+                    fileInfoDiv.appendChild(badge);
+                }
+
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'text-xs text-gray-500 dark:text-gray-400 ml-2';
+                dateSpan.textContent = new Date(file.modifiedTime).toLocaleString();
+
+                li.appendChild(fileInfoDiv);
+                li.appendChild(dateSpan);
+
+                li.onclick = () => {
+                    const allItems = googleDriveFileList.querySelectorAll('li');
+                    allItems.forEach(item => {
+                        item.classList.remove('bg-indigo-50', 'dark:bg-indigo-950/60', 'border-indigo-500', 'font-semibold');
+                    });
+                    const allRadios = googleDriveFileList.querySelectorAll('input[name="selected-drive-file"]');
+                    allRadios.forEach(r => { r.checked = false; });
+
+                    li.classList.add('bg-indigo-50', 'dark:bg-indigo-950/60', 'border-indigo-500', 'font-semibold');
+                    radio.checked = true;
+                    selectedSaveFileId = file.id;
+
+                    if (driveSaveModeExisting) {
+                        driveSaveModeExisting.checked = true;
+                        updateModeUI();
+                    }
+                };
+
+                googleDriveFileList.appendChild(li);
+            });
+
+            if (preselectedFound) {
+                if (driveSaveModeExisting) driveSaveModeExisting.checked = true;
+            } else {
+                if (files.length > 0) {
+                    selectedSaveFileId = files[0].id;
+                    const firstRadio = googleDriveFileList.querySelector('input[name="selected-drive-file"]');
+                    if (firstRadio) firstRadio.checked = true;
+                    const firstLi = googleDriveFileList.querySelector('li');
+                    if (firstLi) firstLi.classList.add('bg-indigo-50', 'dark:bg-indigo-950/60', 'border-indigo-500', 'font-semibold');
+                    if (driveSaveModeExisting) driveSaveModeExisting.checked = true;
+                }
+            }
+            updateModeUI();
+        }
+
+    } catch (error) {
+        console.error('Error fetching Google Drive files for save:', error);
+        if (error.status === 401 || error.result?.error?.code === 401 || (error.message && error.message.includes('401'))) {
+            clearCachedDriveToken();
+            maybeEnableGoogleDriveButtons();
+        }
+        if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Failed to load file list. You can still save as a new file.';
+        if (driveSaveModeNew) {
+            driveSaveModeNew.checked = true;
+            updateModeUI();
+        }
+    }
+
+    if (confirmSaveBtn) {
+        confirmSaveBtn.onclick = async () => {
+            const isNewMode = driveSaveModeNew && driveSaveModeNew.checked;
+
+            if (!isNewMode && !selectedSaveFileId) {
+                if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Please select a file to overwrite, or choose "Create as new file".';
+                return;
+            }
+
+            confirmSaveBtn.disabled = true;
+            if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Saving to Google Drive...';
+
+            if (isNewMode) {
+                let filename = driveNewFilenameInput ? driveNewFilenameInput.value.trim() : '';
+                if (!filename) filename = defaultFileName;
+                if (!filename.toLowerCase().endsWith('.json')) filename += '.json';
+                await executeGoogleDriveSavePost(filename);
+            } else {
+                await executeGoogleDriveSavePatch(selectedSaveFileId);
+            }
+        };
+    }
+}
+
+async function executeGoogleDriveSavePatch(fileId) {
+    const googleDriveModal = document.getElementById('google-drive-modal');
+    const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
+    const confirmSaveBtn = document.getElementById('confirm-google-drive-save-btn');
 
     try {
         const charactersToSave = prepareCharactersForSaving(characters);
-
         const content = JSON.stringify(charactersToSave, null, 2);
-        // Determine the file name based on the first character's name, or a default
-        const fileName = (characters[0].name.trim() !== '' ? characters[0].name.trim() + '_sheet' : 'character_sheets') + '.json';
         const mimeType = 'application/json';
 
-        if (currentGoogleDriveFileId) {
-            // Update existing file
-            await window.gapi.client.request({
-                path: `/upload/drive/v3/files/${currentGoogleDriveFileId}`,
-                method: 'PATCH',
-                params: { uploadType: 'media' },
-                headers: { 'Content-Type': mimeType },
-                body: content
-            });
-            showStatusMessage("Character data updated in Google Drive!");
-        } else {
-            // Create new file
-            const metadata = {
-                name: fileName,
-                mimeType: mimeType,
-                parents: ['root']
-            };
-            const boundary = '-------314159265358979323846';
-            const multipartRequestBody =
-                `--${boundary}\r\n` +
-                `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-                JSON.stringify(metadata) + `\r\n` +
-                `--${boundary}\r\n` +
-                `Content-Type: ${mimeType}\r\n\r\n` +
-                content + `\r\n` +
-                `--${boundary}--`;
+        await window.gapi.client.request({
+            path: `/upload/drive/v3/files/${fileId}`,
+            method: 'PATCH',
+            params: { uploadType: 'media' },
+            headers: { 'Content-Type': mimeType },
+            body: content
+        });
 
-            const response = await window.gapi.client.request({
-                path: '/upload/drive/v3/files?uploadType=multipart',
-                method: 'POST',
-                headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-                body: multipartRequestBody
-            });
-            setCurrentGoogleDriveFileId(response.result.id);
-            showStatusMessage("New character data saved to Google Drive!");
-        }
+        setCurrentGoogleDriveFileId(fileId);
+        if (googleDriveModal) googleDriveModal.classList.add('hidden');
+        showStatusMessage("Character data updated in Google Drive!");
         console.log("Character data saved to Google Drive!");
-        setHasUnsavedChanges(false); // Data is now saved
+        setHasUnsavedChanges(false);
     } catch (error) {
-        console.error('Error saving to Google Drive:', error);
+        console.error('Error updating Google Drive file:', error);
+        if (confirmSaveBtn) confirmSaveBtn.disabled = false;
         if (error.status === 401 || error.result?.error?.code === 401 || (error.message && error.message.includes('401'))) {
             clearCachedDriveToken();
             maybeEnableGoogleDriveButtons();
             showStatusMessage("Google Drive session expired. Please authorize again.", true);
         } else {
+            if (googleDriveModalStatus) googleDriveModalStatus.textContent = "Failed to update Google Drive file.";
+            showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
+        }
+    }
+}
+
+async function executeGoogleDriveSavePost(fileName) {
+    const googleDriveModal = document.getElementById('google-drive-modal');
+    const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
+    const confirmSaveBtn = document.getElementById('confirm-google-drive-save-btn');
+
+    try {
+        const charactersToSave = prepareCharactersForSaving(characters);
+        const content = JSON.stringify(charactersToSave, null, 2);
+        const mimeType = 'application/json';
+
+        const metadata = {
+            name: fileName,
+            mimeType: mimeType,
+            parents: ['root']
+        };
+        const boundary = '-------314159265358979323846';
+        const multipartRequestBody =
+            `--${boundary}\r\n` +
+            `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+            JSON.stringify(metadata) + `\r\n` +
+            `--${boundary}\r\n` +
+            `Content-Type: ${mimeType}\r\n\r\n` +
+            content + `\r\n` +
+            `--${boundary}--`;
+
+        const response = await window.gapi.client.request({
+            path: '/upload/drive/v3/files?uploadType=multipart',
+            method: 'POST',
+            headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+            body: multipartRequestBody
+        });
+
+        setCurrentGoogleDriveFileId(response.result.id);
+        if (googleDriveModal) googleDriveModal.classList.add('hidden');
+        showStatusMessage("New character data saved to Google Drive!");
+        console.log("Character data saved to Google Drive!");
+        setHasUnsavedChanges(false);
+    } catch (error) {
+        console.error('Error creating Google Drive file:', error);
+        if (confirmSaveBtn) confirmSaveBtn.disabled = false;
+        if (error.status === 401 || error.result?.error?.code === 401 || (error.message && error.message.includes('401'))) {
+            clearCachedDriveToken();
+            maybeEnableGoogleDriveButtons();
+            showStatusMessage("Google Drive session expired. Please authorize again.", true);
+        } else {
+            if (googleDriveModalStatus) googleDriveModalStatus.textContent = "Failed to create Google Drive file.";
             showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
         }
     }
@@ -269,19 +492,27 @@ export async function saveCharacterToGoogleDrive() {
 async function proceedToLoadGoogleDriveFile() {
     showStatusMessage("Loading files from Google Drive...");
     const googleDriveModal = document.getElementById('google-drive-modal');
+    const googleDriveModalTitle = document.getElementById('google-drive-modal-title');
+    const googleDriveSaveOptions = document.getElementById('google-drive-save-options');
+    const googleDriveSaveActions = document.getElementById('google-drive-save-actions');
     const googleDriveFileList = document.getElementById('google-drive-file-list');
     const googleDriveModalStatus = document.getElementById('google-drive-modal-status');
 
     if (googleDriveModal) googleDriveModal.classList.remove('hidden');
+    if (googleDriveModalTitle) googleDriveModalTitle.textContent = 'Load from Google Drive';
+    if (googleDriveSaveOptions) googleDriveSaveOptions.classList.add('hidden');
+    if (googleDriveSaveActions) googleDriveSaveActions.classList.add('hidden');
     if (googleDriveFileList) googleDriveFileList.innerHTML = '';
     if (googleDriveModalStatus) googleDriveModalStatus.textContent = 'Loading...';
 
+    const activeFileId = currentGoogleDriveFileId || localStorage.getItem('lastGoogleDriveFileId');
+
     try {
         const res = await window.gapi.client.drive.files.list({
-            pageSize: 20, // Fetch up to 20 files
+            pageSize: 30, // Fetch up to 30 files
             fields: 'files(id, name, modifiedTime)',
-            q: "mimeType='application/json' and fullText contains '_sheet'", // Filter for JSON files named 'character_sheets'
-            orderBy: 'modifiedTime desc' // Order by most recently modified
+            q: "mimeType='application/json'", // Filter for JSON files
+            orderBy: 'modifiedTime desc'
         });
 
         const files = res.result.files;
@@ -295,8 +526,35 @@ async function proceedToLoadGoogleDriveFile() {
 
         files.forEach(file => {
             const li = document.createElement('li');
-            li.className = 'modal-list-item';
-            li.textContent = `${file.name} (Last modified: ${new Date(file.modifiedTime).toLocaleString()})`;
+            li.className = 'p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between transition-colors rounded-md my-1 border border-transparent';
+
+            const isCurrent = (activeFileId && activeFileId === file.id);
+            if (isCurrent) {
+                li.classList.add('bg-indigo-50', 'dark:bg-indigo-950/60', 'border-indigo-500', 'font-semibold');
+            }
+
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'flex items-center space-x-2';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'text-sm text-gray-900 dark:text-gray-100';
+            nameSpan.textContent = file.name;
+            nameDiv.appendChild(nameSpan);
+
+            if (isCurrent) {
+                const badge = document.createElement('span');
+                badge.className = 'px-2 py-0.5 text-xs font-semibold bg-indigo-600 text-white rounded-full shadow-sm ml-2';
+                badge.textContent = 'Last Saved / Loaded';
+                nameDiv.appendChild(badge);
+            }
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'text-xs text-gray-500 dark:text-gray-400 ml-2';
+            dateSpan.textContent = new Date(file.modifiedTime).toLocaleString();
+
+            li.appendChild(nameDiv);
+            li.appendChild(dateSpan);
+
             li.onclick = async () => {
                 googleDriveModal.classList.add('hidden');
                 await loadGoogleDriveFileContent(file.id);
