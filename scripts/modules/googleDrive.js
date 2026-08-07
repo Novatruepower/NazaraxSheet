@@ -69,18 +69,21 @@ export function clearCachedDriveToken() {
 * Also restores cached token and updates the UI based on current authorization status.
 */
 export function maybeEnableGoogleDriveButtons() {
-    if (window.gapiInited && window.gisInited) {
-        const authorizeGoogleDriveButton = document.getElementById('authorize_google_drive_button');
-        const signoutGoogleDriveButton = document.getElementById('signout_google_drive_button');
-        const googleDriveAuthStatusSpan = document.getElementById('google-drive-auth-status');
+    const authorizeGoogleDriveButton = document.getElementById('authorize_google_drive_button');
+    const signoutGoogleDriveButton = document.getElementById('signout_google_drive_button');
+    const googleDriveAuthStatusSpan = document.getElementById('google-drive-auth-status');
 
+    const cachedToken = getCachedDriveToken();
+
+    if (window.gapiInited && window.gisInited) {
         if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.disabled = false;
 
-        let currentToken = window.gapi.client.getToken();
+        let currentToken = (window.gapi && window.gapi.client) ? window.gapi.client.getToken() : null;
         if (!currentToken || !currentToken.access_token) {
-            const cachedToken = getCachedDriveToken();
             if (cachedToken) {
-                window.gapi.client.setToken(cachedToken);
+                if (window.gapi && window.gapi.client) {
+                    window.gapi.client.setToken(cachedToken);
+                }
                 currentToken = cachedToken;
             }
         }
@@ -106,6 +109,19 @@ export function maybeEnableGoogleDriveButtons() {
             if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.classList.remove('hidden');
             if (signoutGoogleDriveButton) signoutGoogleDriveButton.classList.add('hidden');
             return false;
+        }
+    } else {
+        // GAPI / GIS not fully ready yet, but update UI immediately if cached token exists
+        if (cachedToken && cachedToken.access_token) {
+            if (googleDriveAuthStatusSpan) googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized';
+            if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.classList.add('hidden');
+            if (signoutGoogleDriveButton) signoutGoogleDriveButton.classList.remove('hidden');
+            return true;
+        } else if (localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true') {
+            if (googleDriveAuthStatusSpan) googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized (Session Expired)';
+            if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.classList.remove('hidden');
+            if (signoutGoogleDriveButton) signoutGoogleDriveButton.classList.remove('hidden');
+            return null;
         }
     }
 }

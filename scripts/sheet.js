@@ -1,4 +1,3 @@
-
 import { ExternalDataManager } from './externalDataManager.js';
 import { maybeEnableGoogleDriveButtons } from './modules/googleDrive.js';
 import { isNotLocal, initPage } from './modules/eventHandler.js';
