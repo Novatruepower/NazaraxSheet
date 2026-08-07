@@ -11,6 +11,7 @@ export const MAX_HISTORY_LENGTH = 10;
 
 // Key for local storage to persist Google Drive authorization status
 export const GOOGLE_DRIVE_AUTH_STATUS_KEY = 'googleDriveAuthorized';
+export const GOOGLE_DRIVE_TOKEN_KEY = 'googleDriveToken';
 
 //Visibility
 export const SECTION_VISIBILITY = 'section';

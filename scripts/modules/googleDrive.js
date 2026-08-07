@@ -1,12 +1,72 @@
-import { GOOGLE_DRIVE_AUTH_STATUS_KEY } from './constants.js';
+import { GOOGLE_DRIVE_AUTH_STATUS_KEY, GOOGLE_DRIVE_TOKEN_KEY } from './constants.js';
 import { setCurrentGoogleDriveFileId } from './state.js';
 import { showStatusMessage, showConfirmationModal, updateDOM, updateRemainingPointsDisplay, updatePanelPosition } from './uiUtils.js';
 import { prepareCharactersForSaving, saveCurrentStateToHistory, populateCharacterSelector, initLoadCharacter } from './characterState.js';
 import { character, characters, setCharacters, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, currentGoogleDriveFileId } from './state.js';
 
 /**
+ * Caches the Google Drive token response object in localStorage and sets it in gapi.client.
+ * @param {Object} tokenResp The token response object returned by GIS or GAPI.
+ */
+export function setCachedDriveToken(tokenResp) {
+    if (!tokenResp || !tokenResp.access_token) return;
+    const expiresInSeconds = tokenResp.expires_in ? parseInt(tokenResp.expires_in, 10) : 3600;
+    const tokenObj = {
+        access_token: tokenResp.access_token,
+        token_type: tokenResp.token_type || 'Bearer',
+        expires_in: tokenResp.expires_in,
+        scope: tokenResp.scope,
+        expires_at: Date.now() + (expiresInSeconds * 1000)
+    };
+    try {
+        localStorage.setItem(GOOGLE_DRIVE_TOKEN_KEY, JSON.stringify(tokenObj));
+        localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true');
+    } catch (e) {
+        console.error("Failed to save token to localStorage:", e);
+    }
+    if (window.gapi && window.gapi.client) {
+        window.gapi.client.setToken(tokenObj);
+    }
+}
+
+/**
+ * Retrieves the cached token from localStorage if valid and not expired.
+ * @returns {Object|null} The cached token object or null if missing/expired.
+ */
+export function getCachedDriveToken() {
+    try {
+        const stored = localStorage.getItem(GOOGLE_DRIVE_TOKEN_KEY);
+        if (!stored) return null;
+        const tokenObj = JSON.parse(stored);
+        if (!tokenObj || !tokenObj.access_token) return null;
+        // Check if token has expired (with a 60-second safety margin)
+        if (tokenObj.expires_at && Date.now() >= (tokenObj.expires_at - 60000)) {
+            console.log("Cached Google Drive token has expired.");
+            clearCachedDriveToken();
+            return null;
+        }
+        return tokenObj;
+    } catch (e) {
+        console.error('Error reading cached Google Drive token:', e);
+        clearCachedDriveToken();
+        return null;
+    }
+}
+
+/**
+ * Clears cached token and authorization status from localStorage and gapi.client.
+ */
+export function clearCachedDriveToken() {
+    localStorage.removeItem(GOOGLE_DRIVE_TOKEN_KEY);
+    localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY);
+    if (window.gapi && window.gapi.client) {
+        window.gapi.client.setToken(null);
+    }
+}
+
+/**
 * Enables Google Drive buttons if both GAPI and GIS are initialized.
-* Also updates the UI based on current authorization status and local storage.
+* Also restores cached token and updates the UI based on current authorization status.
 */
 export function maybeEnableGoogleDriveButtons() {
     if (window.gapiInited && window.gisInited) {
@@ -14,49 +74,56 @@ export function maybeEnableGoogleDriveButtons() {
         const signoutGoogleDriveButton = document.getElementById('signout_google_drive_button');
         const googleDriveAuthStatusSpan = document.getElementById('google-drive-auth-status');
 
-        authorizeGoogleDriveButton.disabled = false;
-        const currentToken = window.gapi.client.getToken();
+        if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.disabled = false;
+
+        let currentToken = window.gapi.client.getToken();
+        if (!currentToken || !currentToken.access_token) {
+            const cachedToken = getCachedDriveToken();
+            if (cachedToken) {
+                window.gapi.client.setToken(cachedToken);
+                currentToken = cachedToken;
+            }
+        }
+
         const wasAuthorizedInLocalStorage = localStorage.getItem(GOOGLE_DRIVE_AUTH_STATUS_KEY) === 'true';
 
-        if (currentToken) {
+        if (currentToken && currentToken.access_token) {
             // User is currently authorized
-            googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized';
-            authorizeGoogleDriveButton.classList.add('hidden');
-            signoutGoogleDriveButton.classList.remove('hidden');
+            if (googleDriveAuthStatusSpan) googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized';
+            if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.classList.add('hidden');
+            if (signoutGoogleDriveButton) signoutGoogleDriveButton.classList.remove('hidden');
             localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Ensure local storage is updated
             return true;
         } else if (wasAuthorizedInLocalStorage) {
-            // User was authorized previously, but session might have expired
-            googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized (Session Expired)';
-            authorizeGoogleDriveButton.classList.remove('hidden'); // Show authorize to re-auth
-            signoutGoogleDriveButton.classList.remove('hidden'); // Still allow sign out
+            // User was authorized previously, but session expired
+            if (googleDriveAuthStatusSpan) googleDriveAuthStatusSpan.textContent = 'Google Drive: Authorized (Session Expired)';
+            if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.classList.remove('hidden'); // Show authorize to re-auth
+            if (signoutGoogleDriveButton) signoutGoogleDriveButton.classList.remove('hidden'); // Still allow sign out
             return null;
         } else {
             // User is not authorized and never was (or explicitly signed out)
-            googleDriveAuthStatusSpan.textContent = 'Google Drive: Not Authorized';
-            authorizeGoogleDriveButton.classList.remove('hidden');
-            signoutGoogleDriveButton.classList.add('hidden');
+            if (googleDriveAuthStatusSpan) googleDriveAuthStatusSpan.textContent = 'Google Drive: Not Authorized';
+            if (authorizeGoogleDriveButton) authorizeGoogleDriveButton.classList.remove('hidden');
+            if (signoutGoogleDriveButton) signoutGoogleDriveButton.classList.add('hidden');
             return false;
         }
     }
 }
 
 /**
-* Handles Google Drive authorization click.
+* Handles Google Drive authorization click with callback.
 */
 export function handleGoogleDriveAuthClickThenCall(functionToCall) {
     window.tokenClient.callback = async (resp) => {
         if (resp.error) {
             console.error("Google Drive authorization error:", resp);
             showStatusMessage("Google Drive authorization failed.", true);
-            localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear local storage on error
-            window.gapi.client.setToken(''); // Clear token in gapi.client as well
+            clearCachedDriveToken();
             maybeEnableGoogleDriveButtons(); // Update UI
             return;
         }
-        // Set the token for gapi.client after successful authorization
-        window.gapi.client.setToken(resp);
-        localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
+        // Cache the token for gapi.client and localStorage
+        setCachedDriveToken(resp);
         showStatusMessage("Google Drive authorized successfully!");
         // Update UI
         if(maybeEnableGoogleDriveButtons()) {
@@ -74,14 +141,12 @@ export function handleGoogleDriveAuthClick() {
         if (resp.error) {
             console.error("Google Drive authorization error:", resp);
             showStatusMessage("Google Drive authorization failed.", true);
-            localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear local storage on error
-            window.gapi.client.setToken(''); // Clear token in gapi.client as well
+            clearCachedDriveToken();
             maybeEnableGoogleDriveButtons(); // Update UI
             return;
         }
-        // Set the token for gapi.client after successful authorization
-        window.gapi.client.setToken(resp);
-        localStorage.setItem(GOOGLE_DRIVE_AUTH_STATUS_KEY, 'true'); // Persist authorization status
+        // Cache the token for gapi.client and localStorage
+        setCachedDriveToken(resp);
         showStatusMessage("Google Drive authorized successfully!");
         maybeEnableGoogleDriveButtons(); // Update UI
     };
@@ -92,22 +157,34 @@ export function handleGoogleDriveAuthClick() {
 * Handles Google Drive sign-out.
 */
 export function handleGoogleDriveSignoutClick() {
-    const token = window.gapi.client.getToken();
-    if (token) {
-        window.google.accounts.oauth2.revoke(token.access_token);
-        window.gapi.client.setToken('');
+    const token = window.gapi.client.getToken() || getCachedDriveToken();
+    if (token && token.access_token) {
+        try {
+            window.google.accounts.oauth2.revoke(token.access_token);
+        } catch (e) {
+            console.warn("Error revoking token:", e);
+        }
     }
-    localStorage.removeItem(GOOGLE_DRIVE_AUTH_STATUS_KEY); // Clear persisted status
+    clearCachedDriveToken();
     setCurrentGoogleDriveFileId(null); // Clear current file ID on sign out
     showStatusMessage("Signed out from Google Drive.");
-    maybeEnableGoogleDriveButtons(); // Update UI */
+    maybeEnableGoogleDriveButtons(); // Update UI
 }
 
 /**
 * Saves character data to Google Drive.
 */
 export async function saveCharacterToGoogleDrive() {
-    if (!window.gapi.client.getToken()) {
+    let currentToken = window.gapi.client.getToken();
+    if (!currentToken || !currentToken.access_token) {
+        const cached = getCachedDriveToken();
+        if (cached) {
+            window.gapi.client.setToken(cached);
+            currentToken = cached;
+        }
+    }
+
+    if (!currentToken || !currentToken.access_token) {
         handleGoogleDriveAuthClickThenCall(saveCharacterToGoogleDrive);
         return;
     }
@@ -138,9 +215,6 @@ export async function saveCharacterToGoogleDrive() {
             const metadata = {
                 name: fileName,
                 mimeType: mimeType,
-                // Specify 'appDataFolder' to save in the hidden application data folder
-                // or 'root' to save in the user's main Drive folder.
-                // For this app, we'll save it to the root for easier user access.
                 parents: ['root']
             };
             const boundary = '-------314159265358979323846';
@@ -166,7 +240,13 @@ export async function saveCharacterToGoogleDrive() {
         setHasUnsavedChanges(false); // Data is now saved
     } catch (error) {
         console.error('Error saving to Google Drive:', error);
-        showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
+        if (error.status === 401 || error.result?.error?.code === 401 || (error.message && error.message.includes('401'))) {
+            clearCachedDriveToken();
+            maybeEnableGoogleDriveButtons();
+            showStatusMessage("Google Drive session expired. Please authorize again.", true);
+        } else {
+            showStatusMessage("Failed to save to Google Drive. Check console for details.", true);
+        }
     }
 }
 
@@ -210,7 +290,11 @@ async function proceedToLoadGoogleDriveFile() {
 
     } catch (error) {
         console.error('Error listing Google Drive files:', error);
-        googleDriveModalStatus.textContent = "Failed to load files from Google Drive. Check console for details.";
+        if (error.status === 401 || error.result?.error?.code === 401 || (error.message && error.message.includes('401'))) {
+            clearCachedDriveToken();
+            maybeEnableGoogleDriveButtons();
+        }
+        if (googleDriveModalStatus) googleDriveModalStatus.textContent = "Failed to load files from Google Drive. Check console for details.";
         showStatusMessage("Failed to load files from Google Drive.", true);
     }
 }
@@ -219,7 +303,16 @@ async function proceedToLoadGoogleDriveFile() {
 * Loads character data from Google Drive.
 */
 export async function loadCharacterFromGoogleDrive() {
-    if (!window.gapi.client.getToken()) {
+    let currentToken = window.gapi.client.getToken();
+    if (!currentToken || !currentToken.access_token) {
+        const cached = getCachedDriveToken();
+        if (cached) {
+            window.gapi.client.setToken(cached);
+            currentToken = cached;
+        }
+    }
+
+    if (!currentToken || !currentToken.access_token) {
         handleGoogleDriveAuthClickThenCall(loadCharacterFromGoogleDrive);
         return;
     }
@@ -263,6 +356,11 @@ async function loadGoogleDriveFileContent(fileId) {
         updateRemainingPointsDisplay(); // Reset remaining points display
     } catch (error) {
         console.error('Error loading Google Drive file content:', error);
+        if (error.status === 401 || error.result?.error?.code === 401 || (error.message && error.message.includes('401'))) {
+            clearCachedDriveToken();
+            maybeEnableGoogleDriveButtons();
+        }
         showStatusMessage("Failed to load character data from Google Drive. Check console for details.", true);
     }
 }
+
