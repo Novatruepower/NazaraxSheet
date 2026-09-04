@@ -15,3 +15,5 @@ else if (ability.formulas) {
         }
     }
 }
+
+Change BaseRacialPower because of mutant

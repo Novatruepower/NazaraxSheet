@@ -870,6 +870,19 @@ export function attachEventListeners() {
     const directAddEffectForm = document.getElementById('direct-add-effect-form');
     if (directAddEffectForm) directAddEffectForm.addEventListener('submit', handleDirectAddEffectSubmit);
 
+    const directEffectAppliesToSelect = document.getElementById('direct-effect-applies-to');
+    const directEffectCustomAppliesToInput = document.getElementById('direct-effect-applies-to-custom');
+    if (directEffectAppliesToSelect && directEffectCustomAppliesToInput) {
+        directEffectAppliesToSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                directEffectCustomAppliesToInput.classList.remove('hidden');
+                directEffectCustomAppliesToInput.focus();
+            } else {
+                directEffectCustomAppliesToInput.classList.add('hidden');
+            }
+        });
+    }
+
     const directEffectDurationTypeSelect = document.getElementById('direct-effect-duration-type');
     if (directEffectDurationTypeSelect) {
         directEffectDurationTypeSelect.addEventListener('change', (e) => {

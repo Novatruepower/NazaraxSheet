@@ -8,7 +8,7 @@ import { recalculateCharacterDerivedProperties } from './characterState.js';
 function pushRaceFootNotes(race, dataKey, numbersFootNotes) {
     const raceData = ExternalDataManager.getRaceData(race);
 
-    if (raceData.foot_notes && raceData.foot_notes[dataKey]) {
+    if (raceData && raceData.foot_notes && raceData.foot_notes[dataKey]) {
         const Keys = Object.keys(raceData.foot_notes[dataKey]);
         Keys.forEach(key => {
             numbersFootNotes[key] = dataKey;
@@ -147,7 +147,11 @@ function renderRegularPassives(regularPassives, regularPassivesList, numbersFoot
 
             if (abilityData.foot_notes) {
                 abilityData.foot_notes.forEach(key => {
-                    numbersFootNotes[key] = true;
+                    if (abilityData.sourceRace) {
+                        numbersFootNotes[key] = { race: abilityData.sourceRace, category: 'passives', key };
+                    } else if (numbersFootNotes[key] === undefined) {
+                        numbersFootNotes[key] = true;
+                    }
                 });
             }
         }
@@ -177,8 +181,25 @@ function renderFootNotes(race, numbersFootNotes, container) {
             element.id = footnoteId;
             element.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
             const paragraphe = document.createElement('p');
-            const footNoteData = isNaN(numbersFootNotes[key]) ? footNotesData[numbersFootNotes[key]][key] : footNotesData[key];
-            paragraphe.innerHTML = `${ExternalDataManager.formatString(footNoteData, dices, [])}`;
+            let footNoteData = null;
+            let currentDices = dices;
+            if (typeof numbersFootNotes[key] === 'object' && numbersFootNotes[key] !== null) {
+                const sRace = numbersFootNotes[key].race;
+                const sCategory = numbersFootNotes[key].category;
+                const sFootNotes = ExternalDataManager.getRaceFootNotes(sRace);
+                currentDices = ExternalDataManager.getRaceDices(sRace) || dices;
+                footNoteData = (sCategory && sFootNotes && sFootNotes[sCategory] && sFootNotes[sCategory][key])
+                    ? sFootNotes[sCategory][key]
+                    : (sFootNotes && sFootNotes[key] ? sFootNotes[key] : null);
+            } else if (isNaN(numbersFootNotes[key])) {
+                footNoteData = footNotesData && footNotesData[numbersFootNotes[key]] ? footNotesData[numbersFootNotes[key]][key] : null;
+            } else {
+                footNoteData = footNotesData ? footNotesData[key] : null;
+            }
+
+            if (footNoteData) {
+                paragraphe.innerHTML = `${ExternalDataManager.formatString(footNoteData, currentDices, [])}`;
+            }
             paragraphe.id = footnoteParaId;
             paragraphe.className = 'text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors';
 
@@ -283,6 +304,37 @@ function hasConflict(char, category, uniqueGroup, statName, slotId) {
     return conflict;
 }
 
+// Check all slots within this category to see if the skill is already chosen by a different slot
+function hasSkillConflict(char, category, skillName, slotId) {
+    if (!skillName || !char.StatChoices || !char.StatChoices[category]) return false;
+    for (const uId in char.StatChoices[category]) {
+        for (const existingSlotId in char.StatChoices[category][uId]) {
+            if (existingSlotId === slotId) continue;
+            const choice = char.StatChoices[category][uId][existingSlotId];
+            if (choice && choice.type === 'mutant_skill_choice' && choice.skillName === skillName) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// Retrieves all skills chosen by the Mutant race
+function getMutantChosenSkills(char) {
+    const skills = [];
+    if (char.StatChoices && char.StatChoices['Mutant']) {
+        for (const uId in char.StatChoices['Mutant']) {
+            for (const slotId in char.StatChoices['Mutant'][uId]) {
+                const choice = char.StatChoices['Mutant'][uId][slotId];
+                if (choice && choice.type === 'mutant_skill_choice' && choice.skillName && choice.skillRace) {
+                    skills.push(choice);
+                }
+            }
+        }
+    }
+    return skills;
+}
+
 function isUsableApplicableStats(applicableStats, category, unique, slotId) {
     let count = 0;
     for (const statName of applicableStats) {
@@ -335,6 +387,12 @@ export function handleRevertChoices(char, category, uniqueIdentifier) {
                         delete char.StatsAffected[category][uniqueIdentifier][choice.statName];
                     }
                 }
+            } else if (choice.type === 'mutant_skill_choice' && choice.skillName && choice.skillType === 'passive') {
+                const raceData = ExternalDataManager.getRaceData(choice.skillRace);
+                const rawAbility = raceData?.regularPassives?.[choice.skillName];
+                if (rawAbility) {
+                    removeTemporaryEffectByIdentifier({ identifier: choice.skillName, formulas: rawAbility.formulas }, category);
+                }
             }
         }
         delete char.StatChoices[category][uniqueIdentifier];
@@ -369,6 +427,12 @@ export function removePassivesLevel() {
                                 if (character.StatsAffected[category][uniqueIdentifier][choice.statName].size === 0) {
                                     delete character.StatsAffected[category][uniqueIdentifier][choice.statName];
                                 }
+                            }
+                        } else if (choice.type === 'mutant_skill_choice' && choice.skillName && choice.skillType === 'passive') {
+                            const raceData = ExternalDataManager.getRaceData(choice.skillRace);
+                            const rawAbility = raceData?.regularPassives?.[choice.skillName];
+                            if (rawAbility) {
+                                removeTemporaryEffectByIdentifier({ identifier: choice.skillName, formulas: rawAbility.formulas }, category);
                             }
                         }
 
@@ -412,34 +476,53 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
     console.log("--- processRacialChoiceChange called ---");
     console.log("Input parameters:", { category, uniqueIdentifier, slotId, newChoiceData });
 
-    character.StatChoices[category] = character.StatChoices[category] || {};
-    character.StatChoices[category][uniqueIdentifier] = character.StatChoices[category][uniqueIdentifier] || {};
-    character.StatsAffected[category] = character.StatsAffected[category] || {};
-    character.StatsAffected[category][uniqueIdentifier] = character.StatsAffected[category][uniqueIdentifier] || {};
-
-    const previousChoice = character.StatChoices[category][uniqueIdentifier][slotId];
-
-    // 1. Revert previous effect if any
-    if (previousChoice) {
-        if (previousChoice.statName) {
-            revertChoiceRacialChange(character, previousChoice.statName, previousChoice);
-            if (character.StatsAffected[category] && character.StatsAffected[category][uniqueIdentifier] && character.StatsAffected[category][uniqueIdentifier][previousChoice.statName]) {
-                character.StatsAffected[category][uniqueIdentifier][previousChoice.statName].delete(slotId);
-                if (character.StatsAffected[category][uniqueIdentifier][previousChoice.statName].size === 0) {
-                    delete character.StatsAffected[category][uniqueIdentifier][previousChoice.statName];
-                }
+    // Find previous choice across any uniqueIdentifier in this category for slotId
+    let previousUid = null;
+    let previousChoice = null;
+    if (character.StatChoices[category]) {
+        for (const uId in character.StatChoices[category]) {
+            if (character.StatChoices[category][uId] && character.StatChoices[category][uId][slotId]) {
+                previousUid = uId;
+                previousChoice = character.StatChoices[category][uId][slotId];
+                break;
             }
         }
+    }
 
-        delete character.StatChoices[category][uniqueIdentifier][slotId];
-        console.log(`  Removed previous choice for slot ${slotId}.`);
+    // 1. Revert previous effect if any
+    if (previousChoice && previousUid) {
+        if (previousChoice.statName) {
+            revertChoiceRacialChange(character, previousChoice.statName, previousChoice);
+            if (character.StatsAffected[category] && character.StatsAffected[category][previousUid] && character.StatsAffected[category][previousUid][previousChoice.statName]) {
+                character.StatsAffected[category][previousUid][previousChoice.statName].delete(slotId);
+                if (character.StatsAffected[category][previousUid][previousChoice.statName].size === 0) {
+                    delete character.StatsAffected[category][previousUid][previousChoice.statName];
+                }
+            }
+        } else if (previousChoice.type === 'mutant_skill_choice' && previousChoice.skillName && previousChoice.skillType === 'passive') {
+            const raceData = ExternalDataManager.getRaceData(previousChoice.skillRace);
+            const rawAbility = raceData?.regularPassives?.[previousChoice.skillName];
+            const identifier = `${previousChoice.skillRace}-${previousChoice.skillName}`;
+            removeTemporaryEffectByIdentifier({ identifier: identifier, formulas: rawAbility?.formulas }, category);
+            removeTemporaryEffectByIdentifier({ identifier: previousChoice.skillName, formulas: rawAbility?.formulas }, category);
+        }
+
+        delete character.StatChoices[category][previousUid][slotId];
+        if (Object.keys(character.StatChoices[category][previousUid]).length === 0) {
+            delete character.StatChoices[category][previousUid];
+        }
+        console.log(`  Removed previous choice for slot ${slotId} from group ${previousUid}.`);
     }
 
     // 2. Apply new choice if a valid newChoiceData is provided
     if (newChoiceData && newChoiceData.type) {
+        const targetUid = uniqueIdentifier || (newChoiceData.type === 'mutant_skill_choice' ? 'mutant_skill_choice' : 'default');
+        character.StatChoices[category] = character.StatChoices[category] || {};
+        character.StatChoices[category][targetUid] = character.StatChoices[category][targetUid] || {};
+        character.StatsAffected[category] = character.StatsAffected[category] || {};
+        character.StatsAffected[category][targetUid] = character.StatsAffected[category][targetUid] || {};
+
         // Check for conflicts only if a stat is being affected and it's not the same slot re-selecting itself
-        // The conflict check should be based on the 'unique' group, not just the stat name within the category.
-        // If a choice has a 'unique' property, it means only one of those choices can affect a given stat.
         if (newChoiceData.statName && newChoiceData.unique && hasConflict(character, category, newChoiceData.unique, newChoiceData.statName, slotId)) {
             showStatusMessage(`'${newChoiceData.statName}' has already been affected by another choice in the '${newChoiceData.unique}' group. Please select a different stat.`, true);
             // Revert the dropdowns to previous state (if possible)
@@ -450,12 +533,23 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
             return; // Stop processing this choice
         }
 
+        if (newChoiceData.type === 'mutant_skill_choice') {
+            if (newChoiceData.skillName && hasSkillConflict(character, category, newChoiceData.skillName, slotId)) {
+                showStatusMessage(`'${newChoiceData.skillName}' has already been chosen in another slot.`, true);
+                const skillSelectElement = document.getElementById(slotId + '-skill');
+                if (skillSelectElement) skillSelectElement.value = previousChoice ? `${previousChoice.skillRace}:${previousChoice.skillType}:${previousChoice.skillName}` : '';
+                return;
+            }
+        }
+
         // Apply stat-modifying changes
         if (newChoiceData.statName) {
             applyChoiceRacialChange(character, newChoiceData.statName, newChoiceData.value, newChoiceData.calc);
-            character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName] = character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName] || new Set();
-            character.StatsAffected[category][uniqueIdentifier][newChoiceData.statName].add(slotId);
+            character.StatsAffected[category][targetUid][newChoiceData.statName] = character.StatsAffected[category][targetUid][newChoiceData.statName] || new Set();
+            character.StatsAffected[category][targetUid][newChoiceData.statName].add(slotId);
             console.log(`  Added '${newChoiceData.statName}' to StatsAffected for slot ${slotId}.`);
+        } else if (newChoiceData.type === 'mutant_skill_choice') {
+            // Skill choice is tracked in StatChoices and dynamically rendered into passives or actives
         } else {
             // Handle non-stat affecting choices (e.g., skill_choice)
             if (newChoiceData.type === 'skill_choice') {
@@ -467,7 +561,7 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
             newChoiceData.level = null;
         }
 
-        character.StatChoices[category][uniqueIdentifier][slotId] = newChoiceData;
+        character.StatChoices[category][targetUid][slotId] = newChoiceData;
     }
 
     recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
@@ -484,9 +578,10 @@ function processRacialChoiceChange(category, uniqueIdentifier, slotId, newChoice
  * @param {object} newSelectedOptionData The data for the newly selected option (from abilityData.options).
  * @param {string|null} statToAffect The name of the stat to affect, if applicable.
  * @param {string|null} newUniqueIdentifier The unique identifier for this choice group.
+ * @param {object|null} skillData Optional data for skill choices { skillRace, skillType, skillName }.
  * @returns {object|null} The new choice data object, or null if newType is falsy.
  */
-function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, statToAffect, newUniqueIdentifier) {
+function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, statToAffect, newUniqueIdentifier, skillData) {
     const levelKeys = abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b) : [];
     const actualLevel = levelKeys[indexLevel] !== undefined ? levelKeys[indexLevel] : null;
 
@@ -500,13 +595,98 @@ function initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOpt
         unique: newUniqueIdentifier // Pass the unique identifier
     } : null;
 
+    if (newChoiceData && newType === 'mutant_skill_choice') {
+        newChoiceData.unique = newUniqueIdentifier || 'mutant_skill_choice';
+        newChoiceData.skillRace = skillData ? skillData.skillRace : null;
+        newChoiceData.skillType = skillData ? skillData.skillType : null;
+        newChoiceData.skillName = skillData ? skillData.skillName : null;
+    }
+
     return newChoiceData;
 }
 
-function optionsSelector(race, category, abilityName, abilityData, setsOptions, manualPassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel) {
-    const needsStatSelection = applicableStatsLength > 0;
+function populateSkillOptions(skillSelect, slotId, indexLevel, abilityData, selectedSkillValue, category) {
+    if (!skillSelect) return;
+    skillSelect.innerHTML = '<option value="">-- Select a Skill --</option>';
+
+    const levelKeys = abilityData && abilityData.levels ? Object.keys(abilityData.levels).map(Number).sort((a, b) => a - b) : [];
+    const unlockLevel = (indexLevel !== undefined && levelKeys[indexLevel] !== undefined) ? levelKeys[indexLevel] : (character.level || 1);
+
+    const races = ExternalDataManager._data ? ExternalDataManager._data.Races : null;
+    if (!races) return;
+
+    for (const raceName in races) {
+        if (raceName === 'Mutant') continue;
+        const rData = ExternalDataManager.getRaceData(raceName) || races[raceName];
+        if (!rData) continue;
+        const eligibleSkills = [];
+
+        if (rData.regularPassives) {
+            for (const passiveName in rData.regularPassives) {
+                const passive = rData.regularPassives[passiveName];
+                const reqLevel = Number(passive.level !== undefined ? passive.level : 1);
+                // Rule: Must meet skill's level requirement at time of unlocking, and all level 100 skills are banned
+                if (reqLevel <= unlockLevel && reqLevel < 100) {
+                    eligibleSkills.push({
+                        race: raceName,
+                        type: 'passive',
+                        name: passiveName,
+                        level: reqLevel
+                    });
+                }
+            }
+        }
+
+        if (rData.actives) {
+            for (const activeName in rData.actives) {
+                const active = rData.actives[activeName];
+                const reqLevel = Number(active.level !== undefined ? active.level : 1);
+                // Rule: Must meet skill's level requirement at time of unlocking, and all level 100 skills are banned
+                if (reqLevel <= unlockLevel && reqLevel < 100) {
+                    eligibleSkills.push({
+                        race: raceName,
+                        type: 'active',
+                        name: activeName,
+                        level: reqLevel
+                    });
+                }
+            }
+        }
+
+        if (eligibleSkills.length > 0) {
+            eligibleSkills.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = `${raceName}`;
+
+            eligibleSkills.forEach(s => {
+                const opt = document.createElement('option');
+                const val = `${s.race}:${s.type}:${s.name}`;
+                opt.value = val;
+                opt.textContent = `${s.name} (${s.type === 'passive' ? 'Passive' : 'Active'} - Lv. ${s.level})`;
+
+                const isConflict = hasSkillConflict(character, category, s.name, slotId);
+                opt.disabled = isConflict;
+                if (val === selectedSkillValue) {
+                    opt.selected = true;
+                }
+                optgroup.appendChild(opt);
+            });
+
+            skillSelect.appendChild(optgroup);
+        }
+    }
+
+    if (selectedSkillValue) {
+        skillSelect.value = selectedSkillValue;
+    }
+}
+
+function optionsSelector(race, category, abilityName, abilityData, setsOptions, manualPassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel, selectedSkillValue) {
+    const hasStatOption = setsOptions.some(opt => opt.applicableStats && opt.applicableStats.length > 0);
+    const hasSkillOption = setsOptions.some(opt => opt.type === 'mutant_skill_choice');
     const choiceDiv = document.createElement('div');
-    choiceDiv.className = 'flex flex-col space-y-1 border border-gray-200 dark:border-gray-700 rounded-md';
+    choiceDiv.className = 'flex flex-col space-y-1 border border-gray-200 dark:border-gray-700 rounded-md p-2';
     let innerHTML = `
             <div class="flex items-center space-x-2">
                 <label for="${slotId}-type" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">${abilityName} ${displayLevel}:</label>
@@ -516,15 +696,19 @@ function optionsSelector(race, category, abilityName, abilityData, setsOptions, 
 
     setsOptions.forEach(opt => {
         const isOptionDisabled = opt.applicableStats && !isUsableApplicableStats(opt.applicableStats, category, opt.unique, slotId);
-        innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${opt.label}</option>`;
+        const cleanLabel = opt.label ? opt.label.replace(/<[^>]*>/g, '').trim() : '';
+        innerHTML += `<option value="${opt.type}" ${opt.type === selectedOptionType ? 'selected' : ''} ${isOptionDisabled ? 'disabled' : ''}>${cleanLabel}</option>`;
     });
 
-    let statSelectionHtml = '';
+    innerHTML +=
+            `</select>
+                <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
+        </div>`;
 
-    if (needsStatSelection) {
-        const hide = applicableStatsLength === 1 ? 'hidden' : ''; // Hide if only one applicable stat
-        statSelectionHtml = `
-            <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hide}">
+    if (hasStatOption) {
+        const hideStat = (selectedOptionData && selectedOptionData.applicableStats && selectedOptionData.applicableStats.length > 1 && selectedOptionType !== 'mutant_skill_choice') ? '' : 'hidden';
+        innerHTML += `
+            <div id="${slotId}-stat-selection" class="flex items-center space-x-2 ${hideStat}">
                 <label for="${slotId}-stat" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Stat:</label>
                 <select id="${slotId}-stat" class="${race}-choice-stat-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">-- Select a Stat --</option>
@@ -532,12 +716,16 @@ function optionsSelector(race, category, abilityName, abilityData, setsOptions, 
             </div>`;
     }
 
-    innerHTML +=
-            `</select>
-                <button type="button" data-choice-id="${slotId}-type" data-category="${category}" data-unique-identifier="${currentUniqueIdentifier || ''}" class="clear-${race}-choice-btn ml-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">Clear</button>
-        </div>
-        ${statSelectionHtml}
-    `;
+    if (hasSkillOption) {
+        const hideSkill = selectedOptionType === 'mutant_skill_choice' ? '' : 'hidden';
+        innerHTML += `
+            <div id="${slotId}-skill-selection" class="flex items-center space-x-2 ${hideSkill}">
+                <label for="${slotId}-skill" class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Target Skill:</label>
+                <select id="${slotId}-skill" class="${race}-choice-skill-select flex-grow rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Select a Skill --</option>
+                </select>
+            </div>`;
+    }
 
     choiceDiv.innerHTML = innerHTML;
     manualPassivesList.appendChild(choiceDiv);
@@ -545,9 +733,12 @@ function optionsSelector(race, category, abilityName, abilityData, setsOptions, 
     const typeSelect = choiceDiv.querySelector(`#${slotId}-type`);
     const statSelectionDiv = choiceDiv.querySelector(`#${slotId}-stat-selection`);
     const statSelect = choiceDiv.querySelector(`#${slotId}-stat`);
+    const skillSelectionDiv = choiceDiv.querySelector(`#${slotId}-skill-selection`);
+    const skillSelect = choiceDiv.querySelector(`#${slotId}-skill`);
 
     // Populate stat dropdown if needed on initial render
-    if (statSelect && needsStatSelection) {
+    if (statSelect && selectedOptionData && selectedOptionData.applicableStats && selectedOptionData.applicableStats.length > 1 && selectedOptionType !== 'mutant_skill_choice') {
+        statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
         selectedOptionData.applicableStats.forEach(statName => {
             const option = document.createElement('option');
             option.value = statName;
@@ -558,43 +749,85 @@ function optionsSelector(race, category, abilityName, abilityData, setsOptions, 
         statSelect.value = selectedStatName;
     }
 
-    // Event listener for type change (to show/hide stat selection)
+    // Populate skill dropdown on initial render
+    if (skillSelect && hasSkillOption) {
+        populateSkillOptions(skillSelect, slotId, indexLevel, abilityData, selectedSkillValue, category);
+    }
+
+    // Event listener for type change
     if (typeSelect) {
         typeSelect.addEventListener('change', (e) => {
             const newType = e.target.value;
             const newSelectedOptionData = setsOptions.find(opt => opt.type === newType);
-            const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
-            const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
-            const newUniqueIdentifier = newSelectedOptionData ? newSelectedOptionData.unique : null;
+            const newUniqueIdentifier = newSelectedOptionData ? (newSelectedOptionData.unique || (newType === 'mutant_skill_choice' ? 'mutant_skill_choice' : null)) : (newType === 'mutant_skill_choice' ? 'mutant_skill_choice' : null);
 
-            if (statSelectionDiv) {
-                if (newNeedsStatSelection) {
-                    if (newApplicableStatsLength > 1) {
-                        statSelectionDiv.classList.remove('hidden');
-                    } else {
-                        statSelectionDiv.classList.add('hidden'); // Hide if only one applicable stat
-                    }
-
-                    // Repopulate stat dropdown for this specific select
-                    statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
-                    newSelectedOptionData.applicableStats.forEach(statName => {
-                        const opt = document.createElement('option');
-                        opt.value = statName;
-                        opt.textContent = statName;
-                        opt.disabled = hasConflict(character, category, newUniqueIdentifier, statName, slotId);
-                        statSelect.appendChild(opt);
-                    });
-
-                    // Keep current selection if valid, otherwise clear
-                    statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
-                } else {
-                    statSelectionDiv.classList.add('hidden');
-                    if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
-                }
+            if (!newType) {
+                if (statSelectionDiv) statSelectionDiv.classList.add('hidden');
+                if (statSelect) statSelect.value = '';
+                if (skillSelectionDiv) skillSelectionDiv.classList.add('hidden');
+                if (skillSelect) skillSelect.value = '';
+                processRacialChoiceChange(category, currentUniqueIdentifier || newUniqueIdentifier, slotId, null);
+                return;
             }
 
-            const statToAffect = newApplicableStatsLength === 1 ? (newSelectedOptionData ? newSelectedOptionData.applicableStats[0] : null) : (statSelect ? statSelect.value : null);
-            processRacialChoiceChange(category, newUniqueIdentifier, slotId, initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, statToAffect, newUniqueIdentifier));
+            if (newType === 'mutant_skill_choice') {
+                if (statSelectionDiv) statSelectionDiv.classList.add('hidden');
+                if (statSelect) statSelect.value = '';
+                if (skillSelectionDiv) {
+                    skillSelectionDiv.classList.remove('hidden');
+                    populateSkillOptions(skillSelect, slotId, indexLevel, abilityData, skillSelect ? skillSelect.value : '', category);
+                }
+
+                const currentSkillVal = skillSelect ? skillSelect.value : '';
+                let skillData = null;
+                if (currentSkillVal) {
+                    const [sRace, sType, sName] = currentSkillVal.split(':');
+                    skillData = {
+                        skillRace: sRace,
+                        skillType: sType,
+                        skillName: sName
+                    };
+                }
+                const choiceData = initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, null, newUniqueIdentifier, skillData);
+                processRacialChoiceChange(category, newUniqueIdentifier, slotId, choiceData);
+            } else {
+                if (skillSelectionDiv) {
+                    skillSelectionDiv.classList.add('hidden');
+                    if (skillSelect) skillSelect.value = '';
+                }
+
+                const newApplicableStatsLength = newSelectedOptionData && newSelectedOptionData.applicableStats ? newSelectedOptionData.applicableStats.length : 0;
+                const newNeedsStatSelection = newSelectedOptionData && newApplicableStatsLength > 0;
+
+                if (statSelectionDiv) {
+                    if (newNeedsStatSelection) {
+                        if (newApplicableStatsLength > 1) {
+                            statSelectionDiv.classList.remove('hidden');
+                        } else {
+                            statSelectionDiv.classList.add('hidden'); // Hide if only one applicable stat
+                        }
+
+                        // Repopulate stat dropdown for this specific select
+                        statSelect.innerHTML = '<option value="">-- Select a Stat --</option>';
+                        newSelectedOptionData.applicableStats.forEach(statName => {
+                            const opt = document.createElement('option');
+                            opt.value = statName;
+                            opt.textContent = statName;
+                            opt.disabled = hasConflict(character, category, newUniqueIdentifier, statName, slotId);
+                            statSelect.appendChild(opt);
+                        });
+
+                        // Keep current selection if valid, otherwise clear
+                        statSelect.value = selectedStatName && newSelectedOptionData.applicableStats.includes(selectedStatName) ? selectedStatName : '';
+                    } else {
+                        statSelectionDiv.classList.add('hidden');
+                        if (statSelect) statSelect.value = ''; // Clear stat selection if type changes away from stat
+                    }
+                }
+
+                const statToAffect = newApplicableStatsLength === 1 ? (newSelectedOptionData ? newSelectedOptionData.applicableStats[0] : null) : (statSelect ? statSelect.value : null);
+                processRacialChoiceChange(category, newUniqueIdentifier, slotId, initEventNewChoiceData(newType, abilityData, indexLevel, newSelectedOptionData, statToAffect, newUniqueIdentifier));
+            }
 
             // Update the clear button's data-unique-identifier
             const clearButton = e.target.closest('.flex').querySelector(`.clear-${race}-choice-btn`);
@@ -612,6 +845,29 @@ function optionsSelector(race, category, abilityName, abilityData, setsOptions, 
             const currentUniqueIdentifierForStat = currentSelectedOptionData ? currentSelectedOptionData.unique : null;
 
             processRacialChoiceChange(category, currentUniqueIdentifierForStat, slotId, initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, e.target.value, currentUniqueIdentifierForStat));
+        });
+    }
+
+    // Event listener for skill change
+    if (skillSelect) {
+        skillSelect.addEventListener('change', (e) => {
+            const currentType = typeSelect.value;
+            const currentSelectedOptionData = setsOptions.find(opt => opt.type === currentType);
+            const currentUniqueIdentifier = (currentSelectedOptionData && currentSelectedOptionData.unique) ? currentSelectedOptionData.unique : 'mutant_skill_choice';
+            const val = e.target.value;
+
+            if (val) {
+                const [sRace, sType, sName] = val.split(':');
+                const choiceData = initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, null, currentUniqueIdentifier, {
+                    skillRace: sRace,
+                    skillType: sType,
+                    skillName: sName
+                });
+                processRacialChoiceChange(category, currentUniqueIdentifier, slotId, choiceData);
+            } else {
+                const choiceData = initEventNewChoiceData(currentType, abilityData, indexLevel, currentSelectedOptionData, null, currentUniqueIdentifier, null);
+                processRacialChoiceChange(category, currentUniqueIdentifier, slotId, choiceData);
+            }
         });
     }
 }
@@ -652,11 +908,14 @@ function renderTagManualRacialPassive(race, category, abilityKey, abilityData, a
 
         const selectedOptionType = currentChoice ? currentChoice.type : '';
         const selectedStatName = currentChoice && currentChoice.statName ? currentChoice.statName : '';
+        const selectedSkillValue = (currentChoice && currentChoice.type === 'mutant_skill_choice' && currentChoice.skillRace && currentChoice.skillType && currentChoice.skillName)
+            ? `${currentChoice.skillRace}:${currentChoice.skillType}:${currentChoice.skillName}`
+            : '';
         const selectedOptionData = newAvailableOptions.find(opt => opt.type === selectedOptionType); // Find the full option data
         const applicableStatsLength = selectedOptionData && selectedOptionData.applicableStats ? selectedOptionData.applicableStats.length : 0;
 
         if (newAvailableOptions[0].setsOption) {
-            optionsSelector(race, category, abilityKey, abilityData, newAvailableOptions.filter(opt => opt.setsOption), manualPassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength);
+            optionsSelector(race, category, abilityKey, abilityData, newAvailableOptions.filter(opt => opt.setsOption), manualPassivesList, slotId, currentUniqueIdentifier, displayLevel, selectedOptionData, selectedOptionType, selectedStatName, applicableStatsLength, indexLevel, selectedSkillValue);
         } else {
             optionChoices(race, category, newAvailableOptions[0], manualPassivesList, slotId, currentUniqueIdentifier, selectedStatName, abilityData, indexLevel);
         }
@@ -767,14 +1026,34 @@ function renderRegularRacialPassives(oldRace, passivesContainer) {
         removeTemporaryEffectByCategory(oldRegularPassives, oldRace);
     }
 
-    const regularPassives = ExternalDataManager.getRaceRegularPassives(race, character.level);
+    const regularPassives = ExternalDataManager.getRaceRegularPassives(race, character.level) || {};
+    const combinedPassives = { ...regularPassives };
 
-    if (regularPassives && Object.keys(regularPassives).length > 0) {
+    if (race === 'Mutant') {
+        const chosenSkills = getMutantChosenSkills(character);
+        chosenSkills.forEach(choice => {
+            if (choice.skillType === 'passive') {
+                const processed = ExternalDataManager.getRaceRegularPassives(choice.skillRace, character.level);
+                const passiveData = processed?.[choice.skillName] || ExternalDataManager.getRaceData(choice.skillRace)?.regularPassives?.[choice.skillName];
+                if (passiveData) {
+                    combinedPassives[choice.skillName] = {
+                        ...passiveData,
+                        sourceRace: choice.skillRace,
+                        identifier: `${choice.skillRace}-${choice.skillName}`,
+                        name: `${passiveData.name || choice.skillName} (${choice.skillRace})`
+                    };
+                }
+            }
+        });
+    }
+
+    if (combinedPassives && Object.keys(combinedPassives).length > 0) {
+        passivesContainer.classList.remove('hidden');
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'passives', numbersFootNotes);
         renderContainer(passivesContainer, "Regular passives", id, numbersFootNotes);
         const regularPassivesList = document.getElementById(`${race}-${id}-list`);
-        renderRegularPassives(regularPassives, regularPassivesList, numbersFootNotes);
+        renderRegularPassives(combinedPassives, regularPassivesList, numbersFootNotes);
         renderFootNotes(race, numbersFootNotes, regularPassivesList);
         updateSpecificHtmlVisibility('element');
     } else {
@@ -819,18 +1098,38 @@ function renderProperties(wrapper, innerHTML, className) {
 function renderRacialActives(activesContainer) {
     const race = character.race;
     const id = 'racial-actives';
-    const racialActives = ExternalDataManager.getRaceActives(race, character.level);
+    const racialActives = ExternalDataManager.getRaceActives(race, character.level) || {};
+    const combinedActives = { ...racialActives };
 
-    if (racialActives && Object.keys(racialActives).length > 0) {
+    if (race === 'Mutant') {
+        const chosenSkills = getMutantChosenSkills(character);
+        chosenSkills.forEach(choice => {
+            if (choice.skillType === 'active') {
+                const processed = ExternalDataManager.getRaceActives(choice.skillRace, character.level);
+                const activeData = processed?.[choice.skillName] || ExternalDataManager.getRaceData(choice.skillRace)?.actives?.[choice.skillName];
+                if (activeData) {
+                    combinedActives[choice.skillName] = {
+                        ...activeData,
+                        sourceRace: choice.skillRace,
+                        identifier: `${choice.skillRace}-${choice.skillName}`,
+                        name: `${activeData.name || choice.skillName} (${choice.skillRace})`
+                    };
+                }
+            }
+        });
+    }
+
+    if (combinedActives && Object.keys(combinedActives).length > 0) {
+        activesContainer.classList.remove('hidden');
         const numbersFootNotes = {};
         pushRaceFootNotes(race, 'actives', numbersFootNotes);
         renderContainer(activesContainer, 'Racial Actives', id, numbersFootNotes);
         const racialActiveList = document.getElementById(`${race}-${id}-list`);
 
-        for (const abilityKey in racialActives) {
-            if (racialActives.hasOwnProperty(abilityKey)) {
-                const abilityData = racialActives[abilityKey];
-                const abilityTarget = abilityData.identifier;
+        for (const abilityKey in combinedActives) {
+            if (combinedActives.hasOwnProperty(abilityKey)) {
+                const abilityData = combinedActives[abilityKey];
+                const abilityTarget = abilityData.identifier || `${race}-${abilityKey.replace(/\s+/g, '-')}`;
 
                 const abilityWrapper = document.createElement('div');
                 abilityWrapper.className = 'group bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md shadow-sm transition hover:shadow-md p-4 space-y-2';
@@ -840,7 +1139,7 @@ function renderRacialActives(activesContainer) {
 
                 const abilityTitle = document.createElement('h2');
                 abilityTitle.className = 'text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors';
-                abilityTitle.textContent = abilityData.name;
+                abilityTitle.textContent = abilityData.name || abilityKey;
 
                 const toggableBtn = document.createElement('button');
                 toggableBtn.className = 'toggle-element-btn p-1 rounded-md text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition duration-200';
@@ -885,7 +1184,11 @@ function renderRacialActives(activesContainer) {
 
                 if (abilityData.foot_notes) {
                     abilityData.foot_notes.forEach(key => {
-                        numbersFootNotes[key] = true;
+                        if (abilityData.sourceRace) {
+                            numbersFootNotes[key] = { race: abilityData.sourceRace, category: 'actives', key };
+                        } else if (numbersFootNotes[key] === undefined) {
+                            numbersFootNotes[key] = true;
+                        }
                     });
                 }
             }
@@ -907,8 +1210,9 @@ function renderGenericRacialActives(race) {
     const activesContainer = document.getElementById('racial-actives-container');
 
     const genericActives = ExternalDataManager.getRaceActives(race, character.level);
+    const hasChosenActives = race === 'Mutant' && getMutantChosenSkills(character).some(s => s.skillType === 'active');
 
-    if (genericActives) {
+    if (genericActives || hasChosenActives) {
         renderRacialActives(activesContainer, race);
     } else {
         activesContainer.classList.add('hidden');

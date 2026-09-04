@@ -3,7 +3,7 @@ import { character, characters, setCharacters, currentCharacterIndex , setCurren
     hasUnsavedChanges, setHasUnsavedChanges
  } from './state.js';
 import { ExternalDataManager } from '../externalDataManager.js';
-import { calculateMaxHealth, calculateMaxMana, calculateMaxRacialPower, calculateTotalDefense, calculateTotalMagicDefense, calculateRollStatTotal, calculateLevelMaxExperience, roll, getAppliedRacialChange } from './formulas.js';
+import { calculateMaxHealth, calculateMaxMana, calculateMaxRacialPower, calculateTotalDefense, calculateTotalMagicDefense, calculateRollStatTotal, calculateLevelMaxExperience, calculateStatMaxExperience, calculateStatProperty, roll, getAppliedRacialChange } from './formulas.js';
 import { ensureMagicElements, ensureRequiredStats, renderTotalMagicDefenseBreakdown } from './inventory.js';
 import { updateDOM, showStatusMessage, renderActiveEffectsSummary, updateRemainingPointsDisplay, showConfirmationModal } from './uiUtils.js';
 import { renderRacial, handleRevertChoices } from './passivesActives.js';
@@ -215,23 +215,40 @@ export function recalculateCharacterDerivedProperties(char, isSmallDisplay = fal
 
     let newMaxExperience = DEFAULT_STAT_MAX_EXPERIENCE;
 
-    if (char.uniqueIdentifiers['Growth']) {
-        newMaxExperience -= char.uniqueIdentifiers['Growth'].values[0];
-    }
+  //  if (char.uniqueIdentifiers['Growth']) {
+    //    newMaxExperience -= char.uniqueIdentifiers['Growth'].values[0];
+    //}
 
-    // Recalculate totals for rollStats after any changes that might affect them (e.g., racial changes)
+    // Recalculate totals and properties for rollStats after any changes that might affect them
     ExternalDataManager.rollStats.forEach(statName => {
         if (char[statName]) {
+            const calculatedMaxExp = calculateStatMaxExperience(char, statName, newMaxExperience);
+            char[statName].maxExperience = calculatedMaxExp;
+
+            const maxExperience = document.getElementById(`${statName}-maxExperience`);
+            if (maxExperience) {
+                maxExperience.value = char[statName].maxExperience;
+            }
+
+            // If experience has reached or exceeded maxExperience (e.g. if maxExperience was lowered by an effect)
+            while (char[statName].experience >= char[statName].maxExperience && char[statName].maxExperience > 0) {
+                char[statName].experienceBonus++;
+                char[statName].experience -= char[statName].maxExperience;
+            }
+
+            const valueEl = document.getElementById(`${statName}-value`);
+            if (valueEl) {
+                valueEl.value = char[statName].baseValue + char[statName].experienceBonus;
+            }
+
+            const expEl = document.getElementById(`${statName}-experience`);
+            if (expEl) {
+                expEl.value = char[statName].experience;
+            }
+
             const total = document.getElementById(`${statName}-total`);
             if (total)
                 total.value = calculateRollStatTotal(char, statName);
-
-            const maxExperience = document.getElementById(`${statName}-maxExperience`);
-
-            if (maxExperience) {
-                char[statName].maxExperience = newMaxExperience;
-                document.getElementById(`${statName}-maxExperience`).value = char[statName].maxExperience;
-            }
         }
     });
 

@@ -524,6 +524,7 @@ export function openDirectAddEffectModal(isPermanent = false, defaultStat = null
     const isPercentCheckbox = document.getElementById('direct-effect-is-percent');
     const typeSelect = document.getElementById('direct-effect-type');
     const appliesToSelect = document.getElementById('direct-effect-applies-to');
+    const customAppliesToInput = document.getElementById('direct-effect-applies-to-custom');
     const durationInput = document.getElementById('direct-effect-duration');
 
     if (nameInput) nameInput.value = '';
@@ -531,6 +532,10 @@ export function openDirectAddEffectModal(isPermanent = false, defaultStat = null
     if (isPercentCheckbox) isPercentCheckbox.checked = false;
     if (typeSelect) typeSelect.value = '+';
     if (appliesToSelect) appliesToSelect.value = 'total';
+    if (customAppliesToInput) {
+        customAppliesToInput.value = '';
+        customAppliesToInput.classList.add('hidden');
+    }
     if (durationInput) durationInput.value = 1;
 
     modal.classList.remove('hidden');
@@ -602,13 +607,32 @@ export function openDirectEditEffectModal(statName, category, effectIndex, isPer
     const isPercentCheckbox = document.getElementById('direct-effect-is-percent');
     const typeSelect = document.getElementById('direct-effect-type');
     const appliesToSelect = document.getElementById('direct-effect-applies-to');
+    const customAppliesToInput = document.getElementById('direct-effect-applies-to-custom');
     const durationInput = document.getElementById('direct-effect-duration');
 
     if (nameInput) nameInput.value = effect.name || '';
     if (valInput) valInput.value = (effect.values && effect.values.length > 0) ? effect.values[0] : 0;
     if (isPercentCheckbox) isPercentCheckbox.checked = !!effect.isPercent;
     if (typeSelect) typeSelect.value = effect.type || '+';
-    if (appliesToSelect) appliesToSelect.value = effect.appliesTo || 'total';
+
+    const effectAppliesTo = effect.appliesTo || 'total';
+    const standardAppliesTo = ['total', 'base-value', 'initial-value', 'maxExperience', 'equipment', 'experience', 'experienceBonus'];
+    if (appliesToSelect) {
+        if (standardAppliesTo.includes(effectAppliesTo)) {
+            appliesToSelect.value = effectAppliesTo;
+            if (customAppliesToInput) {
+                customAppliesToInput.value = '';
+                customAppliesToInput.classList.add('hidden');
+            }
+        } else {
+            appliesToSelect.value = 'custom';
+            if (customAppliesToInput) {
+                customAppliesToInput.value = effectAppliesTo;
+                customAppliesToInput.classList.remove('hidden');
+            }
+        }
+    }
+
     if (durationInput) durationInput.value = (effect.duration !== Infinity && effect.duration !== 'Infinity' && effect.duration) ? effect.duration : 1;
 
     modal.classList.remove('hidden');
@@ -634,6 +658,7 @@ export function handleDirectAddEffectSubmit(event) {
     const isPercentCheckbox = document.getElementById('direct-effect-is-percent');
     const typeSelect = document.getElementById('direct-effect-type');
     const appliesToSelect = document.getElementById('direct-effect-applies-to');
+    const customAppliesToInput = document.getElementById('direct-effect-applies-to-custom');
     const durationInput = document.getElementById('direct-effect-duration');
 
     const statName = statSelect ? statSelect.value : 'Health';
@@ -641,7 +666,12 @@ export function handleDirectAddEffectSubmit(event) {
     const val = valInput ? parseFloat(valInput.value) || 0 : 0;
     const isPercent = isPercentCheckbox ? isPercentCheckbox.checked : false;
     const type = typeSelect ? typeSelect.value : '+';
-    const appliesTo = appliesToSelect ? appliesToSelect.value : 'total';
+
+    let appliesTo = appliesToSelect ? appliesToSelect.value : 'total';
+    if (appliesTo === 'custom' && customAppliesToInput) {
+        appliesTo = customAppliesToInput.value.trim() || 'total';
+    }
+
     const isPermanent = durationTypeSelect ? (durationTypeSelect.value === 'permanent') : false;
     const duration = isPermanent ? Infinity : (durationInput ? parseInt(durationInput.value) || 1 : 1);
 

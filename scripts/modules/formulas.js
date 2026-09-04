@@ -1,6 +1,18 @@
 import { ExternalDataManager } from '../externalDataManager.js';
 import { character } from './state.js';
-import { STAT_MAPPING } from './constants.js';
+import { STAT_MAPPING, DEFAULT_STAT_MAX_EXPERIENCE } from './constants.js';
+
+/**
+ * Checks if an appliesTo target matches a specific property name.
+ * Normalizes case and delimiters (e.g. 'maxExperience' vs 'max-experience', 'baseValue' vs 'base-value').
+ */
+export function isMatchingProperty(appliesTo, targetProperty) {
+    if (!appliesTo || !targetProperty) return false;
+    if (appliesTo === targetProperty) return true;
+
+    const normalize = (str) => String(str).replace(/[-_]/g, '').toLowerCase();
+    return normalize(appliesTo) === normalize(targetProperty);
+}
 
 export function getCategoriesTemporaryEffects(charData, statName) {
     let categoriesTemporaryEffects = [];
@@ -205,13 +217,26 @@ export function applyTemporaryOperatorEffects(charData, temporaryEffects, type, 
             tempValue += applyPercentOnBaseValue(charData, effect, baseValue);
         });
     }
+    else if (type === '-') {
+        temporaryEffects.forEach(effect => {
+            tempValue -= applyPercentOnBaseValue(charData, effect, baseValue);
+        });
+    }
+    else if (type === '/') {
+        temporaryEffects.forEach(effect => {
+            const divisor = applyPercent(charData, effect);
+            if (divisor !== 0) {
+                tempValue /= divisor;
+            }
+        });
+    }
 
     return tempValue;
 }
 
 export function applyTemporaryFilterEffects(charData, temporaryEffects, baseValue, currentValue, isTotal) {
     let tempValue = currentValue;
-    const operators = isTotal ? ['*', '+'] : ['+', '*'];
+    const operators = isTotal ? ['*', '/', '+', '-'] : ['+', '-', '*', '/'];
     operators.forEach(type => {
         tempValue = applyTemporaryOperatorEffects(charData, temporaryEffects.filter(effect => effect.type === type), type, baseValue, tempValue);
     });
@@ -221,19 +246,35 @@ export function applyTemporaryFilterEffects(charData, temporaryEffects, baseValu
 
 /**
  * Applies a list of temporary effects to a given base value.
- * Additive effects are applied first, then multiplicative effects.
+ * Can target a specific property (e.g., 'maxExperience', 'baseValue', 'equipment') or use the default pipeline ('initial-value', 'base-value', 'total').
+ * @param {object} charData The character object.
  * @param {number} baseValue The initial value to apply effects to.
- * @param {Array<object>} temporaryEffects An array of effect objects, each with 'value', 'type' ('add' or 'multiply').
- * @returns {number} The value after applying all temporary effects.
+ * @param {Array<object>} temporaryEffects An array of effect objects.
+ * @param {string|null} targetProperty Optional specific property name to target (e.g. 'maxExperience', 'equipment', 'total').
+ * @returns {number} The value after applying matching temporary effects.
  */
-export function applyTemporaryEffects(charData, baseValue, temporaryEffects) {
+export function applyTemporaryEffects(charData, baseValue, temporaryEffects, targetProperty = null) {
+    if (!temporaryEffects || !Array.isArray(temporaryEffects) || temporaryEffects.length === 0) {
+        return parseFloat(baseValue) || 0;
+    }
+
     let currentValue = parseFloat(baseValue) || 0;
     const baseFloatValue = currentValue;
-    const notTotalEffects = temporaryEffects.filter(effect => effect.appliesTo !== 'total');
-    const totalEffects = temporaryEffects.filter(effect => effect.appliesTo === 'total');
+
+    // When targeting a specific property (e.g. 'maxExperience', 'equipment', 'baseValue', 'total')
+    if (targetProperty) {
+        const matchingEffects = temporaryEffects.filter(effect => isMatchingProperty(effect.appliesTo, targetProperty));
+        return applyTemporaryFilterEffects(charData, matchingEffects, baseFloatValue, currentValue, isMatchingProperty(targetProperty, 'total'));
+    }
+
+    // Default pipeline for stats when no specific property is targeted:
+    // Only apply generic stat calculation stages ('initial-value', 'base-value', 'total')
+    // and exclude property-specific effects like 'maxExperience' from polluting total calculation.
+    const notTotalEffects = temporaryEffects.filter(effect => !isMatchingProperty(effect.appliesTo, 'total'));
+    const totalEffects = temporaryEffects.filter(effect => isMatchingProperty(effect.appliesTo, 'total'));
     const appliesTo = ['initial-value', 'base-value'];
     appliesTo.forEach(applieTo => {
-        currentValue = applyTemporaryFilterEffects(charData, notTotalEffects.filter(effect => effect.appliesTo === applieTo), baseFloatValue, currentValue, false);
+        currentValue = applyTemporaryFilterEffects(charData, notTotalEffects.filter(effect => isMatchingProperty(effect.appliesTo, applieTo)), baseFloatValue, currentValue, false);
     });
 
     currentValue = applyTemporaryFilterEffects(charData, totalEffects, baseFloatValue, currentValue, true);
@@ -241,15 +282,75 @@ export function applyTemporaryEffects(charData, baseValue, temporaryEffects) {
     return currentValue;
 }
 
+/**
+ * Applies temporary effects that target a specific property of a character's stat.
+ * @param {object} charData The character object.
+ * @param {string} statName The stat name (e.g. 'Strength', 'Health').
+ * @param {string} propertyName The property name on the stat (e.g. 'maxExperience', 'equipment').
+ * @param {number} baseValue The baseline value of the property.
+ * @returns {number} The calculated property value after temporary effects.
+ */
+export function applyPropertyTemporaryEffects(charData, statName, propertyName, baseValue) {
+    const effects = getCategoriesTemporaryEffects(charData, statName);
+    return applyTemporaryEffects(charData, baseValue, effects, propertyName);
+}
+
+/**
+ * Calculates maxExperience for a given stat, taking into account race abilities (like Human Growth)
+ * and temporary/permanent effects targeting 'maxExperience'.
+ * @param {object} char The character object.
+ * @param {string} statName The name of the rollStat (e.g. 'Strength').
+ * @param {number|null} baseMaxExperience Optional baseline maxExperience.
+ * @returns {number} The final calculated maxExperience (minimum 1).
+ */
+export function calculateStatMaxExperience(char, statName, baseMaxExperience = null) {
+    let base = baseMaxExperience;
+    if (base === null || base === undefined) {
+        base = DEFAULT_STAT_MAX_EXPERIENCE;
+        if (char && char.uniqueIdentifiers && char.uniqueIdentifiers['Growth']) {
+            base -= char.uniqueIdentifiers['Growth'].values[0];
+        }
+    }
+
+    const effects = getCategoriesTemporaryEffects(char, statName);
+    const modified = applyTemporaryEffects(char, base, effects, 'maxExperience');
+    return Math.max(1, Math.round(modified));
+}
+
+/**
+ * Generic calculation helper for any stat property.
+ * @param {object} charData The character object.
+ * @param {string} statName The name of the stat.
+ * @param {string} propertyName The property to calculate (e.g. 'maxExperience', 'equipment', 'baseValue').
+ * @param {number|null} baseValue Optional baseline value.
+ * @returns {number}
+ */
+export function calculateStatProperty(charData, statName, propertyName, baseValue = null) {
+    if (isMatchingProperty(propertyName, 'maxExperience')) {
+        return calculateStatMaxExperience(charData, statName, baseValue);
+    }
+
+    let base = baseValue;
+    if (base === null || base === undefined) {
+        if (charData && charData[statName] && charData[statName][propertyName] !== undefined) {
+            base = charData[statName][propertyName];
+        } else {
+            base = 0;
+        }
+    }
+
+    return applyPropertyTemporaryEffects(charData, statName, propertyName, base);
+}
+
 export function calculateMaxTotal(charData, effects, level, initialValue, intermediateValue) {
-    const effectsOnBaseValue = effects.filter(effect => effect.appliesTo === 'base-value');
+    const effectsOnBaseValue = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'base-value'));
     let baseValue = applyTemporaryEffects(charData, initialValue, effectsOnBaseValue);
 
     // Calculate the initial total based on the modified base value and level
     let currentTotal = baseValue * level + intermediateValue;
 
     // Apply effects on total
-    const effectsOnTotal = effects.filter(effect => effect.appliesTo === 'total');
+    const effectsOnTotal = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'total'));
     return applyTemporaryEffects(charData, currentTotal, effectsOnTotal);
 }
 
@@ -259,7 +360,7 @@ export function calculateBaseMaxHealth(charData, effects) {
 
 export function calculateBaseMaxValue(charData, effects, valueName) {
     const baseValueName = `Base${valueName}`;
-    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
+    const effectsOnInitialValue = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'initial-value'));
     let base = applyTemporaryEffects(charData, charData[baseValueName].value, effectsOnInitialValue);
     return base * charData[baseValueName].racialChange * charData[valueName].racialChange;
 }
@@ -302,7 +403,7 @@ export function calculateMaxRacialPower(charData, level) {
  */
 export function calculateTotalDefense(charData) {
     const effects = getCategoriesTemporaryEffects(charData, 'totalDefense');
-    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
+    const effectsOnInitialValue = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'initial-value'));
     let baseDefense = applyTemporaryEffects(charData, 0, effectsOnInitialValue);
     charData.armorInventory.forEach(armor => {
         if (armor.equipped) {
@@ -331,7 +432,7 @@ export function calculateTotalMagicDefense(charData) {
         charData.totalMagicDefense = { value: 0, temporaryEffects: {} };
     }
     const effects = getCategoriesTemporaryEffects(charData, 'totalMagicDefense');
-    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
+    const effectsOnInitialValue = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'initial-value'));
     let baseMagicDefense = applyTemporaryEffects(charData, 0, effectsOnInitialValue);
 
     let totalMagDef = 0;
@@ -388,15 +489,28 @@ export function getAppliedRacialChange(charData, statName) {
 // Function to calculate the total for a given stat
 export function calculateRollStatTotal(char, statName) {
     const stat = char[statName];
-    // Ensure values are treated as numbers, defaulting to 0 if NaN
-    let combinedValue = (parseFloat(stat.baseValue) || 0) + (parseFloat(stat.experienceBonus) || 0); // Use baseValue + experienceBonus
-    const equipment = parseFloat(stat.equipment) || 0;
+    if (!stat) return 0;
+
+    const effects = getCategoriesTemporaryEffects(char, statName);
+
+    // Apply any effects targeting equipment directly
+    let equipment = parseFloat(stat.equipment) || 0;
+    equipment = applyTemporaryEffects(char, equipment, effects, 'equipment');
+
+    // Apply any effects targeting baseValue directly
+    let baseValue = parseFloat(stat.baseValue) || 0;
+    baseValue = applyTemporaryEffects(char, baseValue, effects, 'baseValue');
+
+    // Apply any effects targeting experienceBonus directly
+    let expBonus = parseFloat(stat.experienceBonus) || 0;
+    expBonus = applyTemporaryEffects(char, expBonus, effects, 'experienceBonus');
+
+    let combinedValue = baseValue + expBonus;
     // Use getAppliedRacialChange to get the combined racial modifier (percentage change)
     const racialChange = getAppliedRacialChange(char, statName);
 
-    const effects = getCategoriesTemporaryEffects(char, statName);
-    const effectsOnInitialValue = effects.filter(effect => effect.appliesTo === 'initial-value');
-    const baseStat = applyTemporaryEffects(char, combinedValue * racialChange, effectsOnInitialValue);;
+    const effectsOnInitialValue = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'initial-value'));
+    const baseStat = applyTemporaryEffects(char, combinedValue * racialChange, effectsOnInitialValue);
 
     return Math.ceil(calculateMaxTotal(char, effects, 1, Math.ceil(baseStat), equipment));
 }
