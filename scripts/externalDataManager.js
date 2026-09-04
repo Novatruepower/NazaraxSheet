@@ -317,7 +317,7 @@ export const ExternalDataManager = {
     },
 
     /**
-     * Provides direct access to the 'Roll' array from the internal data,
+     * Provides direct access to the 'All' array from the internal data,
      * which typically contains the names of the stats
      * @returns {Array<string>} An array of stat names.
      */
@@ -529,16 +529,16 @@ export const ExternalDataManager = {
     processedFormulaValues(ability) {
         const values = [];
 
-        if (ability.values) {
-            for (const value of ability.values) {
-                values.push(Math.abs(value));
-            }
-        } 
-        else if (ability.formulas) {
+        if (ability.formulas) {
             for (const formula of ability.formulas) {
                 for (const value of formula.values) {
                     values.push(Math.abs(value));
                 }
+            }
+        }
+        else if (ability.values) {
+            for (const value of ability.values) {
+                values.push(Math.abs(value));
             }
         }
 
@@ -586,23 +586,84 @@ export const ExternalDataManager = {
                 }
 
                 if (upgradesHasFormulasWithValues(copy)) {
-                    const length = data.formulas.length;
+                    if (data.formulas && data.formulas.length > 0) {
+                        let currentFormulas = JSON.parse(JSON.stringify(template.formulas || []));
 
-                    for(let index = 0; index < length; ++index) {
-                        const valuesLength = data.formulas[index]['values'].length;
-                        for(let index2 = 0; index2 < valuesLength; ++index2) {
-                            const value = data.formulas[index]['values'][index2];
-                            template.formulas[index]['values'][index2] = value;
+                        for (let fIdx = 0; fIdx < data.formulas.length; fIdx++) {
+                            const uFormula = data.formulas[fIdx];
+                            const upgradedStats = Array.isArray(uFormula.statsAffected) && uFormula.statsAffected.length > 0
+                                ? [...uFormula.statsAffected]
+                                : null;
+
+                            const upgradedValues = uFormula.values
+                                ? uFormula.values.map(v => (isNaN(Number(v)) ? v : Number(v)))
+                                : [];
+
+                            if (upgradedStats) {
+                                const matchedStats = new Set();
+                                const addedFormulas = [];
+
+                                for (let i = currentFormulas.length - 1; i >= 0; i--) {
+                                    const baseF = currentFormulas[i];
+                                    if (!baseF.statsAffected) continue;
+
+                                    const matching = baseF.statsAffected.filter(s => upgradedStats.includes(s));
+                                    const remaining = baseF.statsAffected.filter(s => !upgradedStats.includes(s));
+
+                                    if (matching.length > 0) {
+                                        matching.forEach(s => matchedStats.add(s));
+                                        if (remaining.length > 0) {
+                                            baseF.statsAffected = remaining;
+                                            if (!baseF.name) baseF.name = copy.name || name;
+                                        } else {
+                                            currentFormulas.splice(i, 1);
+                                        }
+
+                                        addedFormulas.push({
+                                            ...baseF,
+                                            ...uFormula,
+                                            name: data.name || baseF.name || copy.name || name,
+                                            statsAffected: matching,
+                                            values: upgradedValues
+                                        });
+                                    }
+                                }
+
+                                const unmatched = upgradedStats.filter(s => !matchedStats.has(s));
+                                if (unmatched.length > 0) {
+                                    addedFormulas.push({
+                                        type: uFormula.type || '+',
+                                        appliesTo: uFormula.appliesTo || 'total',
+                                        ...uFormula,
+                                        name: data.name || copy.name || name,
+                                        statsAffected: unmatched,
+                                        values: upgradedValues
+                                    });
+                                }
+
+                                currentFormulas = [...currentFormulas, ...addedFormulas];
+                            } else {
+                                if (currentFormulas[fIdx]) {
+                                    currentFormulas[fIdx].values = upgradedValues;
+                                    currentFormulas[fIdx].name = data.name || currentFormulas[fIdx].name || copy.name || name;
+                                    if (uFormula.type) currentFormulas[fIdx].type = uFormula.type;
+                                    if (uFormula.appliesTo) currentFormulas[fIdx].appliesTo = uFormula.appliesTo;
+                                }
+                            }
                         }
+
+                        template.formulas = currentFormulas;
                     }
                 } else if (upgradesHasValues(copy)) {
                     const length = data.values.length;
                     for(let index = 0; index < length; ++index) {
-                        template.values[index] = data.values[index];
+                        const val = data.values[index];
+                        template.values[index] = isNaN(Number(val)) ? val : Number(val);
                     }
                 }
             }
         }
+
         template.description = this.formatString(template.description, copy.dices, this.processedFormulaValues(template));
         
         return template;

@@ -91,31 +91,31 @@ export function removeTemporaryEffectByCategory(abilities, category) {
  * @param {string} category The category of the temporary effect to remove.
  */
 export function removeTemporaryEffectByIdentifier(abilityData, category) {
-    const { identifier, formulas } = abilityData;
+    const identifier = abilityData?.identifier || abilityData?.name;
 
-    if (!identifier || !character.uniqueIdentifiers[identifier]) {
+    if (!identifier) {
         return;
     }
 
-    delete character.uniqueIdentifiers[identifier];
+    if (character.uniqueIdentifiers && character.uniqueIdentifiers[identifier]) {
+        delete character.uniqueIdentifiers[identifier];
+    }
 
-    // 1. Collect all unique stats affected by this ability's formulas.
-    const uniqueStats = new Set(
-        formulas?.flatMap(formula => formula.statsAffected || []) ?? []
-    );
+    const Stats = ExternalDataManager.stats;
+    const allPossibleStats = new Set([
+        ...Stats,
+        ...(abilityData.formulas?.flatMap(f => f.statsAffected || []) ?? [])
+    ]);
 
-    // 2. Iterate over the unique stats and remove the effect.
-    for (const statName of uniqueStats) {
+    for (const statName of allPossibleStats) {
         const effectsArray = character[statName]?.temporaryEffects?.[category];
         if (!Array.isArray(effectsArray)) {
             continue;
         }
 
-        const effectIndex = effectsArray.findIndex(e => e.identifier === identifier);
-
-        if (effectIndex > -1) {
-            effectsArray.splice(effectIndex, 1);
-        }
+        character[statName].temporaryEffects[category] = effectsArray.filter(
+            e => e.identifier !== identifier && e.name !== identifier
+        );
     }
 }
 
@@ -304,12 +304,12 @@ export function applyPropertyTemporaryEffects(charData, statName, propertyName, 
  * @returns {number} The final calculated maxExperience (minimum 1).
  */
 export function calculateStatMaxExperience(char, statName, baseMaxExperience = null) {
+    const effects = getCategoriesTemporaryEffects(char, statName);
     let base = baseMaxExperience;
     if (base === null || base === undefined) {
         base = DEFAULT_STAT_MAX_EXPERIENCE;
     }
 
-    const effects = getCategoriesTemporaryEffects(char, statName);
     const modified = applyTemporaryEffects(char, base, effects, 'maxExperience');
     return Math.max(1, Math.round(modified));
 }

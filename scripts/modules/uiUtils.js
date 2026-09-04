@@ -304,6 +304,97 @@ function formatStatDisplayName(stat) {
 }
 
 /**
+ * Normalizes a property or stat string for uniform comparison.
+ */
+function normalizePropertyString(str) {
+    return String(str || '').replace(/[-_]/g, '').toLowerCase();
+}
+
+/**
+ * Normalizes an effect value for uniform comparison across number and string representations.
+ */
+function normalizeEffectValue(val) {
+    if (val === null || val === undefined) return '0';
+    const num = Number(val);
+    if (!isNaN(num)) return String(num);
+    return String(val).trim();
+}
+
+/**
+ * Groups active effects that share the same Applies To, source, operator, percentage flag, duration, and values.
+ * Regroups individual stats affected into one display entry while keeping stats with different values separated.
+ */
+export function groupEffectsByCommonProperties(rawItems, isPermList) {
+    const groupMap = new Map();
+
+    rawItems.forEach(item => {
+        const effect = item.effect || {};
+        const category = (item.category || '').trim();
+        const name = (effect.name || effect.identifier || 'Unnamed Effect').trim();
+        const identifier = (effect.identifier || '').trim();
+        const source = (effect.source || effect.sourceRace || category).trim();
+        const appliesTo = normalizePropertyString(effect.appliesTo || 'total');
+        const operator = (effect.type || '+').trim();
+        const isPercent = !!effect.isPercent;
+
+        let normalizedValues = [];
+        if (Array.isArray(effect.values)) {
+            normalizedValues = effect.values.map(normalizeEffectValue);
+        } else if (effect.value !== undefined && effect.value !== null) {
+            normalizedValues = [normalizeEffectValue(effect.value)];
+        } else {
+            normalizedValues = ['0'];
+        }
+        const valuesKey = normalizedValues.join('|');
+        const durationKey = isPermList ? 'perm' : String(effect.duration ?? 1);
+
+        const groupKey = [
+            category,
+            source,
+            identifier,
+            name,
+            appliesTo,
+            operator,
+            isPercent ? 'pct' : 'flat',
+            valuesKey,
+            durationKey
+        ].join(':::');
+
+        // Display value
+        const displayVal = (effect.values && effect.values.length > 0)
+            ? (effect.values.length === 1 ? effect.values[0] : effect.values.join(', '))
+            : (effect.value ?? 0);
+
+        if (!groupMap.has(groupKey)) {
+            groupMap.set(groupKey, {
+                key: groupKey,
+                name: name,
+                category: category,
+                source: source,
+                identifier: identifier,
+                appliesTo: effect.appliesTo || 'total',
+                operator: operator,
+                isPercent: isPercent,
+                displayValue: displayVal,
+                duration: effect.duration,
+                isPerm: isPermList,
+                stats: [item.statName],
+                instances: [item],
+                effect: effect
+            });
+        } else {
+            const grp = groupMap.get(groupKey);
+            if (!grp.stats.includes(item.statName)) {
+                grp.stats.push(item.statName);
+            }
+            grp.instances.push(item);
+        }
+    });
+
+    return Array.from(groupMap.values());
+}
+
+/**
  * Dynamically renders global active temporary effects and active permanent effects summary lists.
  */
 export function renderActiveEffectsSummary() {
@@ -341,11 +432,14 @@ export function renderActiveEffectsSummary() {
         }
     });
 
-    // Update Badges
+    const groupedTemp = groupEffectsByCommonProperties(tempEffects, false);
+    const groupedPerm = groupEffectsByCommonProperties(permEffects, true);
+
+    // Update Badges with grouped counts
     const tempBadge = document.getElementById('global-active-temp-effects-count-badge') || document.getElementById('global-active-effects-count-badge');
     if (tempBadge) {
-        if (tempEffects.length > 0) {
-            tempBadge.textContent = tempEffects.length;
+        if (groupedTemp.length > 0) {
+            tempBadge.textContent = groupedTemp.length;
             tempBadge.classList.remove('hidden');
         } else {
             tempBadge.classList.add('hidden');
@@ -354,8 +448,8 @@ export function renderActiveEffectsSummary() {
 
     const permBadge = document.getElementById('global-active-perm-effects-count-badge');
     if (permBadge) {
-        if (permEffects.length > 0) {
-            permBadge.textContent = permEffects.length;
+        if (groupedPerm.length > 0) {
+            permBadge.textContent = groupedPerm.length;
             permBadge.classList.remove('hidden');
         } else {
             permBadge.classList.add('hidden');
@@ -363,24 +457,22 @@ export function renderActiveEffectsSummary() {
     }
 
     // Helper to render an effects list
-    const renderList = (container, effectsList, isPermList) => {
+    const renderList = (container, groupedList, isPermList) => {
         if (!container) return;
         container.innerHTML = '';
 
-        if (effectsList.length === 0) {
+        if (groupedList.length === 0) {
             container.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-sm">No active ${isPermList ? 'permanent' : 'temporary'} effects.</p>`;
             return;
         }
 
-        effectsList.forEach(item => {
-            const effect = item.effect;
-            const statName = item.statName;
-            const val = effect.values ? effect.values[0] : 0;
-            const isPercent = effect.isPercent ? '%' : '';
-            const operator = effect.type || '+';
-            const name = effect.name || 'Unnamed Effect';
-            const appliesTo = effect.appliesTo || 'total';
-            const durationText = isPermList ? 'Permanent' : `${effect.duration} turns left`;
+        groupedList.forEach((group, groupIndex) => {
+            const val = group.displayValue;
+            const isPercent = group.isPercent ? '%' : '';
+            const operator = group.operator || '+';
+            const name = group.name || 'Unnamed Effect';
+            const appliesTo = group.appliesTo || 'total';
+            const durationText = isPermList ? 'Permanent' : `${group.duration} turns left`;
 
             const card = document.createElement('div');
             card.className = 'flex items-center justify-between p-3 border border-gray-100 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150';
@@ -388,33 +480,30 @@ export function renderActiveEffectsSummary() {
             const nameColorClass = isPermList ? 'text-purple-600 dark:text-purple-400' : 'text-indigo-600 dark:text-indigo-400';
             const badgeColorClass = isPermList ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300';
 
-            const formattedStat = formatStatDisplayName(statName);
+            const formattedStats = group.stats.map(s => formatStatDisplayName(s)).join(', ');
 
             card.innerHTML = `
-                <div class="flex-grow text-sm text-gray-700 dark:text-gray-300">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-x-2">
+                <div class="flex-grow text-sm text-gray-700 dark:text-gray-300 mr-2 min-w-0">
+                    <div class="flex flex-col sm:flex-row sm:items-baseline gap-x-2 flex-wrap">
                         <span class="font-bold ${nameColorClass}">${name}</span> 
-                        <span class="text-xs text-gray-500 dark:text-gray-400">(${formattedStat})</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-normal">(${formattedStats})</span>
                     </div>
                     <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">
                         ${operator}${val}${isPercent} (applies to ${appliesTo})
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 flex-shrink-0">
                     <span class="px-2 py-0.5 rounded text-xs font-semibold ${badgeColorClass}">
                         ${durationText}
                     </span>`;
 
-            if (!isPermList || item.category != character.race) {
-                const statName = item.statName;
-                const category = item.category;
-                const effectIndex = character[statName].temporaryEffects[category].indexOf(effect);
-
+            const isRacePermanent = isPermList && (group.category === character.race);
+            if (!isRacePermanent) {
                 card.innerHTML += 
-                    `<button type="button" data-stat-name="${statName}" data-category="${category}" data-effect-index="${effectIndex}" class="edit-summary-effect-btn text-xs font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-1 rounded hover:bg-indigo-100 dark:hover:bg-indigo-950/40 transition-colors duration-150 cursor-pointer">
+                    `<button type="button" data-group-index="${groupIndex}" class="edit-summary-effect-btn text-xs font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-1 rounded hover:bg-indigo-100 dark:hover:bg-indigo-950/40 transition-colors duration-150 cursor-pointer">
                         Edit
                     </button>
-                    <button type="button" data-stat-name="${statName}" data-category="${category}" data-effect-index="${effectIndex}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150 cursor-pointer">
+                    <button type="button" data-group-index="${groupIndex}" class="remove-summary-effect-btn text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors duration-150 cursor-pointer">
                         Remove
                     </button>`;
             }
@@ -425,41 +514,53 @@ export function renderActiveEffectsSummary() {
 
         container.querySelectorAll('.edit-summary-effect-btn').forEach(btn => {
             btn.addEventListener('click', (event) => {
-                const statName = event.currentTarget.dataset.statName;
-                const category = event.currentTarget.dataset.category;
-                const effectIndex = parseInt(event.currentTarget.dataset.effectIndex);
+                const groupIdx = parseInt(event.currentTarget.dataset.groupIndex);
+                const group = groupedList[groupIdx];
+                if (!group || group.instances.length === 0) return;
 
-                if (statName && character[statName] && character[statName].temporaryEffects?.[category]?.[effectIndex] !== undefined) {
-                    openDirectEditEffectModal(statName, category, effectIndex, isPermList);
+                const firstInst = group.instances[0];
+                const sName = firstInst.statName;
+                const cat = firstInst.category;
+                const effectIndex = character[sName]?.temporaryEffects?.[cat]?.indexOf(firstInst.effect) ?? -1;
+
+                if (effectIndex !== -1) {
+                    openDirectEditEffectModal(sName, cat, effectIndex, isPermList, group.stats);
                 }
             });
         });
 
         container.querySelectorAll('.remove-summary-effect-btn').forEach(btn => {
             btn.addEventListener('click', (event) => {
-                const statName = event.currentTarget.dataset.statName;
-                const category = event.currentTarget.dataset.category;
-                const effectIndex = parseInt(event.currentTarget.dataset.effectIndex);
+                const groupIdx = parseInt(event.currentTarget.dataset.groupIndex);
+                const group = groupedList[groupIdx];
+                if (!group) return;
 
-                if (statName && character[statName] && character[statName].temporaryEffects?.[category]?.[effectIndex] !== undefined) {
-                    character[statName].temporaryEffects[category].splice(effectIndex, 1);
-                    if (['Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'].includes(statName)) {
-                        recalculateSmallUpdateCharacter(character, true);
-                    } else {
-                        recalculateCharacterDerivedProperties(character, true);
+                group.instances.forEach(inst => {
+                    const sName = inst.statName;
+                    const cat = inst.category;
+                    const eff = inst.effect;
+                    if (sName && character[sName] && character[sName].temporaryEffects?.[cat]) {
+                        const idx = character[sName].temporaryEffects[cat].indexOf(eff);
+                        if (idx !== -1) {
+                            character[sName].temporaryEffects[cat].splice(idx, 1);
+                        }
                     }
-                    updateDOM();
-                    setHasUnsavedChanges(true);
-                    if (typeof showStatusMessage === 'function') {
-                        showStatusMessage(`Removed ${isPermList ? 'permanent' : 'temporary'} effect.`);
-                    }
+                });
+
+                recalculateSmallUpdateCharacter(character, true);
+                recalculateCharacterDerivedProperties(character, true);
+                updateDOM();
+                setHasUnsavedChanges(true);
+                renderActiveEffectsSummary();
+                if (typeof showStatusMessage === 'function') {
+                    showStatusMessage(`Removed ${isPermList ? 'permanent' : 'temporary'} effect "${group.name}".`);
                 }
             });
         });
     };
 
-    renderList(tempContainer, tempEffects, false);
-    renderList(permContainer, permEffects, true);
+    renderList(tempContainer, groupedTemp, false);
+    renderList(permContainer, groupedPerm, true);
 }
 
 export function openDirectAddEffectModal(isPermanent = false, defaultStat = null) {
@@ -483,6 +584,8 @@ export function openDirectAddEffectModal(isPermanent = false, defaultStat = null
     if (editStatInput) editStatInput.value = '';
     if (editCategoryInput) editCategoryInput.value = '';
     if (editIndexInput) editIndexInput.value = '';
+    const groupedStatsInput = document.getElementById('direct-effect-edit-grouped-stats');
+    if (groupedStatsInput) groupedStatsInput.value = '';
 
     if (durationTypeSelect) durationTypeSelect.value = isPermanent ? 'permanent' : 'temporary';
 
@@ -541,7 +644,7 @@ export function openDirectAddEffectModal(isPermanent = false, defaultStat = null
     modal.classList.remove('hidden');
 }
 
-export function openDirectEditEffectModal(statName, category, effectIndex, isPermanentParam = false) {
+export function openDirectEditEffectModal(statName, category, effectIndex, isPermanentParam = false, groupedStats = null) {
     const modal = document.getElementById('direct-add-effect-modal');
     if (!modal) return;
 
@@ -556,6 +659,7 @@ export function openDirectEditEffectModal(statName, category, effectIndex, isPer
     const editStatInput = document.getElementById('direct-effect-edit-stat-name');
     const editCategoryInput = document.getElementById('direct-effect-edit-category');
     const editIndexInput = document.getElementById('direct-effect-edit-index');
+    const groupedStatsInput = document.getElementById('direct-effect-edit-grouped-stats');
 
     const statSelect = document.getElementById('direct-effect-stat-select');
     const durationTypeSelect = document.getElementById('direct-effect-duration-type');
@@ -567,6 +671,9 @@ export function openDirectEditEffectModal(statName, category, effectIndex, isPer
     if (editCategoryInput) editCategoryInput.value = category;
     if (editIndexInput) editIndexInput.value = effectIndex;
     if (isPermHiddenInput) isPermHiddenInput.value = effectIsPermanent ? 'true' : 'false';
+    if (groupedStatsInput) {
+        groupedStatsInput.value = (Array.isArray(groupedStats) && groupedStats.length > 1) ? JSON.stringify(groupedStats) : '';
+    }
 
     if (durationTypeSelect) durationTypeSelect.value = effectIsPermanent ? 'permanent' : 'temporary';
 
@@ -591,12 +698,22 @@ export function openDirectEditEffectModal(statName, category, effectIndex, isPer
     // Populate stat options
     if (statSelect) {
         statSelect.innerHTML = '';
+        if (Array.isArray(groupedStats) && groupedStats.length > 1) {
+            const groupOption = document.createElement('option');
+            groupOption.value = '__grouped__';
+            groupOption.textContent = `All Affected Stats (${groupedStats.map(formatStatDisplayName).join(', ')})`;
+            groupOption.selected = true;
+            statSelect.appendChild(groupOption);
+        }
+
         const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'];
         allStats.forEach(s => {
             const option = document.createElement('option');
             option.value = s;
             option.textContent = formatStatDisplayName(s);
-            if (s === statName) option.selected = true;
+            if ((!groupedStats || groupedStats.length <= 1) && s === statName) {
+                option.selected = true;
+            }
             statSelect.appendChild(option);
         });
     }
@@ -641,6 +758,8 @@ export function openDirectEditEffectModal(statName, category, effectIndex, isPer
 export function closeDirectAddEffectModal() {
     const modal = document.getElementById('direct-add-effect-modal');
     if (modal) modal.classList.add('hidden');
+    const groupedStatsInput = document.getElementById('direct-effect-edit-grouped-stats');
+    if (groupedStatsInput) groupedStatsInput.value = '';
 }
 
 export function handleDirectAddEffectSubmit(event) {
@@ -650,6 +769,7 @@ export function handleDirectAddEffectSubmit(event) {
     const editStatInput = document.getElementById('direct-effect-edit-stat-name');
     const editCategoryInput = document.getElementById('direct-effect-edit-category');
     const editIndexInput = document.getElementById('direct-effect-edit-index');
+    const groupedStatsInput = document.getElementById('direct-effect-edit-grouped-stats');
 
     const statSelect = document.getElementById('direct-effect-stat-select');
     const durationTypeSelect = document.getElementById('direct-effect-duration-type');
@@ -661,7 +781,7 @@ export function handleDirectAddEffectSubmit(event) {
     const customAppliesToInput = document.getElementById('direct-effect-applies-to-custom');
     const durationInput = document.getElementById('direct-effect-duration');
 
-    const statName = statSelect ? statSelect.value : 'Health';
+    const statSelection = statSelect ? statSelect.value : 'Health';
     const effectName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'New Effect';
     const val = valInput ? parseFloat(valInput.value) || 0 : 0;
     const isPercent = isPercentCheckbox ? isPercentCheckbox.checked : false;
@@ -677,9 +797,22 @@ export function handleDirectAddEffectSubmit(event) {
 
     const isEditMode = isEditModeInput && isEditModeInput.value === 'true';
 
+    let groupedStats = null;
+    if (groupedStatsInput && groupedStatsInput.value) {
+        try {
+            groupedStats = JSON.parse(groupedStatsInput.value);
+        } catch (e) {
+            groupedStats = null;
+        }
+    }
+
+    const targetStat = (statSelection === '__grouped__' && Array.isArray(groupedStats) && groupedStats.length > 0)
+        ? groupedStats[0]
+        : statSelection;
+
     const effectObj = {
         name: effectName,
-        statsAffected: [statName],
+        statsAffected: (statSelection === '__grouped__' && Array.isArray(groupedStats)) ? [...groupedStats] : [targetStat],
         values: [val],
         isPercent: isPercent,
         type: type,
@@ -693,9 +826,52 @@ export function handleDirectAddEffectSubmit(event) {
         const category = editCategoryInput ? editCategoryInput.value : 'manual';
         const effectIndex = editIndexInput ? parseInt(editIndexInput.value) : -1;
 
-        if (oldStatName && character[oldStatName] && character[oldStatName].temporaryEffects?.[category]?.[effectIndex] !== undefined) {
-            if (oldStatName === statName) {
-                character[statName].temporaryEffects[category][effectIndex] = effectObj;
+        if (statSelection === '__grouped__' && Array.isArray(groupedStats) && groupedStats.length > 0) {
+            // Update all stats in the group
+            groupedStats.forEach(s => {
+                if (character[s] && character[s].temporaryEffects?.[category]) {
+                    const catArr = character[s].temporaryEffects[category];
+                    const effToUpdate = {
+                        ...effectObj,
+                        statsAffected: [s]
+                    };
+                    if (s === oldStatName && effectIndex !== -1 && catArr[effectIndex]) {
+                        catArr[effectIndex] = effToUpdate;
+                    } else {
+                        const existingIdx = catArr.findIndex(e => (e.name === effectName || e.identifier === effectName));
+                        if (existingIdx !== -1) {
+                            catArr[existingIdx] = effToUpdate;
+                        } else {
+                            catArr.push(effToUpdate);
+                        }
+                    }
+                }
+            });
+        } else if (Array.isArray(groupedStats) && groupedStats.length > 1 && statSelection !== '__grouped__') {
+            // User narrowed down from group to a single stat
+            groupedStats.forEach(s => {
+                if (s !== statSelection && character[s] && character[s].temporaryEffects?.[category]) {
+                    const catArr = character[s].temporaryEffects[category];
+                    const idx = catArr.findIndex(e => (e.name === effectName || e.identifier === effectName));
+                    if (idx !== -1) {
+                        catArr.splice(idx, 1);
+                    }
+                }
+            });
+            if (character[statSelection] && character[statSelection].temporaryEffects?.[category]) {
+                const catArr = character[statSelection].temporaryEffects[category];
+                const existingIdx = catArr.findIndex(e => (e.name === effectName || e.identifier === effectName));
+                if (existingIdx !== -1) {
+                    catArr[existingIdx] = effectObj;
+                } else {
+                    addTemporaryEffect(character, category, effectObj, duration);
+                }
+            } else {
+                addTemporaryEffect(character, category, effectObj, duration);
+            }
+        } else if (oldStatName && character[oldStatName] && character[oldStatName].temporaryEffects?.[category]?.[effectIndex] !== undefined) {
+            if (oldStatName === statSelection) {
+                character[statSelection].temporaryEffects[category][effectIndex] = effectObj;
             } else {
                 character[oldStatName].temporaryEffects[category].splice(effectIndex, 1);
                 addTemporaryEffect(character, category, effectObj, duration);
@@ -710,6 +886,7 @@ export function handleDirectAddEffectSubmit(event) {
 
     updateDOM();
     setHasUnsavedChanges(true);
+    renderActiveEffectsSummary();
 
     if (currentStatForTempEffects) {
         renderTemporaryEffects(currentStatForTempEffects);

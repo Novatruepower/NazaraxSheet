@@ -90,7 +90,7 @@ function processRacialRegularPassiveChange(newAbilityData) {
                     formula['identifier'] = newAbilityData.identifier;
                 }
 
-                if(newAbilityData.name) {
+                if(!formula['name'] && newAbilityData.name) {
                     formula['name'] = newAbilityData.name;
                 }
 
