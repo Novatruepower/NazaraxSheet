@@ -35,7 +35,16 @@ export function addTemporaryEffect(char, category, effect, duration) {
     if (effect.identifier)
         char.uniqueIdentifiers[effect.identifier] = effect;
 
-    for (const statName of effect.statsAffected) {
+    const effectToAdd = { ...effect, duration };
+    if (!effectToAdd.type && effectToAdd.types && effectToAdd.types.length > 0) {
+        effectToAdd.type = effectToAdd.types[0];
+    }
+    if (!effectToAdd.types && effectToAdd.type) {
+        effectToAdd.types = [effectToAdd.type];
+    }
+
+    const statsAffected = effect.statsAffected || (effect.statAffected ? [effect.statAffected] : []);
+    for (const statName of statsAffected) {
         const stat = char[statName];
         if (!stat) {
             console.error(`Stat "${statName}" not found on character.`);
@@ -51,9 +60,7 @@ export function addTemporaryEffect(char, category, effect, duration) {
             stat.temporaryEffects[category] = [];
 
         // Add the effect with its duration
-        stat.temporaryEffects[category].push({ ...effect,
-            duration: duration
-        });
+        stat.temporaryEffects[category].push(effectToAdd);
     }
 }
 
@@ -75,7 +82,7 @@ export function removeTemporaryEffectByCategory(abilities, category) {
         }
     }
 
-    const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+    const allStats = [...ExternalDataManager.stats];
     allStats.forEach(statName => {
         if (character[statName]?.temporaryEffects?.[category]) {
             delete character[statName].temporaryEffects[category];
@@ -175,16 +182,32 @@ export function applyOperator(v1, type, v2) {
 export function applyEffectValues(charData, effect) {
     let val = 0;
 
-    if (effect.stats) {
+    if (effect.stats && effect.stats.length > 0) {
         const length = effect.stats.length;
 
         for (let index = 0; index < length; ++index) {
-            val += applyOperator(charData[effect.stats[index]], effect.types[index], effect.values[index])
+            const rawStat = charData[effect.stats[index]];
+            let statVal = 0;
+            if (typeof rawStat === 'number') {
+                statVal = rawStat;
+            } else if (rawStat && typeof rawStat === 'object') {
+                statVal = rawStat.value ?? rawStat.total ?? rawStat.baseValue ?? 0;
+            } else if (rawStat !== undefined && rawStat !== null) {
+                statVal = parseFloat(rawStat) || 0;
+            }
+
+            if (effect.values && effect.values[index] !== undefined) {
+                val += applyOperator(statVal, effect.types ? effect.types[index] : (effect.type || '+'), Number(effect.values[index]));
+            } else {
+                val += statVal;
+            }
         }
-    } else {
+    } else if (effect.values && effect.values.length > 0) {
         for (const value of effect.values) {
-            val += value;
+            val += parseFloat(value) || 0;
         }
+    } else if (effect.value !== undefined && effect.value !== null) {
+        val += parseFloat(effect.value) || 0;
     }
 
     return val;
@@ -201,7 +224,7 @@ export function applyPercentOnBaseValue(charData, effect, baseValue) {
     if (effect.isPercent)
         return baseValue * applyPercent(charData, effect);
     
-    return parseFloat(effect.values[0]) || 0;
+    return applyPercent(charData, effect);
 }
 
 export function applyTemporaryOperatorEffects(charData, temporaryEffects, type, baseValue, currentValue) {
@@ -238,7 +261,7 @@ export function applyTemporaryFilterEffects(charData, temporaryEffects, baseValu
     let tempValue = currentValue;
     const operators = isTotal ? ['*', '/', '+', '-'] : ['+', '-', '*', '/'];
     operators.forEach(type => {
-        tempValue = applyTemporaryOperatorEffects(charData, temporaryEffects.filter(effect => effect.type === type), type, baseValue, tempValue);
+        tempValue = applyTemporaryOperatorEffects(charData, temporaryEffects.filter(effect => (effect.type || effect.types?.[0]) === type), type, baseValue, tempValue);
     });
     
     return tempValue;
@@ -386,9 +409,6 @@ export function calculateBaseMaxRacialPower(charData, effects) {
 // Function to calculate max racial power based on level
 export function calculateMaxRacialPower(charData, level) {
     const effects = getCategoriesTemporaryEffects(charData, 'RacialPower');
-
-    if (charData.uniqueIdentifiers['Savagery'])
-        return charData.uniqueIdentifiers['Savagery'].values[2];
 
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }

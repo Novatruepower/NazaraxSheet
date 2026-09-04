@@ -306,6 +306,20 @@
             20,
             100
           ],
+          "formulas": [
+          {
+            "stats": [
+              "level"
+            ],
+            "types": [
+              "/"
+            ],
+            "appliesTo": "initial-value",
+            "statsAffected": [
+              "RacialPower"
+            ]
+          }
+          ],
           "description": "Before the start of every turn you lose {0d0} racial points. If after a roll, the racial point’s value of a character is less than {0}<a>0</a>, you have to roll a {d1} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {1} racial points per turn, once you reach {2}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>."
         },
         "Fractured mind": {

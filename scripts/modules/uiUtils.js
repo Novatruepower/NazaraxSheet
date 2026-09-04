@@ -334,14 +334,16 @@ export function groupEffectsByCommonProperties(rawItems, isPermList) {
         const identifier = (effect.identifier || '').trim();
         const source = (effect.source || effect.sourceRace || category).trim();
         const appliesTo = normalizePropertyString(effect.appliesTo || 'total');
-        const operator = (effect.type || '+').trim();
+        const operator = (effect.type || (effect.types && effect.types[0]) || '+').trim();
         const isPercent = !!effect.isPercent;
 
         let normalizedValues = [];
-        if (Array.isArray(effect.values)) {
+        if (Array.isArray(effect.values) && effect.values.length > 0) {
             normalizedValues = effect.values.map(normalizeEffectValue);
         } else if (effect.value !== undefined && effect.value !== null) {
             normalizedValues = [normalizeEffectValue(effect.value)];
+        } else if (Array.isArray(effect.stats) && effect.stats.length > 0) {
+            normalizedValues = effect.stats.map(s => String(s).trim().toLowerCase());
         } else {
             normalizedValues = ['0'];
         }
@@ -361,9 +363,14 @@ export function groupEffectsByCommonProperties(rawItems, isPermList) {
         ].join(':::');
 
         // Display value
-        const displayVal = (effect.values && effect.values.length > 0)
-            ? (effect.values.length === 1 ? effect.values[0] : effect.values.join(', '))
-            : (effect.value ?? 0);
+        let displayVal = 0;
+        if (effect.values && effect.values.length > 0) {
+            displayVal = effect.values.length === 1 ? effect.values[0] : effect.values.join(', ');
+        } else if (effect.value !== undefined && effect.value !== null) {
+            displayVal = effect.value;
+        } else if (effect.stats && effect.stats.length > 0) {
+            displayVal = effect.stats.join(', ');
+        }
 
         if (!groupMap.has(groupKey)) {
             groupMap.set(groupKey, {
@@ -404,7 +411,8 @@ export function renderActiveEffectsSummary() {
     const tempContainer = document.getElementById('active-temp-effects-summary-list') || document.getElementById('active-effects-summary-list');
     const permContainer = document.getElementById('active-perm-effects-summary-list');
 
-    const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'];
+    const allStats = ExternalDataManager.stats;
+    const statsWithEffects = Array.from(new Set([...allStats, 'totalDefense', 'totalMagicDefense']));
     const tempEffects = [];
     const permEffects = [];
 

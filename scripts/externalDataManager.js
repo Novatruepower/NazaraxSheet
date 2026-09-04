@@ -296,23 +296,23 @@ export const ExternalDataManager = {
     // This is the new function for client-side loading
     async initClient() {
         try {
-        const response = await fetch("./" + this.initFileName + ".json");
+            const response = await fetch("./" + this.initFileName + ".json");
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();
 
-        // Now, set the entire _data object with the fetched data
-        // This assumes your JSON file contains the complete data structure
-        this._data = data;
-        
-        console.log("External data loaded successfully on the client side.");
-        console.log(this._data);
-        return true;
+            // Now, set the entire _data object with the fetched data
+            // This assumes your JSON file contains the complete data structure
+            this._data = data;
+            
+            console.log("External data loaded successfully on the client side.");
+            console.log(this._data);
+            return true;
         } catch (error) {
-        console.error("Error loading external data from local file:", error);
-        return false;
+            console.error("Error loading external data from local file:", error);
+            return false;
         }
     },
 
@@ -531,12 +531,14 @@ export const ExternalDataManager = {
 
         if (ability.formulas) {
             for (const formula of ability.formulas) {
-                for (const value of formula.values) {
-                    values.push(Math.abs(value));
+                if (formula.values && Array.isArray(formula.values)) {
+                    for (const value of formula.values) {
+                        values.push(Math.abs(value));
+                    }
                 }
             }
         }
-        else if (ability.values) {
+        if (values.length === 0 && ability.values) {
             for (const value of ability.values) {
                 values.push(Math.abs(value));
             }
@@ -556,6 +558,7 @@ export const ExternalDataManager = {
             const level = data["level"];
             if (level <= currentLevel && level > lastLevelFound) {
                 lastLevelFound = level;
+                data.level = level;
                 data['name'] = dataName;
                 lastMatch = data;
             }
@@ -578,8 +581,10 @@ export const ExternalDataManager = {
             delete template.upgrades; 
 
             if (data) {
-                template['name'] = data.name;
-                template.level = data.level
+                if (data) {
+                    template['name'] = data.name;
+                    template.level = data.level
+                }
 
                 if (data.description) {
                     template.description = data.description;
