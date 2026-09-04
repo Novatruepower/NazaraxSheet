@@ -1436,7 +1436,8 @@
     "naturalHealthRegen",
     "naturalManaRegen",
     "naturalRacialPowerRegen",
-    "LevelExperience"
+    "LevelExperience",
+    "BaseLevelExperience"
   ],
   "Roll": [
     "Strength",

@@ -689,15 +689,7 @@ export function toggleDropdown(menuId) {
 
 export function isNotLocal() {
   const hostname = window.location.hostname;
-  // Check for common local hostnames and IP addresses
-  const localIdentifiers = [
-    'localhost',
-    '127.0.0.1',
-    '[::1]' // IPv6 localhost address
-  ];
-
-  // If the hostname is not found in the localIdentifiers array, it's likely not local
-  return !localIdentifiers.includes(hostname);
+  return hostname.endsWith('github.io');
 }
 
 export function attachEventListeners() {
