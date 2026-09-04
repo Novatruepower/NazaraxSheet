@@ -259,7 +259,7 @@ export const ExternalDataManager = {
                     this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
                     this._data['Races'][race]['Stats']['Other']['BaseMana'] = 1;
                     this._data['Races'][race]['Stats']['Other']['RacialPower'] = 1;
-                    this._data['Races'][race]['Stats']['Other']['BaseRacialPower'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['BaseRacialPower'] = race != "Architect" ? 1 : 0;
                     this._data['Races'][race]['Stats']['Other']['naturalHealthRegen'] = 1;
                     this._data['Races'][race]['Stats']['Other']['naturalManaRegen'] = 1;
                     this._data['Races'][race]['Stats']['Other']['naturalRacialPowerRegen'] = 1;

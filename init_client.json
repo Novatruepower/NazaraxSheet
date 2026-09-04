@@ -989,7 +989,7 @@
                 "Negotiation"
               ],
               "appliesTo": "maxExperience",
-              "values": 1
+              "values": [1]
             }
           ],
           "description": "Humans are able to grow their abilities ever so slightly faster than the other intelligent races. You need {0} less stat experience before it increases."

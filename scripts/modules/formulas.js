@@ -307,9 +307,6 @@ export function calculateStatMaxExperience(char, statName, baseMaxExperience = n
     let base = baseMaxExperience;
     if (base === null || base === undefined) {
         base = DEFAULT_STAT_MAX_EXPERIENCE;
-        if (char && char.uniqueIdentifiers && char.uniqueIdentifiers['Growth']) {
-            base -= char.uniqueIdentifiers['Growth'].values[0];
-        }
     }
 
     const effects = getCategoriesTemporaryEffects(char, statName);
