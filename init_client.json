@@ -11,7 +11,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 0.75,
@@ -135,7 +137,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1,
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 1,
@@ -353,7 +357,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 0.75,
@@ -493,7 +499,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 0.75,
@@ -646,7 +654,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 1.5,
@@ -761,7 +771,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 0.75,
@@ -850,7 +862,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 0.5,
@@ -971,7 +985,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 1,
@@ -1013,7 +1029,19 @@
             80
           ],
           "level": 1,
-          "description": "Humans are known to be able to learn slightly faster than other intelligent races from their past experiences. You only need {0} experience to level up."
+          "description": "Humans are known to be able to learn slightly faster than other intelligent races from their past experiences. You only need {0} experience to level up.",
+          "formulas": [{
+            "values": [
+              20
+            ],
+            "types": [
+              "-"
+            ],
+            "appliesTo": "total",
+            "statsAffected": [
+              "LevelExperience"
+            ]
+          }]
         }
       }
     },
@@ -1028,7 +1056,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 1,
@@ -1180,7 +1210,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 0.75,
@@ -1292,7 +1324,9 @@
           "BaseRacialPower": 1,
           "naturalHealthRegen": 1,
           "naturalManaRegen": 1,
-          "naturalRacialPowerRegen": 1
+          "naturalRacialPowerRegen": 1, 
+          "LevelExperience" : 1,
+          "BaseLevelExperience" : 1
         },
         "Roll": {
           "Strength": 0.75,
@@ -1401,7 +1435,8 @@
     "BaseRacialPower",
     "naturalHealthRegen",
     "naturalManaRegen",
-    "naturalRacialPowerRegen"
+    "naturalRacialPowerRegen",
+    "LevelExperience"
   ],
   "Roll": [
     "Strength",
@@ -1423,7 +1458,9 @@
     "BaseRacialPower",
     "naturalHealthRegen",
     "naturalManaRegen",
-    "naturalRacialPowerRegen"
+    "naturalRacialPowerRegen",
+    "LevelExperience",
+    "BaseLevelExperience"
   ],
   "Classes": {
     "Archer": {

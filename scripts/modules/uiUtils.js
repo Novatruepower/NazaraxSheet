@@ -1005,8 +1005,8 @@ export function updateDOM() {
     // Basic Info
     document.getElementById('name').value = character.name;
     document.getElementById('level').value = character.level;
-    document.getElementById('levelExperience').value = character.levelExperience;
-    document.getElementById('levelMaxExperience').value = character.levelMaxExperience; // This is readonly
+    document.getElementById('LevelExperience').value = character.LevelExperience.value;
+    document.getElementById('maxLevelExperience').value = character.maxLevelExperience; // This is readonly
     document.getElementById('purse').value = character.purse;
     document.getElementById('bank').value = character.bank;
 

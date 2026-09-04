@@ -413,6 +413,14 @@ export function calculateMaxRacialPower(charData, level) {
     return Math.floor(calculateMaxTotal(charData, effects, level, calculateBaseMaxRacialPower(charData, effects), 0));
 }
 
+// Function to calculate max experience for a given level
+export function calculatemaxLevelExperience(char) {
+
+    const effects = getCategoriesTemporaryEffects(char, 'LevelExperience');
+
+    return Math.floor(calculateMaxTotal(char, effects, 1, calculateBaseMaxValue(char, effects, 'LevelExperience'), 0));
+}
+
 /**
  * Calculates the total defense for a character, including equipped armor and temporary effects.
  * @param {object} charData The character object.
@@ -530,11 +538,6 @@ export function calculateRollStatTotal(char, statName) {
     const baseStat = applyTemporaryEffects(char, combinedValue * racialChange, effectsOnInitialValue);
 
     return Math.ceil(calculateMaxTotal(char, effects, 1, Math.ceil(baseStat), equipment));
-}
-
-// Function to calculate max experience for a given level
-export function calculateLevelMaxExperience(char) {
-    return char.uniqueIdentifiers['Self reflection'] ? char.uniqueIdentifiers['Self reflection'].values[0] : 100;
 }
 
 // Then use a function like this to fetch the actual value from the document

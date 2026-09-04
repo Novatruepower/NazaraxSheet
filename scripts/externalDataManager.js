@@ -243,10 +243,10 @@ export const ExternalDataManager = {
             delete racesArr[0][0];
             const raceHeader = racesArr[0].filter(e => e != undefined); 
             this._data['Stats'] = [...racesArr[0].filter(e => e != undefined),
-                'BaseHealth', 'Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+                'BaseHealth', "LevelExperience", 'BaseLevelExperience', 'Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
             delete racesArr[0];
             const health = raceHeader[0];
-            this._data['Other'] = [health, 'BaseHealth', 'Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+            this._data['Other'] = [health, 'LevelExperience', 'BaseLevelExperience', 'BaseHealth', 'Mana', 'BaseMana', 'RacialPower', 'BaseRacialPower', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
             delete raceHeader[0];
             this._data['Roll'] = raceHeader.filter(e => e != undefined);
 
@@ -256,6 +256,8 @@ export const ExternalDataManager = {
                     this._data['Races'][race] = { Stats: { Other: {}, Roll: {} } };
                     this._data['Races'][race]['Stats']['Other'][health] = this.parsePercent(value[1]);
                     this._data['Races'][race]['Stats']['Other']['BaseHealth'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['LevelExperience'] = 1;
+                    this._data['Races'][race]['Stats']['Other']['BaseLevelExperience'] = 1;
                     this._data['Races'][race]['Stats']['Other']['Mana'] = 1;
                     this._data['Races'][race]['Stats']['Other']['BaseMana'] = 1;
                     this._data['Races'][race]['Stats']['Other']['RacialPower'] = 1;

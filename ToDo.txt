@@ -17,3 +17,5 @@ else if (ability.formulas) {
 }
 
 Change BaseRacialPower because of mutant
+
+Fix Self reflection display to work with the temporary effect to

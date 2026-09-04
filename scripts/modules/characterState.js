@@ -3,7 +3,7 @@ import { character, characters, setCharacters, currentCharacterIndex , setCurren
     hasUnsavedChanges, setHasUnsavedChanges
  } from './state.js';
 import { ExternalDataManager } from '../externalDataManager.js';
-import { calculateMaxHealth, calculateMaxMana, calculateMaxRacialPower, calculateTotalDefense, calculateTotalMagicDefense, calculateRollStatTotal, calculateLevelMaxExperience, calculateStatMaxExperience, calculateStatProperty, roll, getAppliedRacialChange } from './formulas.js';
+import { calculateMaxHealth, calculateMaxMana, calculateMaxRacialPower, calculateTotalDefense, calculateTotalMagicDefense, calculateRollStatTotal, calculatemaxLevelExperience, calculateStatMaxExperience, calculateStatProperty, roll, getAppliedRacialChange } from './formulas.js';
 import { ensureMagicElements, ensureRequiredStats, renderTotalMagicDefenseBreakdown } from './inventory.js';
 import { updateDOM, showStatusMessage, renderActiveEffectsSummary, updateRemainingPointsDisplay, showConfirmationModal } from './uiUtils.js';
 import { renderRacial, handleRevertChoices } from './passivesActives.js';
@@ -18,8 +18,7 @@ export const defaultCharacterData = function () {
         specializations: {},
         race: firstRace,
         level: 1,
-        levelExperience: 0,
-        levelMaxExperience: 100, // Will be calculated dynamically
+        maxLevelExperience: 100, // Will be calculated dynamically
         maxHealth: 0, // Will be calculated dynamically
         maxMana: 0, // Will be calculated dynamically
         maxRacialPower: 0, // Will be calculated dynamically
@@ -86,8 +85,6 @@ export const defaultCharacterData = function () {
         bank: 0,
     });
 
-    newCharacter.levelMaxExperience = calculateLevelMaxExperience(newCharacter);
-
     // Initialize each stat with its rolled value, racial change, and calculated total
     ExternalDataManager.rollStats.forEach(statName => {
         const result = newCharacter.isDistributingStats ? MIN_STAT_VALUE : roll(MIN_STAT_VALUE, MAX_STAT_VALUE); // Initialize with MIN_STAT_VALUE if distributing
@@ -105,24 +102,27 @@ export const defaultCharacterData = function () {
 
     ExternalDataManager.otherStats.forEach(statName => {
         const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, statName);
-
+        console.log(statName);
         newCharacter[statName] = {
             value: 0,
             racialChange: initialRacialChange
         }
     });
 
+
     // Initialize Health with temporaryEffects array
     newCharacter['BaseHealth'].value = 100;
+    newCharacter['BaseLevelExperience'].value = 100;
     newCharacter['BaseMana'].value = 100;
     newCharacter['BaseRacialPower'].value = 100;
     newCharacter['naturalHealthRegen'].value = 0.05; //%
     newCharacter['naturalManaRegen'].value = 0.05; //%
     newCharacter['naturalRacialPowerRegen'].value = 0; //%
-
     newCharacter['Health'].temporaryEffects = {}; // Ensure Health has a temporaryEffects array
+    newCharacter['LevelExperience'].temporaryEffects = {}; 
     newCharacter['Mana'].temporaryEffects = {}; // Ensure Mana has a temporaryEffects array
     newCharacter['RacialPower'].temporaryEffects = {}; // Ensure RacialPower has a temporaryEffects array
+    newCharacter.maxLevelExperience = calculatemaxLevelExperience(newCharacter);
 
     //See if usefull
     //newCharacter['naturalHealthRegen'].temporaryEffects = {};
@@ -138,16 +138,16 @@ function adjustValue(oldMaxValue, value, newMaxValue) {
     return value == oldMaxValue ? newMaxValue : Math.min(value, newMaxValue);
 }
 
-export function levelUp(levelExperience) {
-    character.levelExperience = levelExperience;
-    while (character.levelExperience >= character.levelMaxExperience) {
+export function levelUp(LevelExperience) {
+    character.LevelExperience.value = LevelExperience;
+    while (character.LevelExperience.value >= character.maxLevelExperience) {
         character.level++;
-        character.levelExperience -= character.levelMaxExperience;
-        character.levelMaxExperience = calculateLevelMaxExperience(character);
+        character.LevelExperience.value -= character.maxLevelExperience;
+        character.maxLevelExperience = calculatemaxLevelExperience(character);
     }
     document.getElementById('level').value = character.level;
-    document.getElementById('levelMaxExperience').value = character.levelMaxExperience;
-    document.getElementById('levelExperience').value = character.levelExperience;
+    document.getElementById('maxLevelExperience').value = character.maxLevelExperience;
+    document.getElementById('LevelExperience').value = character.LevelExperience.value;
 }
 
 /**
@@ -170,8 +170,8 @@ export function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     char.maxRacialPower = calculateMaxRacialPower(char, char.level);
     char.RacialPower.value = adjustValue(oldMaxValue, char.RacialPower.value, char.maxRacialPower);
 
-    oldMaxValue = char.levelMaxExperience;
-    char.levelMaxExperience = calculateLevelMaxExperience(char);
+    oldMaxValue = char.maxLevelExperience;
+    char.maxLevelExperience = calculatemaxLevelExperience(char);
 
     // Recalculate totalDefense and totalMagicDefense
     char.totalDefense.value = calculateTotalDefense(char);
@@ -182,7 +182,7 @@ export function recalculateSmallUpdateCharacter(char, isDisplay = false) {
     char.totalMagicDefense.value = magicDefResult.value;
 
     if (isDisplay) {
-        levelUp(character.levelExperience);
+        levelUp(character.LevelExperience.value);
         const maxHealthEl = document.getElementById('maxHealth');
         const healthInputEl = document.getElementById('Health');
         const maxManaEl = document.getElementById('maxMana');
@@ -380,8 +380,8 @@ export function prepareCharactersForSaving(chars) {
     charactersToSave.forEach(char => {
         ExternalDataManager.rollStats.forEach(statName => {
             if (char[statName]) {
-                const { maxExperience, total, ...rest } = char[statName];
-                char[statName] = rest; // Assign the object without maxExperience and total
+                const { total, ...rest } = char[statName];
+                char[statName] = rest; // Assign the object without total
             }
         });
         // Exclude calculated properties (maxHealth, maxMana, maxRacialPower, totalDefense) from the saved data

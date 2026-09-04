@@ -10,7 +10,7 @@ import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, 
   } from './characterState.js';
 import { character, characters, setCharacters, currentCharacterIndex, setCurrentCharacterIndex, setHistoryStack, setHistoryPointer, hasUnsavedChanges, setHasUnsavedChanges, setCurrentGoogleDriveFileId } from './state.js';
 import { ensureMagicElements, handleRequiredStatClick, renderArmorTable, renderWeaponTable, renderGeneralTable, renderEquippedSummaries, handleInventoryInputChange, rollAllActiveWeapons, rollAllEquippedArmor, renderWeaponCards, renderArmorCards, renderGeneralCards, setInventoryView, rollWeaponAtIndex, rollArmorAtIndex, toggleAllCards, sortInventory, inventorySortSettings } from './inventory.js';
-import { calculateRollStatTotal, calculateLevelMaxExperience, roll  } from './formulas.js';
+import { calculateRollStatTotal, calculatemaxLevelExperience, roll  } from './formulas.js';
 import { renderRacial, removePassivesLevel, renderGenericClassesPassives } from './passivesActives.js';
 import { saveCharacterToGoogleDrive, loadCharacterFromGoogleDrive, handleGoogleDriveAuthClick, handleGoogleDriveSignoutClick, maybeEnableGoogleDriveButtons  } from './googleDrive.js';
 
@@ -305,14 +305,14 @@ export function handleChange(event) {
     } else {
         newValue = (type === 'number') ? (parseFloat(value) || 0) : value;
 
-        if (id === 'levelExperience') {
+        if (id === 'LevelExperience') {
             levelUp(newValue);
         } else if (id === 'level') {
             const oldLevel = character.level;
             character.level = newValue;
-            character.levelMaxExperience = calculateLevelMaxExperience(character);
-            const levelMaxExpEl = document.getElementById('levelMaxExperience');
-            if (levelMaxExpEl) levelMaxExpEl.value = character.levelMaxExperience;
+            character.maxLevelExperience = calculatemaxLevelExperience(character);
+            const levelMaxExpEl = document.getElementById('maxLevelExperience');
+            if (levelMaxExpEl) levelMaxExpEl.value = character.maxLevelExperience;
             if (newValue < oldLevel) removePassivesLevel();
             
             renderRacial();
@@ -702,7 +702,7 @@ export function isNotLocal() {
 
 export function attachEventListeners() {
     const inputs = document.querySelectorAll(
-        '#name, #level, #levelExperience, #race, #Health, #Mana, #RacialPower, #personalNotes, #total-defense, #backstory, #purse, #bank'
+        '#name, #level, #LevelExperience, #race, #Health, #Mana, #RacialPower, #personalNotes, #total-defense, #backstory, #purse, #bank'
     );
     inputs.forEach(input => {
         if (!input.readOnly) {
