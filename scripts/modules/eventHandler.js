@@ -3,7 +3,8 @@ import { ExternalDataManager } from '../externalDataManager.js';
 import { showConfirmationModal, updateRemainingPointsDisplay, renderTemporaryEffects, refreshTemporaryModalTitle, renderSpecializations, updateSpecializationDropdownAndData,
     getCharacterStatesActive, updateDOM, showStatusMessage, quickRollStats, distributeStats, addManualTemporaryEffect, closeTemporaryEffectsModal, endTurn, toggleSidebar,
     updatePanelsPosition, closeDamageModal, takeDamage, setTempEffectsStatContext, openTemporaryEffectsModal, toggleSection,
-    openDirectAddEffectModal, closeDirectAddEffectModal, handleDirectAddEffectSubmit, currentStatForTempEffects
+    openDirectAddEffectModal, closeDirectAddEffectModal, handleDirectAddEffectSubmit, currentStatForTempEffects,
+    updateAllTempEffectsButtons, highlightStatsWithActiveEffects, renderActiveEffectsSummary
  } from './uiUtils.js';
 import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, defaultCharacterData, populateCharacterSelector, saveCurrentStateToHistory, saveCharacterToFile,
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
@@ -404,8 +405,15 @@ export function handleStateCheckboxChange(event) {
     character.states[value] = checked;
 
     // Update the displayed value in the input field
-    document.getElementById('state-display').value = getCharacterStatesActive().join(', ');
+    const stateDisplay = document.getElementById('state-display');
+    if (stateDisplay) {
+        stateDisplay.value = getCharacterStatesActive().join(', ');
+    }
 
+    recalculateCharacterDerivedProperties(character, true);
+    updateAllTempEffectsButtons();
+    highlightStatsWithActiveEffects();
+    renderActiveEffectsSummary();
     setHasUnsavedChanges(true); // Mark that there are unsaved changes
 }
 

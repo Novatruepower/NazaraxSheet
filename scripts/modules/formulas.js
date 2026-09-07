@@ -14,14 +14,98 @@ export function isMatchingProperty(appliesTo, targetProperty) {
     return normalize(appliesTo) === normalize(targetProperty);
 }
 
-export function getCategoriesTemporaryEffects(charData, statName) {
-    let categoriesTemporaryEffects = [];
-    const temporaryEffects = charData[statName].temporaryEffects;
+export function getCharacterStateValue(charData, stateName) {
+    const data = (charData && charData.states) ? charData : character;
+    if (!data || !data.states) return false;
+    if (data.states[stateName] !== undefined) {
+        return Boolean(data.states[stateName]);
+    }
+    const lower = String(stateName).toLowerCase().trim();
+    for (const key of Object.keys(data.states)) {
+        if (key.toLowerCase().trim() === lower) {
+            return Boolean(data.states[key]);
+        }
+    }
+    return false;
+}
 
+export function isConditionMet(charData, cond) {
+    if (!cond) return true;
+
+    if (typeof cond === 'string') {
+        const trimmed = cond.trim();
+        if (trimmed.startsWith('!')) {
+            const stateName = trimmed.slice(1).trim();
+            return !getCharacterStateValue(charData, stateName);
+        }
+        if (trimmed.toLowerCase().startsWith('not:')) {
+            const stateName = trimmed.slice(4).trim();
+            return !getCharacterStateValue(charData, stateName);
+        }
+        if (trimmed.toLowerCase().startsWith('not ')) {
+            const stateName = trimmed.slice(4).trim();
+            return !getCharacterStateValue(charData, stateName);
+        }
+        if (trimmed.includes('=') || trimmed.includes(':')) {
+            const separator = trimmed.includes('=') ? '=' : ':';
+            const parts = trimmed.split(separator);
+            const stateName = parts[0].trim();
+            const expectedStr = parts[1].trim().toLowerCase();
+            const expected = expectedStr !== 'false' && expectedStr !== '0';
+            return getCharacterStateValue(charData, stateName) === expected;
+        }
+        return getCharacterStateValue(charData, trimmed);
+    }
+
+    if (typeof cond === 'object') {
+        if (cond.state !== undefined) {
+            const expected = cond.value !== undefined ? Boolean(cond.value)
+                : cond.active !== undefined ? Boolean(cond.active)
+                : cond.not !== undefined ? !cond.not
+                : true;
+            return getCharacterStateValue(charData, cond.state) === expected;
+        }
+        for (const [st, expectedVal] of Object.entries(cond)) {
+            if (getCharacterStateValue(charData, st) !== Boolean(expectedVal)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return true;
+}
+
+export function isEffectConditionsMet(charData, effect) {
+    if (!effect) return true;
+    const conditions = effect.conditions;
+    if (!conditions) return true;
+
+    if (Array.isArray(conditions)) {
+        return conditions.every(cond => isConditionMet(charData, cond));
+    }
+
+    return isConditionMet(charData, conditions);
+}
+
+export function getCategoriesTemporaryEffects(charData, statName, onlyActive = false) {
+    let categoriesTemporaryEffects = [];
+    if (!charData) return categoriesTemporaryEffects;
+
+    const targetStat = charData[statName];
+    if (!targetStat || !targetStat.temporaryEffects) return categoriesTemporaryEffects;
+
+    const temporaryEffects = targetStat.temporaryEffects;
     for (const category in temporaryEffects) {
-        categoriesTemporaryEffects.push(...temporaryEffects[category]);
+        if (Array.isArray(temporaryEffects[category])) {
+            categoriesTemporaryEffects.push(...temporaryEffects[category]);
+        }
     }
     
+    if (onlyActive) {
+        return categoriesTemporaryEffects.filter(effect => isEffectConditionsMet(charData, effect));
+    }
+
     return categoriesTemporaryEffects;
 }
 
@@ -48,7 +132,7 @@ export function addTemporaryEffect(char, category, effect, duration) {
         const stat = char[statName];
         if (!stat) {
             console.error(`Stat "${statName}" not found on character.`);
-            return;
+            continue;
         }
 
         if (!stat.temporaryEffects) {
@@ -230,7 +314,12 @@ export function applyPercentOnBaseValue(charData, effect, baseValue) {
 export function applyTemporaryOperatorEffects(charData, temporaryEffects, type, baseValue, currentValue) {
     let tempValue = currentValue;
 
-    if (type === '*') {
+    if (type === '=' || type === 'set') {
+        temporaryEffects.forEach(effect => {
+            tempValue = applyPercent(charData, effect);
+        });
+    }
+    else if (type === '*') {
         temporaryEffects.forEach(effect => {
             tempValue *= applyPercent(charData, effect);
         });
@@ -259,7 +348,7 @@ export function applyTemporaryOperatorEffects(charData, temporaryEffects, type, 
 
 export function applyTemporaryFilterEffects(charData, temporaryEffects, baseValue, currentValue, isTotal) {
     let tempValue = currentValue;
-    const operators = isTotal ? ['*', '/', '+', '-'] : ['+', '-', '*', '/'];
+    const operators = isTotal ? ['=', 'set', '*', '/', '+', '-'] : ['=', 'set', '+', '-', '*', '/'];
     operators.forEach(type => {
         tempValue = applyTemporaryOperatorEffects(charData, temporaryEffects.filter(effect => (effect.type || effect.types?.[0]) === type), type, baseValue, tempValue);
     });
@@ -281,20 +370,25 @@ export function applyTemporaryEffects(charData, baseValue, temporaryEffects, tar
         return parseFloat(baseValue) || 0;
     }
 
+    const activeEffects = temporaryEffects.filter(effect => isEffectConditionsMet(charData, effect));
+    if (activeEffects.length === 0) {
+        return parseFloat(baseValue) || 0;
+    }
+
     let currentValue = parseFloat(baseValue) || 0;
     const baseFloatValue = currentValue;
 
     // When targeting a specific property (e.g. 'maxExperience', 'equipment', 'baseValue', 'total')
     if (targetProperty) {
-        const matchingEffects = temporaryEffects.filter(effect => isMatchingProperty(effect.appliesTo, targetProperty));
+        const matchingEffects = activeEffects.filter(effect => isMatchingProperty(effect.appliesTo, targetProperty));
         return applyTemporaryFilterEffects(charData, matchingEffects, baseFloatValue, currentValue, isMatchingProperty(targetProperty, 'total'));
     }
 
     // Default pipeline for stats when no specific property is targeted:
     // Only apply generic stat calculation stages ('initial-value', 'base-value', 'total')
     // and exclude property-specific effects like 'maxExperience' from polluting total calculation.
-    const notTotalEffects = temporaryEffects.filter(effect => !isMatchingProperty(effect.appliesTo, 'total'));
-    const totalEffects = temporaryEffects.filter(effect => isMatchingProperty(effect.appliesTo, 'total'));
+    const notTotalEffects = activeEffects.filter(effect => !isMatchingProperty(effect.appliesTo, 'total'));
+    const totalEffects = activeEffects.filter(effect => isMatchingProperty(effect.appliesTo, 'total'));
     const appliesTo = ['initial-value', 'base-value'];
     appliesTo.forEach(applieTo => {
         currentValue = applyTemporaryFilterEffects(charData, notTotalEffects.filter(effect => isMatchingProperty(effect.appliesTo, applieTo)), baseFloatValue, currentValue, false);
@@ -503,12 +597,55 @@ export function calculateTotalMagicDefense(charData) {
 }
 
 export function getAppliedRacialChange(charData, statName) {
-    if (ExternalDataManager.stats.includes(statName)) {
+    if (charData && charData[statName]?.racialChange !== undefined) {
         return charData[statName].racialChange;
     }
 
-    console.warn(`getAppliedRacialChange: Unhandled statName '${statName}'. Returning 0.`);
-    return 0;
+    if (ExternalDataManager.stats.includes(statName)) {
+        return charData?.[statName]?.racialChange ?? 1;
+    }
+
+    const val = ExternalDataManager.getRacialChange(charData?.race, statName);
+    return val !== null && val !== undefined ? val : 1;
+}
+
+/**
+ * Calculates the regeneration rate for a given regen stat, taking into account
+ * base value, racial changes, and all temporary/permanent effects.
+ * @param {object} charData The character object.
+ * @param {string} statName The regeneration stat name (e.g. 'NaturalHealthRegen', 'NaturalManaRegen', 'NaturalRacialPowerRegen', 'RacialHealthRegen').
+ * @returns {number} The calculated net regeneration rate.
+ */
+export function calculateRegenRate(charData, statName) {
+    if (!charData) return 0;
+    const stat = charData[statName];
+    if (!stat) return 0;
+
+    const effects = getCategoriesTemporaryEffects(charData, statName);
+    const racialChange = getAppliedRacialChange(charData, statName);
+
+    // 1. Effects on initial value
+    const effectsOnInitialValue = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'initial-value'));
+    let base = applyTemporaryEffects(charData, parseFloat(stat.value) || 0, effectsOnInitialValue);
+
+    // 2. Apply racial modifier
+    let currentTotal = base * (racialChange !== undefined && racialChange !== null ? racialChange : 1);
+
+    // 3. Effects on base value
+    const effectsOnBaseValue = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'base-value'));
+    currentTotal = applyTemporaryEffects(charData, currentTotal, effectsOnBaseValue);
+
+    // 4. Effects on total
+    const effectsOnTotal = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'total'));
+    currentTotal = applyTemporaryEffects(charData, currentTotal, effectsOnTotal);
+
+    // 5. Generic property targeting 'value' if any
+    const propertyEffects = effects.filter(effect => isMatchingProperty(effect.appliesTo, 'value'));
+    if (propertyEffects.length > 0) {
+        currentTotal = applyTemporaryEffects(charData, currentTotal, propertyEffects);
+    }
+
+    return currentTotal;
 }
 
 // Function to calculate the total for a given stat

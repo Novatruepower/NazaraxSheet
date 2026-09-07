@@ -115,19 +115,28 @@ export const defaultCharacterData = function () {
     newCharacter['BaseLevelExperience'].value = 100;
     newCharacter['BaseMana'].value = 100;
     newCharacter['BaseRacialPower'].value = 100;
-    newCharacter['naturalHealthRegen'].value = 0.05; //%
-    newCharacter['naturalManaRegen'].value = 0.05; //%
-    newCharacter['naturalRacialPowerRegen'].value = 0; //%
+
+    const regenDefaults = {
+        'NaturalHealthRegen': 0.05,
+        'NaturalManaRegen': 0.05,
+        'NaturalRacialPowerRegen': 0,
+        'RacialHealthRegen': 0
+    };
+
+    for (const [sName, defaultVal] of Object.entries(regenDefaults)) {
+        const initialRacialChange = ExternalDataManager.getRacialChange(newCharacter.race, sName);
+        newCharacter[sName] = {
+            value: defaultVal,
+            racialChange: initialRacialChange !== null && initialRacialChange !== undefined ? initialRacialChange : 1,
+            temporaryEffects: {}
+        };
+    }
+
     newCharacter['Health'].temporaryEffects = {}; // Ensure Health has a temporaryEffects array
     newCharacter['LevelExperience'].temporaryEffects = {}; 
     newCharacter['Mana'].temporaryEffects = {}; // Ensure Mana has a temporaryEffects array
     newCharacter['RacialPower'].temporaryEffects = {}; // Ensure RacialPower has a temporaryEffects array
     newCharacter.maxLevelExperience = calculatemaxLevelExperience(newCharacter);
-
-    //See if usefull
-    //newCharacter['naturalHealthRegen'].temporaryEffects = {};
-    //newCharacter['naturalManaRegen'].temporaryEffects = {};
-    //newCharacter['naturalRacialPowerRegen'].temporaryEffects = {};
 
     recalculateCharacterDerivedProperties(newCharacter); // Calculate initial derived properties
 
@@ -476,7 +485,7 @@ export function initLoadCharacter(loadedChar) {
                         newChar[key].maxExperience = DEFAULT_STAT_MAX_EXPERIENCE;
                     }
 
-                    if (ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense' || key === 'totalMagicDefense') {
+                    if (ExternalDataManager.rollStats.includes(key) || key === 'Health' || key === 'Mana' || key === 'RacialPower' || key === 'totalDefense' || key === 'totalMagicDefense' || key === 'NaturalHealthRegen' || key === 'NaturalManaRegen' || key === 'NaturalRacialPowerRegen' || key === 'RacialHealthRegen') {
                         if (typeof newChar[key].temporaryEffects === 'undefined' || newChar[key].temporaryEffects === null || Array.isArray(newChar[key].temporaryEffects)) {
                             newChar[key].temporaryEffects = {};
                         }
@@ -487,6 +496,18 @@ export function initLoadCharacter(loadedChar) {
             }
         }
     }
+
+    const regenStats = ['NaturalHealthRegen', 'NaturalManaRegen', 'NaturalRacialPowerRegen', 'RacialHealthRegen'];
+    regenStats.forEach(s => {
+        if (!newChar[s]) {
+            const defVal = (s.includes('Power') || s.startsWith('Racial')) ? 0 : 0.05;
+            const rChange = ExternalDataManager.getRacialChange(newChar.race, s);
+            newChar[s] = { value: defVal, racialChange: rChange !== null && rChange !== undefined ? rChange : 1, temporaryEffects: {} };
+        }
+        if (!newChar[s].temporaryEffects) {
+            newChar[s].temporaryEffects = {};
+        }
+    });
 
     // Handle section visibility - ensure all default sections are present
     newChar.htmlVisibility = { ...defaultCharacterData().htmlVisibility, ...loadedChar.htmlVisibility };

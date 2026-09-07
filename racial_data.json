@@ -510,7 +510,7 @@
               { "label": "Mana or health regeneration be doubled",
                 "type": "regen_doubled",
                 "calc": "mult", "value": 2,
-                "applicableStats": ["naturalManaRegen", "naturalHealthRegen"], 
+                "applicableStats": ["NaturalManaRegen", "NaturalHealthRegen"], 
                 "unique":"Mutation_Degeneration",
                 "setsOption": [1]
               }

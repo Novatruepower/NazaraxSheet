@@ -83,6 +83,10 @@ function processRacialRegularPassiveChange(newAbilityData) {
 
     removeTemporaryEffectByIdentifier(newAbilityData, race);
 
+    if (newAbilityData.identifier) {
+        character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
+    }
+
     if (newAbilityData.formulas && newAbilityData.formulas.length > 0) {
         for (const formula of newAbilityData.formulas) {
             if (formula.statsAffected) {
@@ -94,12 +98,13 @@ function processRacialRegularPassiveChange(newAbilityData) {
                     formula['name'] = newAbilityData.name;
                 }
 
+                if (!formula['conditions'] && Array.isArray(newAbilityData['conditions'])) {
+                    formula['conditions'] = newAbilityData['conditions'];
+                }
+
                 addTemporaryEffect(character, race, formula, Infinity);
             }
         }
-    }
-    else if (newAbilityData.identifier) {
-        character.uniqueIdentifiers[newAbilityData.identifier] = newAbilityData;
     }
 
     recalculateCharacterDerivedProperties(character, true);

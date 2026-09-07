@@ -2,7 +2,7 @@ import { ExternalDataManager } from '../externalDataManager.js'
 import { MIN_STAT_VALUE, MAX_STAT_VALUE, TOTAL_DISTRIBUTION_POINTS } from './constants.js';
 import { SECTION_VISIBILITY, HTML_VISIBILITY } from './constants.js';
 import { character, setHasUnsavedChanges } from './state.js';
-import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal, addTemporaryEffect, roll } from './formulas.js';
+import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal, calculateRegenRate, addTemporaryEffect, roll, isEffectConditionsMet } from './formulas.js';
 import { handlePlayerStatInputChange } from './eventHandler.js';
 import { renderRacial } from './passivesActives.js';
 import { renderWeaponTable, renderArmorTable, renderGeneralTable } from './inventory.js';
@@ -187,10 +187,13 @@ export function updateStaticTempEffectsButton(statName, displayName) {
     const btn = document.querySelector(`.temp-effects-btn[data-stat-name="${statName}"]`);
     if (!btn) return;
 
-    const activeEffects = getCategoriesTemporaryEffects(character, statName);
+    const allEffects = getCategoriesTemporaryEffects(character, statName);
+    const activeEffects = allEffects.filter(eff => isEffectConditionsMet(character, eff));
     let badgeHtml = '';
     if (activeEffects.length > 0) {
         badgeHtml = `<span class="inline-flex items-center ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200 animate-pulse">✨ ${activeEffects.length}</span>`;
+    } else if (allEffects.length > 0) {
+        badgeHtml = `<span class="inline-flex items-center ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300" title="Effects currently inactive due to conditions">⏸️ ${allEffects.length}</span>`;
     }
 
     btn.innerHTML = `
@@ -223,7 +226,7 @@ export function updateAllTempEffectsButtons() {
 export function highlightStatsWithActiveEffects() {
     const healthInputEl = document.getElementById('Health');
     if (healthInputEl) {
-        const hasHealthEff = getCategoriesTemporaryEffects(character, 'Health').length > 0;
+        const hasHealthEff = getCategoriesTemporaryEffects(character, 'Health', true).length > 0;
         if (hasHealthEff) {
             healthInputEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20', 'dark:bg-indigo-950/20');
         } else {
@@ -232,7 +235,7 @@ export function highlightStatsWithActiveEffects() {
     }
     const maxHealthEl = document.getElementById('maxHealth');
     if (maxHealthEl) {
-        const hasEff = getCategoriesTemporaryEffects(character, 'Health').length > 0;
+        const hasEff = getCategoriesTemporaryEffects(character, 'Health', true).length > 0;
         if (hasEff) {
             maxHealthEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
         } else {
@@ -241,7 +244,7 @@ export function highlightStatsWithActiveEffects() {
     }
     const maxManaEl = document.getElementById('maxMana');
     if (maxManaEl) {
-        const hasEff = getCategoriesTemporaryEffects(character, 'Mana').length > 0;
+        const hasEff = getCategoriesTemporaryEffects(character, 'Mana', true).length > 0;
         if (hasEff) {
             maxManaEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
         } else {
@@ -250,7 +253,7 @@ export function highlightStatsWithActiveEffects() {
     }
     const maxRacialPowerEl = document.getElementById('maxRacialPower');
     if (maxRacialPowerEl) {
-        const hasEff = getCategoriesTemporaryEffects(character, 'RacialPower').length > 0;
+        const hasEff = getCategoriesTemporaryEffects(character, 'RacialPower', true).length > 0;
         if (hasEff) {
             maxRacialPowerEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
         } else {
@@ -259,7 +262,7 @@ export function highlightStatsWithActiveEffects() {
     }
     const totalDefenseEl = document.getElementById('total-defense');
     if (totalDefenseEl) {
-        const hasEff = getCategoriesTemporaryEffects(character, 'totalDefense').length > 0;
+        const hasEff = getCategoriesTemporaryEffects(character, 'totalDefense', true).length > 0;
         if (hasEff) {
             totalDefenseEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
         } else {
@@ -268,7 +271,7 @@ export function highlightStatsWithActiveEffects() {
     }
     const totalMagicDefenseEl = document.getElementById('total-magic-defense');
     if (totalMagicDefenseEl) {
-        const hasEff = getCategoriesTemporaryEffects(character, 'totalMagicDefense').length > 0;
+        const hasEff = getCategoriesTemporaryEffects(character, 'totalMagicDefense', true).length > 0;
         if (hasEff) {
             totalMagicDefenseEl.classList.add('border-purple-400', 'dark:border-purple-500', 'bg-purple-50/20');
         } else {
@@ -280,7 +283,7 @@ export function highlightStatsWithActiveEffects() {
         ExternalDataManager.rollStats.forEach(statName => {
             const totalEl = document.getElementById(`${statName}-total`);
             if (totalEl) {
-                const hasEff = getCategoriesTemporaryEffects(character, statName).length > 0;
+                const hasEff = getCategoriesTemporaryEffects(character, statName, true).length > 0;
                 if (hasEff) {
                     totalEl.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50/20');
                 } else {
@@ -297,7 +300,11 @@ function formatStatDisplayName(stat) {
         'Mana': 'Mana',
         'RacialPower': 'Racial Power',
         'totalDefense': 'Total Physical Defense',
-        'totalMagicDefense': 'Total Magic Defense'
+        'totalMagicDefense': 'Total Magic Defense',
+        'NaturalHealthRegen': 'Natural Health Regen',
+        'NaturalManaRegen': 'Natural Mana Regen',
+        'NaturalRacialPowerRegen': 'Natural Racial Power Regen',
+        'RacialHealthRegen': 'Racial Health Regen'
     };
     if (map[stat]) return map[stat];
     return stat.replace(/([A-Z])/g, ' $1').trim();
@@ -489,6 +496,20 @@ export function renderActiveEffectsSummary() {
             const badgeColorClass = isPermList ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300';
 
             const formattedStats = group.stats.map(s => formatStatDisplayName(s)).join(', ');
+            const conditions = group.instances[0]?.effect?.conditions;
+            const conditionsMet = group.instances[0]?.effect ? isEffectConditionsMet(character, group.instances[0].effect) : true;
+            let conditionsHtml = '';
+            if (conditions && Array.isArray(conditions) && conditions.length > 0) {
+                const condStr = conditions.join(', ');
+                conditionsHtml = `
+                    <div class="text-xs mt-1 ${conditionsMet ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400 font-medium'}">
+                        <span>Conditions: [${condStr}]</span>
+                        <span class="ml-1 px-1.5 py-0.2 rounded text-[10px] uppercase font-bold ${conditionsMet ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'}">
+                            ${conditionsMet ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                `;
+            }
 
             card.innerHTML = `
                 <div class="flex-grow text-sm text-gray-700 dark:text-gray-300 mr-2 min-w-0">
@@ -499,6 +520,7 @@ export function renderActiveEffectsSummary() {
                     <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">
                         ${operator}${val}${isPercent} (applies to ${appliesTo})
                     </div>
+                    ${conditionsHtml}
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <span class="px-2 py-0.5 rounded text-xs font-semibold ${badgeColorClass}">
@@ -618,7 +640,7 @@ export function openDirectAddEffectModal(isPermanent = false, defaultStat = null
     // Populate stat options
     if (statSelect) {
         statSelect.innerHTML = '';
-        const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'];
+        const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense', 'NaturalHealthRegen', 'NaturalManaRegen', 'NaturalRacialPowerRegen', 'RacialHealthRegen'];
         allStats.forEach(stat => {
             const option = document.createElement('option');
             option.value = stat;
@@ -714,7 +736,7 @@ export function openDirectEditEffectModal(statName, category, effectIndex, isPer
             statSelect.appendChild(groupOption);
         }
 
-        const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense'];
+        const allStats = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense', 'NaturalHealthRegen', 'NaturalManaRegen', 'NaturalRacialPowerRegen', 'RacialHealthRegen'];
         allStats.forEach(s => {
             const option = document.createElement('option');
             option.value = s;
@@ -833,6 +855,11 @@ export function handleDirectAddEffectSubmit(event) {
         const oldStatName = editStatInput ? editStatInput.value : '';
         const category = editCategoryInput ? editCategoryInput.value : 'manual';
         const effectIndex = editIndexInput ? parseInt(editIndexInput.value) : -1;
+
+        const existingEff = character[oldStatName]?.temporaryEffects?.[category]?.[effectIndex];
+        if (existingEff && existingEff.conditions) {
+            effectObj.conditions = existingEff.conditions;
+        }
 
         if (statSelection === '__grouped__' && Array.isArray(groupedStats) && groupedStats.length > 0) {
             // Update all stats in the group
@@ -1288,6 +1315,20 @@ export function renderTemporaryEffects(statName) {
         const operator = effect.type || '+';
         const name = effect.name || 'Unnamed Effect';
         const appliesTo = effect.appliesTo || 'total';
+        const conditions = effect.conditions;
+        const conditionsMet = isEffectConditionsMet(character, effect);
+        let conditionsHtml = '';
+        if (conditions && Array.isArray(conditions) && conditions.length > 0) {
+            const condStr = conditions.join(', ');
+            conditionsHtml = `
+                <div class="text-xs mt-1 ${conditionsMet ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400 font-medium'}">
+                    <span>Conditions: [${condStr}]</span>
+                    <span class="ml-1 px-1.5 py-0.2 rounded text-[10px] uppercase font-bold ${conditionsMet ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'}">
+                        ${conditionsMet ? 'Active' : 'Inactive'}
+                    </span>
+                </div>
+            `;
+        }
 
         const card = document.createElement('div');
         card.className = 'flex items-center justify-between p-3 border border-gray-100 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 mb-2';
@@ -1301,6 +1342,7 @@ export function renderTemporaryEffects(statName) {
                 <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">
                     ${operator}${val}${isPercent} (applies to ${appliesTo})
                 </div>
+                ${conditionsHtml}
             </div>
             <div class="flex items-center gap-3">
                 <span class="px-2 py-0.5 rounded text-xs font-semibold ${badgeColorClass}">
@@ -1397,8 +1439,9 @@ export function addManualTemporaryEffect() {
         // If the stat is Health, Mana, RacialPower, totalDefense, or totalMagicDefense, recalculate its value
         if (currentStatForTempEffects === 'Health' || currentStatForTempEffects === 'Mana' || currentStatForTempEffects === 'RacialPower' || currentStatForTempEffects === 'totalDefense' || currentStatForTempEffects === 'totalMagicDefense') {
             recalculateSmallUpdateCharacter(character, true);
-        } else { // For rollStats, update their total
-            document.getElementById(`${currentStatForTempEffects}-total`).value = calculateRollStatTotal(character, currentStatForTempEffects);
+        } else if (ExternalDataManager.rollStats.includes(currentStatForTempEffects)) { // For rollStats, update their total
+            const totalEl = document.getElementById(`${currentStatForTempEffects}-total`);
+            if (totalEl) totalEl.value = calculateRollStatTotal(character, currentStatForTempEffects);
         }
         setHasUnsavedChanges(true);
     }
@@ -1419,8 +1462,9 @@ export function removeTemporaryEffect(event) {
         // If the stat is Health, Mana, RacialPower, totalDefense, or totalMagicDefense, recalculate its value
         if (statName === 'Health' || statName === 'Mana' || statName === 'RacialPower' || statName === 'totalDefense' || statName === 'totalMagicDefense') {
             recalculateSmallUpdateCharacter(character, true);
-        } else { // For rollStats, update their total
-            document.getElementById(`${statName}-total`).value = calculateRollStatTotal(character, statName);
+        } else if (ExternalDataManager.rollStats.includes(statName)) { // For rollStats, update their total
+            const totalEl = document.getElementById(`${statName}-total`);
+            if (totalEl) totalEl.value = calculateRollStatTotal(character, statName);
         }
         setHasUnsavedChanges(true);
     }
@@ -1435,12 +1479,15 @@ export function endTurn() {
         const permManaRegenActive = character.permManaRegenActive > 0;
         const notFighting = !character.states['In Fight'];
 
+        const naturalHealthRegenRate = calculateRegenRate(character, 'NaturalHealthRegen');
+        const naturalManaRegenRate = calculateRegenRate(character, 'NaturalManaRegen');
+
         let naturalHealthRegen = 0;
-        let naturalManaRegen = notFighting || permManaRegenActive ? character.naturalManaRegen.value * character.naturalManaRegen.racialChange  * character.maxMana : 0;
+        let naturalManaRegen = notFighting || permManaRegenActive ? naturalManaRegenRate * character.maxMana : 0;
 
         if (notFighting || permHealthRegenActive) {
             if (permHealthRegenActive || !(character.states['Bleeding'] || character.states['Taking Damage'])) {
-                naturalHealthRegen = character.naturalHealthRegen.value * character.naturalHealthRegen.racialChange * character.maxHealth;
+                naturalHealthRegen = naturalHealthRegenRate * character.maxHealth;
             }
         }
 
@@ -1449,16 +1496,17 @@ export function endTurn() {
             naturalManaRegen *= 2;
         }
 
-        character.Health.value += naturalHealthRegen;
-        character.Mana.value += naturalManaRegen;
+        character.Health.value = Math.min(character.Health.value + naturalHealthRegen, character.maxHealth);
+        character.Mana.value = Math.min(character.Mana.value + naturalManaRegen, character.maxMana);
 
-        if (character.uniqueIdentifiers['Dragon’s Metabolism'] && !character.states['Active Racial Skill']) {
-            character.Health.value += character.uniqueIdentifiers['Dragon’s Metabolism'].values[0] * character.maxHealth;
-        }
+        const racialHealthRegenRate = calculateRegenRate(character, 'RacialHealthRegen');
+        const racialHealthRegen = racialHealthRegenRate * character.maxHealth;
+        character.Health.value = Math.min(character.Health.value + racialHealthRegen, character.maxHealth);
 
         const maxRacialPower = document.getElementById('maxRacialPower').value;
         let data = character.uniqueIdentifiers['Spatial Capture'];
-        let racialPowerRegen = data ? data.values[0] + character.level : character.naturalRacialPowerRegen.value * character.naturalRacialPowerRegen.racialChange * maxRacialPower;
+        const naturalRacialPowerRegenRate = calculateRegenRate(character, 'NaturalRacialPowerRegen');
+        let racialPowerRegen = data ? data.values[0] + character.level : naturalRacialPowerRegenRate * maxRacialPower;
         character.RacialPower.value += racialPowerRegen;
 
         if (character.uniqueIdentifiers['Absorption']) {
@@ -1475,8 +1523,12 @@ export function endTurn() {
 
         let effectsChanged = false;
         // Iterate over all character properties that might have temporary effects
-        // This includes rollStats, Health, Mana, RacialPower, totalDefense, and totalMagicDefense
-        const statsWithEffects = [...ExternalDataManager.rollStats, 'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense', 'naturalHealthRegen', 'naturalManaRegen', 'naturalRacialPowerRegen'];
+        // This includes rollStats, Health, Mana, RacialPower, totalDefense, totalMagicDefense, and all regen stats
+        const statsWithEffects = [
+            ...ExternalDataManager.rollStats,
+            'Health', 'Mana', 'RacialPower', 'totalDefense', 'totalMagicDefense',
+            'NaturalHealthRegen', 'NaturalManaRegen', 'NaturalRacialPowerRegen', 'RacialHealthRegen'
+        ];
 
         statsWithEffects.forEach(statName => {
             if (character[statName] && character[statName].temporaryEffects) {
