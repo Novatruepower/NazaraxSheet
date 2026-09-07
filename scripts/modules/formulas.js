@@ -14,19 +14,27 @@ export function isMatchingProperty(appliesTo, targetProperty) {
     return normalize(appliesTo) === normalize(targetProperty);
 }
 
-export function getCharacterStateValue(charData, stateName) {
+export function getCharacterStateTurns(charData, stateName) {
     const data = (charData && charData.states) ? charData : character;
-    if (!data || !data.states) return false;
-    if (data.states[stateName] !== undefined) {
-        return Boolean(data.states[stateName]);
-    }
-    const lower = String(stateName).toLowerCase().trim();
-    for (const key of Object.keys(data.states)) {
-        if (key.toLowerCase().trim() === lower) {
-            return Boolean(data.states[key]);
+    if (!data || !data.states) return 0;
+    let val = data.states[stateName];
+    if (val === undefined) {
+        const lower = String(stateName).toLowerCase().trim();
+        for (const key of Object.keys(data.states)) {
+            if (key.toLowerCase().trim() === lower) {
+                val = data.states[key];
+                break;
+            }
         }
     }
-    return false;
+    if (typeof val === 'number') {
+        return Math.max(0, Math.floor(val));
+    }
+    return val ? 1 : 0;
+}
+
+export function getCharacterStateValue(charData, stateName) {
+    return getCharacterStateTurns(charData, stateName) > 0;
 }
 
 export function isConditionMet(charData, cond) {
@@ -46,11 +54,28 @@ export function isConditionMet(charData, cond) {
             const stateName = trimmed.slice(4).trim();
             return !getCharacterStateValue(charData, stateName);
         }
-        if (trimmed.includes('=') || trimmed.includes(':')) {
-            const separator = trimmed.includes('=') ? '=' : ':';
-            const parts = trimmed.split(separator);
+        if (trimmed.includes('>') || trimmed.includes('<') || trimmed.includes('=') || trimmed.includes(':')) {
+            let op = '=';
+            if (trimmed.includes('>=')) op = '>=';
+            else if (trimmed.includes('<=')) op = '<=';
+            else if (trimmed.includes('>')) op = '>';
+            else if (trimmed.includes('<')) op = '<';
+            else if (trimmed.includes('=')) op = '=';
+            else if (trimmed.includes(':')) op = ':';
+
+            const parts = trimmed.split(op);
             const stateName = parts[0].trim();
             const expectedStr = parts[1].trim().toLowerCase();
+            const turns = getCharacterStateTurns(charData, stateName);
+
+            if (op === '>' || op === '<' || op === '>=' || op === '<=') {
+                const targetNum = Number(expectedStr) || 0;
+                if (op === '>') return turns > targetNum;
+                if (op === '>=') return turns >= targetNum;
+                if (op === '<') return turns < targetNum;
+                if (op === '<=') return turns <= targetNum;
+            }
+
             const expected = expectedStr !== 'false' && expectedStr !== '0';
             return getCharacterStateValue(charData, stateName) === expected;
         }
@@ -97,6 +122,10 @@ export function extractStateNamesFromConditions(conditions) {
         if (typeof cond === 'string') {
             let clean = cond.trim();
             if (clean.startsWith('!')) clean = clean.slice(1).trim();
+            else if (clean.toLowerCase().startsWith('not:')) clean = clean.slice(4).trim();
+            else if (clean.toLowerCase().startsWith('not ')) clean = clean.slice(4).trim();
+            if (clean.includes('=')) clean = clean.split('=')[0].trim();
+            if (clean.includes(':')) clean = clean.split(':')[0].trim();
             if (clean && !names.includes(clean)) names.push(clean);
         } else if (typeof cond === 'object' && cond !== null) {
             if (cond.state && !names.includes(cond.state)) {

@@ -4,7 +4,8 @@ import { showConfirmationModal, updateRemainingPointsDisplay, renderTemporaryEff
     getCharacterStatesActive, updateDOM, showStatusMessage, quickRollStats, distributeStats, addManualTemporaryEffect, closeTemporaryEffectsModal, endTurn, toggleSidebar,
     updatePanelsPosition, closeDamageModal, takeDamage, setTempEffectsStatContext, openTemporaryEffectsModal, toggleSection,
     openDirectAddEffectModal, closeDirectAddEffectModal, handleDirectAddEffectSubmit, currentStatForTempEffects,
-    updateAllTempEffectsButtons, highlightStatsWithActiveEffects, renderActiveEffectsSummary, navigateToStateSelector
+    updateAllTempEffectsButtons, highlightStatsWithActiveEffects, renderActiveEffectsSummary, navigateToStateSelector,
+    setCharacterStateTurns, formatCharacterStatesDisplay
  } from './uiUtils.js';
 import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, defaultCharacterData, populateCharacterSelector, saveCurrentStateToHistory, saveCharacterToFile,
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
@@ -401,20 +402,9 @@ export function handleClassCheckboxChange(event) {
 // Function to handle changes in the state checkboxes
 export function handleStateCheckboxChange(event) {
     const { value, checked } = event.target;
-
-    character.states[value] = checked;
-
-    // Update the displayed value in the input field
-    const stateDisplay = document.getElementById('state-display');
-    if (stateDisplay) {
-        stateDisplay.value = getCharacterStatesActive().join(', ');
-    }
-
-    recalculateCharacterDerivedProperties(character, true);
-    updateAllTempEffectsButtons();
-    highlightStatsWithActiveEffects();
-    renderActiveEffectsSummary();
-    setHasUnsavedChanges(true); // Mark that there are unsaved changes
+    const currentTurns = typeof character.states[value] === 'number' ? character.states[value] : 0;
+    const newTurns = checked ? (currentTurns > 0 ? currentTurns : 1) : 0;
+    setCharacterStateTurns(value, newTurns);
 }
 
 // Function to handle changes in the specializations checkboxes
@@ -755,6 +745,38 @@ export function attachEventListeners() {
         stateDropdownOptions.addEventListener('change', function (event) {
             if (event.target.type === 'checkbox' && event.target.name === 'state-option') {
                 handleStateCheckboxChange(event);
+            } else if (event.target.classList.contains('state-turns-input')) {
+                const stateName = event.target.dataset.state;
+                setCharacterStateTurns(stateName, event.target.value);
+            }
+        });
+
+        stateDropdownOptions.addEventListener('input', function (event) {
+            if (event.target.classList.contains('state-turns-input')) {
+                const stateName = event.target.dataset.state;
+                setCharacterStateTurns(stateName, event.target.value);
+            }
+        });
+
+        stateDropdownOptions.addEventListener('click', function (event) {
+            const decBtn = event.target.closest('.state-decrement-btn');
+            if (decBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const stateName = decBtn.dataset.state;
+                const current = typeof character.states[stateName] === 'number' ? character.states[stateName] : 0;
+                setCharacterStateTurns(stateName, Math.max(0, current - 1));
+                return;
+            }
+
+            const incBtn = event.target.closest('.state-increment-btn');
+            if (incBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const stateName = incBtn.dataset.state;
+                const current = typeof character.states[stateName] === 'number' ? character.states[stateName] : 0;
+                setCharacterStateTurns(stateName, current + 1);
+                return;
             }
         });
     }
@@ -783,6 +805,8 @@ export function attachEventListeners() {
 
         const classDisplayInput = document.getElementById('classes-display');
         const classDropdownOptions = document.getElementById('classes-dropdown-options');
+        const stateDisplayInput = document.getElementById('state-display');
+        const stateDropdownOptions = document.getElementById('state-dropdown-options');
         const specializationDisplayInput = document.getElementById('specializations-display');
         const specializationDropdownOptions = document.getElementById('specializations-dropdown-options');
         const saveDropdownBtn = document.getElementById('save-dropdown-btn');
@@ -792,6 +816,9 @@ export function attachEventListeners() {
 
         if (classDisplayInput && classDropdownOptions && !classDisplayInput.contains(event.target) && !classDropdownOptions.contains(event.target)) {
             classDropdownOptions.classList.add('hidden');
+        }
+        if (stateDisplayInput && stateDropdownOptions && !stateDisplayInput.contains(event.target) && !stateDropdownOptions.contains(event.target)) {
+            stateDropdownOptions.classList.add('hidden');
         }
         if (specializationDisplayInput && specializationDropdownOptions && !specializationDisplayInput.contains(event.target) && !specializationDropdownOptions.contains(event.target)) {
             specializationDropdownOptions.classList.add('hidden');

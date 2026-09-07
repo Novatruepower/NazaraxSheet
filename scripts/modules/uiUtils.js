@@ -2,7 +2,7 @@ import { ExternalDataManager } from '../externalDataManager.js'
 import { MIN_STAT_VALUE, MAX_STAT_VALUE, TOTAL_DISTRIBUTION_POINTS } from './constants.js';
 import { SECTION_VISIBILITY, HTML_VISIBILITY } from './constants.js';
 import { character, setHasUnsavedChanges } from './state.js';
-import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal, calculateRegenRate, addTemporaryEffect, roll, isEffectConditionsMet, extractStateNamesFromConditions } from './formulas.js';
+import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal, calculateRegenRate, addTemporaryEffect, roll, isEffectConditionsMet, extractStateNamesFromConditions, getCharacterStateTurns, getCharacterStateValue } from './formulas.js';
 import { handlePlayerStatInputChange } from './eventHandler.js';
 import { renderRacial } from './passivesActives.js';
 import { renderWeaponTable, renderArmorTable, renderGeneralTable } from './inventory.js';
@@ -172,15 +172,62 @@ export function updateRemainingPointsDisplay() {
 }
 
 export function getCharacterStatesActive() {
+    if (!character || !character.states) return [];
     const states = Object.keys(character.states);
     let statesActive = [];
 
     states.forEach(state => {
-        if(character.states[state])
+        const turns = getCharacterStateTurns(character, state);
+        if (turns > 0) {
             statesActive.push(state);
+        }
     });
 
     return statesActive;
+}
+
+export function formatCharacterStatesDisplay() {
+    if (!character || !character.states) return '';
+    const active = [];
+    Object.keys(character.states).forEach(state => {
+        const turns = getCharacterStateTurns(character, state);
+        if (turns > 0) {
+            active.push(`${state} (${turns} ${turns === 1 ? 'turn' : 'turns'})`);
+        }
+    });
+    return active.join(', ');
+}
+
+export function setCharacterStateTurns(stateName, turns) {
+    if (!character || !character.states) return;
+    const parsed = Math.max(0, Math.floor(Number(turns) || 0));
+    character.states[stateName] = parsed;
+
+    const stateDisplay = document.getElementById('state-display');
+    if (stateDisplay) {
+        stateDisplay.value = formatCharacterStatesDisplay();
+    }
+
+    const checkbox = document.querySelector(`input[name="state-option"][value="${stateName}"]`);
+    if (checkbox) {
+        checkbox.checked = parsed > 0;
+    }
+
+    const turnsInput = document.querySelector(`.state-turns-input[data-state="${stateName}"]`);
+    if (turnsInput && parseInt(turnsInput.value) !== parsed) {
+        turnsInput.value = parsed;
+    }
+
+    const turnsLabel = document.querySelector(`.state-turns-label[data-state="${stateName}"]`);
+    if (turnsLabel) {
+        turnsLabel.textContent = parsed === 1 ? 'turn' : 'turns';
+    }
+
+    recalculateCharacterDerivedProperties(character, true);
+    updateAllTempEffectsButtons();
+    highlightStatsWithActiveEffects();
+    renderActiveEffectsSummary();
+    setHasUnsavedChanges(true);
 }
 
 export function updateStaticTempEffectsButton(statName, displayName) {
@@ -1084,25 +1131,47 @@ export function updateDOM() {
     const stateDisplayInput = document.getElementById('state-display');
     const stateDropdownOptions = document.getElementById('state-dropdown-options');
     const states = Object.keys(character.states);
-    const statesActive = getCharacterStatesActive();
 
-    stateDisplayInput.value = statesActive.join(', ');
+    stateDisplayInput.value = formatCharacterStatesDisplay();
 
     stateDropdownOptions.innerHTML = '';
 
     states.forEach(state => {
+        const turns = getCharacterStateTurns(character, state);
+        const isActive = turns > 0;
+        const safeId = state.replace(/\s+/g, '-').toLowerCase();
+
         const checkboxDiv = document.createElement('div');
-        checkboxDiv.className = 'flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md';
+        checkboxDiv.className = 'flex items-center justify-between px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md transition-colors gap-2';
+        checkboxDiv.setAttribute('data-state-row', state);
         checkboxDiv.innerHTML = `
-           <input
-               type="checkbox"
-               id="state-${state.replace(/\s/g, '-')}"
-               name="state-option"
-               value="${state}"
-               class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-               ${statesActive.includes(state) ? 'checked' : ''}
-           />
-           <label for="state-${state.replace(/\s/g, '-')}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">${state}</label>
+           <div class="flex items-center min-w-0 flex-grow">
+               <input
+                   type="checkbox"
+                   id="state-${safeId}"
+                   name="state-option"
+                   value="${state}"
+                   class="form-checkbox h-4 w-4 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500 cursor-pointer"
+                   ${isActive ? 'checked' : ''}
+               />
+               <label for="state-${safeId}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none truncate font-medium">
+                   ${state}
+               </label>
+           </div>
+           <div class="flex items-center gap-1.5 flex-shrink-0">
+               <button type="button" class="state-decrement-btn w-6 h-6 flex items-center justify-center text-xs font-bold rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 active:scale-95 transition-all cursor-pointer" data-state="${state}" title="Decrease turns (min 0)">-</button>
+               <input
+                   type="number"
+                   min="0"
+                   step="1"
+                   value="${turns}"
+                   data-state="${state}"
+                   class="state-turns-input w-12 px-1 py-0.5 text-xs text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                   title="Turns remaining (0 = inactive)"
+               />
+               <button type="button" class="state-increment-btn w-6 h-6 flex items-center justify-center text-xs font-bold rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 active:scale-95 transition-all cursor-pointer" data-state="${state}" title="Increase turns">+</button>
+               <span class="state-turns-label text-[11px] text-gray-500 dark:text-gray-400 w-8 text-right select-none" data-state="${state}">${turns === 1 ? 'turn' : 'turns'}</span>
+           </div>
        `;
         stateDropdownOptions.appendChild(checkboxDiv);
     });
@@ -1561,10 +1630,10 @@ export function removeTemporaryEffect(event) {
  * Decrements the duration of all temporary buffs and removes expired ones.
  */
 export function endTurn() {
-    showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects.", () => {
+    showConfirmationModal("Are you sure you want to end the turn? This will reduce the duration of all temporary effects and active states by 1 turn.", () => {
         const permHealthRegenActive = character.permHealthRegenActive > 0;
         const permManaRegenActive = character.permManaRegenActive > 0;
-        const notFighting = !character.states['In Fight'];
+        const notFighting = !getCharacterStateValue(character, 'In Fight');
 
         const naturalHealthRegenRate = calculateRegenRate(character, 'NaturalHealthRegen');
         const naturalManaRegenRate = calculateRegenRate(character, 'NaturalManaRegen');
@@ -1573,12 +1642,13 @@ export function endTurn() {
         let naturalManaRegen = notFighting || permManaRegenActive ? naturalManaRegenRate * character.maxMana : 0;
 
         if (notFighting || permHealthRegenActive) {
-            if (permHealthRegenActive || !(character.states['Bleeding'] || character.states['Taking Damage'])) {
+            const hasBleedingOrDamage = getCharacterStateValue(character, 'Bleeding') || getCharacterStateValue(character, 'Taking Damage');
+            if (permHealthRegenActive || !hasBleedingOrDamage) {
                 naturalHealthRegen = naturalHealthRegenRate * character.maxHealth;
             }
         }
 
-        if (character.states['Sleeping']) {
+        if (getCharacterStateValue(character, 'Sleeping')) {
             naturalHealthRegen *= 2;
             naturalManaRegen *= 2;
         }
@@ -1600,13 +1670,24 @@ export function endTurn() {
             data = character.uniqueIdentifiers['Absorption'];
             racialPowerRegen = data.values[0];
 
-            if (character.states['Hands Covered'] || character.states['Feets Covered']) {
+            if (getCharacterStateValue(character, 'Hands Covered') || getCharacterStateValue(character, 'Feets Covered')) {
                 racialPowerRegen = data.values[1];
             }
 
             character.RacialPower.value += racialPowerRegen * maxRacialPower;
         }
         character.RacialPower.value = Math.min(character.RacialPower.value, maxRacialPower);
+
+        let statesChanged = false;
+        if (character.states) {
+            Object.keys(character.states).forEach(state => {
+                const currentTurns = getCharacterStateTurns(character, state);
+                if (currentTurns > 0) {
+                    character.states[state] = Math.max(0, currentTurns - 1);
+                    statesChanged = true;
+                }
+            });
+        }
 
         let effectsChanged = false;
         // Iterate over all character properties that might have temporary effects
@@ -1645,12 +1726,15 @@ export function endTurn() {
 
         recalculateCharacterDerivedProperties(character); // Recalculate all derived properties
         updateDOM(); // Update the UI to reflect changes
+        updateAllTempEffectsButtons();
+        highlightStatsWithActiveEffects();
+        renderActiveEffectsSummary();
         setHasUnsavedChanges(true);
 
-        if (effectsChanged) {
-            showStatusMessage("Turn ended. Temporary effects updated.");
+        if (effectsChanged || statesChanged) {
+            showStatusMessage("Turn ended. Temporary effects and state durations updated.");
         } else {
-            showStatusMessage("No temporary effects to update.", false);
+            showStatusMessage("Turn ended. No effects or active states to update.", false);
         }
     });
 }

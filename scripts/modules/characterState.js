@@ -68,14 +68,14 @@ export const defaultCharacterData = function () {
         remainingDistributionPoints: 0,
 
         states: {
-            'In Fight': false,
-            'Unconscious': false,
-            'Sleeping': false,
-            'Taking Damage': false,
-            'Bleeding' : false,
-            'Active Racial Skill': false,
-            'Hands Covered': false,
-            'Feets Covered': false,
+            'In Fight': 0,
+            'Unconscious': 0,
+            'Sleeping': 0,
+            'Taking Damage': 0,
+            'Bleeding' : 0,
+            'Active Racial Skill': 0,
+            'Hands Covered': 0,
+            'Feets Covered': 0,
         },
 
         permHealthRegenActive: 0, //count
@@ -511,6 +511,33 @@ export function initLoadCharacter(loadedChar) {
 
     // Handle section visibility - ensure all default sections are present
     newChar.htmlVisibility = { ...defaultCharacterData().htmlVisibility, ...loadedChar.htmlVisibility };
+
+    // Ensure all states are initialized with turns (minimum 0, 0 = inactive)
+    const defaultStates = defaultCharacterData().states;
+    if (!newChar.states) {
+        newChar.states = { ...defaultStates };
+    } else {
+        Object.keys(defaultStates).forEach(st => {
+            if (newChar.states[st] === undefined) {
+                newChar.states[st] = 0;
+            } else if (typeof newChar.states[st] === 'boolean') {
+                newChar.states[st] = newChar.states[st] ? 1 : 0;
+            } else if (typeof newChar.states[st] === 'number') {
+                newChar.states[st] = Math.max(0, Math.floor(newChar.states[st]));
+            } else {
+                newChar.states[st] = 0;
+            }
+        });
+        Object.keys(newChar.states).forEach(st => {
+            if (typeof newChar.states[st] === 'boolean') {
+                newChar.states[st] = newChar.states[st] ? 1 : 0;
+            } else if (typeof newChar.states[st] === 'number') {
+                newChar.states[st] = Math.max(0, Math.floor(newChar.states[st]));
+            } else {
+                newChar.states[st] = 0;
+            }
+        });
+    }
 
     // Initialize originalDamage/originalMagicDamage and requiredStats for weapons if not present
     newChar.weaponInventory.forEach(weapon => {
