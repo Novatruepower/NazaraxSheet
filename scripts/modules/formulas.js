@@ -88,6 +88,30 @@ export function isEffectConditionsMet(charData, effect) {
     return isConditionMet(charData, conditions);
 }
 
+export function extractStateNamesFromConditions(conditions) {
+    if (!conditions) return [];
+    const list = Array.isArray(conditions) ? conditions : [conditions];
+    const names = [];
+
+    list.forEach(cond => {
+        if (typeof cond === 'string') {
+            let clean = cond.trim();
+            if (clean.startsWith('!')) clean = clean.slice(1).trim();
+            if (clean && !names.includes(clean)) names.push(clean);
+        } else if (typeof cond === 'object' && cond !== null) {
+            if (cond.state && !names.includes(cond.state)) {
+                names.push(String(cond.state).trim());
+            } else {
+                Object.keys(cond).forEach(k => {
+                    if (k && !names.includes(k)) names.push(k.trim());
+                });
+            }
+        }
+    });
+
+    return names;
+}
+
 export function getCategoriesTemporaryEffects(charData, statName, onlyActive = false) {
     let categoriesTemporaryEffects = [];
     if (!charData) return categoriesTemporaryEffects;

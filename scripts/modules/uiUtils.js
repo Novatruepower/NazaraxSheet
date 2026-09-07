@@ -2,7 +2,7 @@ import { ExternalDataManager } from '../externalDataManager.js'
 import { MIN_STAT_VALUE, MAX_STAT_VALUE, TOTAL_DISTRIBUTION_POINTS } from './constants.js';
 import { SECTION_VISIBILITY, HTML_VISIBILITY } from './constants.js';
 import { character, setHasUnsavedChanges } from './state.js';
-import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal, calculateRegenRate, addTemporaryEffect, roll, isEffectConditionsMet } from './formulas.js';
+import { getCategoriesTemporaryEffects, getAppliedRacialChange, calculateRollStatTotal, calculateRegenRate, addTemporaryEffect, roll, isEffectConditionsMet, extractStateNamesFromConditions } from './formulas.js';
 import { handlePlayerStatInputChange } from './eventHandler.js';
 import { renderRacial } from './passivesActives.js';
 import { renderWeaponTable, renderArmorTable, renderGeneralTable } from './inventory.js';
@@ -499,14 +499,16 @@ export function renderActiveEffectsSummary() {
             const conditions = group.instances[0]?.effect?.conditions;
             const conditionsMet = group.instances[0]?.effect ? isEffectConditionsMet(character, group.instances[0].effect) : true;
             let conditionsHtml = '';
-            if (conditions && Array.isArray(conditions) && conditions.length > 0) {
-                const condStr = conditions.join(', ');
+            if (conditions && ((Array.isArray(conditions) && conditions.length > 0) || (typeof conditions === 'string' && conditions.trim()) || typeof conditions === 'object')) {
+                const condStr = Array.isArray(conditions) ? conditions.join(', ') : (typeof conditions === 'string' ? conditions : JSON.stringify(conditions));
+                const targetStates = extractStateNamesFromConditions(conditions).join(', ');
                 conditionsHtml = `
-                    <div class="text-xs mt-1 ${conditionsMet ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400 font-medium'}">
-                        <span>Conditions: [${condStr}]</span>
-                        <span class="ml-1 px-1.5 py-0.2 rounded text-[10px] uppercase font-bold ${conditionsMet ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'}">
-                            ${conditionsMet ? 'Active' : 'Inactive'}
-                        </span>
+                    <div class="text-xs mt-1 flex items-center flex-wrap gap-1.5 ${conditionsMet ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400 font-medium'}">
+                        <span class="lead-to-state-btn cursor-pointer hover:underline" data-condition-state="${targetStates}" title="Go to States selector to toggle ${targetStates || 'states'}">Conditions: [${condStr}]</span>
+                        <button type="button" class="lead-to-state-btn px-1.5 py-0.5 rounded text-[10px] uppercase font-bold cursor-pointer hover:ring-2 hover:ring-indigo-400 active:scale-95 transition-all inline-flex items-center gap-1 ${conditionsMet ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/60'}" data-condition-state="${targetStates}" title="Go to States selector to toggle ${targetStates || 'states'}">
+                            <span>${conditionsMet ? 'Active' : 'Inactive'}</span>
+                            <svg class="w-2.5 h-2.5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        </button>
                     </div>
                 `;
             }
@@ -1318,14 +1320,16 @@ export function renderTemporaryEffects(statName) {
         const conditions = effect.conditions;
         const conditionsMet = isEffectConditionsMet(character, effect);
         let conditionsHtml = '';
-        if (conditions && Array.isArray(conditions) && conditions.length > 0) {
-            const condStr = conditions.join(', ');
+        if (conditions && ((Array.isArray(conditions) && conditions.length > 0) || (typeof conditions === 'string' && conditions.trim()) || typeof conditions === 'object')) {
+            const condStr = Array.isArray(conditions) ? conditions.join(', ') : (typeof conditions === 'string' ? conditions : JSON.stringify(conditions));
+            const targetStates = extractStateNamesFromConditions(conditions).join(', ');
             conditionsHtml = `
-                <div class="text-xs mt-1 ${conditionsMet ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400 font-medium'}">
-                    <span>Conditions: [${condStr}]</span>
-                    <span class="ml-1 px-1.5 py-0.2 rounded text-[10px] uppercase font-bold ${conditionsMet ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'}">
-                        ${conditionsMet ? 'Active' : 'Inactive'}
-                    </span>
+                <div class="text-xs mt-1 flex items-center flex-wrap gap-1.5 ${conditionsMet ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400 font-medium'}">
+                    <span class="lead-to-state-btn cursor-pointer hover:underline" data-condition-state="${targetStates}" title="Go to States selector to toggle ${targetStates || 'states'}">Conditions: [${condStr}]</span>
+                    <button type="button" class="lead-to-state-btn px-1.5 py-0.5 rounded text-[10px] uppercase font-bold cursor-pointer hover:ring-2 hover:ring-indigo-400 active:scale-95 transition-all inline-flex items-center gap-1 ${conditionsMet ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/60'}" data-condition-state="${targetStates}" title="Go to States selector to toggle ${targetStates || 'states'}">
+                        <span>${conditionsMet ? 'Active' : 'Inactive'}</span>
+                        <svg class="w-2.5 h-2.5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                    </button>
                 </div>
             `;
         }
@@ -1420,6 +1424,89 @@ export function closeTemporaryEffectsModal() {
     if (tempEffectsModal) tempEffectsModal.classList.add('hidden');
     currentStatForTempEffects = null;
     updateDOM(); // Re-render the main stats table to reflect any changes in totals
+}
+
+/**
+ * Smoothly scrolls to the State Selector in Health & Combat, ensures section and dropdown are open,
+ * and highlights the selector (and specific target states if provided).
+ */
+export function navigateToStateSelector(targetStates) {
+    // 1. Close temporary effects modal if open
+    const tempEffectsModal = document.getElementById('temp-effects-modal');
+    if (tempEffectsModal && !tempEffectsModal.classList.contains('hidden')) {
+        tempEffectsModal.classList.add('hidden');
+        currentStatForTempEffects = null;
+        updateDOM();
+    }
+
+    // 2. Close direct add effect modal if open
+    const directAddModal = document.getElementById('direct-add-effect-modal');
+    if (directAddModal && !directAddModal.classList.contains('hidden')) {
+        directAddModal.classList.add('hidden');
+    }
+
+    // 3. Ensure the Health & Combat section is expanded
+    const healthContent = document.getElementById('health-combat-content');
+    if (healthContent) {
+        healthContent.classList.remove('hidden');
+        if (character.htmlVisibility) {
+            character.htmlVisibility['health-combat-content'] = true;
+        }
+        const toggleBtnSvg = document.querySelector('.toggle-section-btn[data-target="health-combat-content"] svg');
+        if (toggleBtnSvg) {
+            toggleBtnSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>';
+        }
+    }
+
+    // 4. Open the state dropdown options
+    const stateDropdownOptions = document.getElementById('state-dropdown-options');
+    if (stateDropdownOptions) {
+        stateDropdownOptions.classList.remove('hidden');
+    }
+
+    // 5. Smooth scroll to the state selector
+    const stateDisplay = document.getElementById('state-display');
+    if (stateDisplay) {
+        const container = stateDisplay.closest('.relative') || stateDisplay;
+        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        stateDisplay.focus();
+        stateDisplay.classList.add('ring-2', 'ring-indigo-500', 'border-indigo-500');
+        setTimeout(() => {
+            stateDisplay.classList.remove('ring-2', 'ring-indigo-500', 'border-indigo-500');
+        }, 2000);
+    }
+
+    // 6. Highlight relevant checkbox(es) in the dropdown
+    if (targetStates && stateDropdownOptions) {
+        const stateList = Array.isArray(targetStates)
+            ? targetStates
+            : String(targetStates).split(',').map(s => s.trim()).filter(Boolean);
+
+        const checkboxes = stateDropdownOptions.querySelectorAll('input[name="state-option"]');
+        let firstMatchedRow = null;
+
+        stateList.forEach(targetName => {
+            const clean = targetName.toLowerCase();
+            for (const cb of checkboxes) {
+                if (cb.value.toLowerCase() === clean) {
+                    const row = cb.closest('div');
+                    if (row) {
+                        row.classList.add('bg-indigo-100', 'dark:bg-indigo-900/60', 'ring-2', 'ring-indigo-500', 'transition-all');
+                        setTimeout(() => {
+                            row.classList.remove('bg-indigo-100', 'dark:bg-indigo-900/60', 'ring-2', 'ring-indigo-500');
+                        }, 3000);
+                        if (!firstMatchedRow) firstMatchedRow = row;
+                    }
+                    cb.focus();
+                    break;
+                }
+            }
+        });
+
+        if (firstMatchedRow) {
+            firstMatchedRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
 }
 
 export function setTempEffectsStatContext(statName, displayName, statDisplayTotal) {

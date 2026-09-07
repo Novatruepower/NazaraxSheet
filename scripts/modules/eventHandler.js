@@ -4,7 +4,7 @@ import { showConfirmationModal, updateRemainingPointsDisplay, renderTemporaryEff
     getCharacterStatesActive, updateDOM, showStatusMessage, quickRollStats, distributeStats, addManualTemporaryEffect, closeTemporaryEffectsModal, endTurn, toggleSidebar,
     updatePanelsPosition, closeDamageModal, takeDamage, setTempEffectsStatContext, openTemporaryEffectsModal, toggleSection,
     openDirectAddEffectModal, closeDirectAddEffectModal, handleDirectAddEffectSubmit, currentStatForTempEffects,
-    updateAllTempEffectsButtons, highlightStatsWithActiveEffects, renderActiveEffectsSummary
+    updateAllTempEffectsButtons, highlightStatsWithActiveEffects, renderActiveEffectsSummary, navigateToStateSelector
  } from './uiUtils.js';
 import {recalculateSmallUpdateCharacter, recalculateCharacterDerivedProperties, defaultCharacterData, populateCharacterSelector, saveCurrentStateToHistory, saveCharacterToFile,
     loadCharacterFromFile, switchCharacter, addNewCharacter, revertCurrentCharacter, forwardCurrentCharacter, populateRaceSelector, handleChangeRace, startAutoHistorySaver, levelUp
@@ -772,6 +772,15 @@ export function attachEventListeners() {
     }
 
     document.addEventListener('click', function (event) {
+        const leadBtn = event.target.closest('.lead-to-state-btn');
+        if (leadBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            const targetStates = leadBtn.dataset.conditionState || '';
+            navigateToStateSelector(targetStates);
+            return;
+        }
+
         const classDisplayInput = document.getElementById('classes-display');
         const classDropdownOptions = document.getElementById('classes-dropdown-options');
         const specializationDisplayInput = document.getElementById('specializations-display');
