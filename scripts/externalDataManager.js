@@ -64,7 +64,6 @@ export const ExternalDataManager = {
      * @returns {string} The formatted string.
      */
     formatString(str, dices, ...values) {
-        console.log(values);
         if (Array.isArray(values[0])) {
             values = values[0];
         }
