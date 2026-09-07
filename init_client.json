@@ -7,7 +7,7 @@
           "BaseHealth": 1,
           "Mana": 1,
           "BaseMana": 1,
-          "RacialPower": 1,
+          "RacialPower": 0,
           "BaseRacialPower": 1,
           "LevelExperience": 1,
           "BaseLevelExperience": 1,
@@ -314,13 +314,13 @@
           ],
           "formulas": [
             {
-              "stats": [
-                "level"
+              "values": [
+                "100"
               ],
               "types": [
-                "/"
+                "="
               ],
-              "appliesTo": "initial-value",
+              "appliesTo": "total",
               "statsAffected": [
                 "RacialPower"
               ]
@@ -1057,12 +1057,9 @@
           ],
           "formulas": [
             {
-              "type": "=",
+              "type": "-",
               "values": [
-                80
-              ],
-              "types": [
-                "="
+                20
               ],
               "appliesTo": "total",
               "statsAffected": [

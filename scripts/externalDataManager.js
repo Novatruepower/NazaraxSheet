@@ -64,6 +64,7 @@ export const ExternalDataManager = {
      * @returns {string} The formatted string.
      */
     formatString(str, dices, ...values) {
+        console.log(values);
         if (Array.isArray(values[0])) {
             values = values[0];
         }
@@ -547,7 +548,7 @@ export const ExternalDataManager = {
                 }
             }
         }
-        if (values.length === 0 && ability.values) {
+        if (values.length === 0 && ability.values && ability.values.length > 0) {
             for (const value of ability.values) {
                 values.push(Math.abs(value));
             }
