@@ -1764,12 +1764,15 @@ export function closeDamageModal() {
 }
 
 export function takeTrueDamage(value) {
+    const PrevHealth =  character.Health.value;
     const setHealthCheckbox = document.getElementById("set-health-checkbox");
     if (setHealthCheckbox && setHealthCheckbox.checked) {
         character.Health.value = Math.min(value, character.maxHealth);
     } else {
         character.Health.value = Math.max(0, character.Health.value - value);
     }
+
+    return PrevHealth > character.Health.value;
 }
 
 export function takeDamage() {
@@ -1781,8 +1784,10 @@ export function takeDamage() {
     const value = parseInt(damageTakeAmountInput.value, 10);
     if (isNaN(value)) return alert("Please enter a valid number");
 
+    let hasTakenDamage = false;
+
     if (setTakeTrueDamage && setTakeTrueDamage.checked) {
-        takeTrueDamage(value);
+        hasTakenDamage = takeTrueDamage(value);
     } else if (character.uniqueIdentifiers['Clay Skin'] && character.RacialPower.value > 0) {
         let damage = value;
 
@@ -1796,9 +1801,15 @@ export function takeDamage() {
 
         if (newRacialPower == 0)
             character.Health.value = Math.max(0, character.Health.value + calculation);
+
+        hasTakenDamage = damage > 0;
     }
     else {
-        takeTrueDamage(value);
+        hasTakenDamage = takeTrueDamage(value);
+    }
+
+    if (hasTakenDamage && character.states['Taking Damage'] == 0) {
+        setCharacterStateTurns('Taking Damage', 1);
     }
 
     const healthInput = document.getElementById('Health');
