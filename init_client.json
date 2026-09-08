@@ -5,12 +5,12 @@
         "Other": {
           "Health": 0.7,
           "BaseHealth": 1,
-          "Mana": 1,
-          "BaseMana": 1,
-          "RacialPower": 0,
-          "BaseRacialPower": 1,
           "LevelExperience": 1,
           "BaseLevelExperience": 1,
+          "Mana": 1,
+          "BaseMana": 1,
+          "RacialPower": 1,
+          "BaseRacialPower": 0,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -132,12 +132,12 @@
         "Other": {
           "Health": 1,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -300,6 +300,25 @@
       },
       "regularPassives": {
         "Savagery": {
+          "formulas": [
+            {
+              "values": [
+                100
+              ],
+              "types": [
+                "="
+              ]
+            },
+            {
+              "appliesTo": "total"
+            },
+            {
+              "statsAffected": [
+                "RacialPower"
+              ]
+            }
+          ],
+          "description": "Before the start of every turn you lose {0d0} racial points. If after a roll, the racial point’s value of a character is less than {0}<a>0</a>, you have to roll a {d1} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {1} racial points per turn, once you reach {2}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>.",
           "level": 1,
           "foot_notes": [
             10,
@@ -311,33 +330,18 @@
             1,
             20,
             100
-          ],
-          "formulas": [
-            {
-              "values": [
-                "100"
-              ],
-              "types": [
-                "="
-              ],
-              "appliesTo": "total",
-              "statsAffected": [
-                "RacialPower"
-              ]
-            }
-          ],
-          "description": "Before the start of every turn you lose {0d0} racial points. If after a roll, the racial point’s value of a character is less than {0}<a>0</a>, you have to roll a {d1} to see which of your character’s animals you will have to turn into<a>1</a>. Turning into an animal this way does not take a turn, however, turning back into a human does makes you very dizzy for a turn. While in animal form, the animal which as been let out’s mind will take over your character’s actions and you will regenerate {1} racial points per turn, once you reach {2}<a>2</a>, you will turn back into your human form. When you transform, any items that are not shape shifting (or attached to a shape-shifting item) will fall off your body and be dropped. While in animal form, your character is partially conscious of what is happening around them<a>3</a>."
+          ]
         },
         "Fractured mind": {
+          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one {d0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points.",
+          "values": [
+            10
+          ],
           "foot_notes": [
             14,
             15
           ],
-          "level": 1,
-          "values": [
-            10
-          ],
-          "description": "Every animal that is part of a demi-human want freedom, and thus, affect their mental state. Before the start of every turn, after throwing your racial point change dice, throw one {d0}, if it falls on a number assigned to an animal, you will be able to fully communicate with said animal and be influenced by its desires until the end of your turn<a>0</a>. Whenever this happens, you regenerate {0} racial points. You can also purposefully let a random<a>1</a> come out of your subconscious for a turn, doing so also allows you to communicate with said animal for the duration and make it influence your actions for that turn, however this does not regenerate any racial points."
+          "level": 1
         },
         "Domination": {
           "level": 100,
@@ -353,12 +357,12 @@
         "Other": {
           "Health": 1.5,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -496,12 +500,12 @@
         "Other": {
           "Health": 0.75,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -517,62 +521,6 @@
           "Intimidation": 0.5,
           "Charisma": 0.75,
           "Negotiation": 0.75
-        }
-      },
-      "regularPassives": {
-        "Foul Blood": {
-          "level": 1,
-          "description": "Because of your impure blood and weak body, most dragons will see you as an insult to their race and will want to kill you on sight no matter what."
-        },
-        "Genetic Impurity": {
-          "level": 1,
-          "description": "Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a {0}/{0} chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a {1}/{2} chance of being human/dragonkin and if their partner is a dragon, their child will have a {2}/{1} chance of being dragonkin/dragon.",
-          "values": [
-            50,
-            25,
-            75
-          ]
-        },
-        "Frail Body": {
-          "level": 1,
-          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<a>0</a>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.",
-          "foot_notes": [
-            1
-          ]
-        },
-        "Dragon’s Metabolism": {
-          "level": 1,
-          "description": "Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in {1} to {2} turns and so that you can recover any limbs in {3}-{4} turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body.",
-          "values": [
-            0.1,
-            3,
-            5,
-            10,
-            20
-          ],
-          "formulas": [
-            {
-              "type": "+",
-              "values": [
-                0.1
-              ],
-              "appliesTo": "total",
-              "statsAffected": [
-                "RacialHealthRegen"
-              ],
-              "conditions": [
-                "!Active Racial Skill"
-              ]
-            }
-          ]
-        },
-        "Dragon’s Pride": {
-          "level": 1,
-          "description": "A dragon’s pride seems to be hereditary, as it seems completely impossible to intimidate dragonkin. Any intimidation confrontation against a you will not work; however, you can still lose intimidation confrontations that you start."
-        },
-        "Proof of Strength": {
-          "level": 50,
-          "description": "You have become strong enough to have your existence be acknowledged as legitimate by most dragons. This means that a majority of dragons will now at least tolerate your existence, while some might even accept to converse with you or teach you, though some will still try to end your life no matter what."
         }
       },
       "dices": {
@@ -660,6 +608,62 @@
           ],
           "description": "All shall fear the dragons and their kin, who bring destruction and order upon to this world, a roar that brings death to all in its path. A powerful skill for those who have abandoned all hope, with a cost equal to none, the life of a dragon. Using this skill destroys your body and permanently destroys your soul, essentially making it impossible for you to be brought back in any way. After focusing<a>0</a> on converting your body and soul into mana for {0} turns<a>1</a>, you release your last roar, causing the instant destruction of anything in a straight line in front of you with a diameter of about {1} meters with a length of two full world tiles, dealing <code>{0d0}/{2} * (Sk * {3} + Level * {4})</code><a>2</a> damage of a random element<a>3</a> to <b>anything</b> in its path."
         }
+      },
+      "regularPassives": {
+        "Foul Blood": {
+          "description": "Because of your impure blood and weak body, most dragons will see you as an insult to their race and will want to kill you on sight no matter what.",
+          "level": 1
+        },
+        "Dragon’s Pride": {
+          "level": 1,
+          "description": "A dragon’s pride seems to be hereditary, as it seems completely impossible to intimidate dragonkin. Any intimidation confrontation against a you will not work; however, you can still lose intimidation confrontations that you start."
+        },
+        "Frail Body": {
+          "description": "Because of your impure blood, your body barely functions to begin with and is very susceptible to failures. Whenever you receive any damage<a>0</a>, some part of your body in the region of the damage will be break (bones), be ruptured (muscles, organs), be crushed (bones, organs), or fail (organs), the importance of the internal damage and the number of affected body parts varies depending on the amount, type, source, and location of the damage.",
+          "level": 1,
+          "foot_notes": [
+            1
+          ]
+        },
+        "Genetic Impurity": {
+          "values": [
+            50,
+            25,
+            75
+          ],
+          "description": "Dragonkin’s impure blood make having children somewhat more complicated. If their partner is human, the child will always be human, if it is any other race, it will have a {0}/{0} chance of being human or the partner’s race, if their partner is another dragonkin, the child will have a {1}/{2} chance of being human/dragonkin and if their partner is a dragon, their child will have a {2}/{1} chance of being dragonkin/dragon.",
+          "level": 1
+        },
+        "Dragon’s Metabolism": {
+          "values": [
+            0.1,
+            3,
+            5,
+            10,
+            20
+          ],
+          "formulas": [
+            {
+              "type": "+",
+              "appliesTo": "total",
+              "values": [
+                0.1
+              ],
+              "statsAffected": [
+                "RacialHealthRegen"
+              ],
+              "conditions": [
+                "!Active Racial Skill"
+              ]
+            }
+          ],
+          "level": 1,
+          "description": "Because of your dragon heritage, your body is constantly fighting against aging by constantly replacing parts of itself like a dragon’s would, however, because of your human body, instead of only counteracting the aging process, this regeneration also allows you to regenerate your entire body at an incredible rate, making it so that you regenerate {0}% of your health at the start of every turn, even while fighting or while taking damage. This also makes it so that most of your bones, muscles and organs can repair themselves naturally in {1} to {2} turns and so that you can recover any limbs in {3}-{4} turns. This abnormal health and body part regeneration only ever stops whenever you are using any active racial skill, as your regeneration has to be used to limit your power’s destructive effect on your body."
+        },
+        "Proof of Strength": {
+          "level": 50,
+          "description": "You have become strong enough to have your existence be acknowledged as legitimate by most dragons. This means that a majority of dragons will now at least tolerate your existence, while some might even accept to converse with you or teach you, though some will still try to end your life no matter what."
+        }
       }
     },
     "Dwarf": {
@@ -667,12 +671,12 @@
         "Other": {
           "Health": 1.2,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -785,12 +789,12 @@
         "Other": {
           "Health": 0.8,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -877,12 +881,12 @@
         "Other": {
           "Health": 0.8,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -1001,12 +1005,12 @@
         "Other": {
           "Health": 1,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -1025,10 +1029,36 @@
         }
       },
       "regularPassives": {
-        "Growth": {
+        "Self reflection": {
+          "values": [
+            80
+          ],
           "level": 1,
+          "description": "Humans are known to be able to learn slightly faster than other intelligent races from their past experiences. You only need {0} experience to level up.",
           "formulas": [
             {
+              "values": [
+                20
+              ],
+              "types": [
+                "-"
+              ],
+              "appliesTo": "total",
+              "statsAffected": [
+                "LevelExperience"
+              ]
+            }
+          ]
+        },
+        "Growth": {
+          "level": 1,
+          "description": "Humans are able to grow their abilities ever so slightly faster than the other intelligent races. You need {0} less stat experience before it increases.",
+          "formulas": [
+            {
+              "values": [
+                1
+              ],
+              "appliesTo": "maxExperience",
               "type": "-",
               "statsAffected": [
                 "Strength",
@@ -1040,30 +1070,6 @@
                 "Intimidation",
                 "Charisma",
                 "Negotiation"
-              ],
-              "appliesTo": "maxExperience",
-              "values": [
-                1
-              ]
-            }
-          ],
-          "description": "Humans are able to grow their abilities ever so slightly faster than the other intelligent races. You need {0} less stat experience before it increases."
-        },
-        "Self reflection": {
-          "level": 1,
-          "description": "Humans are known to be able to learn slightly faster than other intelligent races from their past experiences. You only need {0} experience to level up.",
-          "values": [
-            80
-          ],
-          "formulas": [
-            {
-              "type": "-",
-              "values": [
-                20
-              ],
-              "appliesTo": "total",
-              "statsAffected": [
-                "LevelExperience"
               ]
             }
           ]
@@ -1075,12 +1081,12 @@
         "Other": {
           "Health": 0.75,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -1171,8 +1177,8 @@
               "calc": "mult",
               "value": 2,
               "applicableStats": [
-                "NaturalManaRegen",
-                "NaturalHealthRegen"
+                "naturalManaRegen",
+                "naturalHealthRegen"
               ],
               "unique": "Mutation_Degeneration",
               "setsOption": [
@@ -1230,12 +1236,12 @@
         "Other": {
           "Health": 0.9,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -1345,12 +1351,12 @@
         "Other": {
           "Health": 0.75,
           "BaseHealth": 1,
+          "LevelExperience": 1,
+          "BaseLevelExperience": 1,
           "Mana": 1,
           "BaseMana": 1,
           "RacialPower": 1,
           "BaseRacialPower": 1,
-          "LevelExperience": 1,
-          "BaseLevelExperience": 1,
           "NaturalHealthRegen": 1,
           "NaturalManaRegen": 1,
           "NaturalRacialPowerRegen": 1,
@@ -1457,6 +1463,8 @@
     "Charisma",
     "Negotiation",
     "BaseHealth",
+    "LevelExperience",
+    "BaseLevelExperience",
     "Mana",
     "BaseMana",
     "RacialPower",
@@ -1464,9 +1472,7 @@
     "NaturalHealthRegen",
     "NaturalManaRegen",
     "NaturalRacialPowerRegen",
-    "RacialHealthRegen",
-    "LevelExperience",
-    "BaseLevelExperience"
+    "RacialHealthRegen"
   ],
   "Roll": [
     "Strength",
@@ -1481,6 +1487,8 @@
   ],
   "Other": [
     "Health",
+    "LevelExperience",
+    "BaseLevelExperience",
     "BaseHealth",
     "Mana",
     "BaseMana",
@@ -1489,9 +1497,7 @@
     "NaturalHealthRegen",
     "NaturalManaRegen",
     "NaturalRacialPowerRegen",
-    "RacialHealthRegen",
-    "LevelExperience",
-    "BaseLevelExperience"
+    "RacialHealthRegen"
   ],
   "Classes": {
     "Archer": {
