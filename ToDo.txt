@@ -19,3 +19,18 @@ else if (ability.formulas) {
 Change BaseRacialPower because of mutant
 
 Fix Self reflection display to work with the temporary effect to
+
+Dragon’s Metabolism
+
+Clay skin
+
+Spatial Capture
+
+Absorption
+
+Weaning Rage and Wasted Rage (conditions)
+
+states using turns instead of just a bool
+
+fix set value 
+fix take damage

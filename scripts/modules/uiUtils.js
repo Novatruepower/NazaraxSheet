@@ -198,10 +198,45 @@ export function formatCharacterStatesDisplay() {
     return active.join(', ');
 }
 
-export function setCharacterStateTurns(stateName, turns) {
+export function notifyStateRemoved(stateName) {
+    if (!stateName) return;
+    const msg = `State removed: "${stateName}".`;
+    showStatusMessage(msg);
+    if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast(`State removed: <strong>${stateName}</strong>`, 'info');
+    }
+}
+
+export function hasDamageCausingState(char) {
+    if (!char || !char.states) return false;
+    // States that inherently cause ongoing damage (such as Bleeding)
+    const damageStates = ['Bleeding'];
+    return damageStates.some(st => getCharacterStateValue(char, st));
+}
+
+export function setCharacterStateTurns(stateName, turns, notifyIfRemoved = true) {
     if (!character || !character.states) return;
+    const prevTurns = getCharacterStateTurns(character, stateName);
     const parsed = Math.max(0, Math.floor(Number(turns) || 0));
     character.states[stateName] = parsed;
+
+    if (notifyIfRemoved && prevTurns > 0 && parsed === 0) {
+        notifyStateRemoved(stateName);
+    }
+
+    // As soon as 'In Fight' is removed, also remove 'Taking Damage' unless other damage-causing states (e.g. Bleeding) are active
+    if (stateName === 'In Fight' && prevTurns > 0 && parsed === 0) {
+        if (getCharacterStateTurns(character, 'Taking Damage') > 0 && !hasDamageCausingState(character)) {
+            setCharacterStateTurns('Taking Damage', 0, notifyIfRemoved);
+        }
+    }
+
+    // If a damage-causing state like 'Bleeding' is removed while not in fight, also remove 'Taking Damage'
+    if (stateName === 'Bleeding' && prevTurns > 0 && parsed === 0) {
+        if (getCharacterStateTurns(character, 'Taking Damage') > 0 && !getCharacterStateValue(character, 'In Fight') && !hasDamageCausingState(character)) {
+            setCharacterStateTurns('Taking Damage', 0, notifyIfRemoved);
+        }
+    }
 
     const stateDisplay = document.getElementById('state-display');
     if (stateDisplay) {
@@ -1132,6 +1167,11 @@ export function updateDOM() {
     const stateDropdownOptions = document.getElementById('state-dropdown-options');
     const states = Object.keys(character.states);
 
+    const removeStateProtCheckbox = document.getElementById('remove-state-protection');
+    if (removeStateProtCheckbox) {
+        removeStateProtCheckbox.checked = Boolean(character.removeStateProtection);
+    }
+
     stateDisplayInput.value = formatCharacterStatesDisplay();
 
     stateDropdownOptions.innerHTML = '';
@@ -1140,6 +1180,8 @@ export function updateDOM() {
         const turns = getCharacterStateTurns(character, state);
         const isActive = turns > 0;
         const safeId = state.replace(/\s+/g, '-').toLowerCase();
+        const isProtected = !character.removeStateProtection && (state === 'Taking Damage' || state === 'In Fight');
+        const protectedBadge = (isProtected && isActive) ? `<span class="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200" title="Protected: increments turns on End Turn to count duration until manually unchecked">🛡️ +1/turn</span>` : '';
 
         const checkboxDiv = document.createElement('div');
         checkboxDiv.className = 'flex items-center justify-between px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md transition-colors gap-2';
@@ -1155,7 +1197,7 @@ export function updateDOM() {
                    ${isActive ? 'checked' : ''}
                />
                <label for="state-${safeId}" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none truncate font-medium">
-                   ${state}
+                   ${state}${protectedBadge}
                </label>
            </div>
            <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -1175,6 +1217,21 @@ export function updateDOM() {
        `;
         stateDropdownOptions.appendChild(checkboxDiv);
     });
+
+    const protectionFooter = document.createElement('div');
+    protectionFooter.className = 'border-t border-gray-200 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-gray-800/90 flex items-center justify-between sticky bottom-0';
+    protectionFooter.innerHTML = `
+        <label for="dropdown-remove-state-protection" class="flex items-center text-xs text-gray-600 dark:text-gray-400 cursor-pointer select-none hover:text-gray-900 dark:hover:text-gray-200">
+            <input
+                type="checkbox"
+                id="dropdown-remove-state-protection"
+                class="form-checkbox h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500 mr-1.5 cursor-pointer"
+                ${character.removeStateProtection ? 'checked' : ''}
+            />
+            <span>Remove protection (In Fight & Taking Damage)</span>
+        </label>
+    `;
+    stateDropdownOptions.appendChild(protectionFooter);
 
     // Render racial passives based on selected race
     renderRacial();
@@ -1679,14 +1736,49 @@ export function endTurn() {
         character.RacialPower.value = Math.min(character.RacialPower.value, maxRacialPower);
 
         let statesChanged = false;
+        const removedStates = [];
         if (character.states) {
             Object.keys(character.states).forEach(state => {
                 const currentTurns = getCharacterStateTurns(character, state);
                 if (currentTurns > 0) {
-                    character.states[state] = Math.max(0, currentTurns - 1);
-                    statesChanged = true;
+                    const isProtected = !character.removeStateProtection && (state === 'Taking Damage' || state === 'In Fight');
+                    if (isProtected) {
+                        character.states[state] = currentTurns + 1;
+                        statesChanged = true;
+                    } else {
+                        const newTurns = Math.max(0, currentTurns - 1);
+                        if (newTurns !== currentTurns) {
+                            character.states[state] = newTurns;
+                            statesChanged = true;
+                            if (newTurns === 0) {
+                                removedStates.push(state);
+                            }
+                        }
+                    }
                 }
             });
+
+            // As soon as 'In Fight' is removed, also remove 'Taking Damage' unless other states cause damage (such as Bleeding)
+            if (removedStates.includes('In Fight') && !hasDamageCausingState(character)) {
+                if (getCharacterStateTurns(character, 'Taking Damage') > 0) {
+                    character.states['Taking Damage'] = 0;
+                    statesChanged = true;
+                    if (!removedStates.includes('Taking Damage')) {
+                        removedStates.push('Taking Damage');
+                    }
+                }
+            }
+
+            // If a damage-causing state like 'Bleeding' is removed while not in fight, also remove 'Taking Damage'
+            if (removedStates.includes('Bleeding') && !getCharacterStateValue(character, 'In Fight') && !hasDamageCausingState(character)) {
+                if (getCharacterStateTurns(character, 'Taking Damage') > 0) {
+                    character.states['Taking Damage'] = 0;
+                    statesChanged = true;
+                    if (!removedStates.includes('Taking Damage')) {
+                        removedStates.push('Taking Damage');
+                    }
+                }
+            }
         }
 
         let effectsChanged = false;
@@ -1731,7 +1823,20 @@ export function endTurn() {
         renderActiveEffectsSummary();
         setHasUnsavedChanges(true);
 
-        if (effectsChanged || statesChanged) {
+        if (removedStates.length > 0) {
+            if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+                if (removedStates.length === 1) {
+                    window.showToast(`State removed: <strong>${removedStates[0]}</strong>`, 'info');
+                } else {
+                    window.showToast(`States removed: <strong>${removedStates.join(', ')}</strong>`, 'info');
+                }
+            }
+        }
+
+        if (removedStates.length > 0) {
+            const names = removedStates.map(s => `"${s}"`).join(', ');
+            showStatusMessage(`Turn ended. Removed ${removedStates.length === 1 ? 'state' : 'states'}: ${names}.`);
+        } else if (effectsChanged || statesChanged) {
             showStatusMessage("Turn ended. Temporary effects and state durations updated.");
         } else {
             showStatusMessage("Turn ended. No effects or active states to update.", false);

@@ -291,7 +291,18 @@
                 </div>
                 <div id="health-combat-content" class="section-content">
                     <div>
-                        <label for="state-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">States (Turns, 0 = Inactive)</label>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="state-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">States (Turns, 0 = Inactive)</label>
+                            <label class="inline-flex items-center text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cursor-pointer select-none" title="When unchecked, Taking Damage & In Fight increment turns at End Turn to count duration. Check this to allow countdown to 0 instead.">
+                                <input
+                                    type="checkbox"
+                                    id="remove-state-protection"
+                                    name="remove-state-protection"
+                                    class="form-checkbox h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 rounded border-gray-300 dark:border-gray-600 focus:ring-indigo-500 mr-1.5 cursor-pointer"
+                                />
+                                <span>Remove state protection</span>
+                            </label>
+                        </div>
                         <div class="relative">
                             <input
                                 type="text"

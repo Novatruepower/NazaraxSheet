@@ -67,6 +67,10 @@ export function showToast(message, type = 'info') {
     }, 4000);
 }
 
+if (typeof window !== 'undefined') {
+    window.showToast = showToast;
+}
+
 /**
  * Handles clicks for adding or removing magic elements on weapon and armor cards/tables.
  * @param {Event} event The click event.
@@ -748,13 +752,19 @@ export function attachEventListeners() {
             } else if (event.target.classList.contains('state-turns-input')) {
                 const stateName = event.target.dataset.state;
                 setCharacterStateTurns(stateName, event.target.value);
+            } else if (event.target.id === 'dropdown-remove-state-protection') {
+                character.removeStateProtection = event.target.checked;
+                const topCheckbox = document.getElementById('remove-state-protection');
+                if (topCheckbox) topCheckbox.checked = character.removeStateProtection;
+                setHasUnsavedChanges(true);
+                updateDOM();
             }
         });
 
         stateDropdownOptions.addEventListener('input', function (event) {
             if (event.target.classList.contains('state-turns-input')) {
                 const stateName = event.target.dataset.state;
-                setCharacterStateTurns(stateName, event.target.value);
+                setCharacterStateTurns(stateName, event.target.value, false);
             }
         });
 
@@ -778,6 +788,17 @@ export function attachEventListeners() {
                 setCharacterStateTurns(stateName, current + 1);
                 return;
             }
+        });
+    }
+
+    const removeStateProtTopCheckbox = document.getElementById('remove-state-protection');
+    if (removeStateProtTopCheckbox) {
+        removeStateProtTopCheckbox.addEventListener('change', function (event) {
+            character.removeStateProtection = event.target.checked;
+            const dropdownCb = document.getElementById('dropdown-remove-state-protection');
+            if (dropdownCb) dropdownCb.checked = character.removeStateProtection;
+            setHasUnsavedChanges(true);
+            updateDOM();
         });
     }
 
