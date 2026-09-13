@@ -1104,9 +1104,122 @@
           "Negotiation": 1
         }
       },
+      "foot_notes": {
+        "1": "You must meet the skill’s level requirement at the time of you unlocking it and all level 100 skills are banned.",
+        "2": "This means that you will constantly be regenerating health, even when fighting, taking damage, or if affected by some health-regeneration disabling ability."
+      },
       "manualPassives": {
+        "Degeneration": {
+          "description": "Mutants gain Degeneration choices at specific levels.",
+          "options": [
+            {
+              "type": "stat_multiplier_reduce_50",
+              "unique": "Mutation_Degeneration",
+              "label": "Reduce a stat’s multiplier to -{0}%",
+              "applicableStats": [
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
+                "Health",
+                "Mana"
+              ],
+              "calc": "add",
+              "setsOption": [
+                1
+              ],
+              "value": -0.5
+            }
+          ],
+          "levels": {
+            "1": 1,
+            "10": 2,
+            "50": 3,
+            "100": 4
+          }
+        },
         "Mutation": {
           "description": "Mutants gain Mutation choices at specific levels.",
+          "foot_notes": [
+            1,
+            2
+          ],
+          "options": [
+            {
+              "label": "One skill<a>0</a> from any race",
+              "setsOption": [
+                1
+              ],
+              "type": "mutant_skill_choice"
+            },
+            {
+              "applicableStats": [
+                "Strength",
+                "Agility",
+                "Magic",
+                "Luck",
+                "Crafting",
+                "Intelligence",
+                "Intimidation",
+                "Charisma",
+                "Negotiation",
+                "Health",
+                "Mana"
+              ],
+              "unique": "Mutation_Degeneration",
+              "type": "stat_multiplier_set_50",
+              "setsOption": [
+                1
+              ],
+              "calc": "add",
+              "label": "A statistical multiplier to be set to {0}%",
+              "value": 0.5
+            },
+            {
+              "unique": "Mutation_Degeneration",
+              "applicableStats": [
+                "BaseHealth"
+              ],
+              "type": "double_base_health",
+              "label": "Doubling your base max health value",
+              "calc": "mult",
+              "value": 2,
+              "setsOption": [
+                1
+              ]
+            },
+            {
+              "applicableStats": [
+                "permManaRegenActive",
+                "permHealthRegenActive"
+              ],
+              "type": "perm_regen_active",
+              "unique": "Mutation_Degeneration",
+              "calc": "count",
+              "setsOption": [
+                1
+              ],
+              "label": "Natural mana or health regeneration become permanently<a>1</a> active\""
+            },
+            {
+              "label": "regen_doubled",
+              "value": 2,
+              "unique": "Mutation_Degeneration",
+              "calc": "mult",
+              "applicableStats": [
+                "NaturalManaRegen",
+                "NaturalHealthRegen"
+              ],
+              "setsOption": [
+                1
+              ]
+            }
+          ],
           "levels": {
             "1": 1,
             "10": 2,
@@ -1114,121 +1227,8 @@
             "50": 4,
             "75": 5,
             "100": 100
-          },
-          "options": [
-            {
-              "label": "One skill<a>0</a> from any race",
-              "type": "mutant_skill_choice",
-              "setsOption": [
-                1
-              ]
-            },
-            {
-              "label": "A statistical multiplier to be set to {0}%",
-              "type": "stat_multiplier_set_50",
-              "calc": "add",
-              "value": 0.5,
-              "applicableStats": [
-                "Strength",
-                "Agility",
-                "Magic",
-                "Luck",
-                "Crafting",
-                "Intelligence",
-                "Intimidation",
-                "Charisma",
-                "Negotiation",
-                "Health",
-                "Mana"
-              ],
-              "unique": "Mutation_Degeneration",
-              "setsOption": [
-                1
-              ]
-            },
-            {
-              "label": "Doubling your base max health value",
-              "type": "double_base_health",
-              "calc": "mult",
-              "value": 2,
-              "applicableStats": [
-                "BaseHealth"
-              ],
-              "unique": "Mutation_Degeneration",
-              "setsOption": [
-                1
-              ]
-            },
-            {
-              "label": "Natural mana or health regeneration become permanently<a>1</a> active\"",
-              "type": "perm_regen_active",
-              "calc": "count",
-              "applicableStats": [
-                "permManaRegenActive",
-                "permHealthRegenActive"
-              ],
-              "unique": "Mutation_Degeneration",
-              "setsOption": [
-                1
-              ]
-            },
-            {
-              "label": "regen_doubled",
-              "calc": "mult",
-              "value": 2,
-              "applicableStats": [
-                "naturalManaRegen",
-                "naturalHealthRegen"
-              ],
-              "unique": "Mutation_Degeneration",
-              "setsOption": [
-                1
-              ]
-            }
-          ],
-          "foot_notes": [
-            1,
-            2
-          ]
-        },
-        "Degeneration": {
-          "description": "Mutants gain Degeneration choices at specific levels.",
-          "levels": {
-            "1": 1,
-            "10": 2,
-            "50": 3,
-            "100": 4
-          },
-          "options": [
-            {
-              "label": "Reduce a stat’s multiplier to -{0}%",
-              "type": "stat_multiplier_reduce_50",
-              "calc": "add",
-              "value": -0.5,
-              "applicableStats": [
-                "Strength",
-                "Agility",
-                "Magic",
-                "Luck",
-                "Crafting",
-                "Intelligence",
-                "Intimidation",
-                "Charisma",
-                "Negotiation",
-                "Health",
-                "Mana"
-              ],
-              "unique": "Mutation_Degeneration",
-              "setsOption": [
-                1
-              ]
-            }
-          ]
+          }
         }
-      },
-      "foot_notes": {
-        "1": "You must meet the skill’s level requirement at the time of you unlocking it and all level 100 skills are banned.",
-        "2": "This means that you will constantly be regenerating health, even when fighting, taking damage, or if affected by some health-regeneration disabling ability."
       }
     },
     "Noki": {
